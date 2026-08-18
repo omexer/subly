@@ -1,0 +1,8 @@
+# Build + editor noise
+.DS_Store
+node_modules/
+vendor/
+*.log
+
+# WordPress.org assets live outside the plugin zip
+# (.wordpress-org/ is kept in git but excluded at build time)

@@ -1,0 +1,53 @@
+=== SubKit - Subscriptions & Recurring Payments for WooCommerce ===
+Contributors: pronob1010
+Tags: woocommerce, subscriptions, recurring payments, billing, memberships
+Requires at least: 6.5
+Tested up to: 7.0
+Requires PHP: 8.1
+Stable tag: 0.1.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Turn any WooCommerce product into a subscription and let it bill itself, with full customer self-service.
+
+== Description ==
+
+SubKit turns WooCommerce products into subscriptions and runs the renewal billing loop for you.
+
+**This is an early development release and is not ready for production stores.**
+
+= Working today =
+
+* Simple products can be sold as subscriptions on any daily, weekly, monthly or yearly schedule.
+* Free trials.
+* A renewal engine built on Action Scheduler, with an hourly sweeper that catches renewals WP-Cron missed.
+* Charge-slot ledger with a database-level guarantee against double charging.
+* Clear recurring-payment disclosure on the product page, in the cart and at checkout.
+* Customers can view and cancel their own subscriptions from My Account.
+* Admin subscription list and detail screens under WooCommerce, with a full activity trail.
+* HPOS native.
+
+= Not built yet =
+
+Stripe and PayPal adapters, block checkout integration, renewal emails, reporting, and everything else on the roadmap.
+
+== Installation ==
+
+1. Upload the `subkit-subscriptions` folder to `/wp-content/plugins/`.
+2. Activate through the Plugins screen.
+3. Edit a simple product and tick **Subscription** in the Product data panel.
+
+== Frequently Asked Questions ==
+
+= Is this ready for a live store? =
+
+No. It is a development release. The renewal loop works and is tested, but there are no production payment gateway adapters yet.
+
+= Does it work with High-Performance Order Storage? =
+
+Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
+
+== Changelog ==
+
+= 0.1.0 =
+* First development release: subscription products, renewal pipeline, My Account screens, admin screens.
