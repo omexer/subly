@@ -29,6 +29,7 @@ Verification key:
 | Hourly sweeper for missed renewals | Wired | |
 | Staging-clone protection | Run | A copied site refuses to bill |
 | Activity log per subscription | Run | |
+| Ledger and activity rows removed with the subscription | Run | On deletion only, never on trashing, so a restore stays safe |
 
 ## Products and checkout — Free
 

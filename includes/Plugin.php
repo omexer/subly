@@ -8,6 +8,7 @@ use SubKit\Billing\Renewal_Processor;
 use SubKit\Billing\Renewal_Scheduler;
 use SubKit\Data\Activity_Repository;
 use SubKit\Data\Charge_Slot_Repository;
+use SubKit\Data\Cleanup;
 use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
 use SubKit\Data\Stats;
@@ -82,6 +83,9 @@ final class Plugin {
 
 		$this->services['migrator'] = new Migrator();
 		$this->services['migrator']->register();
+
+		$this->services['cleanup'] = new Cleanup();
+		$this->services['cleanup']->register();
 
 		$this->services['charge_slots']  = new Charge_Slot_Repository();
 		$this->services['activity']      = new Activity_Repository();

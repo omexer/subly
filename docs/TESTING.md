@@ -68,6 +68,13 @@ failure as something to read, not to dismiss.
 
 It cleans up after itself: the subscription, its renewal orders and its ledger rows.
 
+If you have run older builds, they left orphan rows behind — deleting a subscription used
+to leave its ledger and activity rows in place forever. Clear them once with:
+
+```bash
+docker compose exec -T wordpress php -r 'require "/var/www/html/wp-load.php"; printf("removed %d\n", SubKit\Data\Cleanup::purge_orphans());'
+```
+
 ---
 
 ## Sandbox testing
