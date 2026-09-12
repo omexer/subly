@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.7.0
+Stable tag: 0.8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,10 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.8.0 =
+* Reports opens with charts: recurring revenue over time, new subscriptions per day, and a status ring with a legend.
+* Charts are drawn as inline SVG on the server, so they print, stay sharp on any screen, and need no charting library.
 
 = 0.7.0 =
 * Subscription and Variable subscription are now product types in the Product data dropdown, rather than a checkbox hidden inside Simple product.
