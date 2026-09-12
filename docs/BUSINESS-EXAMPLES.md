@@ -46,12 +46,12 @@ before, and [INTEGRATIONS.md](INTEGRATIONS.md) for what each integration does in
 Nothing in the **Free** rows needs Pro. A coffee box at one price, billed monthly, taken by
 Stripe, is entirely free — including the customer's cancel and pay-a-failed-renewal pages.
 
-> **Variable subscriptions are a Pro feature.** The type appears in the Product data dropdown
-> on the free plugin, but a variation only carries its parent's billing schedule while Pro is
-> active. Without it the variation is not treated as a subscription at all and would be sold
-> as a one-off purchase. If you need per-variation pricing or a monthly/yearly choice, you
-> need Pro. *(Verified on 0.9.1 by deactivating Pro: the same variation goes from recognised
-> to unrecognised.)*
+> **Variable subscriptions are a Pro feature**, and the type only appears in the Product data
+> dropdown while Pro is active. A variation carries none of its parent's meta, so without
+> Pro's resolver nothing gives it a billing schedule and it would sell as a one-off purchase.
+> If you need per-variation pricing or a monthly/yearly choice, you need Pro. An existing
+> variable subscription keeps its type if Pro is switched off, and warns you on the edit
+> screen rather than silently becoming something else.
 
 ---
 

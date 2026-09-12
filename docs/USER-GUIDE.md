@@ -130,10 +130,11 @@ Twelve worked examples, with the values to type, are in
 can change the type on the same product — WooCommerce keeps the product, its URL and its
 reviews.
 
-> **Variable subscription needs Pro.** The type is in the dropdown either way, but a
-> variation only inherits its parent's billing schedule while SubKit Pro is active — without
-> it the variation is not treated as a subscription and sells as a one-off. Stay on
-> **Subscription** on the free plugin.
+> **Variable subscription needs Pro**, and only appears in the dropdown while Pro is active.
+> A variation holds none of its parent's meta, so without Pro's resolver nothing gives it a
+> billing schedule and it would sell as a one-off purchase. If you already have a variable
+> subscription and Pro is switched off, the product keeps its type and SubKit says so on the
+> edit screen — it does not quietly turn into a simple product.
 
 **What about physical and digital?** Either type works for both. Tick **Virtual** for
 something not shipped and **Downloadable** for a file, exactly as you would on a normal

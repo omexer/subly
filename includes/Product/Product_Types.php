@@ -33,6 +33,24 @@ class Product_Types {
 		add_action( 'admin_footer', array( $this, 'show_standard_fields' ) );
 
 		add_filter( 'woocommerce_product_supports', array( $this, 'supports' ), 10, 3 );
+
+		add_action( 'admin_notices', array( $this, 'warn_unsupported_variable' ) );
+	}
+
+	/**
+	 * Whether a variation can actually carry its parent's schedule.
+	 *
+	 * Free registers the variable type but cannot bill it: a variation holds none of its
+	 * parent's meta, so nothing reads a schedule off it and checkout sells it once. Pro
+	 * supplies the resolver and answers yes here.
+	 */
+	public static function variable_supported(): bool {
+		/**
+		 * Filter whether variable subscriptions can be billed.
+		 *
+		 * @param bool $supported
+		 */
+		return (bool) apply_filters( 'subkit_variable_subscriptions_supported', false );
 	}
 
 	/**
@@ -78,10 +96,50 @@ class Product_Types {
 	 * @param array $types
 	 */
 	public function add_to_selector( $types ): array {
-		$types[ self::SIMPLE ]   = __( 'Subscription', 'subkit-subscriptions' );
-		$types[ self::VARIABLE ] = __( 'Variable subscription', 'subkit-subscriptions' );
+		$types[ self::SIMPLE ] = __( 'Subscription', 'subkit-subscriptions' );
+
+		// Offered only when something can bill it - but never taken away from a product
+		// that is already one, or saving the product would silently change its type.
+		if ( self::variable_supported() || self::VARIABLE === self::editing_type() ) {
+			$types[ self::VARIABLE ] = __( 'Variable subscription', 'subkit-subscriptions' );
+		}
 
 		return (array) $types;
+	}
+
+	/**
+	 * Tell an admin editing a variable subscription that it is not billing.
+	 */
+	public function warn_unsupported_variable(): void {
+		if ( self::variable_supported() || self::VARIABLE !== self::editing_type() ) {
+			return;
+		}
+
+		echo '<div class="notice notice-error"><p>' . esc_html__(
+			'This is a variable subscription, but SubKit Pro is not active, so nothing gives its variations a billing schedule. A customer buying one is charged once and never again. Activate SubKit Pro, or change the product type to Subscription.',
+			'subkit-subscriptions'
+		) . '</p></div>';
+	}
+
+	/**
+	 * The product type of the product open in the editor, if one is.
+	 */
+	private static function editing_type(): string {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( ! $screen || 'product' !== $screen->id ) {
+			return '';
+		}
+
+		global $product_object, $post;
+
+		$product = $product_object instanceof \WC_Product ? $product_object : null;
+
+		if ( ! $product && $post instanceof \WP_Post && 'product' === $post->post_type ) {
+			$product = wc_get_product( $post );
+		}
+
+		return $product instanceof \WC_Product ? $product->get_type() : '';
 	}
 
 	/**
