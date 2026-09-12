@@ -70,6 +70,8 @@ Verification key:
 | Feature | Verification | Notes |
 |---|---|---|
 | Subscriptions list and detail screen | Run | |
+| List search, sorting, bulk and row actions | Run | Bulk changes respect the status rules; illegal ones are skipped and reported |
+| Install an integration's plugin in place | Run | Allow list built from the screen; arbitrary slugs refused |
 | MRR and live count above the list | Run | Yearly, weekly, every-2-months all normalise correctly |
 | Daily MRR snapshot, capped at 400 days | Run | History cannot be recomputed, so it is recorded |
 | Setup checklist | Run | |
@@ -102,6 +104,12 @@ Verification key:
 | **Recurring coupons** | Wired | Discounts that survive into renewals |
 | **Failed payment recovery** (dunning, grace period) | Wired | |
 | **Subscription health** (6 signals, digest email) | Run | Every signal has a positive *and* a negative case |
+| Health row actions: retry now, ask the customer | Run | Retry runs the real pipeline; the slot still guards the charge |
+| Row actions over AJAX | Run | Progressive enhancement: plain submits without JavaScript |
+| **Reports charts** (area, bars, ring) | Run | Inline SVG; edge cases drawn, not crashed |
+| Health row actions: retry now, ask the customer | Run | Retry runs the real pipeline; the slot still guards the charge |
+| Row actions over AJAX | Run | Progressive enhancement: plain submits without JavaScript |
+| **Reports charts** (area, bars, ring) | Run | Inline SVG; edge cases drawn, not crashed |
 | **Delivery schedules** (cadence, manifest, print) | Run | Guards refuse rather than coerce |
 | **Reports** (MRR, ARR, churn, LTV) | Run | |
 | **Content access** (per-product roles, download capability) | Wired | |

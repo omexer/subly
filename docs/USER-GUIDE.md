@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.6.0 (free) · SubKit Pro 0.6.0 · development release**
+**SubKit 0.8.0 (free) · SubKit Pro 0.8.0 · development release**
 
 Read [What is not proven yet](#what-is-not-proven-yet) before you put this anywhere near a real customer. It is short, and it is the honest part.
 
@@ -143,7 +143,11 @@ Everything lives under one **SubKit** entry, directly below WooCommerce:
 
 ## Admin screens
 
-**SubKit → All subscriptions** — the list, with monthly recurring revenue and live count above it. Open one for its schedule, its orders and a full activity log of every charge attempt and status change.
+**SubKit → All subscriptions** — the list, with monthly recurring revenue and live count above it. Search by name, email or id; sort by id, next payment or total; filter by status. Select rows to cancel, hold or reactivate in bulk, or use the row actions to view one, renew it now, or open its parent order.
+
+Bulk changes go through the same rules as everything else: a subscription that cannot legally make the change is skipped rather than forced, and the notice says how many were left alone and why.
+
+Open a subscription for its schedule, its orders and a full activity log of every charge attempt and status change.
 
 **SubKit → Settings → General** — a Status panel that reports honestly:
 
@@ -155,8 +159,8 @@ Everything lives under one **SubKit** entry, directly below WooCommerce:
 
 ### Pro screens
 
-- **Subscription reports** — MRR, ARR, churn, lifetime value, cancellation reasons
-- **Subscription health** — every subscription at risk, why, and what to do. Six signals over the charge ledger: overdue with nothing queued, a failed charge, a failure with no retry booked, a charge stuck with an unknown outcome, a renewal waiting on customer authentication, and recovery about to give up. Optional scheduled digest email.
+- **Subscription reports** — recurring revenue over time, new subscriptions per day and a status ring, plus MRR, ARR, churn, lifetime value and cancellation reasons. The charts are drawn on the server, so they print and need no scripts.
+- **Subscription health** — every subscription at risk, why, and what to do. Each row offers **Retry now** (charge again immediately, through the same pipeline as a scheduled renewal), **Ask the customer** (re-send the failed-payment email with its pay link), **Queue renewal** and **Dismiss**. Six signals over the charge ledger: overdue with nothing queued, a failed charge, a failure with no retry booked, a charge stuck with an unknown outcome, a renewal waiting on customer authentication, and recovery about to give up. Optional scheduled digest email.
 - **Subscription deliveries** — what ships when, with a printable manifest, for physical subscriptions whose delivery cadence differs from billing
 
 ---
