@@ -32,6 +32,7 @@ use SubKit\Emails\Mailer;
 use SubKit\Privacy\Personal_Data;
 use SubKit\Lifecycle\Cancellation_Survey;
 use SubKit\Lifecycle\Dunning;
+use SubKit\Lifecycle\Subscription_Actions;
 use SubKit\Access\Access_Control;
 use SubKit\Frontend\MyAccount\Account_Endpoint;
 use SubKit\Frontend\MyAccount\Assets as Account_Assets;
@@ -165,6 +166,12 @@ final class Plugin {
 
 		$this->services['dunning'] = new Dunning( $this->services['activity'], $this->services['scheduler'] );
 		$this->services['dunning']->register();
+
+		$this->services['actions'] = new Subscription_Actions(
+			$this->services['activity'],
+			$this->services['scheduler'],
+			$this->services['processor']
+		);
 
 		$this->services['survey'] = new Cancellation_Survey( $this->services['activity'] );
 		$this->services['survey']->register();
