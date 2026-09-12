@@ -104,24 +104,24 @@ class Help_Page {
 			$text .= $label . ': ' . $value . "\n";
 		}
 
-		echo '<div class="wrap"><h1>' . esc_html__( 'Help', 'subkit-subscriptions' ) . '</h1>';
+		echo '<div class="wrap subkit-page"><h1>' . esc_html__( 'Help', 'subkit-subscriptions' ) . '</h1>';
 
-		echo '<h2>' . esc_html__( 'Before you ask', 'subkit-subscriptions' ) . '</h2><ul style="list-style:disc;margin-left:1.2rem">';
+		echo '<div class="subkit-card"><h2>' . esc_html__( 'Before you ask', 'subkit-subscriptions' ) . '</h2><ul style="list-style:disc;margin-left:1.2rem">';
 		echo '<li>' . esc_html__( 'The setup checklist on the Subscriptions screen runs a real renewal end to end without charging anyone. If that fails, it usually says why.', 'subkit-subscriptions' ) . '</li>';
 		echo '<li>' . esc_html__( 'Every subscription has an Activity log recording each charge attempt and status change, with the reason.', 'subkit-subscriptions' ) . '</li>';
 		echo '<li>' . esc_html__( 'The Status panel under Settings reports the renewal queue, unresolved charges and the double-charge index.', 'subkit-subscriptions' ) . '</li>';
-		echo '</ul>';
+		echo '</ul></div>';
 
-		echo '<h2>' . esc_html__( 'System report', 'subkit-subscriptions' ) . '</h2>';
-		echo '<p class="description">' . esc_html__( 'Paste this into your support request. It contains no keys or customer data.', 'subkit-subscriptions' ) . '</p>';
+		echo '<div class="subkit-card"><h2>' . esc_html__( 'System report', 'subkit-subscriptions' ) . '</h2>';
+		echo '<p class="subkit-lede">' . esc_html__( 'Paste this into your support request. It contains no keys or customer data.', 'subkit-subscriptions' ) . '</p>';
 
 		printf(
-			'<textarea readonly rows="%d" style="width:100%%;max-width:46rem;font-family:monospace" onclick="this.select()">%s</textarea>',
+			'<textarea readonly rows="%d" class="subkit-report" onclick="this.select()">%s</textarea>',
 			(int) min( 24, count( $report ) + 1 ),
 			esc_textarea( $text )
 		);
 
-		echo '</div>';
+		echo '</div></div>';
 	}
 
 	private function hpos(): bool {

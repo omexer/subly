@@ -89,8 +89,13 @@ class Subscriptions_Table extends \WP_List_Table {
 		return match ( $column_name ) {
 			'subscription' => $this->subscription_cell( $item ),
 			'customer'     => esc_html( trim( $item->get_billing_first_name() . ' ' . $item->get_billing_last_name() ) ?: $item->get_billing_email() ?: '—' ),
-			// Text, not just a colour: a merchant scanning for problems must be able to read it.
-			'status'       => esc_html( Status_Presenter::for( $item )['label'] ),
+			// The pill carries colour, but the label is always readable text inside it:
+			// a merchant scanning for problems must not have to decode a swatch.
+			'status'       => sprintf(
+				'<span class="subkit-pill subkit-pill--%s">%s</span>',
+				esc_attr( (string) $item->get_status() ),
+				esc_html( Status_Presenter::for( $item )['label'] )
+			),
 			'next_payment' => $item->get_next_payment()
 				? esc_html( date_i18n( (string) get_option( 'date_format' ), strtotime( $item->get_next_payment() . ' UTC' ) ) )
 				: '—',

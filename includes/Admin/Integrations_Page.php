@@ -58,16 +58,20 @@ class Integrations_Page {
 
 		$integrations = $this->integrations();
 
-		echo '<div class="wrap"><h1>' . esc_html__( 'Integrations', 'subkit-subscriptions' ) . '</h1>';
+		echo '<div class="wrap subkit-page"><h1>' . esc_html__( 'Integrations', 'subkit-subscriptions' ) . '</h1>';
 
 		if ( ! $integrations ) {
-			echo '<p>' . esc_html__( 'Integrations connect a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. SubKit Pro adds them.', 'subkit-subscriptions' ) . '</p></div>';
+			printf(
+				'<div class="subkit-card"><div class="subkit-empty"><p class="subkit-empty__title">%s</p><p>%s</p></div></div></div>',
+				esc_html__( 'Nothing to connect yet', 'subkit-subscriptions' ),
+				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. SubKit Pro adds them.', 'subkit-subscriptions' )
+			);
 
 			return;
 		}
 
-		echo '<p class="description">' . esc_html__( 'An integration only does anything while the plugin it connects to is active.', 'subkit-subscriptions' ) . '</p>';
-		echo '<table class="widefat striped" style="max-width:46rem"><thead><tr><th>'
+		echo '<p class="subkit-lede">' . esc_html__( 'An integration only does anything while the plugin it connects to is active.', 'subkit-subscriptions' ) . '</p>';
+		echo '<table class="widefat striped subkit-table subkit-facts"><thead><tr><th>'
 			. esc_html__( 'Integration', 'subkit-subscriptions' ) . '</th><th>'
 			. esc_html__( 'Needs', 'subkit-subscriptions' ) . '</th><th>'
 			. esc_html__( 'Status', 'subkit-subscriptions' ) . '</th></tr></thead><tbody>';
@@ -76,10 +80,10 @@ class Integrations_Page {
 			$active = ! empty( $integration['active'] );
 
 			printf(
-				'<tr><td><strong>%s</strong></td><td>%s</td><td><span style="color:%s">%s</span></td></tr>',
+				'<tr><th scope="row">%s</th><td>%s</td><td><span class="subkit-pill subkit-pill--%s">%s</span></td></tr>',
 				esc_html( (string) ( $integration['title'] ?? '' ) ),
 				esc_html( (string) ( $integration['requires'] ?? '' ) ),
-				$active ? '#1a7f37' : '#646970',
+				$active ? 'sk-active' : 'sk-cancelled',
 				esc_html(
 					$active
 						? __( 'Connected', 'subkit-subscriptions' )

@@ -93,7 +93,7 @@ class Menu {
 		$table = new Subscriptions_Table();
 		$table->prepare_items();
 
-		echo '<div class="wrap"><h1>' . esc_html__( 'Subscriptions', 'subkit-subscriptions' ) . '</h1>';
+		echo '<div class="wrap subkit-page"><h1>' . esc_html__( 'Subscriptions', 'subkit-subscriptions' ) . '</h1>';
 
 		$this->render_test_result();
 
@@ -135,23 +135,37 @@ class Menu {
 	private function render_checklist(): void {
 		$this->render_product_notice();
 
-		echo '<div class="card" style="max-width:46rem;padding:1rem 1.25rem"><h2 style="margin-top:.5rem">'
-			. esc_html__( 'Get your first subscription running', 'subkit-subscriptions' ) . '</h2><ol style="margin:0;padding-left:1.25rem">';
+		echo '<div class="subkit-card"><h2>'
+			. esc_html__( 'Get your first subscription running', 'subkit-subscriptions' )
+			. '</h2><ol class="subkit-steps">';
+
+		$number = 0;
 
 		foreach ( $this->setup->steps() as $step ) {
+			++$number;
+			$done = ! empty( $step['done'] );
+
 			printf(
-				'<li style="margin:0 0 .9rem"><strong>%s %s</strong><br><span class="description">%s</span>%s</li>',
-				$step['done'] ? '&#10003;' : '&#9675;',
-				esc_html( $step['title'] ),
-				esc_html( $step['detail'] ),
+				'<li class="subkit-step%s"><span class="subkit-step__mark">%s</span><div class="subkit-step__body">'
+					. '<span class="subkit-step__title">%s</span><span class="subkit-step__detail">%s</span>%s',
+				$done ? ' subkit-step--done' : '',
+				$done ? '&#10003;' : esc_html( (string) $number ),
+				esc_html( (string) $step['title'] ),
+				esc_html( (string) $step['detail'] ),
 				$step['action']
-					? sprintf( ' <a href="%s">%s</a>', esc_url( (string) $step['action']['url'] ), esc_html( (string) $step['action']['label'] ) )
+					? sprintf(
+						'<div class="subkit-step__action"><a class="button button-small" href="%s">%s</a></div>',
+						esc_url( (string) $step['action']['url'] ),
+						esc_html( (string) $step['action']['label'] )
+					)
 					: ''
 			);
 
 			if ( 'create_product' === ( $step['form'] ?? '' ) ) {
 				$this->render_product_form();
 			}
+
+			echo '</div></li>';
 		}
 
 		echo '</ol></div>';
@@ -182,26 +196,26 @@ class Menu {
 	 */
 	private function render_product_form(): void {
 		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:.6rem 0 0;display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end">
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="subkit-inline-form">
 			<?php wp_nonce_field( 'subkit_create_product' ); ?>
 			<input type="hidden" name="action" value="subkit_create_product" />
 
-			<label style="display:block">
-				<span class="description"><?php esc_html_e( 'Name', 'subkit-subscriptions' ); ?></span><br>
+			<label class="subkit-field">
+				<span><?php esc_html_e( 'Name', 'subkit-subscriptions' ); ?></span>
 				<input type="text" name="subkit_name" required style="width:14rem" />
 			</label>
 
-			<label style="display:block">
-				<span class="description"><?php esc_html_e( 'Price', 'subkit-subscriptions' ); ?></span><br>
+			<label class="subkit-field">
+				<span><?php esc_html_e( 'Price', 'subkit-subscriptions' ); ?></span>
 				<input type="text" name="subkit_price" required style="width:6rem" />
 			</label>
 
-			<label style="display:block">
-				<span class="description"><?php esc_html_e( 'Every', 'subkit-subscriptions' ); ?></span><br>
+			<label class="subkit-field">
+				<span><?php esc_html_e( 'Every', 'subkit-subscriptions' ); ?></span>
 				<input type="number" name="subkit_interval" value="1" min="1" max="365" style="width:4.5rem" />
 			</label>
 
-			<label style="display:block">
+			<label class="subkit-field">
 				<span class="screen-reader-text"><?php esc_html_e( 'Billing period', 'subkit-subscriptions' ); ?></span>
 				<select name="subkit_period">
 					<option value="day"><?php esc_html_e( 'Days', 'subkit-subscriptions' ); ?></option>
@@ -211,8 +225,8 @@ class Menu {
 				</select>
 			</label>
 
-			<label style="display:block">
-				<span class="description"><?php esc_html_e( 'Free trial (days)', 'subkit-subscriptions' ); ?></span><br>
+			<label class="subkit-field">
+				<span><?php esc_html_e( 'Free trial (days)', 'subkit-subscriptions' ); ?></span>
 				<input type="number" name="subkit_trial" value="0" min="0" max="365" style="width:5.5rem" />
 			</label>
 
@@ -235,16 +249,17 @@ class Menu {
 		/* translators: %d: subscription ID */
 		$heading = sprintf( __( 'Subscription #%d', 'subkit-subscriptions' ), $id );
 
-		echo '<div class="wrap">';
+		echo '<div class="wrap subkit-page">';
 		printf(
-			'<h1>%s <span class="subkit-admin-status">%s</span></h1><p><a href="%s">%s</a></p>',
+			'<h1>%s <span class="subkit-pill subkit-pill--%s">%s</span></h1><p class="subkit-lede"><a href="%s">&larr; %s</a></p>',
 			esc_html( $heading ),
+			esc_attr( (string) $subscription->get_status() ),
 			esc_html( $state['label'] ),
 			esc_url( $back ),
 			esc_html__( 'All subscriptions', 'subkit-subscriptions' )
 		);
 
-		echo '<table class="widefat striped" style="max-width:46rem"><tbody>';
+		echo '<table class="widefat striped subkit-table subkit-facts"><tbody>';
 		$this->row( __( 'Customer', 'subkit-subscriptions' ), trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ) ?: (string) $subscription->get_billing_email() );
 		$this->row( __( 'Recurring total', 'subkit-subscriptions' ), wp_strip_all_tags( $subscription->get_formatted_order_total() ) );
 		$this->row( __( 'Billing', 'subkit-subscriptions' ), sprintf( '%d / %s', $subscription->get_billing_interval(), $subscription->get_billing_period() ) );
@@ -314,24 +329,25 @@ class Menu {
 			? round( ( ( $mrr->minor() - $oldest['mrr'] ) / $oldest['mrr'] ) * 100, 1 )
 			: null;
 
-		echo '<div class="subkit-summary" style="display:flex;gap:2em;margin:1em 0;padding:1em;background:#fff;border:1px solid #c3c4c7">';
+		echo '<div class="subkit-stats">';
 
 		printf(
-			'<div><strong>%s</strong><br><span style="font-size:1.4em">%s</span>%s</div>',
+			'<div class="subkit-stat"><span class="subkit-stat__label">%s</span><span class="subkit-stat__value">%s</span>%s</div>',
 			esc_html__( 'Monthly recurring revenue', 'subkit-subscriptions' ),
 			wp_kses_post( $mrr->format() ),
 			null === $change
-				? ''
+				? '<span class="subkit-stat__meta">' . esc_html__( 'Tracking starts today', 'subkit-subscriptions' ) . '</span>'
 				: sprintf(
-					' <span style="color:%s">%s%s%%</span>',
-					$change < 0 ? '#b32d2e' : '#1a7f37',
+					'<span class="subkit-stat__meta subkit-delta--%s">%s%s%% %s</span>',
+					$change < 0 ? 'down' : 'up',
 					$change < 0 ? '' : '+',
-					esc_html( (string) $change )
+					esc_html( (string) $change ),
+					esc_html__( 'over 30 days', 'subkit-subscriptions' )
 				)
 		);
 
 		printf(
-			'<div><strong>%s</strong><br><span style="font-size:1.4em">%s</span></div>',
+			'<div class="subkit-stat"><span class="subkit-stat__label">%s</span><span class="subkit-stat__value">%s</span></div>',
 			esc_html__( 'Live subscriptions', 'subkit-subscriptions' ),
 			esc_html( number_format_i18n( $stats->active_count() ) )
 		);
@@ -340,15 +356,10 @@ class Menu {
 
 		if ( $excluded ) {
 			printf(
-				'<div><strong>%s</strong><br><span>%s</span></div>',
+				'<div class="subkit-stat"><span class="subkit-stat__label">%s</span><span class="subkit-stat__value">%s</span><span class="subkit-stat__meta">%s</span></div>',
 				esc_html__( 'Not counted', 'subkit-subscriptions' ),
-				esc_html(
-					sprintf(
-					/* translators: %d: number of subscriptions */
-						_n( '%d subscription in another currency', '%d subscriptions in other currencies', $excluded, 'subkit-subscriptions' ),
-						$excluded
-					)
-				)
+				esc_html( number_format_i18n( $excluded ) ),
+				esc_html__( 'in another currency', 'subkit-subscriptions' )
 			);
 		}
 
@@ -365,10 +376,10 @@ class Menu {
 			return;
 		}
 
-		echo '<table class="widefat striped" style="max-width:46rem"><tbody>';
+		echo '<table class="widefat striped subkit-table subkit-facts"><tbody>';
 		foreach ( $entries as $entry ) {
 			printf(
-				'<tr><td style="width:12rem">%s</td><td>%s</td><td style="width:9rem"><code>%s</code></td></tr>',
+				'<tr><td>%s</td><td>%s</td><td><code>%s</code></td></tr>',
 				esc_html( $entry->created_gmt ),
 				esc_html( $entry->message ),
 				esc_html( $entry->actor )
@@ -400,6 +411,6 @@ class Menu {
 	}
 
 	private function row( string $label, string $value ): void {
-		printf( '<tr><th style="width:12rem;text-align:left">%s</th><td>%s</td></tr>', esc_html( $label ), esc_html( $value ) );
+		printf( '<tr><th scope="row">%s</th><td>%s</td></tr>', esc_html( $label ), esc_html( $value ) );
 	}
 }

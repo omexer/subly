@@ -293,17 +293,18 @@ class Settings extends \WC_Settings_Page {
 			),
 		);
 
-		echo '<tr valign="top"><th scope="row" class="titledesc">' . esc_html__( 'Status', 'subkit-subscriptions' ) . '</th><td class="forminp"><ul style="margin:0">';
+		echo '<tr valign="top"><th scope="row" class="titledesc">' . esc_html__( 'Status', 'subkit-subscriptions' ) . '</th><td class="forminp"><div class="subkit-checks">';
 
 		foreach ( $checks as $check ) {
 			printf(
-				'<li style="margin:0 0 .4em"><strong>%s:</strong> <span style="color:%s">%s</span></li>',
+				'<div class="subkit-check subkit-check--%s"><span class="subkit-check__dot"></span><div>'
+					. '<span class="subkit-check__label">%s</span><span class="subkit-check__detail">%s</span></div></div>',
+				$check['ok'] ? 'ok' : 'bad',
 				esc_html( $check['label'] ),
-				$check['ok'] ? '#1a7f37' : '#b32d2e',
 				esc_html( $check['ok'] ? $check['good'] : $check['bad'] )
 			);
 		}
 
-		echo '</ul></td></tr>';
+		echo '</div></td></tr>';
 	}
 }
