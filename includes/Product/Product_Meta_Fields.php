@@ -16,7 +16,6 @@ class Product_Meta_Fields {
 	public function register(): void {
 		add_action( 'woocommerce_product_options_general_product_data', array( $this, 'render' ) );
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'save' ) );
-		add_action( 'admin_footer', array( $this, 'toggle_script' ) );
 	}
 
 	public function render(): void {
@@ -37,8 +36,6 @@ class Product_Meta_Fields {
 				esc_html__( 'This product bills recurringly but is still a simple product. Change its type to Subscription when convenient; it keeps working either way.', 'subkit-subscriptions' )
 			);
 		}
-
-		echo '<div class="subkit-schedule-fields">';
 
 		woocommerce_wp_select(
 			array(
@@ -105,33 +102,7 @@ class Product_Meta_Fields {
 		 */
 		do_action( 'subkit_product_subscription_fields', $product_object );
 
-		echo '</div></div>';
-	}
-
-	/**
-	 * Show the schedule fields only once the product is actually a subscription.
-	 */
-	public function toggle_script(): void {
-		$screen = get_current_screen();
-
-		if ( ! $screen || 'product' !== $screen->id ) {
-			return;
-		}
-		?>
-		<script>
-		jQuery( function ( $ ) {
-			var box = $( '#<?php echo esc_js( Subscription_Product::META_ENABLED ); ?>' );
-			var fields = $( '.subkit-schedule-fields' );
-
-			function sync() {
-				fields.toggle( box.is( ':checked' ) );
-			}
-
-			box.on( 'change', sync );
-			sync();
-		} );
-		</script>
-		<?php
+		echo '</div>';
 	}
 
 	public function save( \WC_Product $product ): void {
