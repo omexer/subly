@@ -222,6 +222,13 @@ class Menu {
 		echo '</tbody></table>';
 
 		$this->render_process_button( $subscription );
+		/**
+		 * Renders on the subscription detail screen, below its facts.
+		 *
+		 * @param Subscription $subscription
+		 */
+		do_action( 'subkit_admin_subscription_detail', $subscription );
+
 		$this->render_activity( $id );
 
 		echo '</div>';
