@@ -4,6 +4,7 @@ namespace SubKit\Billing;
 
 use SubKit\Data\Activity_Repository;
 use SubKit\Data\Charge_Slot_Repository;
+use SubKit\Billing\Installment_Plan;
 use SubKit\Domain\Billing_Schedule;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
@@ -64,6 +65,12 @@ class Renewal_Processor {
 
 		$status = $subscription->get_status_enum();
 		if ( ! $status || ! $status->is_billable() ) {
+			return;
+		}
+
+		// An instalment plan is finished when the last payment lands, not when a date passes.
+		if ( Installment_Plan::is_complete( $subscription ) ) {
+			$this->complete_installments( $subscription );
 			return;
 		}
 
@@ -199,6 +206,25 @@ class Renewal_Processor {
 		$this->hold( $subscription, $result->describe() );
 
 		do_action( 'subkit_renewal_failed', $subscription, $order, $result );
+	}
+
+	/**
+	 * The customer has paid in full, so the subscription ends rather than renewing.
+	 */
+	private function complete_installments( Subscription $subscription ): void {
+		$this->activity->log(
+			$subscription->get_id(),
+			Activity_Repository::TYPE_STATUS_CHANGE,
+			sprintf( 'Instalment plan paid in full after %d payments.', Installment_Plan::count_on( $subscription ) )
+		);
+
+		$subscription->set_next_payment( null );
+		$subscription->transition_to( Subscription_Status::Expired, __( 'Instalment plan paid in full.', 'subkit-subscriptions' ) );
+		$subscription->save();
+
+		$this->scheduler->unschedule( $subscription->get_id() );
+
+		do_action( 'subkit_installments_completed', $subscription );
 	}
 
 	private function advance( Subscription $subscription, Billing_Schedule $schedule, object $slot ): void {

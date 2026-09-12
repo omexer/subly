@@ -35,6 +35,10 @@ class Disclosure {
 
 		$lines = array();
 
+		if ( \SubKit\Billing\Installment_Plan::is_installment( $product ) ) {
+			return $this->installment_lines( $product );
+		}
+
 		if ( $schedule->has_trial() ) {
 			$lines[] = array(
 				'key'  => 'trial',
@@ -86,9 +90,54 @@ class Disclosure {
 	}
 
 	/**
+	 * An instalment plan states the total explicitly. Showing only the per-payment amount
+	 * is how customers end up surprised by what they actually agreed to pay.
+	 *
+	 * @return array<int, array{key: string, text: string}>
+	 */
+	private function installment_lines( \WC_Product $product ): array {
+		$plan     = \SubKit\Billing\Installment_Plan::class;
+		$amounts  = $plan::amounts( $product );
+		$schedule = Subscription_Product::schedule( $product );
+		$first    = $amounts[0];
+		$rest     = count( $amounts ) - 1;
+
+		return array(
+			array(
+				'key'  => 'first_payment',
+				/* translators: %s: amount */
+				'text' => sprintf( __( 'First payment %s today', 'subkit-subscriptions' ), $this->amount( $first ) ),
+			),
+			array(
+				'key'  => 'recurring',
+				'text' => sprintf(
+					/* translators: 1: amount, 2: billing interval, 3: number of remaining payments */
+					_n( 'Then %1$s %2$s for %3$d more payment', 'Then %1$s %2$s for %3$d more payments', $rest, 'subkit-subscriptions' ),
+					$this->amount( $amounts[1] ?? $first ),
+					$schedule->describe(),
+					$rest
+				),
+			),
+			array(
+				'key'  => 'total',
+				/* translators: %s: total amount */
+				'text' => sprintf( __( '%s total', 'subkit-subscriptions' ), $this->amount( $plan::total( $product ) ) ),
+			),
+			array(
+				'key'  => 'cancel',
+				'text' => __( 'Cancel anytime', 'subkit-subscriptions' ),
+			),
+		);
+	}
+
+	/**
 	 * The headline price, e.g. "$29.00 / month".
 	 */
 	public function price_line( \WC_Product $product ): string {
+		if ( \SubKit\Billing\Installment_Plan::is_installment( $product ) ) {
+			return \SubKit\Billing\Installment_Plan::describe( $product );
+		}
+
 		$price    = Subscription_Product::recurring_price( $product );
 		$schedule = Subscription_Product::schedule( $product );
 

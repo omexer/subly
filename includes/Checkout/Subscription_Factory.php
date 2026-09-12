@@ -92,6 +92,13 @@ class Subscription_Factory {
 		$first_renewal = $schedule->next_date_from( $trial_end ?? $now );
 		$subscription->set_next_payment( $first_renewal->format( 'Y-m-d H:i:s' ) );
 
+		if ( \SubKit\Billing\Installment_Plan::is_installment( $product ) ) {
+			$subscription->update_meta_data(
+				\SubKit\Billing\Installment_Plan::SUB_META_COUNT,
+				\SubKit\Billing\Installment_Plan::count_for( $product )
+			);
+		}
+
 		// Pin the origin site so a cloned staging copy refuses to bill real customers.
 		$subscription->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
 

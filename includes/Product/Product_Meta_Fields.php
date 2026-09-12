@@ -81,6 +81,23 @@ class Product_Meta_Fields {
 			'description' => __( 'A one-off charge taken with the first payment.', 'subkit-subscriptions' ),
 		) );
 
+		woocommerce_wp_checkbox( array(
+			'id'          => \SubKit\Billing\Installment_Plan::META_ENABLED,
+			'label'       => __( 'Installment plan', 'subkit-subscriptions' ),
+			'description' => __( 'Charge a fixed total in equal payments, then stop.', 'subkit-subscriptions' ),
+			'value'       => $product_object ? $product_object->get_meta( \SubKit\Billing\Installment_Plan::META_ENABLED ) : 'no',
+		) );
+
+		woocommerce_wp_text_input( array(
+			'id'                => \SubKit\Billing\Installment_Plan::META_COUNT,
+			'label'             => __( 'Number of payments', 'subkit-subscriptions' ),
+			'type'              => 'number',
+			'custom_attributes' => array( 'min' => '2', 'step' => '1' ),
+			'value'             => $product_object ? ( $product_object->get_meta( \SubKit\Billing\Installment_Plan::META_COUNT ) ?: '' ) : '',
+			'desc_tip'          => true,
+			'description'       => __( 'The price is split across this many charges. The last one clears any rounding, so the total is always exact.', 'subkit-subscriptions' ),
+		) );
+
 		echo '</div></div>';
 	}
 
@@ -138,6 +155,16 @@ class Product_Meta_Fields {
 		$product->update_meta_data(
 			Subscription_Product::META_TRIAL_DAYS,
 			isset( $_POST[ Subscription_Product::META_TRIAL_DAYS ] ) ? absint( wp_unslash( $_POST[ Subscription_Product::META_TRIAL_DAYS ] ) ) : 0
+		);
+
+		$product->update_meta_data(
+			\SubKit\Billing\Installment_Plan::META_ENABLED,
+			isset( $_POST[ \SubKit\Billing\Installment_Plan::META_ENABLED ] ) ? 'yes' : 'no'
+		);
+
+		$product->update_meta_data(
+			\SubKit\Billing\Installment_Plan::META_COUNT,
+			isset( $_POST[ \SubKit\Billing\Installment_Plan::META_COUNT ] ) ? max( 0, absint( wp_unslash( $_POST[ \SubKit\Billing\Installment_Plan::META_COUNT ] ) ) ) : 0
 		);
 
 		$product->update_meta_data(
