@@ -74,6 +74,8 @@ class Menu {
 			return;
 		}
 
+		$this->render_summary();
+
 		$table->views();
 		echo '<form method="get"><input type="hidden" name="page" value="' . esc_attr( self::SLUG ) . '" />';
 		$table->display();
@@ -180,6 +182,62 @@ class Menu {
 			esc_attr( wp_json_encode( $confirm ) ),
 			esc_html__( 'Process renewal now', 'subkit-subscriptions' )
 		);
+	}
+
+	/**
+	 * Recurring revenue at a glance, above the list.
+	 */
+	private function render_summary(): void {
+		$stats = \SubKit\Plugin::instance()->get( 'stats' );
+
+		if ( ! $stats instanceof \SubKit\Data\Stats ) {
+			return;
+		}
+
+		$mrr     = $stats->mrr();
+		$history = $stats->history( 31 );
+		$oldest  = $history ? reset( $history ) : null;
+		$change  = $oldest && isset( $oldest['mrr'] ) && $oldest['mrr'] > 0
+			? round( ( ( $mrr->minor() - $oldest['mrr'] ) / $oldest['mrr'] ) * 100, 1 )
+			: null;
+
+		echo '<div class="subkit-summary" style="display:flex;gap:2em;margin:1em 0;padding:1em;background:#fff;border:1px solid #c3c4c7">';
+
+		printf(
+			'<div><strong>%s</strong><br><span style="font-size:1.4em">%s</span>%s</div>',
+			esc_html__( 'Monthly recurring revenue', 'subkit-subscriptions' ),
+			wp_kses_post( $mrr->format() ),
+			null === $change
+				? ''
+				: sprintf(
+					' <span style="color:%s">%s%s%%</span>',
+					$change < 0 ? '#b32d2e' : '#1a7f37',
+					$change < 0 ? '' : '+',
+					esc_html( (string) $change )
+				)
+		);
+
+		printf(
+			'<div><strong>%s</strong><br><span style="font-size:1.4em">%s</span></div>',
+			esc_html__( 'Live subscriptions', 'subkit-subscriptions' ),
+			esc_html( number_format_i18n( $stats->active_count() ) )
+		);
+
+		$excluded = $stats->excluded_currency_count();
+
+		if ( $excluded ) {
+			printf(
+				'<div><strong>%s</strong><br><span>%s</span></div>',
+				esc_html__( 'Not counted', 'subkit-subscriptions' ),
+				esc_html( sprintf(
+					/* translators: %d: number of subscriptions */
+					_n( '%d subscription in another currency', '%d subscriptions in other currencies', $excluded, 'subkit-subscriptions' ),
+					$excluded
+				) )
+			);
+		}
+
+		echo '</div>';
 	}
 
 	private function render_activity( int $id ): void {

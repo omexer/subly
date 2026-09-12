@@ -10,6 +10,7 @@ use SubKit\Data\Activity_Repository;
 use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
+use SubKit\Data\Stats;
 use SubKit\Checkout\Cart_Validation;
 use SubKit\Checkout\Guest_Checkout;
 use SubKit\Checkout\Store_Api;
@@ -97,6 +98,9 @@ final class Plugin {
 			$this->services['lock']
 		);
 		$this->services['processor']->register();
+
+		$this->services['stats'] = new Stats();
+		$this->services['stats']->register();
 
 		$this->services['product_fields'] = new Product_Meta_Fields();
 		$this->services['product_fields']->register();
