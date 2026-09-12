@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.9.0
+Stable tag: 0.9.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,13 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.9.1 =
+* Fixed: choosing Subscription showed a "Billing schedule" heading with no fields under it.
+* Fixed: the setup checklist asked every shop to connect PayPal, even one already using Stripe. It now names whichever gateway you connected.
+* Fixed: the grace period setting appeared twice on the settings screen, and the two could disagree.
+* Deleting a subscription now removes its charge ledger and activity rows instead of leaving them behind forever.
+* The user guide is now a complete manual: every setting explained, every product field, and which product type to choose.
 
 = 0.9.0 =
 * The subscriptions list gains search, sortable columns, checkboxes, bulk actions and per-row actions.
