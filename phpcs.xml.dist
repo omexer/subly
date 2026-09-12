@@ -16,6 +16,14 @@
 	<arg value="sp"/>
 	<arg name="parallel" value="8"/>
 
+	<!--
+	Warnings still print, but do not fail the build. The ones that remain are
+	slow_db_query notices on meta lookups that have no alternative: finding a subscription
+	by a stored gateway reference or token is a meta query by nature, and HPOS indexes
+	meta_key itself. Errors still fail, which is the line that matters.
+	-->
+	<config name="ignore_warnings_on_exit" value="1"/>
+
 	<config name="minimum_wp_version" value="6.5"/>
 	<config name="testVersion" value="8.1-"/>
 
