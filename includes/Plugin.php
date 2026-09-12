@@ -116,7 +116,7 @@ final class Plugin {
 		$this->services['overview_api'] = new Overview_Controller( $this->services['stats'] );
 		$this->services['overview_api']->register();
 
-		$this->services['subscriptions_api'] = new Subscriptions_Controller( $this->services['activity'] );
+		$this->services['subscriptions_api'] = new Subscriptions_Controller( $this->services['activity'], $this->services['processor'] );
 		$this->services['subscriptions_api']->register();
 
 		$this->services['product_types'] = new Product_Types();

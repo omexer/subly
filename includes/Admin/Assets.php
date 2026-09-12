@@ -103,25 +103,37 @@ class Assets {
 			return;
 		}
 
-		$asset = SUBKIT_PATH . 'build/overview.asset.php';
-
-		if ( ! is_readable( $asset ) || ! wp_script_is( 'subkit-ui', 'registered' ) ) {
+		if ( ! wp_script_is( 'subkit-ui', 'registered' ) ) {
 			return;
 		}
 
-		$asset = require $asset;
-
 		wp_enqueue_style( 'subkit-ui' );
 
+		// The overview draws the figures above the list; the subscriptions bundle draws
+		// the list and the detail screen. Separate because either can fail on its own.
+		$this->enqueue_bundle( 'overview' );
+		$this->enqueue_bundle( 'subscriptions' );
+	}
+
+	private function enqueue_bundle( string $bundle ): void {
+		$asset = SUBKIT_PATH . 'build/' . $bundle . '.asset.php';
+
+		if ( ! is_readable( $asset ) ) {
+			return;
+		}
+
+		$asset  = require $asset;
+		$handle = 'subkit-' . $bundle;
+
 		wp_enqueue_script(
-			'subkit-overview',
-			SUBKIT_URL . 'build/overview.js',
+			$handle,
+			SUBKIT_URL . 'build/' . $bundle . '.js',
 			array_merge( $asset['dependencies'], array( 'subkit-ui' ) ),
 			$asset['version'],
 			true
 		);
 
-		wp_set_script_translations( 'subkit-overview', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
+		wp_set_script_translations( $handle, 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
 	}
 
 	private function is_subkit_screen( string $hook ): bool {

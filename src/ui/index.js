@@ -20,6 +20,15 @@ export {
 export { Badge, badgeVariants } from './components/ui/badge';
 export { Button, buttonVariants } from './components/ui/button';
 export { Skeleton } from './components/ui/skeleton';
+export {
+	Table,
+	TableHeader,
+	TableBody,
+	TableRow,
+	TableHead,
+	TableCell,
+} from './components/ui/table';
+export { Input, Select, Checkbox } from './components/ui/input';
 export { cn } from './lib/utils';
 
 import { Card, CardContent } from './components/ui/card';

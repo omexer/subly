@@ -3,6 +3,7 @@
 namespace SubKit\Rest;
 
 use SubKit\Data\Activity_Repository;
+use SubKit\Billing\Renewal_Processor;
 use SubKit\Data\Subscription_Query;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
@@ -29,7 +30,10 @@ class Subscriptions_Controller {
 
 	private const REST_BASE = 'subscriptions';
 
-	public function __construct( private readonly Activity_Repository $activity ) {}
+	public function __construct(
+		private readonly Activity_Repository $activity,
+		private readonly ?Renewal_Processor $processor = null
+	) {}
 
 	public function register(): void {
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
@@ -111,6 +115,32 @@ class Subscriptions_Controller {
 
 		register_rest_route(
 			self::NAMESPACE,
+			'/' . self::REST_BASE . '/actions',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::CREATABLE,
+					'callback'            => array( $this, 'run_bulk_action' ),
+					'permission_callback' => array( $this, 'can_write' ),
+					'args'                => array(
+						'ids'    => array(
+							'required' => true,
+							'type'     => 'array',
+							'items'    => array( 'type' => 'integer' ),
+						),
+						'action' => array(
+							'required' => true,
+							'type'     => 'string',
+							'enum'     => self::actions(),
+						),
+						'status' => array( 'type' => 'string' ),
+						'reason' => array( 'type' => 'string' ),
+					),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/' . self::REST_BASE . '/statuses',
 			array(
 				array(
@@ -128,7 +158,7 @@ class Subscriptions_Controller {
 	 * @return string[]
 	 */
 	public static function actions(): array {
-		$actions = array( 'cancel', 'expire', 'reactivate', 'change_status' );
+		$actions = array( 'cancel', 'expire', 'reactivate', 'change_status', 'renew_now' );
 
 		/**
 		 * Filter the actions the subscriptions endpoint accepts.
@@ -156,8 +186,8 @@ class Subscriptions_Controller {
 		$args = array(
 			'limit'   => $per_page,
 			'page'    => $page,
-			'orderby' => 'date',
-			'order'   => 'DESC',
+			'orderby' => (string) ( $request->get_param( 'orderby' ) ?: 'date' ),
+			'order'   => 'ASC' === strtoupper( (string) $request->get_param( 'order' ) ) ? 'ASC' : 'DESC',
 		);
 
 		$status = $request->get_param( 'status' );
@@ -268,6 +298,7 @@ class Subscriptions_Controller {
 			'expire'        => $this->transition( $subscription, Subscription_Status::Expired, $reason ),
 			'reactivate'    => $this->transition( $subscription, Subscription_Status::Active, $reason ),
 			'change_status' => $this->change_status( $subscription, (string) $request->get_param( 'status' ), $reason ),
+			'renew_now'     => $this->renew_now( $subscription ),
 			default         => null,
 		};
 
@@ -342,7 +373,71 @@ class Subscriptions_Controller {
 	}
 
 	/**
-	 * The statuses and what they are called, so a screen does not hard-code either.
+	 * The same actions, over a set of subscriptions.
+	 *
+	 * Reports what happened to each rather than failing the lot: a bulk change where one
+	 * subscription's status forbids it is a partial success, and the screen has to be
+	 * able to say which ones were left alone.
+	 */
+	public function run_bulk_action( \WP_REST_Request $request ): \WP_REST_Response {
+		$ids    = array_slice( array_map( 'absint', (array) $request->get_param( 'ids' ) ), 0, 200 );
+		$action = (string) $request->get_param( 'action' );
+
+		$changed = array();
+		$held    = array();
+
+		foreach ( array_filter( $ids ) as $id ) {
+			$one = new \WP_REST_Request( 'POST', '/' . self::NAMESPACE . '/' . self::REST_BASE . '/' . $id . '/actions' );
+			$one->set_param( 'id', $id );
+			$one->set_param( 'action', $action );
+			$one->set_param( 'status', $request->get_param( 'status' ) );
+			$one->set_param( 'reason', $request->get_param( 'reason' ) );
+
+			$result = $this->run_action( $one );
+
+			if ( $result instanceof \WP_REST_Response ) {
+				$changed[] = $id;
+				continue;
+			}
+
+			$held[ $id ] = $result instanceof \WP_Error ? $result->get_error_message() : '';
+		}
+
+		return new \WP_REST_Response(
+			array(
+				'changed' => $changed,
+				'held'    => $held,
+			)
+		);
+	}
+
+	/**
+	 * Charge now, through the same pipeline as a scheduled renewal.
+	 *
+	 * Not a shortcut of its own: the charge slot still decides whether a charge may
+	 * happen, so a button pressed twice cannot bill a customer twice.
+	 *
+	 * @return bool|\WP_Error
+	 */
+	private function renew_now( Subscription $subscription ) {
+		if ( ! $this->processor instanceof Renewal_Processor ) {
+			return new \WP_Error(
+				'subkit_no_processor',
+				__( 'Renewals are not available on this site.', 'subkit-subscriptions' ),
+				array( 'status' => 503 )
+			);
+		}
+
+		$this->processor->process( $subscription->get_id() );
+
+		return true;
+	}
+
+	/**
+	 * The statuses, what they are called, and how many are in each.
+	 *
+	 * Counts included because the screen's tabs need them, and a second request for a
+	 * number next to a label is a request too many.
 	 */
 	public function get_statuses(): \WP_REST_Response {
 		$out = array();
@@ -351,6 +446,14 @@ class Subscriptions_Controller {
 			$out[] = array(
 				'key'   => $status->value,
 				'label' => $status->label(),
+				'count' => count(
+					Subscription_Query::ids(
+						array(
+							'status' => $status->value,
+							'limit'  => -1,
+						)
+					)
+				),
 			);
 		}
 
@@ -414,25 +517,30 @@ class Subscriptions_Controller {
 		$status = $subscription->get_status_enum();
 
 		$data = array(
-			'id'               => $subscription->get_id(),
-			'status'           => (string) $subscription->get_status(),
-			'status_label'     => $status ? $status->label() : '',
-			'customer_id'      => $subscription->get_customer_id(),
-			'customer_name'    => trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ),
-			'customer_email'   => $subscription->get_billing_email(),
-			'currency'         => $subscription->get_currency(),
-			'total'            => $subscription->get_total(),
-			'total_formatted'  => html_entity_decode( wp_strip_all_tags( $subscription->get_formatted_order_total() ), ENT_QUOTES, get_bloginfo( 'charset' ) ),
-			'billing_period'   => $subscription->get_billing_period(),
-			'billing_interval' => $subscription->get_billing_interval(),
-			'trial_end'        => $subscription->get_trial_end(),
-			'next_payment'     => $subscription->get_next_payment(),
-			'end_date'         => $subscription->get_end_date(),
-			'period_index'     => $subscription->get_period_index(),
-			'payment_method'   => $subscription->get_payment_method(),
-			'parent_order_id'  => $subscription->get_parent_order_id(),
-			'date_created'     => $subscription->get_date_created() ? $subscription->get_date_created()->date( 'c' ) : null,
-			'edit_url'         => admin_url( 'admin.php?page=subkit-subscriptions&subscription=' . $subscription->get_id() ),
+			'id'                     => $subscription->get_id(),
+			'status'                 => (string) $subscription->get_status(),
+			'status_label'           => $status ? $status->label() : '',
+			'customer_id'            => $subscription->get_customer_id(),
+			'customer_name'          => trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ),
+			'customer_email'         => $subscription->get_billing_email(),
+			'currency'               => $subscription->get_currency(),
+			'total'                  => $subscription->get_total(),
+			'total_formatted'        => html_entity_decode( wp_strip_all_tags( $subscription->get_formatted_order_total() ), ENT_QUOTES, get_bloginfo( 'charset' ) ),
+			'billing_period'         => $subscription->get_billing_period(),
+			'billing_interval'       => $subscription->get_billing_interval(),
+			'trial_end'              => $subscription->get_trial_end(),
+			'next_payment'           => $subscription->get_next_payment(),
+			'next_payment_formatted' => $subscription->get_next_payment()
+				? date_i18n( (string) get_option( 'date_format' ), (int) strtotime( $subscription->get_next_payment() . ' UTC' ) )
+				: '',
+			'end_date'               => $subscription->get_end_date(),
+			'period_index'           => $subscription->get_period_index(),
+			'payment_method'         => $subscription->get_payment_method(),
+			'payment_method_title'   => $subscription->get_payment_method_title(),
+			'billable'               => (bool) ( $status && $status->is_billable() ),
+			'parent_order_id'        => $subscription->get_parent_order_id(),
+			'date_created'           => $subscription->get_date_created() ? $subscription->get_date_created()->date( 'c' ) : null,
+			'edit_url'               => admin_url( 'admin.php?page=subkit-subscriptions&subscription=' . $subscription->get_id() ),
 		);
 
 		/**
@@ -463,6 +571,16 @@ class Subscriptions_Controller {
 			),
 			'customer' => array( 'type' => 'integer' ),
 			'search'   => array( 'type' => 'string' ),
+			'orderby'  => array(
+				'type'    => 'string',
+				'enum'    => array( 'date', 'ID', 'next_payment', 'total' ),
+				'default' => 'date',
+			),
+			'order'    => array(
+				'type'    => 'string',
+				'enum'    => array( 'ASC', 'DESC' ),
+				'default' => 'DESC',
+			),
 		);
 	}
 

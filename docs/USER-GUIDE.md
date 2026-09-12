@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.11.0 · SubKit Pro 0.11.0 · development release**
+**SubKit 0.12.0 · SubKit Pro 0.11.0 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -377,6 +377,10 @@ offers **View**, **Renew now** and **Parent order**.
 
 Bulk changes follow the same rules as everything else: a subscription that cannot legally
 make that change is skipped, not forced, and you are told how many were left alone and why.
+
+Searching, sorting, filtering and paging all happen without reloading the page. Sorting asks
+the server for the order, so it sorts every subscription you have, not just the page you can
+see.
 
 ### A single subscription
 

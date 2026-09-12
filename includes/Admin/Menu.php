@@ -111,6 +111,8 @@ class Menu {
 
 		$this->render_bulk_notice();
 
+		echo '<div id="subkit-subscriptions-fallback">';
+
 		$table->views();
 
 		echo '<form method="get">';
@@ -125,7 +127,7 @@ class Menu {
 		$table->search_box( __( 'Search subscriptions', 'subkit-subscriptions' ), 'subkit-search' );
 		$table->display();
 
-		echo '</form></div>';
+		echo '</form></div></div>';
 	}
 
 	private function render_test_result(): void {
@@ -311,6 +313,7 @@ class Menu {
 			esc_html__( 'All subscriptions', 'subkit-subscriptions' )
 		);
 
+		echo '<div id="subkit-subscriptions-fallback">';
 		echo '<table class="widefat striped subkit-table subkit-facts"><tbody>';
 		$this->row( __( 'Customer', 'subkit-subscriptions' ), trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ) ?: (string) $subscription->get_billing_email() );
 		$this->row( __( 'Recurring total', 'subkit-subscriptions' ), wp_strip_all_tags( $subscription->get_formatted_order_total() ) );
@@ -322,14 +325,20 @@ class Menu {
 		echo '</tbody></table>';
 
 		$this->render_process_button( $subscription );
+
+		$this->render_activity( $id );
+
+		// Closed before the hook below: whatever an extension draws here is not something
+		// the React screen knows how to redraw, so it must not be hidden along with the
+		// parts that are.
+		echo '</div>';
+
 		/**
 		 * Renders on the subscription detail screen, below its facts.
 		 *
 		 * @param Subscription $subscription
 		 */
 		do_action( 'subkit_admin_subscription_detail', $subscription );
-
-		$this->render_activity( $id );
 
 		echo '</div>';
 	}

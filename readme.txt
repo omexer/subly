@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.11.0
+Stable tag: 0.12.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,13 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.12.0 =
+* The subscriptions list and the single subscription screen are rebuilt in React. Status tabs, search, sorting, bulk actions and paging all happen without a page load.
+* Sorting is done by the server, so it orders every subscription rather than reordering the page you happen to be looking at.
+* The single subscription screen can now change the next payment and end dates in place, and its activity is shown as it happens rather than after a reload.
+* Anything another plugin adds to the subscription screen still renders, below the new one.
+* New: a bulk actions endpoint, so changing twenty subscriptions is one request rather than twenty.
 
 = 0.11.0 =
 * The free plugin now has a REST API of its own: list and read subscriptions, change their status, move their dates, and read their history. These routes used to be part of Pro; they are free because the admin screens read them, and a screen that only works with a licence is not a screen.

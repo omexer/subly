@@ -15,6 +15,7 @@ module.exports = {
 			library: { name: [ 'subkit', 'ui' ], type: 'window' },
 		},
 		overview: './src/overview/index.js',
+		subscriptions: './src/subscriptions/index.js',
 	},
 	externals: {
 		...( defaults.externals || {} ),

@@ -98,6 +98,8 @@ Verification key:
 | **REST API**: list, read, update, act on, and read the history of a subscription | Run | Proven with Pro on and off; 401 / 404 / 409 / 400 paths all covered |
 | Overview endpoint | Run | What the landing screen draws |
 | React overview screen | Run | Renders beside the server-rendered summary; a failed request leaves that showing |
+| React subscriptions list | Run | Tabs, search, server-side sorting, bulk actions, paging; 6 tests, bulk-ids assertion mutation-checked |
+| React subscription detail | Run | Facts, actions, date editing, activity; a panel added by another plugin stays visible |
 
 ---
 
