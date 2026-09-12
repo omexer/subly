@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.12.1
+Stable tag: 0.12.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,10 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.12.2 =
+* Fixed: SubKit's payment methods never appeared on the block checkout, which is the default checkout in current WooCommerce. A classic gateway is invisible there until it registers itself with the blocks registry, so a shop using blocks saw "There are no payment methods available" while the payments screen said Active. Both gateways now register.
+* Fixed: the rule that keeps SubKit's gateways off a cart with no subscription in it read the classic checkout only, so it could not answer correctly over the Store API the block checkout uses. It now looks at the cart, and gives the same answer to both.
 
 = 0.12.1 =
 * Fixed: subscription products had no Add to cart button on their own product page, so they could not be bought from it. WooCommerce draws that button per product type, and the subscription types were not asking it to.

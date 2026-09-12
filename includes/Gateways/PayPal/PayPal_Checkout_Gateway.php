@@ -70,8 +70,13 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 			return false;
 		}
 
-		// The admin order screen has no cart; do not hide the method there.
-		if ( ! is_checkout() ) {
+		// Deliberately the cart, not is_checkout(): the block checkout asks over the Store
+		// API, where is_checkout() is false, and the answer there has to be the same one
+		// the classic checkout gets. No cart at all means the admin order screen, where
+		// the method must not be hidden.
+		$cart = function_exists( 'WC' ) && WC() ? WC()->cart : null;
+
+		if ( ! $cart || $cart->is_empty() ) {
 			return parent::is_available();
 		}
 

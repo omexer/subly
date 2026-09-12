@@ -63,7 +63,12 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			return false;
 		}
 
-		if ( ! is_checkout() ) {
+		// Deliberately the cart, not is_checkout(): the block checkout asks over the Store
+		// API, where is_checkout() is false, and the answer there has to be the same one
+		// the classic checkout gets or the gateway appears for carts it cannot serve.
+		$cart = function_exists( 'WC' ) && WC() ? WC()->cart : null;
+
+		if ( ! $cart || $cart->is_empty() ) {
 			return parent::is_available();
 		}
 

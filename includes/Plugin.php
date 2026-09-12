@@ -36,6 +36,7 @@ use SubKit\Admin\Help_Page;
 use SubKit\Admin\Integration_Installer;
 use SubKit\Admin\Integrations_Page;
 use SubKit\Admin\Gateway_Notice;
+use SubKit\Blocks\Gateway_Support;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
 use SubKit\Admin\Setup_Guide;
@@ -236,6 +237,18 @@ final class Plugin {
 
 		$this->services['gateway_notice'] = new Gateway_Notice();
 		$this->services['gateway_notice']->register();
+
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			static function ( $registry ): void {
+				if ( ! class_exists( '\Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+					return;
+				}
+
+				$registry->register( new Gateway_Support( Stripe_Checkout_Gateway::ID ) );
+				$registry->register( new Gateway_Support( PayPal_Checkout_Gateway::ID ) );
+			}
+		);
 
 		$this->services['admin_menu'] = new Menu(
 			$this->services['activity'],

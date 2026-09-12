@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.12.1 · SubKit Pro 0.11.0 · development release**
+**SubKit 0.12.2 · SubKit Pro 0.11.0 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -328,6 +328,9 @@ installed and configured for the first payment. SubKit only handles the renewals
 | **Webhook ID** | PayPal | PayPal gives you this after you add the URL. Paste it back. |
 | **Test API key** / **Live API key** | Mollie, Xendit | From that gateway's dashboard. |
 | **Key ID** / **Key secret** | Razorpay | From the Razorpay dashboard. |
+
+SubKit's gateways work on both checkouts — the classic one and the newer block checkout —
+and on either they are offered only when the cart actually contains a subscription.
 
 A gateway with no credentials is never offered at checkout, even if enabled — so a
 half-configured gateway cannot be chosen by a customer and then fail. **SubKit tells you

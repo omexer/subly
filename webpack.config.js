@@ -16,9 +16,13 @@ module.exports = {
 		},
 		overview: './src/overview/index.js',
 		subscriptions: './src/subscriptions/index.js',
+		blocks: './src/blocks/index.js',
 	},
 	externals: {
 		...( defaults.externals || {} ),
 		'@subkit/ui': [ 'subkit', 'ui' ],
+		// WooCommerce puts these on the page itself; they are not packages to bundle.
+		'@woocommerce/blocks-registry': [ 'wc', 'wcBlocksRegistry' ],
+		'@woocommerce/settings': [ 'wc', 'wcSettings' ],
 	},
 };
