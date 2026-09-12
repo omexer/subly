@@ -7,7 +7,6 @@ use SubKit\Billing\Renewal_Scheduler;
 use SubKit\Data\Subscription_Query;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\PayPal\PayPal_Client;
 use SubKit\Gateways\Test_Gateway;
 use SubKit\Product\Subscription_Product;
 
@@ -71,20 +70,21 @@ class Setup_Guide {
 	 * @return array<int, array{done: bool, title: string, detail: string, action: array{label: string, url: string}|null}>
 	 */
 	public function steps(): array {
-		$gateway_ready = PayPal_Client::from_settings()->is_enabled();
-		$product       = $this->first_subscription_product();
-		$queue_ok      = $this->scheduler->queue_is_healthy();
+		$connected = $this->connected_gateways();
+		$product   = $this->first_subscription_product();
+		$queue_ok  = $this->scheduler->queue_is_healthy();
 
 		return array(
 			array(
-				'done'   => $gateway_ready,
+				'done'   => (bool) $connected,
 				'title'  => __( 'Connect a payment method', 'subkit-subscriptions' ),
-				'detail' => $gateway_ready
-					? __( 'PayPal is connected.', 'subkit-subscriptions' )
-					: __( 'Subscriptions can renew automatically once a gateway is connected. Manual renewal works without one.', 'subkit-subscriptions' ),
+				'detail' => $connected
+					/* translators: %s: comma-separated list of connected gateways */
+					? sprintf( __( '%s can charge renewals automatically.', 'subkit-subscriptions' ), implode( ', ', $connected ) )
+					: __( 'Subscriptions renew by themselves once a gateway is connected — Stripe or PayPal, both included. Without one, renewals become invoices the customer pays by hand, which still works.', 'subkit-subscriptions' ),
 				'action' => array(
-					'label' => $gateway_ready ? __( 'Change', 'subkit-subscriptions' ) : __( 'Connect PayPal', 'subkit-subscriptions' ),
-					'url'   => admin_url( 'admin.php?page=wc-settings&tab=subkit&section=paypal' ),
+					'label' => $connected ? __( 'Change', 'subkit-subscriptions' ) : __( 'Choose a gateway', 'subkit-subscriptions' ),
+					'url'   => admin_url( 'admin.php?page=wc-settings&tab=subkit' ),
 				),
 			),
 			array(
@@ -268,6 +268,36 @@ class Setup_Guide {
 		if ( $subscription ) {
 			$subscription->delete( true );
 		}
+	}
+
+	/**
+	 * Which gateways can actually charge a renewal right now.
+	 *
+	 * Asks the registry rather than naming one, so a gateway added by Pro counts and the
+	 * checklist never tells a Stripe shop to go and connect PayPal.
+	 *
+	 * @return string[]
+	 */
+	private function connected_gateways(): array {
+		$registry = \SubKit\Plugin::instance()->get( 'gateways' );
+
+		if ( ! $registry instanceof \SubKit\Gateways\Gateway_Registry ) {
+			return array();
+		}
+
+		$names = array();
+
+		foreach ( $registry->all() as $gateway ) {
+			// Manual and the test gateway are always present and charge nobody by
+			// themselves, so counting them would tick this step on a store with nothing set up.
+			if ( in_array( $gateway->id(), array( 'subkit_manual', Test_Gateway::ID ), true ) ) {
+				continue;
+			}
+
+			$names[] = $gateway->title();
+		}
+
+		return $names;
 	}
 
 	private function first_subscription_product(): ?\WC_Product {

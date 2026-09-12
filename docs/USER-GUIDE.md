@@ -65,7 +65,9 @@ Then go to **SubKit** in the admin menu, just below WooCommerce.
 On **SubKit → All subscriptions** there is a checklist. It walks you through four things, and
 the fourth is the one that matters.
 
-**1. Connect a payment method.** Or skip it — you can test with Cash on delivery.
+**1. Connect a payment method.** Stripe or PayPal — both are included free, and the checklist
+names whichever you connect. You can also skip it entirely and test with Cash on delivery;
+renewals then become invoices the customer pays by hand, which still works.
 
 **2. Create a subscription product.** There is a short form right there: name, price, how
 often, optional free trial. Fill it in, press **Create it**, and the product is published.
