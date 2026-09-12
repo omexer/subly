@@ -1,6 +1,6 @@
 # SubKit — Feature Inventory
 
-Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured 2026-09-12 against the committed code, not from memory.
+Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at 0.6.0, not from memory.
 
 Verification key:
 
@@ -73,6 +73,9 @@ Verification key:
 | MRR and live count above the list | Run | Yearly, weekly, every-2-months all normalise correctly |
 | Daily MRR snapshot, capped at 400 days | Run | History cannot be recomputed, so it is recorded |
 | Setup checklist | Run | |
+| One top-level Subscriptions menu | Run | Seven screens, verified through WordPress's own menu globals |
+| Integrations screen | Run | Lists all nine and whether each host plugin is active |
+| Help screen with a system report | Run | Proven to exclude Stripe, PayPal and licence credentials |
 | Self-test renewal (creates, renews, deletes) | Run | |
 | Health panel: queue, unresolved charges, ledger index | Run | Flips on at 3h, silent for an in-flight charge |
 | Six transactional emails | Run | Merchant mail goes to the merchant, not the customer |

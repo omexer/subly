@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.1.0 (free) · SubKit Pro 0.1.0 · development release**
+**SubKit 0.6.0 (free) · SubKit Pro 0.6.0 · development release**
 
 Read [What is not proven yet](#what-is-not-proven-yet) before you put this anywhere near a real customer. It is short, and it is the honest part.
 
@@ -28,14 +28,16 @@ SubKit refuses to load and shows a notice if any of these are missing, rather th
 ## Install
 
 1. Install and activate **SubKit — Subscriptions & Recurring Payments for WooCommerce**.
-2. For Pro: install **SubKit Subscriptions Pro** and activate it *after* the free plugin. Pro boots from a hook the free plugin fires, so the order matters. If Pro is activated alone it says so and does nothing.
-3. Go to **WooCommerce → Subscriptions** for the setup checklist.
+2. For Pro: install **SubKit Subscriptions Pro** and activate it *after* the free plugin. Pro boots from a hook the free plugin fires, so the order matters. If Pro is activated alone it says so and does nothing. Pro needs free 0.6.0 or newer and refuses to boot against an older one rather than half-working.
+
+> The folder name does not matter. Installing the free plugin from a GitHub ZIP gives you a folder called `subkit-subscriptions-main`, and Pro is happy either way.
+3. Go to **Subscriptions** in the admin menu, directly below WooCommerce, for the setup checklist.
 
 ---
 
 ## Your first subscription product
 
-The fastest way: on **WooCommerce → Subscriptions**, the setup checklist has a short form — name, price, how often, optional free trial. Fill it in and press **Create it**. The product is published and ready.
+The fastest way: on **Subscriptions → All subscriptions**, the setup checklist has a short form — name, price, how often, optional free trial. Fill it in and press **Create it**. The product is published and ready.
 
 The manual way, and how you edit one afterwards:
 
@@ -65,7 +67,7 @@ The same terms follow the product into the cart and checkout, on both the classi
 
 ## Taking payment
 
-SubKit adds two payment methods of its own at **WooCommerce → Settings → Subscriptions**. Both are off until you enter credentials.
+SubKit adds two payment methods of its own at **Subscriptions → Settings**. Both are off until you enter credentials.
 
 | Gateway | Who owns the schedule | Where |
 |---|---|---|
@@ -85,7 +87,7 @@ You can also run without any of them: enable a manual method such as **Cash on d
 
 On a quiet site WordPress's scheduler rarely runs, so trigger renewals by hand.
 
-**As the shop owner** — **WooCommerce → Subscriptions**, open one, click **Process renewal now**. It names the amount and asks you to confirm.
+**As the shop owner** — **Subscriptions → All subscriptions**, open one, click **Process renewal now**. It names the amount and asks you to confirm.
 
 **As the customer** — **My account → Subscriptions**, a subscription needing payment shows **Pay now**.
 
@@ -105,7 +107,7 @@ From **My account → Subscriptions**:
 
 ### Buying without an account
 
-A subscription has to belong to someone — it is managed from My Account and renews against a stored mandate. Under **Settings → Subscriptions → Access**, choose:
+A subscription has to belong to someone — it is managed from My Account and renews against a stored mandate. Under **Subscriptions → Settings → Access**, choose:
 
 - **Create an account for them automatically** (default) — a guest who buys a subscription gets an account made at checkout.
 - **Require them to log in first**.
@@ -116,7 +118,7 @@ An email address that already has an account is never claimed silently. Checkout
 
 ## What a subscription grants
 
-Under **Settings → Subscriptions → Access**:
+Under **Subscriptions → Settings → Access**:
 
 - **Role while subscribed** / **Role once it ends** — how most membership setups gate content. Administrators are never demoted, and a customer is only demoted once no other live subscription is keeping them in.
 - Downloadable files attached to a subscription product are withdrawn when no live subscription covers them. Someone who resubscribed after cancelling keeps their files.
@@ -125,11 +127,25 @@ Pro adds per-product role overrides and gates the download capability itself.
 
 ---
 
+## The admin menu
+
+Everything lives under one **Subscriptions** entry, directly below WooCommerce:
+
+| | |
+|---|---|
+| **All subscriptions** | The list, and each subscription's detail and activity log |
+| **Reports** | MRR, ARR, churn, lifetime value (Pro) |
+| **Deliveries** | What ships when, with a printable manifest (Pro) |
+| **Health** | Subscriptions at risk, and why (Pro) |
+| **Integrations** | What SubKit can connect to, and whether each connection is live |
+| **Help** | A system report to paste into a support request |
+| **Settings** | Gateways, access, licence |
+
 ## Admin screens
 
-**WooCommerce → Subscriptions** — the list, with monthly recurring revenue and live count above it. Open one for its schedule, its orders and a full activity log of every charge attempt and status change.
+**Subscriptions → All subscriptions** — the list, with monthly recurring revenue and live count above it. Open one for its schedule, its orders and a full activity log of every charge attempt and status change.
 
-**Settings → Subscriptions → General** — a Status panel that reports honestly:
+**Subscriptions → Settings → General** — a Status panel that reports honestly:
 
 | Check | Means |
 |---|---|
@@ -168,7 +184,7 @@ Pro adds per-product role overrides and gates the download capability itself.
 
 ### The licence
 
-**Settings → Subscriptions → Licence**. Enter your key and activate.
+**Subscriptions → Settings → Licence**. Enter your key and activate.
 
 The licence gates **updates and support only**. It never touches billing: if it lapses, expires, or the licence server is unreachable, your Pro features keep working and your customers keep being charged. An unreachable server is treated as unknown, not invalid — a dropped connection is not a revocation.
 

@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.5.0
+Stable tag: 0.6.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,20 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.6.0 =
+* Subscriptions now has its own top-level admin menu instead of four separate entries under WooCommerce.
+* New Integrations screen: what SubKit can connect to, and whether each connection is live.
+* New Help screen with a system report to paste into a support request. It never includes credentials.
+* Guest checkout: a customer can buy a subscription without an account, and gets one made at checkout.
+* Customers can turn off automatic renewal and keep what they paid for until the period ends.
+* Subscriber roles and downloadable-file gating follow the subscription's status.
+* Monthly recurring revenue, live count and a daily snapshot on the Subscriptions screen.
+* Create your first subscription product straight from the setup checklist.
+* Fixed: schedule changes could silently vanish when set before anything read them.
+* Fixed: a store selling in more than one currency could not open the Subscriptions screen.
+* Fixed: a yearly plan normalised to 10.01 a month instead of 10.00.
+* Static analysis (PHPStan and PHP_CodeSniffer) now runs on every change.
 
 = 0.1.0 =
 * First development release: subscription products, renewal pipeline, My Account screens, admin screens.
