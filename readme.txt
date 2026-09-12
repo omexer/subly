@@ -1,4 +1,4 @@
-=== SubKit - Subscriptions & Recurring Payments for WooCommerce ===
+=== SubKit – WooCommerce Subscriptions ===
 Contributors: pronob1010
 Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5

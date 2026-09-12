@@ -51,7 +51,7 @@ payment gateways and nine integrations.
 
 ## Installing
 
-1. Install and activate **SubKit — Subscriptions & Recurring Payments for WooCommerce**.
+1. Install and activate **SubKit – WooCommerce Subscriptions**.
 2. For Pro, install **SubKit Subscriptions Pro** and activate it **after** the free plugin.
 
 Pro does nothing on its own and says so if you activate it alone. It needs the free plugin
