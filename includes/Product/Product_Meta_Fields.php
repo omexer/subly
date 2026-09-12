@@ -16,6 +16,7 @@ class Product_Meta_Fields {
 	public function register(): void {
 		add_action( 'woocommerce_product_options_general_product_data', array( $this, 'render' ) );
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'save' ) );
+		add_action( 'admin_footer', array( $this, 'toggle_script' ) );
 	}
 
 	public function render(): void {
@@ -23,12 +24,18 @@ class Product_Meta_Fields {
 
 		echo '<div class="options_group subkit-product-options show_if_simple">';
 
+		echo '<p class="form-field"><strong>' . esc_html__( 'Subscription', 'subkit-subscriptions' ) . '</strong></p>';
+
 		woocommerce_wp_checkbox( array(
 			'id'          => Subscription_Product::META_ENABLED,
-			'label'       => __( 'Subscription', 'subkit-subscriptions' ),
+			'label'       => __( 'Recurring', 'subkit-subscriptions' ),
 			'description' => __( 'Bill this product on a repeating schedule.', 'subkit-subscriptions' ),
 			'value'       => $product_object ? $product_object->get_meta( Subscription_Product::META_ENABLED ) : 'no',
 		) );
+
+		$enabled = $product_object && 'yes' === $product_object->get_meta( Subscription_Product::META_ENABLED );
+
+		printf( '<div class="subkit-schedule-fields"%s>', $enabled ? '' : ' style="display:none"' );
 
 		woocommerce_wp_select( array(
 			'id'          => Subscription_Product::META_PERIOD,
@@ -74,7 +81,33 @@ class Product_Meta_Fields {
 			'description' => __( 'A one-off charge taken with the first payment.', 'subkit-subscriptions' ),
 		) );
 
-		echo '</div>';
+		echo '</div></div>';
+	}
+
+	/**
+	 * Show the schedule fields only once the product is actually a subscription.
+	 */
+	public function toggle_script(): void {
+		$screen = get_current_screen();
+
+		if ( ! $screen || 'product' !== $screen->id ) {
+			return;
+		}
+		?>
+		<script>
+		jQuery( function ( $ ) {
+			var box = $( '#<?php echo esc_js( Subscription_Product::META_ENABLED ); ?>' );
+			var fields = $( '.subkit-schedule-fields' );
+
+			function sync() {
+				fields.toggle( box.is( ':checked' ) );
+			}
+
+			box.on( 'change', sync );
+			sync();
+		} );
+		</script>
+		<?php
 	}
 
 	public function save( \WC_Product $product ): void {
