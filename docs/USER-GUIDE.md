@@ -1,20 +1,16 @@
-# SubKit — Tester's Guide
+# SubKit — User Guide
 
-**Version 0.1.0 · development release**
+**SubKit 0.1.0 (free) · SubKit Pro 0.1.0 · development release**
 
-Thanks for trying this. Please read the [What does not work yet](#what-does-not-work-yet) section before you start — it will save you from testing something that was never built.
+Read [What is not proven yet](#what-is-not-proven-yet) before you put this anywhere near a real customer. It is short, and it is the honest part.
 
 ---
 
 ## What SubKit is
 
-A WooCommerce plugin that turns products into subscriptions: a customer buys once, a subscription record is created, and it bills on a repeating schedule. It also gives customers a place to see and cancel their own subscriptions, and gives you an admin screen to manage them.
+A WooCommerce plugin that turns products into subscriptions. A customer buys once; SubKit creates a subscription record and bills it on a repeating schedule. Customers manage their own subscriptions from My Account. You get an admin screen, a renewal engine and a health report.
 
-## What state it is in
-
-**This is a development release. Do not install it on a live store.** Use a staging site or a local test store with fake products.
-
-The subscription lifecycle, the renewal engine and all the screens are built and working. What is **not** built is the ability to take an automatic recurring payment from a card or PayPal account. See below.
+There are two plugins. **SubKit** is free and complete on its own. **SubKit Pro** adds to it and cannot run without it.
 
 ---
 
@@ -25,30 +21,32 @@ The subscription lifecycle, the renewal engine and all the screens are built and
 | WordPress | 6.5 or newer |
 | WooCommerce | 8.0 or newer |
 | PHP | 8.1 or newer |
-| Order storage | High-Performance Order Storage (HPOS) recommended |
+| Order storage | High-Performance Order Storage (HPOS) |
 
-SubKit refuses to load and shows a notice if any of these are missing, rather than breaking your site.
-
----
+SubKit refuses to load and shows a notice if any of these are missing, rather than half-working.
 
 ## Install
 
-1. Download the repository as a ZIP, or clone it into `wp-content/plugins/subkit-subscriptions`.
-2. Activate **SubKit — Subscriptions & Recurring Payments for WooCommerce** from the Plugins screen.
-3. Go to **WooCommerce → Subscriptions**. You will see a setup checklist.
+1. Install and activate **SubKit — Subscriptions & Recurring Payments for WooCommerce**.
+2. For Pro: install **SubKit Subscriptions Pro** and activate it *after* the free plugin. Pro boots from a hook the free plugin fires, so the order matters. If Pro is activated alone it says so and does nothing.
+3. Go to **WooCommerce → Subscriptions** for the setup checklist.
 
 ---
 
-## Setting up your first subscription
+## Your first subscription product
 
-1. Go to **Products → Add New** (or edit an existing simple product).
+The fastest way: on **WooCommerce → Subscriptions**, the setup checklist has a short form — name, price, how often, optional free trial. Fill it in and press **Create it**. The product is published and ready.
+
+The manual way, and how you edit one afterwards:
+
+1. **Products → Add New**, or edit an existing simple product.
 2. Set a price.
-3. In the **Product data** panel, tick **Subscription**.
-4. Choose how often to bill: day, week, month or year, and an interval (2 + Month = every two months).
-5. Optionally add a **Free trial** in days, and a **Sign-up fee**.
+3. In the **Product data** panel, tick **Bill this product on a repeating schedule**. The schedule fields appear once it is ticked.
+4. Choose the period and interval — `2` + `Month` means every two months.
+5. Optionally add a **Free trial** in days and a **Sign-up fee**.
 6. Publish.
 
-Visit the product page. You should see the terms under the price, for example:
+On the product page the terms appear under the price, as separate facts rather than one long sentence:
 
 ```
 $29.00 every month
@@ -59,118 +57,175 @@ Then $29.00 every month
 Cancel anytime
 ```
 
-Those same terms appear in the cart and at checkout, on both the classic and block checkout.
+The same terms follow the product into the cart and checkout, on both the classic and block checkout.
+
+> **One subscription per cart.** A second one is blocked on purpose. A one-off product alongside a subscription is fine.
 
 ---
 
-## Buying one
+## Taking payment
 
-Because there is no automatic-payment method yet (see below), buy using any payment method your store already offers — **Cash on delivery**, **Direct bank transfer** or **Check payments** are easiest to enable under **WooCommerce → Settings → Payments**.
+SubKit adds two payment methods of its own at **WooCommerce → Settings → Subscriptions**. Both are off until you enter credentials.
 
-After checkout you should get:
+| Gateway | Who owns the schedule | Where |
+|---|---|---|
+| **Stripe** | SubKit — we charge the saved card when a renewal falls due | Free |
+| **PayPal** | PayPal — it bills on its own schedule and we mirror it | Free |
+| **Mollie** | SubKit, against the mandate the Mollie plugin stored | Pro |
+| **Razorpay** | SubKit, against the saved token | Pro |
+| **Xendit** | SubKit, against the saved card token | Pro |
 
-- A subscription in **WooCommerce → Subscriptions**
-- A "Your subscription is active" email to the customer, and a "New subscription started" email to the store
-- An entry under **My account → Subscriptions**
+The three Pro gateways renew against a mandate that the merchant's **existing** payment plugin captured at checkout — keep Mollie Payments for WooCommerce, WooCommerce Razorpay or the Xendit plugin installed and configured for the initial payment. SubKit only handles the renewal.
 
-> **Only one subscription per cart.** Adding a second one is blocked on purpose. A one-off product alongside a subscription is fine.
-
----
-
-## Making a renewal happen
-
-Renewals are normally scheduled automatically, but on a quiet test site WordPress's scheduler rarely runs, and there is no automatic payment method yet. So trigger them by hand:
-
-**Option A — process it yourself (as the shop owner)**
-1. **WooCommerce → Subscriptions**, click a subscription.
-2. Click **Process renewal now**. It will ask you to confirm, and it names the amount.
-3. A renewal order is created. With manual payment methods it will sit as pending, and the customer gets a "payment needed" email with a link to pay it.
-
-**Option B — let the customer pay it**
-1. As the customer, go to **My account → Subscriptions**.
-2. A subscription needing payment shows a **Pay now** button.
-3. Pay the renewal order. The subscription returns to Active and the next payment date moves forward.
-
-**Option C — the built-in self-test**
-On **WooCommerce → Subscriptions**, the setup checklist has **Run test renewal**. It creates a throwaway subscription, renews it, confirms it worked and deletes everything. Nobody is charged. Use this to check the plumbing works on your server.
+You can also run without any of them: enable a manual method such as **Cash on delivery** or **Direct bank transfer**, and renewals become invoices the customer pays.
 
 ---
 
-## What to test
+## Making a renewal happen on a test site
 
-Please try all of these and tell us what felt wrong, confusing, or broken.
+On a quiet site WordPress's scheduler rarely runs, so trigger renewals by hand.
 
-**Setting up**
-- [ ] The setup checklist makes sense and the links go somewhere useful
-- [ ] Creating a subscription product is obvious without instructions
-- [ ] **Run test renewal** succeeds on your hosting
+**As the shop owner** — **WooCommerce → Subscriptions**, open one, click **Process renewal now**. It names the amount and asks you to confirm.
 
-**As a customer**
-- [ ] The terms on the product page are clear and correct
-- [ ] The terms are still correct with a trial, a sign-up fee, or both
-- [ ] Checkout explains what you are signing up for before you pay
-- [ ] **My account → Subscriptions** shows the right status and next payment date
-- [ ] Cancelling is easy to find and the two options (end of period / immediately) are clear
-- [ ] Emails read like a human wrote them and arrive when expected
+**As the customer** — **My account → Subscriptions**, a subscription needing payment shows **Pay now**.
 
-**As the shop owner**
-- [ ] The Subscriptions list shows what you need at a glance
-- [ ] The subscription detail screen answers "what happened to this customer?"
-- [ ] The activity log is understandable
-- [ ] **WooCommerce → Settings → Subscriptions** — the Status section reports honestly
-
-**Try to break it**
-- [ ] Cancel, then try to cancel again
-- [ ] Process the same renewal twice in a row
-- [ ] Set a subscription to bill on the 31st and check the following months
-- [ ] Change the store currency and re-check the product page
-- [ ] Use a different theme
+**The self-test** — the setup checklist has **Run test renewal**. It creates a throwaway subscription, renews it, checks it worked and deletes everything. Nobody is charged. Use it to prove the plumbing works on your server.
 
 ---
 
-## What does not work yet
+## What customers can do
 
-Please do not report these — they are known and deliberate for this release.
+From **My account → Subscriptions**:
 
-| Not built | Consequence |
+- See status, next payment date and what they are paying
+- **Cancel** — either at the end of the period they have paid for, or immediately. This cannot be switched off by the shop owner.
+- **Turn off automatic renewal** — if you enable it in settings. This is not cancelling: they keep everything they paid for until the period runs out, and are never charged again.
+- Pay a renewal that needs paying
+- **Pause and resume** (Pro), and **switch plan** (Pro), where the gateway supports it
+
+### Buying without an account
+
+A subscription has to belong to someone — it is managed from My Account and renews against a stored mandate. Under **Settings → Subscriptions → Access**, choose:
+
+- **Create an account for them automatically** (default) — a guest who buys a subscription gets an account made at checkout.
+- **Require them to log in first**.
+
+An email address that already has an account is never claimed silently. Checkout stops and asks them to log in, because attaching the subscription would put a stranger's details inside somebody else's account.
+
+---
+
+## What a subscription grants
+
+Under **Settings → Subscriptions → Access**:
+
+- **Role while subscribed** / **Role once it ends** — how most membership setups gate content. Administrators are never demoted, and a customer is only demoted once no other live subscription is keeping them in.
+- Downloadable files attached to a subscription product are withdrawn when no live subscription covers them. Someone who resubscribed after cancelling keeps their files.
+
+Pro adds per-product role overrides and gates the download capability itself.
+
+---
+
+## Admin screens
+
+**WooCommerce → Subscriptions** — the list, with monthly recurring revenue and live count above it. Open one for its schedule, its orders and a full activity log of every charge attempt and status change.
+
+**Settings → Subscriptions → General** — a Status panel that reports honestly:
+
+| Check | Means |
 |---|---|
-| **Automatic recurring payment** | SubKit adds **no payment method** to checkout. PayPal's renewal handling exists, but nothing creates the PayPal subscription during checkout, so cards and PayPal cannot bill automatically. Renewals must be triggered as described above. |
-| **Unattended renewals unproven** | Scheduled renewals are wired up but have never been observed firing on their own. If yours do fire by themselves, please tell us — that is useful information. |
-| Variable / variable-subscription products | Simple products only |
-| Pause and resume | Planned |
-| Upgrade / downgrade between plans | Planned |
-| Installments and split payments | Planned |
-| Coupons on renewals | Coupons apply to the first order only |
-| Reporting, MRR and churn | Planned |
-| Multiple subscriptions in one cart | Blocked on purpose |
+| Renewal queue | Scheduled tasks are running |
+| Unresolved charges | A charge whose outcome we never learned. That subscription is **not billing** until someone looks. |
+| Double-charge protection | The database index that makes one charge per period impossible |
+
+### Pro screens
+
+- **Subscription reports** — MRR, ARR, churn, lifetime value, cancellation reasons
+- **Subscription health** — every subscription at risk, why, and what to do. Six signals over the charge ledger: overdue with nothing queued, a failed charge, a failure with no retry booked, a charge stuck with an unknown outcome, a renewal waiting on customer authentication, and recovery about to give up. Optional scheduled digest email.
+- **Subscription deliveries** — what ships when, with a printable manifest, for physical subscriptions whose delivery cadence differs from billing
+
+---
+
+## Pro features
+
+| | |
+|---|---|
+| **Variable subscriptions** | One product, several schedules — a yearly variation beside a monthly one, each with its own trial and fee |
+| **Instalment plans** | A fixed total over N charges, then stop |
+| **Pause and resume** | With the remaining time preserved |
+| **Plan switching** | Upgrade or downgrade, crediting unused time |
+| **Recurring coupons** | Discounts that apply to renewals, not just the first order |
+| **Failed payment recovery** | Retry schedule, dunning emails and a grace period before giving up |
+| **Delivery schedules** | Delivery cadence independent of billing, with a manifest |
+| **Subscription health** | The report above |
+| **Reports** | MRR, ARR, churn, LTV |
+| **Content access** | Per-product roles and download gating |
+| **REST API** | List, read, update, run lifecycle actions, read the activity log |
+| **Integrations** | LearnDash, TutorLMS, LearnPress, MailPoet, FluentCRM |
+
+### The licence
+
+**Settings → Subscriptions → Licence**. Enter your key and activate.
+
+The licence gates **updates and support only**. It never touches billing: if it lapses, expires, or the licence server is unreachable, your Pro features keep working and your customers keep being charged. An unreachable server is treated as unknown, not invalid — a dropped connection is not a revocation.
+
+### The REST API
+
+Authenticated as WooCommerce itself — a consumer key with the `manage_woocommerce` capability, created under **WooCommerce → Settings → Advanced → REST API**. There is no second password to manage.
+
+```
+GET    /wp-json/subkit/v1/subscriptions?status=sk-active&per_page=20
+GET    /wp-json/subkit/v1/subscriptions/123
+PUT    /wp-json/subkit/v1/subscriptions/123        { "next_payment": "2027-01-01 00:00:00" }
+POST   /wp-json/subkit/v1/subscriptions/123/actions { "action": "cancel" }
+GET    /wp-json/subkit/v1/subscriptions/123/activity
+```
+
+Actions: `cancel`, `pause`, `resume`, `reactivate`, `expire`, `change_status`. The API cannot reach a state the admin screens forbid — reactivating a cancelled subscription returns `409` and changes nothing. Repeating an action that already happened returns `200`, so a client retrying after a dropped connection is not an error.
 
 ---
 
 ## Safety
 
-A few things are deliberately protective, and worth knowing about:
+Worth knowing, because these are the parts that protect money:
 
-- **Copied sites will not bill.** A subscription records the site it was created on. If you clone your store to staging, the copy refuses to process renewals rather than charging real customers twice.
-- **A renewal can only be charged once.** The database enforces one charge per billing period, so a retry or a duplicate webhook cannot double-charge.
-- **Cancelling is always available to the customer** and cannot be disabled by the shop owner.
-- **Erasing personal data will not touch an active subscription.** It refuses and tells you to cancel first, so billing stops at the payment provider before the record is scrubbed.
+- **A renewal can only be charged once.** A database index enforces one charge per billing period. A retry, a duplicate webhook or two servers racing cannot produce two charges.
+- **An unknown outcome is never guessed.** If a gateway times out, SubKit asks it what actually happened before doing anything else. If the gateway has no record, the same charge is retried with the same idempotency key. If it cannot be resolved safely, the subscription stops and says so under **Unresolved charges** rather than risking a second charge.
+- **Copied sites will not bill.** A subscription records the site it was created on. Clone your store to staging and the copy refuses to renew rather than charging real customers twice.
+- **Cancelling is always available to the customer.**
+- **Erasing personal data will not touch an active subscription.** It refuses and tells you to cancel first, so billing stops at the provider before the record is scrubbed.
+- **A lapsed licence never stops billing.**
+
+---
+
+## What is not proven yet
+
+Please do not report these; they are known.
+
+| | |
+|---|---|
+| **No gateway has been tested against a real sandbox** | Every Stripe, PayPal, Mollie, Razorpay and Xendit code path has been verified only against simulated HTTP responses. No real card has ever been charged by this plugin. **This is the single biggest reason not to run it on a live store.** |
+| **There is no automated test suite** | No unit tests, no integration tests, no CI. Every claim above was verified by hand. |
+| **Unattended renewals have never been observed** | Scheduled renewals are wired up and fire correctly when run directly, but no renewal has been watched happening on its own overnight. If yours does, that is useful — tell us. |
+| **Concurrency is untested** | Two workers racing on the same renewal is the guarantee the whole design rests on. The database index that enforces it is verified; two real processes colliding has never been staged. |
+| Per-variation delivery cadences | Variable subscriptions and delivery schedules both work; combined, delivery reads the parent product only. |
+| Browser testing | Nothing has been driven through a real browser. Screens are verified by their output, not visually. |
 
 ---
 
 ## Reporting a problem
 
-Open an issue on the repository with:
+Open an issue with:
 
 1. What you were doing
 2. What you expected
 3. What happened instead
 4. WordPress, WooCommerce and PHP versions, plus your theme
-5. Anything from the subscription's **Activity** log on the detail screen
+5. Anything from the subscription's **Activity** log
 
-If it involves money — a wrong amount, a charge that should not have happened, a renewal that did not — please say so in the first line. Those get looked at first.
+**If it involves money** — a wrong amount, a charge that should not have happened, a renewal that did not — say so in the first line. Those get looked at first.
 
 ---
 
-## A note on what we most want to hear
+## What we most want to hear
 
-Feature requests are welcome, but the most useful feedback at this stage is about **trust**: anywhere the plugin left you unsure whether something had worked, whether a customer had been charged, or what would happen next. Those moments matter more than missing features.
+Feature requests are welcome, but the most useful feedback now is about **trust**: anywhere the plugin left you unsure whether something had worked, whether a customer had been charged, or what would happen next. Those moments matter more than missing features.
