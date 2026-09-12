@@ -81,22 +81,12 @@ class Product_Meta_Fields {
 			'description' => __( 'A one-off charge taken with the first payment.', 'subkit-subscriptions' ),
 		) );
 
-		woocommerce_wp_checkbox( array(
-			'id'          => \SubKit\Billing\Installment_Plan::META_ENABLED,
-			'label'       => __( 'Installment plan', 'subkit-subscriptions' ),
-			'description' => __( 'Charge a fixed total in equal payments, then stop.', 'subkit-subscriptions' ),
-			'value'       => $product_object ? $product_object->get_meta( \SubKit\Billing\Installment_Plan::META_ENABLED ) : 'no',
-		) );
-
-		woocommerce_wp_text_input( array(
-			'id'                => \SubKit\Billing\Installment_Plan::META_COUNT,
-			'label'             => __( 'Number of payments', 'subkit-subscriptions' ),
-			'type'              => 'number',
-			'custom_attributes' => array( 'min' => '2', 'step' => '1' ),
-			'value'             => $product_object ? ( $product_object->get_meta( \SubKit\Billing\Installment_Plan::META_COUNT ) ?: '' ) : '',
-			'desc_tip'          => true,
-			'description'       => __( 'The price is split across this many charges. The last one clears any rounding, so the total is always exact.', 'subkit-subscriptions' ),
-		) );
+		/**
+		 * Fires inside the subscription panel so extensions can add their own fields.
+		 *
+		 * @param \WC_Product|null $product_object
+		 */
+		do_action( 'subkit_product_subscription_fields', $product_object );
 
 		echo '</div></div>';
 	}
@@ -158,19 +148,15 @@ class Product_Meta_Fields {
 		);
 
 		$product->update_meta_data(
-			\SubKit\Billing\Installment_Plan::META_ENABLED,
-			isset( $_POST[ \SubKit\Billing\Installment_Plan::META_ENABLED ] ) ? 'yes' : 'no'
-		);
-
-		$product->update_meta_data(
-			\SubKit\Billing\Installment_Plan::META_COUNT,
-			isset( $_POST[ \SubKit\Billing\Installment_Plan::META_COUNT ] ) ? max( 0, absint( wp_unslash( $_POST[ \SubKit\Billing\Installment_Plan::META_COUNT ] ) ) ) : 0
-		);
-
-		$product->update_meta_data(
 			Subscription_Product::META_SIGNUP_FEE,
 			isset( $_POST[ Subscription_Product::META_SIGNUP_FEE ] ) ? wc_format_decimal( sanitize_text_field( wp_unslash( $_POST[ Subscription_Product::META_SIGNUP_FEE ] ) ) ) : ''
 		);
+		/**
+		 * Fires while saving the subscription panel, for extension fields.
+		 *
+		 * @param \WC_Product $product
+		 */
+		do_action( 'subkit_save_product_subscription_fields', $product );
 		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 }

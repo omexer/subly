@@ -28,15 +28,9 @@ use SubKit\Product\Product_Meta_Fields;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
 use SubKit\Admin\Setup_Guide;
-use SubKit\Admin\Reports_Page;
-use SubKit\Reports\Metrics;
-use SubKit\Billing\Recurring_Coupon;
 use SubKit\Emails\Mailer;
 use SubKit\Privacy\Personal_Data;
 use SubKit\Lifecycle\Cancellation_Survey;
-use SubKit\Lifecycle\Dunning;
-use SubKit\Lifecycle\Subscription_Actions;
-use SubKit\Access\Access_Control;
 use SubKit\Frontend\MyAccount\Account_Endpoint;
 use SubKit\Frontend\MyAccount\Assets as Account_Assets;
 
@@ -167,20 +161,8 @@ final class Plugin {
 		);
 		$this->services['paypal_webhooks']->register();
 
-		$this->services['dunning'] = new Dunning( $this->services['activity'], $this->services['scheduler'] );
-		$this->services['dunning']->register();
-
-		$this->services['actions'] = new Subscription_Actions(
-			$this->services['activity'],
-			$this->services['scheduler'],
-			$this->services['processor']
-		);
-
 		$this->services['survey'] = new Cancellation_Survey( $this->services['activity'] );
 		$this->services['survey']->register();
-
-		$this->services['access'] = new Access_Control();
-		$this->services['access']->register();
 
 		$this->services['privacy'] = new Personal_Data( $this->services['activity'] );
 		$this->services['privacy']->register();
@@ -196,14 +178,6 @@ final class Plugin {
 
 			return $pages;
 		} );
-
-		$this->services['coupons'] = new Recurring_Coupon();
-		$this->services['coupons']->register();
-
-		$this->services['metrics'] = new Metrics();
-
-		$this->services['reports'] = new Reports_Page( $this->services['metrics'], $this->services['survey'] );
-		$this->services['reports']->register();
 
 		$this->services['setup'] = new Setup_Guide( $this->services['scheduler'] );
 		$this->services['setup']->register();

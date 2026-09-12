@@ -4,7 +4,6 @@ namespace SubKit\Billing;
 
 use SubKit\Data\Activity_Repository;
 use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Billing\Installment_Plan;
 use SubKit\Domain\Billing_Schedule;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
@@ -68,9 +67,17 @@ class Renewal_Processor {
 			return;
 		}
 
-		// An instalment plan is finished when the last payment lands, not when a date passes.
-		if ( Installment_Plan::is_complete( $subscription ) ) {
-			$this->complete_installments( $subscription );
+		/**
+		 * Lets an extension end a subscription instead of renewing it — an instalment plan
+		 * finishing, a fixed-term ending. Returning a reason string stops billing.
+		 *
+		 * @param string|false $reason
+		 * @param Subscription $subscription
+		 */
+		$stop = apply_filters( 'subkit_stop_billing', false, $subscription );
+
+		if ( is_string( $stop ) && '' !== $stop ) {
+			$this->finish( $subscription, $stop );
 			return;
 		}
 
@@ -209,22 +216,18 @@ class Renewal_Processor {
 	}
 
 	/**
-	 * The customer has paid in full, so the subscription ends rather than renewing.
+	 * End a subscription that has reached its natural conclusion rather than renewing it.
 	 */
-	private function complete_installments( Subscription $subscription ): void {
-		$this->activity->log(
-			$subscription->get_id(),
-			Activity_Repository::TYPE_STATUS_CHANGE,
-			sprintf( 'Instalment plan paid in full after %d payments.', Installment_Plan::count_on( $subscription ) )
-		);
+	private function finish( Subscription $subscription, string $reason ): void {
+		$this->activity->log( $subscription->get_id(), Activity_Repository::TYPE_STATUS_CHANGE, $reason );
 
 		$subscription->set_next_payment( null );
-		$subscription->transition_to( Subscription_Status::Expired, __( 'Instalment plan paid in full.', 'subkit-subscriptions' ) );
+		$subscription->transition_to( Subscription_Status::Expired, $reason );
 		$subscription->save();
 
 		$this->scheduler->unschedule( $subscription->get_id() );
 
-		do_action( 'subkit_installments_completed', $subscription );
+		do_action( 'subkit_subscription_finished', $subscription, $reason );
 	}
 
 	private function advance( Subscription $subscription, Billing_Schedule $schedule, object $slot ): void {
