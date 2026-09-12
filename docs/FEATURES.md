@@ -73,7 +73,7 @@ Verification key:
 | MRR and live count above the list | Run | Yearly, weekly, every-2-months all normalise correctly |
 | Daily MRR snapshot, capped at 400 days | Run | History cannot be recomputed, so it is recorded |
 | Setup checklist | Run | |
-| One top-level Subscriptions menu | Run | Seven screens, verified through WordPress's own menu globals |
+| One top-level SubKit menu | Run | Seven screens, verified through WordPress's own menu globals |
 | Integrations screen | Run | Lists all nine and whether each host plugin is active |
 | Help screen with a system report | Run | Proven to exclude Stripe, PayPal and licence credentials |
 | Self-test renewal (creates, renews, deletes) | Run | |

@@ -40,9 +40,10 @@ class Menu {
 	public const PARENT = self::SLUG;
 
 	public function add_menu(): void {
+		// Menu label is the product; the page title stays what the page actually shows.
 		add_menu_page(
 			__( 'Subscriptions', 'subkit-subscriptions' ),
-			__( 'Subscriptions', 'subkit-subscriptions' ),
+			__( 'SubKit', 'subkit-subscriptions' ),
 			self::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' ),
