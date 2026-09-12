@@ -35,6 +35,7 @@ use SubKit\Admin\Assets as Admin_Assets;
 use SubKit\Admin\Help_Page;
 use SubKit\Admin\Integration_Installer;
 use SubKit\Admin\Integrations_Page;
+use SubKit\Admin\Gateway_Notice;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
 use SubKit\Admin\Setup_Guide;
@@ -232,6 +233,9 @@ final class Plugin {
 
 		$this->services['setup'] = new Setup_Guide( $this->services['scheduler'] );
 		$this->services['setup']->register();
+
+		$this->services['gateway_notice'] = new Gateway_Notice();
+		$this->services['gateway_notice']->register();
 
 		$this->services['admin_menu'] = new Menu(
 			$this->services['activity'],

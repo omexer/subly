@@ -34,6 +34,14 @@ class Product_Types {
 
 		add_filter( 'woocommerce_product_supports', array( $this, 'supports' ), 10, 3 );
 
+		// Without these there is no Add to cart button at all. WooCommerce renders one by
+		// firing woocommerce_{type}_add_to_cart, and it only registers listeners for the
+		// types it ships with - so a custom type silently renders nothing where the button
+		// should be. Ours behave like the products they extend, so they use the same
+		// renderers.
+		add_action( 'woocommerce_' . self::SIMPLE . '_add_to_cart', 'woocommerce_simple_add_to_cart' );
+		add_action( 'woocommerce_' . self::VARIABLE . '_add_to_cart', 'woocommerce_variable_add_to_cart' );
+
 		add_action( 'admin_notices', array( $this, 'warn_unsupported_variable' ) );
 	}
 

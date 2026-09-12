@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.12.0 · SubKit Pro 0.11.0 · development release**
+**SubKit 0.12.1 · SubKit Pro 0.11.0 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -330,7 +330,11 @@ installed and configured for the first payment. SubKit only handles the renewals
 | **Key ID** / **Key secret** | Razorpay | From the Razorpay dashboard. |
 
 A gateway with no credentials is never offered at checkout, even if enabled — so a
-half-configured gateway cannot be chosen by a customer and then fail.
+half-configured gateway cannot be chosen by a customer and then fail. **SubKit tells you
+when this is happening**, and names the field that is empty: seeing *Active* on the
+WooCommerce payments screen and *There are no payment methods available* at the checkout is
+almost always a gateway switched on with an empty key, or keys typed into Test while the
+environment is set to Live.
 
 ### No gateway at all
 
