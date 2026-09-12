@@ -304,3 +304,68 @@
 	color: var(--subkit-ink-soft);
 	font-size: 12px;
 }
+
+/* ---------------------------------------------------------------- charts */
+
+.subkit-chart {
+	display: block;
+	width: 100%;
+	height: auto;
+	max-width: 100%;
+	overflow: visible;
+}
+
+.subkit-chart__empty {
+	margin: 0;
+	padding: 28px 0;
+	color: var(--subkit-ink-soft);
+	text-align: center;
+}
+
+.subkit-ring {
+	display: flex;
+	gap: 28px;
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.subkit-ring .subkit-chart {
+	flex: 0 0 180px;
+	width: 180px;
+}
+
+.subkit-legend {
+	flex: 1 1 16rem;
+	margin: 0;
+	display: grid;
+	gap: 6px;
+	min-width: 14rem;
+}
+
+.subkit-legend li {
+	display: grid;
+	grid-template-columns: 12px 1fr auto auto;
+	gap: 10px;
+	align-items: center;
+	margin: 0;
+	padding: 4px 0;
+	border-bottom: 1px solid var(--subkit-line-soft);
+	font-size: 13px;
+}
+
+.subkit-legend li:last-child { border-bottom: 0; }
+
+.subkit-legend__swatch {
+	width: 12px;
+	height: 12px;
+	border-radius: 3px;
+}
+
+.subkit-legend__value { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+.subkit-legend__share {
+	font-variant-numeric: tabular-nums;
+	color: var(--subkit-ink-soft);
+	min-width: 3.2em;
+	text-align: right;
+}
