@@ -67,6 +67,28 @@ $can_cancel = ! in_array(
 	</p>
 
 	<?php
+	/**
+	 * Extra actions a customer can take on this subscription.
+	 *
+	 * @param array        $actions      slug => button label
+	 * @param Subscription $subscription
+	 */
+	$subkit_extra_actions = (array) apply_filters( 'subkit_myaccount_actions', array(), $subscription );
+	?>
+	<?php if ( $subkit_extra_actions ) : ?>
+		<p class="subkit-actions">
+			<?php foreach ( $subkit_extra_actions as $subkit_slug => $subkit_label ) : ?>
+				<form method="post" style="display:inline-block;margin:0 .4em .4em 0">
+					<?php wp_nonce_field( 'subkit_pro_' . $subscription->get_id() ); ?>
+					<input type="hidden" name="subkit_pro_action" value="<?php echo esc_attr( (string) $subkit_slug ); ?>" />
+					<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( (string) $subscription->get_id() ); ?>" />
+					<button type="submit" class="button subkit-btn"><?php echo esc_html( (string) $subkit_label ); ?></button>
+				</form>
+			<?php endforeach; ?>
+		</p>
+	<?php endif; ?>
+
+	<?php
 	$subkit_auto_offered = \SubKit\Lifecycle\Auto_Renewal::is_offered() && $can_cancel;
 	$subkit_auto_on      = \SubKit\Lifecycle\Auto_Renewal::is_on( $subscription );
 	?>
