@@ -11,6 +11,7 @@ use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
 use SubKit\Checkout\Cart_Validation;
+use SubKit\Checkout\Guest_Checkout;
 use SubKit\Checkout\Store_Api;
 use SubKit\Checkout\Subscription_Factory;
 use SubKit\Frontend\Disclosure;
@@ -110,6 +111,9 @@ final class Plugin {
 
 		$this->services['store_api'] = new Store_Api( $this->services['disclosure'] );
 		$this->services['store_api']->register();
+
+		$this->services['guest_checkout'] = new Guest_Checkout();
+		$this->services['guest_checkout']->register();
 
 		$this->services['subscription_factory'] = new Subscription_Factory(
 			$this->services['charge_slots'],

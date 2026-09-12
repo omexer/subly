@@ -84,6 +84,17 @@ class Settings extends \WC_Settings_Page {
 				'id'    => 'subkit_access_title',
 			),
 			array(
+				'title'    => __( 'Buying without an account', 'subkit-subscriptions' ),
+				'desc_tip' => __( 'A subscription has to belong to someone, so a guest who buys one gets an account created at checkout.', 'subkit-subscriptions' ),
+				'type'     => 'select',
+				'id'       => 'subkit_guest_checkout',
+				'default'  => 'create_account',
+				'options'  => array(
+					'create_account' => __( 'Create an account for them automatically', 'subkit-subscriptions' ),
+					'require_login'  => __( 'Require them to log in first', 'subkit-subscriptions' ),
+				),
+			),
+			array(
 				'title'    => __( 'Let customers turn off renewal', 'subkit-subscriptions' ),
 				'desc'     => __( 'Show a switch in My Account that ends the subscription at the end of the paid period instead of cancelling it outright.', 'subkit-subscriptions' ),
 				'type'     => 'checkbox',
