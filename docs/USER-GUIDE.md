@@ -23,6 +23,10 @@ Please read [What is not proven yet](#what-is-not-proven-yet) before taking real
 10. [When something looks wrong](#when-something-looks-wrong)
 11. [What is not proven yet](#what-is-not-proven-yet)
 
+Then, once you know what the settings do, [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md) builds
+twelve real businesses with it — a coffee box, a course library, a SaaS licence, a gym — with
+the field values to type and the integrations each one needs.
+
 ---
 
 ## What SubKit does
@@ -92,7 +96,7 @@ appear under General.
 
 The question to ask is simple: **does the customer have a choice to make before buying?**
 
-| | Choose **Subscription** | Choose **Variable subscription** |
+| | Choose **Subscription** | Choose **Variable subscription** *(Pro)* |
 |---|---|---|
 | The customer picks | Nothing — one price, one schedule | A plan, a size, a tier |
 | Price | One price | A different price per option |
@@ -119,9 +123,17 @@ Each variation can have its **own** schedule, or share the parent's. On a variat
 **Different billing schedule** — tick it to give that one its own period, interval, trial and
 fee. That is how Monthly-£10 and Yearly-£100 live on one product.
 
+Twelve worked examples, with the values to type, are in
+[BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md).
+
 **Still not sure?** Start with **Subscription**. If you later need a second price or plan, you
 can change the type on the same product — WooCommerce keeps the product, its URL and its
 reviews.
+
+> **Variable subscription needs Pro.** The type is in the dropdown either way, but a
+> variation only inherits its parent's billing schedule while SubKit Pro is active — without
+> it the variation is not treated as a subscription and sells as a one-off. Stay on
+> **Subscription** on the free plugin.
 
 **What about physical and digital?** Either type works for both. Tick **Virtual** for
 something not shipped and **Downloadable** for a file, exactly as you would on a normal
@@ -184,7 +196,7 @@ The same terms follow the product into the cart and the checkout.
 
 ### Variable subscriptions
 
-Choose **Variable subscription**, set up your variations as normal, and each variation can
+*(Pro.)* Choose **Variable subscription**, set up your variations as normal, and each variation can
 have its own schedule. On each variation you will find **Different billing schedule** — tick
 it to give that variation its own period, interval, trial and fee. Leave it unticked and the
 variation follows the parent product.
@@ -403,7 +415,7 @@ with the reason. When a customer asks "why was I charged?", the answer is here.
 | **Content access** | Roles and downloadable files follow the subscription |
 | **Live QR** | A code for the packing slip linking to a private status page |
 | **REST API** | For connecting other systems |
-| **Nine integrations** | See [INTEGRATIONS.md](INTEGRATIONS.md) |
+| **Nine integrations** | See [INTEGRATIONS.md](INTEGRATIONS.md), and [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md) for which to connect for what |
 
 ### Live QR settings
 

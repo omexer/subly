@@ -6,6 +6,9 @@ for — a course, a mailing list, a licence key — and takes it back when they 
 All of them are **SubKit Pro**. Find them under **SubKit → Integrations**, which shows every
 integration, the plugin it needs, and whether that plugin is active right now.
 
+For *which* integration a given business needs — and the two builds that need four at once —
+see [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md).
+
 ---
 
 ## How they all behave
