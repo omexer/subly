@@ -13,6 +13,7 @@ use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
 use SubKit\Data\Stats;
 use SubKit\Rest\Overview_Controller;
+use SubKit\Rest\Subscriptions_Controller;
 use SubKit\Checkout\Cart_Validation;
 use SubKit\Checkout\Guest_Checkout;
 use SubKit\Checkout\Store_Api;
@@ -114,6 +115,9 @@ final class Plugin {
 
 		$this->services['overview_api'] = new Overview_Controller( $this->services['stats'] );
 		$this->services['overview_api']->register();
+
+		$this->services['subscriptions_api'] = new Subscriptions_Controller( $this->services['activity'] );
+		$this->services['subscriptions_api']->register();
 
 		$this->services['product_types'] = new Product_Types();
 		$this->services['product_types']->register();

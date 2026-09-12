@@ -66,7 +66,30 @@ class Assets {
 
 		wp_localize_script( 'subkit-admin', 'subkitAdmin', $data );
 
+		$this->register_ui();
 		$this->enqueue_overview( (string) $hook );
+	}
+
+	/**
+	 * Register the shared UI on every SubKit screen, enqueue it on none.
+	 *
+	 * Registered rather than enqueued because SubKit Pro's screens depend on the handle:
+	 * a screen that uses it asks for it, and a screen that does not costs nothing.
+	 */
+	private function register_ui(): void {
+		$asset = SUBKIT_PATH . 'build/ui.asset.php';
+
+		if ( ! is_readable( $asset ) ) {
+			return;
+		}
+
+		$asset = require $asset;
+
+		wp_register_style( 'subkit-ui', SUBKIT_URL . 'build/ui.css', array(), $asset['version'] );
+		wp_style_add_data( 'subkit-ui', 'rtl', 'replace' );
+
+		wp_register_script( 'subkit-ui', SUBKIT_URL . 'build/ui.js', $asset['dependencies'], $asset['version'], true );
+		wp_set_script_translations( 'subkit-ui', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
 	}
 
 	/**
@@ -80,30 +103,25 @@ class Assets {
 			return;
 		}
 
-		$ui       = SUBKIT_PATH . 'build/ui.asset.php';
-		$overview = SUBKIT_PATH . 'build/overview.asset.php';
+		$asset = SUBKIT_PATH . 'build/overview.asset.php';
 
-		if ( ! is_readable( $ui ) || ! is_readable( $overview ) ) {
+		if ( ! is_readable( $asset ) || ! wp_script_is( 'subkit-ui', 'registered' ) ) {
 			return;
 		}
 
-		$ui       = require $ui;
-		$overview = require $overview;
+		$asset = require $asset;
 
-		wp_enqueue_style( 'subkit-ui', SUBKIT_URL . 'build/ui.css', array(), $ui['version'] );
-		wp_style_add_data( 'subkit-ui', 'rtl', 'replace' );
-		wp_enqueue_script( 'subkit-ui', SUBKIT_URL . 'build/ui.js', $ui['dependencies'], $ui['version'], true );
+		wp_enqueue_style( 'subkit-ui' );
 
 		wp_enqueue_script(
 			'subkit-overview',
 			SUBKIT_URL . 'build/overview.js',
-			array_merge( $overview['dependencies'], array( 'subkit-ui' ) ),
-			$overview['version'],
+			array_merge( $asset['dependencies'], array( 'subkit-ui' ) ),
+			$asset['version'],
 			true
 		);
 
 		wp_set_script_translations( 'subkit-overview', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
-		wp_set_script_translations( 'subkit-ui', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
 	}
 
 	private function is_subkit_screen( string $hook ): bool {

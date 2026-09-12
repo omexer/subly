@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.10.0 · SubKit Pro 0.9.2 · development release**
+**SubKit 0.11.0 · SubKit Pro 0.11.0 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -20,8 +20,9 @@ Please read [What is not proven yet](#what-is-not-proven-yet) before taking real
 7. [What your customers see](#what-your-customers-see)
 8. [Running the shop day to day](#running-the-shop-day-to-day)
 9. [Pro features](#pro-features)
-10. [When something looks wrong](#when-something-looks-wrong)
-11. [What is not proven yet](#what-is-not-proven-yet)
+10. [The REST API](#the-rest-api)
+11. [When something looks wrong](#when-something-looks-wrong)
+12. [What is not proven yet](#what-is-not-proven-yet)
 
 Then, once you know what the settings do, [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md) builds
 twelve real businesses with it — a coffee box, a course library, a SaaS licence, a gym — with
@@ -415,7 +416,7 @@ with the reason. When a customer asks "why was I charged?", the answer is here.
 | **Reports** | Revenue over time, signups, status breakdown, churn, lifetime value |
 | **Content access** | Roles and downloadable files follow the subscription |
 | **Live QR** | A code for the packing slip linking to a private status page |
-| **REST API** | For connecting other systems |
+| **REST API** | Pause and resume over the API, plus reports and health. The subscriptions API itself is free — see [the REST API](#the-rest-api). |
 | **Nine integrations** | See [INTEGRATIONS.md](INTEGRATIONS.md), and [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md) for which to connect for what |
 
 ### Live QR settings
@@ -443,6 +444,39 @@ details** — whichever of the three sections you switch on.
 The licence controls **updates and support only**. If it lapses or expires, or the licence
 server is unreachable, **your Pro features keep working and your customers keep being
 charged.** A licence problem will never stop you taking money.
+
+---
+
+## The REST API
+
+Free. Everything below works without a licence, authenticated the way WooCommerce
+authenticates everything else: **WooCommerce → Settings → Advanced → REST API**, a key with
+read/write on an account that can manage WooCommerce.
+
+All of it lives under `/wp-json/subkit/v1/`.
+
+| Route | Method | What it does |
+|---|---|---|
+| `/subscriptions` | GET | A page of subscriptions. `page`, `per_page`, `status`, `customer`, `search`. Totals come back in the `X-WP-Total` and `X-WP-TotalPages` headers. |
+| `/subscriptions/<id>` | GET | One subscription. |
+| `/subscriptions/<id>` | POST | Move `next_payment` or `end_date`. |
+| `/subscriptions/<id>/actions` | POST | `cancel`, `expire`, `reactivate`, `change_status` — and `pause` / `resume` with Pro. |
+| `/subscriptions/<id>/activity` | GET | What has happened to it, newest first. |
+| `/subscriptions/statuses` | GET | The statuses and what they are called, so you do not hard-code either. |
+| `/overview` | GET | The figures on the SubKit landing screen. |
+| `/reports` | GET | *(Pro)* Every figure on the Reports screen. `days` sets the range. |
+| `/health` | GET | *(Pro)* Subscriptions at risk, why, and what would fix them. |
+| `/health/<id>/actions` | POST | *(Pro)* `retry_now`, `requeue`, `email_customer`, `dismiss`, `restore`. |
+
+Three behaviours worth knowing before you build on it:
+
+- **An action that repeats itself succeeds.** Cancelling a cancelled subscription returns
+  200, not a conflict — a call retried after a dropped connection must not look like a
+  failure.
+- **An action the status forbids returns 409**, and says which status it was in. That is a
+  refusal, not an error.
+- **Asking for `pause` without Pro returns 400**, because the action is not in the schema on
+  that site. It is never a 500.
 
 ---
 

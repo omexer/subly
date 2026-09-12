@@ -91,6 +91,14 @@ Verification key:
 | Role while subscribed / once ended | Run | Administrators never demoted; kept while another subscription is live |
 | Downloadable file gating | Run | Active + cancelled pair keeps the files |
 
+## API and admin UI — Free
+
+| Feature | Verification | Notes |
+|---|---|---|
+| **REST API**: list, read, update, act on, and read the history of a subscription | Run | Proven with Pro on and off; 401 / 404 / 409 / 400 paths all covered |
+| Overview endpoint | Run | What the landing screen draws |
+| React overview screen | Run | Renders beside the server-rendered summary; a failed request leaves that showing |
+
 ---
 
 ## Pro
@@ -114,7 +122,7 @@ Verification key:
 | **Delivery schedules** (cadence, manifest, print) | Run | Guards refuse rather than coerce |
 | **Reports** (MRR, ARR, churn, LTV) | Run | |
 | **Content access** (per-product roles, download capability) | Wired | |
-| **REST API** | Run | 401 / 404 / 409 / 400 paths all proven |
+| **REST API**: pause and resume, reports, health | Run | 401 / 404 / 409 / 400 paths all proven. The subscriptions routes themselves are free. |
 | **Mollie renewals** | Mocked | Idempotency-Key + payment metadata |
 | **Razorpay renewals** | Mocked | Order receipt as the idempotency handle |
 | **Xendit renewals** | Mocked | Refuses to replay past the 24h key window |
