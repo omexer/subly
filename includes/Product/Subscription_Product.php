@@ -26,24 +26,48 @@ class Subscription_Product {
 	public static function is_subscription( $product ): bool {
 		$product = self::resolve( $product );
 
-		return $product instanceof \WC_Product && 'yes' === $product->get_meta( self::META_ENABLED );
+		return $product instanceof \WC_Product && 'yes' === self::meta( $product, self::META_ENABLED );
 	}
 
 	public static function schedule( $product ): Billing_Schedule {
 		$product = self::resolve( $product );
 
 		return new Billing_Schedule(
-			$product ? ( $product->get_meta( self::META_PERIOD ) ?: 'month' ) : 'month',
-			$product ? max( 1, (int) $product->get_meta( self::META_INTERVAL ) ) : 1,
-			$product ? max( 0, (int) $product->get_meta( self::META_TRIAL_DAYS ) ) : 0
+			self::meta( $product, self::META_PERIOD ) ?: 'month',
+			max( 1, (int) self::meta( $product, self::META_INTERVAL, 1 ) ),
+			max( 0, (int) self::meta( $product, self::META_TRIAL_DAYS, 0 ) )
 		);
 	}
 
 	public static function signup_fee( $product ): Money {
 		$product = self::resolve( $product );
-		$fee     = $product ? (float) $product->get_meta( self::META_SIGNUP_FEE ) : 0.0;
 
-		return Money::from_decimal( $fee );
+		return Money::from_decimal( (float) self::meta( $product, self::META_SIGNUP_FEE, 0.0 ) );
+	}
+
+	/**
+	 * Every read of subscription configuration goes through here.
+	 *
+	 * The single seam an extension needs: a variation carries no parent meta of its own,
+	 * so without this each caller would have to know to look up the parent, and the ones
+	 * that forgot would silently treat the variation as not a subscription.
+	 *
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public static function meta( ?\WC_Product $product, string $key, $default = '' ) {
+		$value = $product ? $product->get_meta( $key ) : '';
+
+		/**
+		 * Filter a single piece of subscription configuration read off a product.
+		 *
+		 * @param mixed            $value
+		 * @param \WC_Product|null $product
+		 * @param string           $key
+		 */
+		$value = apply_filters( 'subkit_product_meta', $value, $product, $key );
+
+		return '' === $value || null === $value ? $default : $value;
 	}
 
 	public static function recurring_price( $product ): Money {
