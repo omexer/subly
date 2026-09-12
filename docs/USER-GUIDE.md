@@ -1,54 +1,170 @@
 # SubKit — User Guide
 
-**SubKit 0.9.0 (free) · SubKit Pro 0.9.0 · development release**
+**SubKit 0.9.0 · SubKit Pro 0.9.0 · development release**
 
-Read [What is not proven yet](#what-is-not-proven-yet) before you put this anywhere near a real customer. It is short, and it is the honest part.
+This guide explains everything SubKit does and every setting it has, in plain language. You
+do not need to be technical to follow it.
 
----
-
-## What SubKit is
-
-A WooCommerce plugin that turns products into subscriptions. A customer buys once; SubKit creates a subscription record and bills it on a repeating schedule. Customers manage their own subscriptions from My Account. You get an admin screen, a renewal engine and a health report.
-
-There are two plugins. **SubKit** is free and complete on its own. **SubKit Pro** adds to it and cannot run without it.
+Please read [What is not proven yet](#what-is-not-proven-yet) before taking real money.
 
 ---
 
-## Requirements
+## Contents
 
-| | |
-|---|---|
-| WordPress | 6.5 or newer |
-| WooCommerce | 8.0 or newer |
-| PHP | 8.1 or newer |
-| Order storage | High-Performance Order Storage (HPOS) |
+1. [What SubKit does](#what-subkit-does)
+2. [Installing](#installing)
+3. [Your first subscription in five minutes](#your-first-subscription-in-five-minutes)
+4. [Making subscription products](#making-subscription-products)
+5. [Every setting, explained](#every-setting-explained)
+6. [Taking payment](#taking-payment)
+7. [What your customers see](#what-your-customers-see)
+8. [Running the shop day to day](#running-the-shop-day-to-day)
+9. [Pro features](#pro-features)
+10. [When something looks wrong](#when-something-looks-wrong)
+11. [What is not proven yet](#what-is-not-proven-yet)
 
-SubKit refuses to load and shows a notice if any of these are missing, rather than half-working.
+---
 
-## Install
+## What SubKit does
+
+A normal WooCommerce product is bought once. A **subscription** product is bought once and
+then charges again on a schedule — every month, every year, every two weeks, whatever you
+choose.
+
+SubKit adds that. It creates a subscription record when somebody buys, charges them when the
+next payment falls due, emails them when something needs their attention, and gives them a
+place to see and cancel it themselves.
+
+**What you need:** WordPress 6.5+, WooCommerce 8.0+, PHP 8.1+. SubKit refuses to start and
+tells you if any of these is missing, rather than half-working.
+
+**Free or Pro?** The free plugin is complete on its own — products, billing, renewals,
+emails, customer self-service, Stripe and PayPal. Pro adds instalments, plan switching,
+pausing, failed-payment recovery, delivery schedules, reports, content access, three more
+payment gateways and nine integrations.
+
+---
+
+## Installing
 
 1. Install and activate **SubKit — Subscriptions & Recurring Payments for WooCommerce**.
-2. For Pro: install **SubKit Subscriptions Pro** and activate it *after* the free plugin. Pro boots from a hook the free plugin fires, so the order matters. If Pro is activated alone it says so and does nothing. Pro needs free 0.9.0 or newer and refuses to boot against an older one rather than half-working.
+2. For Pro, install **SubKit Subscriptions Pro** and activate it **after** the free plugin.
 
-> The folder name does not matter. Installing the free plugin from a GitHub ZIP gives you a folder called `subkit-subscriptions-main`, and Pro is happy either way.
-3. Go to **SubKit** in the admin menu, directly below WooCommerce, for the setup checklist.
+Pro does nothing on its own and says so if you activate it alone. It needs the free plugin
+version 0.9.0 or newer.
+
+> **The folder name does not matter.** Downloading from GitHub gives you a folder called
+> `subkit-subscriptions-main`. That is fine — Pro finds the free plugin either way.
+
+Then go to **SubKit** in the admin menu, just below WooCommerce.
 
 ---
 
-## Your first subscription product
+## Your first subscription in five minutes
 
-The fastest way: on **SubKit → All subscriptions**, the setup checklist has a short form — name, price, how often, optional free trial. Fill it in and press **Create it**. The product is published and ready.
+On **SubKit → All subscriptions** there is a checklist. It walks you through four things, and
+the fourth is the one that matters.
 
-The manual way, and how you edit one afterwards:
+**1. Connect a payment method.** Or skip it — you can test with Cash on delivery.
 
-1. **Products → Add New**, or edit an existing simple product.
-2. Set a price.
-3. In the **Product data** panel, tick **Bill this product on a repeating schedule**. The schedule fields appear once it is ticked.
-4. Choose the period and interval — `2` + `Month` means every two months.
-5. Optionally add a **Free trial** in days and a **Sign-up fee**.
-6. Publish.
+**2. Create a subscription product.** There is a short form right there: name, price, how
+often, optional free trial. Fill it in, press **Create it**, and the product is published.
 
-On the product page the terms appear under the price, as separate facts rather than one long sentence:
+**3. Check renewals can run.** This tells you whether WordPress's scheduler is working. On a
+quiet site it often is not, which is the single most common reason subscriptions stop
+billing.
+
+**4. Run a test renewal.** This is the important one. It creates a throwaway subscription,
+renews it, checks the whole chain worked, and deletes everything. Nobody is charged. If this
+passes, your billing works. If it fails, it tells you why.
+
+---
+
+## Making subscription products
+
+In **Products → Add New**, the **Product data** dropdown now has two extra entries:
+**Subscription** and **Variable subscription**. Pick one and the **Billing schedule** fields
+appear under General.
+
+### Which type should I choose?
+
+The question to ask is simple: **does the customer have a choice to make before buying?**
+
+| | Choose **Subscription** | Choose **Variable subscription** |
+|---|---|---|
+| The customer picks | Nothing — one price, one schedule | A plan, a size, a tier |
+| Price | One price | A different price per option |
+| Product page | Add to cart | A dropdown, then Add to cart |
+| Shop page shows | `£29.00 every month` | `From £10.00 every month` |
+
+**Choose Subscription when there is one way to buy it:**
+
+- A £29/month membership
+- A weekly veg box, one size
+- Software billed yearly at one price
+- A £5/month supporter tier
+
+**Choose Variable subscription when the same thing is sold several ways:**
+
+- **Monthly £10 / Yearly £100** — the classic. Same product, two billing schedules, and the
+  yearly one is cheaper per month. This is the most common reason to use it.
+- **Small box £15 / Medium £25 / Large £40**, all monthly
+- **Basic / Pro / Team**, each a different price
+- **Ground coffee / Whole bean**, same price, both monthly — a choice that does not change the
+  billing at all is still a variation
+
+Each variation can have its **own** schedule, or share the parent's. On a variation you get
+**Different billing schedule** — tick it to give that one its own period, interval, trial and
+fee. That is how Monthly-£10 and Yearly-£100 live on one product.
+
+**Still not sure?** Start with **Subscription**. If you later need a second price or plan, you
+can change the type on the same product — WooCommerce keeps the product, its URL and its
+reviews.
+
+**What about physical and digital?** Either type works for both. Tick **Virtual** for
+something not shipped and **Downloadable** for a file, exactly as you would on a normal
+product. Delivery schedules (Pro) apply only to products that are actually shipped.
+
+### The billing schedule fields
+
+| Field | What it means |
+|---|---|
+| **Bill every** | Day, Week, Month or Year. |
+| **Interval** | How many of those. `2` + `Month` = every two months. |
+| **Free trial (days)** | Days before the first charge. `0` means charge immediately. A customer on a 14-day trial pays nothing today and is charged in two weeks. |
+| **Sign-up fee** | A one-off amount charged *today*, on top of the first payment. Leave empty for none. |
+
+The **Regular price** is what recurs. So price `29`, Bill every `1` `Month`, sign-up fee `50`
+means: £79 today, then £29 every month.
+
+### The Pro fields on a product
+
+Pro adds more fields to the same panel. All are optional; leave them alone and the product
+bills as a plain subscription.
+
+| Field | What it does | Use it for |
+|---|---|---|
+| **Installment plan** + **Number of payments** | Splits one fixed total into N equal charges, then **stops**. £300 as 3 × £100. | Paying off a course or a product over time |
+| **Payment type** + **Number of payments** | A set price charged N times, then stops. Unlike instalments, the price is per payment, not a total divided up. | A 6-month programme at £50 a month |
+| **Access ends** / **Access duration** | Whether access outlives the payments: lifetime, when the payments end, or a custom period after | "Pay for 3 months, keep it forever" |
+| **Purchase limit** + **Maximum per customer** | One active, one ever, or a set number per customer | Stopping somebody buying the same membership twice |
+| **Maximum payments** | Ends the subscription after this many charges, whatever else is set | A 12-month contract that must not auto-renew into year two |
+| **Automatic renewals only** | Hides payment methods that cannot renew by themselves | Products you refuse to invoice manually |
+| **Delivery schedule** + **Deliver every** / **Deliver on** | A shipping cadence separate from billing | Pay monthly, ship weekly |
+| **Grant role while active** | A WordPress role for this product only, overriding the store-wide setting | A "premium member" role for one tier |
+
+Two of these are easy to confuse:
+
+- **Instalment plan** divides one total. £300 over 3 payments = £100 each.
+- **Payment type / split payments** repeats a price. £100 × 3 payments = £300 total.
+
+They do the same arithmetic from opposite ends, and a product cannot use both — SubKit
+refuses to save that.
+
+### What the customer sees
+
+SubKit writes the terms on the product page automatically — as separate plain facts, not one
+long sentence:
 
 ```
 $29.00 every month
@@ -59,109 +175,212 @@ Then $29.00 every month
 Cancel anytime
 ```
 
-The same terms follow the product into the cart and checkout, on both the classic and block checkout.
+The same terms follow the product into the cart and the checkout.
 
-> **One subscription per cart.** A second one is blocked on purpose. A one-off product alongside a subscription is fine.
+> **One subscription per cart.** A customer cannot buy two subscriptions at once — that is
+> deliberate. A subscription plus ordinary products is fine.
+
+### Variable subscriptions
+
+Choose **Variable subscription**, set up your variations as normal, and each variation can
+have its own schedule. On each variation you will find **Different billing schedule** — tick
+it to give that variation its own period, interval, trial and fee. Leave it unticked and the
+variation follows the parent product.
+
+The shop page shows "From £10.00 every month", using the cheapest variation, because until
+somebody picks one there is no single price to state.
+
+---
+
+## Every setting, explained
+
+All of these live under **SubKit → Settings**.
+
+### General → Health
+
+Not settings — a read-out. Three lines telling you whether billing is actually working:
+
+| Line | What it means | If it is red |
+|---|---|---|
+| **Renewal queue** | WordPress's background task system is running | Renewals are not happening. On a quiet site, ask your host to set up a real server cron. |
+| **Unresolved charges** | A charge whose outcome nobody ever learned | That subscription has **stopped billing** on purpose, because charging again might charge twice. Open it and check your payment provider. |
+| **Double-charge protection** | The database safeguard is in place | Deactivate and reactivate SubKit. |
+
+### General → Renewals
+
+**Missed renewals** — what to do when a subscription is overdue by more than one period,
+which almost always means your site had no traffic and the scheduler stalled.
+
+| Choice | What happens |
+|---|---|
+| **Charge once and move the schedule forward** *(recommended)* | The customer is charged once and the next date moves on. |
+| **Charge for every missed period** | The customer is charged for each missed period, all at once. |
+
+Only use the second if you physically ship goods for every period regardless. Otherwise you
+are billing a customer several times over for an outage that was not their fault.
+
+**Grace period (days)** — default `7`. After a payment fails, how long to keep trying before
+giving up. **The customer keeps their access during this window.** Set it to `0` to give up
+immediately; `14` gives someone a fortnight to notice their card expired.
+
+### General → Access
+
+**Buying without an account** — a subscription has to belong to someone, so that they can
+manage and cancel it.
+
+| Choice | What happens |
+|---|---|
+| **Create an account for them automatically** *(default)* | A guest who buys a subscription gets an account made at checkout. Smoothest for the customer. |
+| **Require them to log in first** | They must sign in or register before buying. |
+
+If someone checks out with an email that already has an account, SubKit stops and asks them
+to log in. It will not attach the subscription to an account they have not proved is theirs.
+
+> If you choose **Require them to log in** but WooCommerce is not showing a login on the
+> checkout page, SubKit warns you — otherwise every subscription customer hits a dead end.
+
+**Let customers turn off renewal** — off by default. Turn it on to show a switch in My
+Account.
+
+This is **not** cancelling. The customer keeps everything they have paid for until the
+current period ends, and is simply never charged again. Many people who would otherwise
+cancel in frustration will use this instead, and some turn it back on.
+
+**Role while subscribed** / **Role once it ends** — the WordPress user role a customer gets
+while paying, and what they drop to when they stop. This is how you gate content without a
+membership plugin.
+
+Leave both as **Leave the role alone** if you do not use roles.
+
+Two safeguards: an **administrator is never changed** (you cannot demote yourself by buying
+your own product), and a customer is only dropped when **no other live subscription** of
+theirs still grants the role.
+
+**Health digest** *(Pro)* — how often to email you a summary of subscriptions needing
+attention: Daily, Weekly *(default)*, Monthly or Never.
 
 ---
 
 ## Taking payment
 
-SubKit adds two payment methods of its own at **SubKit → Settings**. Both are off until you enter credentials.
+SubKit adds its own payment methods under **SubKit → Settings**. All are off until you enter
+credentials.
 
-| Gateway | Who owns the schedule | Where |
+| Gateway | Who keeps the schedule | Tier |
 |---|---|---|
-| **Stripe** | SubKit — we charge the saved card when a renewal falls due | Free |
-| **PayPal** | PayPal — it bills on its own schedule and we mirror it | Free |
-| **Mollie** | SubKit, against the mandate the Mollie plugin stored | Pro |
-| **Razorpay** | SubKit, against the saved token | Pro |
-| **Xendit** | SubKit, against the saved card token | Pro |
+| **Stripe** | SubKit. Stripe stores the card; we charge it when a payment falls due. | Free |
+| **PayPal** | PayPal. It bills on its own schedule and tells us by webhook. | Free |
+| **Mollie**, **Razorpay**, **Xendit** | SubKit, using the mandate those plugins already stored | Pro |
 
-The three Pro gateways renew against a mandate that the merchant's **existing** payment plugin captured at checkout — keep Mollie Payments for WooCommerce, WooCommerce Razorpay or the Xendit plugin installed and configured for the initial payment. SubKit only handles the renewal.
+Every gateway has an **Environment** setting: **Test/Sandbox** or **Live**. Always start in
+test.
 
-You can also run without any of them: enable a manual method such as **Cash on delivery** or **Direct bank transfer**, and renewals become invoices the customer pays.
+### Stripe
+
+Enter your **Test secret key** and **Live secret key** from your Stripe dashboard (they start
+`sk_test_` and `sk_live_`). Switch Environment to Live when you are ready.
+
+### PayPal
+
+PayPal needs four things, and one of them catches everybody:
+
+1. **Client ID** and **Secret** from your PayPal app.
+2. **Webhook URL** — SubKit shows it. Copy it into your PayPal app and subscribe it to the
+   billing-subscription and payment-sale events.
+3. **Webhook ID** — PayPal gives you this *after* you add the URL. Paste it back.
+
+**Without the Webhook ID, SubKit rejects every webhook** — because it cannot prove the
+message really came from PayPal — and no renewal is ever recorded. If PayPal is taking money
+and your subscriptions are not updating, this is why.
+
+### Mollie, Razorpay and Xendit (Pro)
+
+These three renew against a payment mandate that the merchant's **existing** plugin captured
+at checkout. Keep Mollie Payments for WooCommerce, WooCommerce Razorpay or the Xendit plugin
+installed and configured for the first payment. SubKit only handles the renewals.
+
+### Every gateway field
+
+| Field | Appears on | What to put in it |
+|---|---|---|
+| **Enable PayPal** / **Enable Stripe** | Free gateways | Tick to offer it at checkout. Off until you do. |
+| **Enable Mollie renewals**, **Enable Razorpay renewals**, **Enable Xendit renewals** | Pro gateways | Tick to let SubKit renew against that gateway's stored mandate. |
+| **Environment** | All | **Test**/**Sandbox** while you are setting up, **Live** when real money should move. |
+| **Test secret key** / **Live secret key** | Stripe | From Stripe → Developers → API keys. `sk_test_…` and `sk_live_…`. |
+| **Client ID** / **Secret** | PayPal | From your PayPal app. |
+| **Webhook URL** | PayPal | SubKit shows it — copy it into PayPal. |
+| **Webhook ID** | PayPal | PayPal gives you this after you add the URL. Paste it back. |
+| **Test API key** / **Live API key** | Mollie, Xendit | From that gateway's dashboard. |
+| **Key ID** / **Key secret** | Razorpay | From the Razorpay dashboard. |
+
+A gateway with no credentials is never offered at checkout, even if enabled — so a
+half-configured gateway cannot be chosen by a customer and then fail.
+
+### No gateway at all
+
+You can run without any of them. Enable **Cash on delivery** or **Direct bank transfer**, and
+each renewal becomes an invoice the customer pays by hand.
 
 ---
 
-## Making a renewal happen on a test site
+## What your customers see
 
-On a quiet site WordPress's scheduler rarely runs, so trigger renewals by hand.
+Under **My account → Subscriptions** they get a list and a detail page, where they can:
 
-**As the shop owner** — **SubKit → All subscriptions**, open one, click **Process renewal now**. It names the amount and asks you to confirm.
+- See the status, next payment date and what they are paying
+- **Cancel** — either at the end of the period they have paid for, or immediately. You cannot
+  switch this off; being unable to cancel is what causes chargebacks.
+- **Turn off automatic renewal**, if you enabled it
+- **Pay** a renewal that failed
+- **Pause**, **Resume** and **Switch plan** (Pro, where the gateway supports it)
 
-**As the customer** — **My account → Subscriptions**, a subscription needing payment shows **Pay now**.
+### Emails
 
-**The self-test** — the setup checklist has **Run test renewal**. It creates a throwaway subscription, renews it, checks it worked and deletes everything. Nobody is charged. Use it to prove the plumbing works on your server.
+Six emails, all editable under **WooCommerce → Settings → Emails**:
 
----
-
-## What customers can do
-
-From **My account → Subscriptions**:
-
-- See status, next payment date and what they are paying
-- **Cancel** — either at the end of the period they have paid for, or immediately. This cannot be switched off by the shop owner.
-- **Turn off automatic renewal** — if you enable it in settings. This is not cancelling: they keep everything they paid for until the period runs out, and are never charged again.
-- Pay a renewal that needs paying
-- **Pause and resume** (Pro), and **switch plan** (Pro), where the gateway supports it
-
-### Buying without an account
-
-A subscription has to belong to someone — it is managed from My Account and renews against a stored mandate. Under **SubKit → Settings → Access**, choose:
-
-- **Create an account for them automatically** (default) — a guest who buys a subscription gets an account made at checkout.
-- **Require them to log in first**.
-
-An email address that already has an account is never claimed silently. Checkout stops and asks them to log in, because attaching the subscription would put a stranger's details inside somebody else's account.
-
----
-
-## What a subscription grants
-
-Under **SubKit → Settings → Access**:
-
-- **Role while subscribed** / **Role once it ends** — how most membership setups gate content. Administrators are never demoted, and a customer is only demoted once no other live subscription is keeping them in.
-- Downloadable files attached to a subscription product are withdrawn when no live subscription covers them. Someone who resubscribed after cancelling keeps their files.
-
-Pro adds per-product role overrides and gates the download capability itself.
-
----
-
-## The admin menu
-
-Everything lives under one **SubKit** entry, directly below WooCommerce:
-
-| | |
+| Email | When |
 |---|---|
-| **All subscriptions** | The list, and each subscription's detail and activity log |
-| **Reports** | MRR, ARR, churn, lifetime value (Pro) |
-| **Deliveries** | What ships when, with a printable manifest (Pro) |
-| **Health** | Subscriptions at risk, and why (Pro) |
-| **Integrations** | What SubKit can connect to, and whether each connection is live |
-| **Help** | A system report to paste into a support request |
-| **Settings** | Gateways, access, licence |
+| Subscription started | The first payment succeeds |
+| Renewal receipt | A renewal is paid |
+| Payment failed | A charge is declined — includes a link to pay |
+| Confirm your payment | The bank wants the customer to authenticate |
+| Subscription cancelled | It ends |
+| New subscription *(to you)* | Somebody subscribes |
 
-## Admin screens
+---
 
-**SubKit → All subscriptions** — the list, with monthly recurring revenue and live count above it. Search by name, email or id; sort by id, next payment or total; filter by status. Select rows to cancel, hold or reactivate in bulk, or use the row actions to view one, renew it now, or open its parent order.
+## Running the shop day to day
 
-Bulk changes go through the same rules as everything else: a subscription that cannot legally make the change is skipped rather than forced, and the notice says how many were left alone and why.
+### SubKit → All subscriptions
 
-Open a subscription for its schedule, its orders and a full activity log of every charge attempt and status change.
+Recurring revenue and live count at the top, then the list. You can **search** by name, email
+or id, **sort** by id, next payment or total, and **filter** by status.
 
-**SubKit → Settings → General** — a Status panel that reports honestly:
+Tick rows to **cancel**, **put on hold** or **reactivate** several at once. Each row also
+offers **View**, **Renew now** and **Parent order**.
 
-| Check | Means |
+Bulk changes follow the same rules as everything else: a subscription that cannot legally
+make that change is skipped, not forced, and you are told how many were left alone and why.
+
+### A single subscription
+
+Everything about it, plus an **Activity log** — every charge attempt, every status change,
+with the reason. When a customer asks "why was I charged?", the answer is here.
+
+**Process renewal now** charges it immediately, naming the amount before you confirm.
+
+### The statuses
+
+| Status | Meaning |
 |---|---|
-| Renewal queue | Scheduled tasks are running |
-| Unresolved charges | A charge whose outcome we never learned. That subscription is **not billing** until someone looks. |
-| Double-charge protection | The database index that makes one charge per period impossible |
-
-### Pro screens
-
-- **Subscription reports** — recurring revenue over time, new subscriptions per day and a status ring, plus MRR, ARR, churn, lifetime value and cancellation reasons. The charts are drawn on the server, so they print and need no scripts.
-- **Subscription health** — every subscription at risk, why, and what to do. Each row offers **Retry now** (charge again immediately, through the same pipeline as a scheduled renewal), **Ask the customer** (re-send the failed-payment email with its pay link), **Queue renewal** and **Dismiss**. Six signals over the charge ledger: overdue with nothing queued, a failed charge, a failure with no retry booked, a charge stuck with an unknown outcome, a renewal waiting on customer authentication, and recovery about to give up. Optional scheduled digest email.
-- **Subscription deliveries** — what ships when, with a printable manifest, for physical subscriptions whose delivery cadence differs from billing
+| **Pending** | Created, not started |
+| **Trialling** | In a free trial, not yet charged |
+| **Active** | Billing normally |
+| **On hold** | A payment failed, or it was paused. Not billing. |
+| **Pending cancel** | Cancelled, running out the paid period |
+| **Cancelled** | Ended |
+| **Expired** | Ran its course |
+| **Switched** | Replaced by a different plan |
 
 ---
 
@@ -169,88 +388,82 @@ Open a subscription for its schedule, its orders and a full activity log of ever
 
 | | |
 |---|---|
-| **Variable subscriptions** | One product, several schedules — a yearly variation beside a monthly one, each with its own trial and fee |
-| **Instalment plans** | A fixed total over N charges, then stop |
-| **Pause and resume** | With the remaining time preserved |
+| **Instalment plans** | A fixed total over N payments, then it stops. £300 as 3 × £100. |
+| **Split payments** | A set price × N payments, with access that can outlive the plan |
+| **Pause and resume** | Remaining time is preserved |
 | **Plan switching** | Upgrade or downgrade, crediting unused time |
-| **Recurring coupons** | Discounts that apply to renewals, not just the first order |
-| **Failed payment recovery** | Retry schedule, dunning emails and a grace period before giving up |
-| **Delivery schedules** | Delivery cadence independent of billing, with a manifest |
-| **Subscription health** | The report above |
-| **Reports** | MRR, ARR, churn, LTV |
-| **Content access** | Per-product roles and download gating |
-| **REST API** | List, read, update, run lifecycle actions, read the activity log |
-| **Subscription limits** | One active, one ever, or a fixed number per customer; plus a cap on total payments |
-| **Gateway restriction** | Narrow which payment methods a subscription purchase may use |
-| **Split payments** | A set price times N payments, with access that can outlive the plan |
-| **QR status page** | A code for the packing slip, linking to a private status page |
-| **Integrations** | Nine of them — courses, email and CRM, automation, licence keys. See [docs/INTEGRATIONS.md](INTEGRATIONS.md) for what each one does once connected. |
+| **Recurring coupons** | Discounts that apply to renewals, not only the first order |
+| **Failed payment recovery** | Retries, dunning emails, and the grace period |
+| **Subscription limits** | One active, one ever, or N per customer; and a cap on total payments |
+| **Delivery schedules** | Ship on a different cadence from billing, with a printable manifest |
+| **Subscription health** | Everything at risk, why, and one-click fixes |
+| **Reports** | Revenue over time, signups, status breakdown, churn, lifetime value |
+| **Content access** | Roles and downloadable files follow the subscription |
+| **Live QR** | A code for the packing slip linking to a private status page |
+| **REST API** | For connecting other systems |
+| **Nine integrations** | See [INTEGRATIONS.md](INTEGRATIONS.md) |
 
-### The licence
+### Live QR settings
 
-**SubKit → Settings → Licence**. Enter your key and activate.
+**SubKit → Settings → Live QR.** Prints a QR code on the subscription so you can put it on a
+packing slip; the customer scans it and sees where their subscription stands.
 
-The licence gates **updates and support only**. It never touches billing: if it lapses, expires, or the licence server is unreachable, your Pro features keep working and your customers keep being charged. An unreachable server is treated as unknown, not invalid — a dropped connection is not a revocation.
+| Setting | Default | What it does |
+|---|---|---|
+| **Enable Live QR** | On | Show the code and serve its status page. |
+| **Show on the status page: what the subscription is for** | On | The product name. |
+| **…the billing schedule and recurring total** | On | What they pay and how often. |
+| **…a timeline of what has happened so far** | Off | Status changes over time. |
 
-### The REST API
+Each code carries its own secret link. Nobody can reach a subscription they were not given the
+code for, and regenerating a code retires every slip already printed with it.
 
-Authenticated as WooCommerce itself — a consumer key with the `manage_woocommerce` capability, created under **WooCommerce → Settings → Advanced → REST API**. There is no second password to manage.
+**The page never shows a name, email address, phone number, postal address or payment
+details** — whichever of the three sections you switch on.
 
-```
-GET    /wp-json/subkit/v1/subscriptions?status=sk-active&per_page=20
-GET    /wp-json/subkit/v1/subscriptions/123
-PUT    /wp-json/subkit/v1/subscriptions/123        { "next_payment": "2027-01-01 00:00:00" }
-POST   /wp-json/subkit/v1/subscriptions/123/actions { "action": "cancel" }
-GET    /wp-json/subkit/v1/subscriptions/123/activity
-```
+### The Pro licence
 
-Actions: `cancel`, `pause`, `resume`, `reactivate`, `expire`, `change_status`. The API cannot reach a state the admin screens forbid — reactivating a cancelled subscription returns `409` and changes nothing. Repeating an action that already happened returns `200`, so a client retrying after a dropped connection is not an error.
+**SubKit → Settings → Licence.** Paste your key and activate.
+
+The licence controls **updates and support only**. If it lapses or expires, or the licence
+server is unreachable, **your Pro features keep working and your customers keep being
+charged.** A licence problem will never stop you taking money.
 
 ---
 
-## Safety
+## When something looks wrong
 
-Worth knowing, because these are the parts that protect money:
+**Renewals are not happening.** Check **Settings → General → Health**. If the renewal queue is
+red, WordPress's scheduler is not running — on a quiet site it needs real traffic or a server
+cron. Ask your host for a "server cron" pointing at `wp-cron.php`.
 
-- **A renewal can only be charged once.** A database index enforces one charge per billing period. A retry, a duplicate webhook or two servers racing cannot produce two charges.
-- **An unknown outcome is never guessed.** If a gateway times out, SubKit asks it what actually happened before doing anything else. If the gateway has no record, the same charge is retried with the same idempotency key. If it cannot be resolved safely, the subscription stops and says so under **Unresolved charges** rather than risking a second charge.
-- **Copied sites will not bill.** A subscription records the site it was created on. Clone your store to staging and the copy refuses to renew rather than charging real customers twice.
-- **Cancelling is always available to the customer.**
-- **Erasing personal data will not touch an active subscription.** It refuses and tells you to cancel first, so billing stops at the provider before the record is scrubbed.
-- **A lapsed licence never stops billing.**
-- **The QR status page cannot be enumerated.** It resolves by an unguessable token per subscription and refuses a subscription id outright, so nobody can walk through your customers' subscriptions. It never shows an email, phone, name, address or payment method.
+**A subscription stopped billing and nothing explains it.** Check **Unresolved charges** in
+that same panel. If a charge's outcome was never learned, SubKit stops rather than risk
+charging twice. Look the payment up at your provider, then act on the subscription.
+
+**PayPal is charging but subscriptions are not updating.** The Webhook ID is missing or
+wrong. See the PayPal section above.
+
+**An integration is not doing anything.** **SubKit → Integrations** shows whether its plugin
+is active. An integration whose plugin is missing does nothing, silently.
+
+**I need to ask for help.** **SubKit → Help** has a system report — versions, settings, queue
+health — to paste into your request. It contains no passwords and no customer data.
 
 ---
 
 ## What is not proven yet
 
-Please do not report these; they are known.
+This is a development release. Please read this before taking real money.
 
 | | |
 |---|---|
-| **No gateway has been tested against a real sandbox** | Every Stripe, PayPal, Mollie, Razorpay and Xendit code path has been verified only against simulated HTTP responses. No real card has ever been charged by this plugin. **This is the single biggest reason not to run it on a live store.** |
-| **There is no automated test suite** | No unit tests, no integration tests, no CI. Every claim above was verified by hand. |
-| **Unattended renewals have never been observed** | Scheduled renewals are wired up and fire correctly when run directly, but no renewal has been watched happening on its own overnight. If yours does, that is useful — tell us. |
-| ~~Concurrency untested~~ | **Tested.** Eight real processes released together against one subscription produce exactly one charge. See `docs/TESTING.md`. |
-| Per-variation delivery cadences | Variable subscriptions and delivery schedules both work; combined, delivery reads the parent product only. |
-| Browser testing | Nothing has been driven through a real browser. Screens are verified by their output, not visually. |
+| **No payment gateway has been tested against a real account** | Every Stripe, PayPal, Mollie, Razorpay and Xendit code path has been checked only against simulated responses. **No real card has ever been charged by this plugin.** This is the single biggest reason not to run it on a live store yet. |
+| **There is no automated test suite** | Everything has been verified by hand. |
+| **Unattended renewals have not been watched** | Renewals work when triggered, but no renewal has been observed happening on its own overnight. |
+| ~~Concurrency~~ | **Tested.** Eight processes released together on one subscription produce exactly one charge. |
+| Integrations | None of the nine plugins they connect to is installed on the development machine. See [INTEGRATIONS.md](INTEGRATIONS.md). |
+| Browser testing | Very little has been checked visually. |
 
----
-
-## Reporting a problem
-
-Open an issue with:
-
-1. What you were doing
-2. What you expected
-3. What happened instead
-4. WordPress, WooCommerce and PHP versions, plus your theme
-5. Anything from the subscription's **Activity** log
-
-**If it involves money** — a wrong amount, a charge that should not have happened, a renewal that did not — say so in the first line. Those get looked at first.
-
----
-
-## What we most want to hear
-
-Feature requests are welcome, but the most useful feedback now is about **trust**: anywhere the plugin left you unsure whether something had worked, whether a customer had been charged, or what would happen next. Those moments matter more than missing features.
+If it involves money — a wrong amount, a charge that should not have happened, a renewal that
+did not — please say so in the first line of your report. Those get looked at first.
