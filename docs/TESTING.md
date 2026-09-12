@@ -41,6 +41,35 @@ If you add an exclusion, write the reason next to it.
 
 ---
 
+## The concurrency test
+
+The renewal engine promises a billing period can be charged **at most once**, even when
+several workers reach it together. One process cannot race itself, so this starts eight
+real ones, holds them on a wall-clock barrier until they are all spinning, and releases
+them against the same subscription.
+
+```bash
+docker compose exec -T wordpress php /var/www/html/wp-content/plugins/subkit-subscriptions/tools/concurrency-test.php
+```
+
+Two rounds. The first asks the narrow question - eight workers call `claim_next()` on the
+same period, and exactly one should get through. The second asks the one that matters -
+eight workers run the whole renewal pipeline, and exactly one charge should reach the
+gateway.
+
+It asserts thirteen things, and the load-bearing one is **exactly one charge attempt
+reached the gateway**. More than one means a customer was charged twice.
+
+Run it more than once. A race that passes a single time has told you very little: one run
+in the first twenty-one failed here, which is why the harness now prints every worker's
+outcome and the ledger rows whenever an assertion fails. Eighteen consecutive runs passed
+after that, and the cause of the single failure was never captured - treat an occasional
+failure as something to read, not to dismiss.
+
+It cleans up after itself: the subscription, its renewal orders and its ledger rows.
+
+---
+
 ## Sandbox testing
 
 Everything above proves the code is *well formed*. It cannot prove a renewal charges the right amount once, and only once. That takes a real gateway.
@@ -132,7 +161,7 @@ Be clear-eyed about this list. It is short and it is the important part.
 | | |
 |---|---|
 | **Automated test suite** | There is none. No PHPUnit, no integration tests. Everything is verified by hand or by a harness like the one above. |
-| **Concurrency** | Two workers racing on the same renewal is the guarantee the whole design rests on. The unique index that enforces it is verified; two real processes colliding has never been staged. **This is the most important missing test.** |
+| ~~Concurrency~~ | **Tested.** See below. |
 | **Unattended renewals** | Scheduled renewals fire correctly when run directly. No renewal has been watched happening on its own overnight. |
 | **Browser** | Nothing has been driven through a real browser. Screens are verified by their output, not visually. |
 | **Real gateway calls** | Until you run the harness above, every payment path in this plugin has only ever met a simulated response. |

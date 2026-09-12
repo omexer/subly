@@ -155,7 +155,8 @@ None of the below has moved. It is the reason nothing above should go near a liv
 | ~~Static analysis~~ | **Done.** PHPStan level 5 and PHPCS clean on both plugins. See `docs/TESTING.md`. |
 | **Real gateway calls** | Still zero, but unblocked: `tools/sandbox-stripe.php` drives the whole reconciliation path against a real Stripe test account. Needs a test key. |
 | **Unattended renewals** | Never observed firing on their own. |
-| **Concurrency** | Two workers racing on `claim_next()` is the guarantee the architecture rests on. The index is verified; two real processes colliding has never been staged. |
+| ~~Concurrency~~ | **Done.** `tools/concurrency-test.php` races eight real processes: one claim wins, seven are refused, one charge reaches the gateway. |
 | **Browser testing** | Nothing driven through a real browser. Screens verified by output, not visually. |
 
-Fix the concurrency test first. It is the one that invalidates the rest if it fails.
+What remains is the test suite and a real gateway call. The concurrency guarantee - the one
+that would have invalidated everything else - now holds under a real race.

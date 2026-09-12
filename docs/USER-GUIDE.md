@@ -231,7 +231,7 @@ Please do not report these; they are known.
 | **No gateway has been tested against a real sandbox** | Every Stripe, PayPal, Mollie, Razorpay and Xendit code path has been verified only against simulated HTTP responses. No real card has ever been charged by this plugin. **This is the single biggest reason not to run it on a live store.** |
 | **There is no automated test suite** | No unit tests, no integration tests, no CI. Every claim above was verified by hand. |
 | **Unattended renewals have never been observed** | Scheduled renewals are wired up and fire correctly when run directly, but no renewal has been watched happening on its own overnight. If yours does, that is useful — tell us. |
-| **Concurrency is untested** | Two workers racing on the same renewal is the guarantee the whole design rests on. The database index that enforces it is verified; two real processes colliding has never been staged. |
+| ~~Concurrency untested~~ | **Tested.** Eight real processes released together against one subscription produce exactly one charge. See `docs/TESTING.md`. |
 | Per-variation delivery cadences | Variable subscriptions and delivery schedules both work; combined, delivery reads the parent product only. |
 | Browser testing | Nothing has been driven through a real browser. Screens are verified by their output, not visually. |
 
