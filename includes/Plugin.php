@@ -30,6 +30,7 @@ use SubKit\Product\Product_Meta_Fields;
 use SubKit\Product\Product_Types;
 use SubKit\Admin\Assets as Admin_Assets;
 use SubKit\Admin\Help_Page;
+use SubKit\Admin\Integration_Installer;
 use SubKit\Admin\Integrations_Page;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
@@ -235,6 +236,9 @@ final class Plugin {
 
 		$this->services['admin_assets'] = new Admin_Assets();
 		$this->services['admin_assets']->register();
+
+		$this->services['integration_installer'] = new Integration_Installer();
+		$this->services['integration_installer']->register();
 
 		/**
 		 * Fires once SubKit Free is loaded and its public API is available.

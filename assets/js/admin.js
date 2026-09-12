@@ -1,0 +1,124 @@
+( function () {
+	'use strict';
+
+	var config = window.subkitAdmin || {};
+
+	document.addEventListener( 'click', function ( event ) {
+		var button = event.target.closest( '.subkit-install' );
+
+		if ( ! button || ! config.installAction ) {
+			return;
+		}
+
+		event.preventDefault();
+
+		var cell = button.parentNode;
+		var body = new FormData();
+
+		body.append( 'action', config.installAction );
+		body.append( '_wpnonce', config.installNonce );
+		body.append( 'slug', button.dataset.slug );
+
+		button.disabled = true;
+		button.textContent = config.i18n.installing;
+
+		window.fetch( config.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } )
+			.then( function ( response ) { return response.json(); } )
+			.then( function ( result ) {
+				if ( result && result.success ) {
+					// The row's status comes from PHP, so reload rather than guess at it.
+					window.location.reload();
+					return;
+				}
+
+				button.disabled = false;
+				button.textContent = config.i18n.install;
+				cell.appendChild( notice( ( result && result.data && result.data.message ) || config.i18n.failed ) );
+			} )
+			.catch( function () {
+				button.disabled = false;
+				button.textContent = config.i18n.install;
+				cell.appendChild( notice( config.i18n.failed ) );
+			} );
+	} );
+
+	/**
+	 * Row actions post over fetch when the screen has told us how; otherwise the button is
+	 * an ordinary submit and the page reloads, which is what happens with no JavaScript.
+	 */
+	document.addEventListener( 'click', function ( event ) {
+		var button = event.target.closest( '.subkit-row-action' );
+
+		if ( ! button || ! config.rowAction || ! button.dataset.subkitAction ) {
+			return;
+		}
+
+		event.preventDefault();
+
+		var row = button.closest( 'tr' );
+		var body = new FormData();
+
+		body.append( 'action', config.rowAction );
+		body.append( '_wpnonce', config.rowNonce );
+		body.append( 'health_action', button.dataset.subkitAction );
+		body.append( 'subscription', button.dataset.subkitId );
+
+		setBusy( row, true );
+
+		window.fetch( config.ajaxUrl, { method: 'POST', credentials: 'same-origin', body: body } )
+			.then( function ( response ) { return response.json(); } )
+			.then( function ( result ) {
+				setBusy( row, false );
+
+				if ( result && result.success ) {
+					flash( row, ( result.data && result.data.message ) || config.i18n.done, true );
+					return;
+				}
+
+				flash( row, ( result && result.data && result.data.message ) || config.i18n.failed, false );
+			} )
+			.catch( function () {
+				setBusy( row, false );
+				flash( row, config.i18n.failed, false );
+			} );
+	} );
+
+	function setBusy( row, busy ) {
+		if ( ! row ) {
+			return;
+		}
+
+		row.classList.toggle( 'subkit-row--busy', busy );
+		row.querySelectorAll( 'button' ).forEach( function ( b ) { b.disabled = busy; } );
+	}
+
+	function flash( row, message, good ) {
+		if ( ! row ) {
+			return;
+		}
+
+		var cell = row.querySelector( 'td:last-child' ) || row;
+		var existing = cell.querySelector( '.subkit-row-result' );
+
+		if ( existing ) {
+			existing.remove();
+		}
+
+		var span = document.createElement( 'span' );
+
+		span.className = 'subkit-row-result ' + ( good ? 'is-good' : 'is-bad' );
+		span.textContent = message;
+		cell.appendChild( span );
+
+		row.classList.toggle( 'subkit-row--done', !! good );
+	}
+
+	function notice( message ) {
+		var span = document.createElement( 'span' );
+
+		span.className = 'subkit-inline-error';
+		span.textContent = ' ' + message;
+
+		return span;
+	}
+}() );

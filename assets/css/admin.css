@@ -369,3 +369,25 @@
 	min-width: 3.2em;
 	text-align: right;
 }
+
+.subkit-inline-error {
+	display: inline-block;
+	margin-left: 8px;
+	color: var(--subkit-bad);
+	font-size: 12px;
+}
+
+/* ------------------------------------------------------------ row actions */
+
+.subkit-row--busy { opacity: .55; }
+
+.subkit-row--done > * { background: #f6fbf7; }
+
+.subkit-row-result {
+	display: inline-block;
+	margin-left: 8px;
+	font-size: 12px;
+}
+
+.subkit-row-result.is-good { color: var(--subkit-good); }
+.subkit-row-result.is-bad { color: var(--subkit-bad); }

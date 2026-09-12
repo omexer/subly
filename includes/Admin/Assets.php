@@ -32,6 +32,39 @@ class Assets {
 			array(),
 			SUBKIT_VERSION
 		);
+
+		wp_enqueue_script(
+			'subkit-admin',
+			SUBKIT_URL . 'assets/js/admin.js',
+			array(),
+			SUBKIT_VERSION,
+			true
+		);
+
+		/**
+		 * Filter the data handed to the admin script.
+		 *
+		 * Pro adds its own action names and nonces here rather than enqueueing a second
+		 * script for a few hundred bytes.
+		 *
+		 * @param array $data
+		 */
+		$data = (array) apply_filters(
+			'subkit_admin_script_data',
+			array(
+				'ajaxUrl'       => admin_url( 'admin-ajax.php' ),
+				'installAction' => current_user_can( 'install_plugins' ) ? Integration_Installer::ACTION : '',
+				'installNonce'  => wp_create_nonce( Integration_Installer::ACTION ),
+				'i18n'          => array(
+					'install'    => __( 'Install', 'subkit-subscriptions' ),
+					'installing' => __( 'Installing…', 'subkit-subscriptions' ),
+					'done'       => __( 'Done.', 'subkit-subscriptions' ),
+					'failed'     => __( 'That did not work.', 'subkit-subscriptions' ),
+				),
+			)
+		);
+
+		wp_localize_script( 'subkit-admin', 'subkitAdmin', $data );
 	}
 
 	private function is_subkit_screen( string $hook ): bool {

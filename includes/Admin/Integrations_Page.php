@@ -74,13 +74,13 @@ class Integrations_Page {
 		echo '<table class="widefat striped subkit-table subkit-facts"><thead><tr><th>'
 			. esc_html__( 'Integration', 'subkit-subscriptions' ) . '</th><th>'
 			. esc_html__( 'Needs', 'subkit-subscriptions' ) . '</th><th>'
-			. esc_html__( 'Status', 'subkit-subscriptions' ) . '</th></tr></thead><tbody>';
+			. esc_html__( 'Status', 'subkit-subscriptions' ) . '</th><th></th></tr></thead><tbody>';
 
 		foreach ( $integrations as $integration ) {
 			$active = ! empty( $integration['active'] );
 
 			printf(
-				'<tr><th scope="row">%s</th><td>%s</td><td><span class="subkit-pill subkit-pill--%s">%s</span></td></tr>',
+				'<tr><th scope="row">%s</th><td>%s</td><td><span class="subkit-pill subkit-pill--%s">%s</span></td><td>',
 				esc_html( (string) ( $integration['title'] ?? '' ) ),
 				esc_html( (string) ( $integration['requires'] ?? '' ) ),
 				$active ? 'sk-active' : 'sk-cancelled',
@@ -90,8 +90,45 @@ class Integrations_Page {
 						: __( 'Plugin not active', 'subkit-subscriptions' )
 				)
 			);
+
+			$this->render_action( $integration, $active );
+
+			echo '</td></tr>';
 		}
 
 		echo '</tbody></table></div>';
+	}
+
+	/**
+	 * Install where we can, link out where the plugin is sold rather than hosted.
+	 */
+	private function render_action( array $integration, bool $active ): void {
+		if ( $active ) {
+			return;
+		}
+
+		$slug = (string) ( $integration['slug'] ?? '' );
+
+		if ( '' !== $slug && current_user_can( 'install_plugins' ) && current_user_can( 'activate_plugins' ) ) {
+			printf(
+				'<button type="button" class="button button-small subkit-install" data-slug="%s">%s</button>',
+				esc_attr( $slug ),
+				esc_html__( 'Install', 'subkit-subscriptions' )
+			);
+
+			return;
+		}
+
+		$url = (string) ( $integration['url'] ?? '' );
+
+		if ( '' === $url ) {
+			return;
+		}
+
+		printf(
+			'<a class="button button-small" href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			esc_url( $url ),
+			esc_html__( 'Get it', 'subkit-subscriptions' )
+		);
 	}
 }
