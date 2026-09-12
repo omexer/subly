@@ -25,15 +25,15 @@ class Subscription extends \WC_Order {
 	 * Schedule and billing props, persisted as order meta by the HPOS data store.
 	 */
 	protected $extra_data = array(
-		'billing_period'   => 'month',
-		'billing_interval' => 1,
-		'trial_end'        => null,
-		'next_payment'     => null,
-		'end_date'         => null,
-		'parent_order_id'  => 0,
-		'payment_token_id' => 0,
+		'billing_period'    => 'month',
+		'billing_interval'  => 1,
+		'trial_end'         => null,
+		'next_payment'      => null,
+		'end_date'          => null,
+		'parent_order_id'   => 0,
+		'payment_token_id'  => 0,
 		'schedule_sync_day' => 0,
-		'period_index'     => 0,
+		'period_index'      => 0,
 	);
 
 	/**

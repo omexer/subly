@@ -78,9 +78,9 @@ final class Plugin {
 		$this->services['migrator'] = new Migrator();
 		$this->services['migrator']->register();
 
-		$this->services['charge_slots'] = new Charge_Slot_Repository();
-		$this->services['activity']     = new Activity_Repository();
-		$this->services['lock']         = new Lock();
+		$this->services['charge_slots']  = new Charge_Slot_Repository();
+		$this->services['activity']      = new Activity_Repository();
+		$this->services['lock']          = new Lock();
 		$this->services['order_factory'] = new Renewal_Order_Factory();
 
 		$this->services['gateways'] = new Gateway_Registry();
@@ -136,39 +136,47 @@ final class Plugin {
 		$this->services['paypal_plans']  = new PayPal_Plans( $this->services['paypal_client'] );
 
 		// WC_Payment_Gateway is only defined once WooCommerce has loaded its gateway classes.
-		add_filter( 'woocommerce_payment_gateways', function ( array $gateways ): array {
-			$gateways[] = new PayPal_Checkout_Gateway(
-				$this->services['paypal_client'],
-				$this->services['paypal_plans']
-			);
+		add_filter(
+			'woocommerce_payment_gateways',
+			function ( array $gateways ): array {
+				$gateways[] = new PayPal_Checkout_Gateway(
+					$this->services['paypal_client'],
+					$this->services['paypal_plans']
+				);
 
-			return $gateways;
-		} );
+				return $gateways;
+			}
+		);
 
 		$this->services['stripe_client'] = Stripe_Client::from_settings();
 
-		add_filter( 'woocommerce_payment_gateways', function ( array $gateways ): array {
-			$gateways[] = new Stripe_Checkout_Gateway( $this->services['stripe_client'] );
+		add_filter(
+			'woocommerce_payment_gateways',
+			function ( array $gateways ): array {
+				$gateways[] = new Stripe_Checkout_Gateway( $this->services['stripe_client'] );
 
-			return $gateways;
-		} );
-
-		add_action( 'subkit_register_gateways', function ( Gateway_Registry $registry ): void {
-			if ( $this->services['paypal_client']->is_enabled() ) {
-				$registry->add( new PayPal_Gateway( $this->services['paypal_client'] ) );
+				return $gateways;
 			}
+		);
 
-			if ( $this->services['stripe_client']->is_enabled() ) {
-				$registry->add( new Stripe_Gateway( $this->services['stripe_client'] ) );
+		add_action(
+			'subkit_register_gateways',
+			function ( Gateway_Registry $registry ): void {
+				if ( $this->services['paypal_client']->is_enabled() ) {
+					$registry->add( new PayPal_Gateway( $this->services['paypal_client'] ) );
+				}
+
+				if ( $this->services['stripe_client']->is_enabled() ) {
+					$registry->add( new Stripe_Gateway( $this->services['stripe_client'] ) );
+				}
 			}
-		} );
+		);
 
 		$this->services['paypal_webhooks'] = new PayPal_Webhooks(
 			$this->services['paypal_client'],
 			$this->services['charge_slots'],
 			$this->services['activity'],
-			$this->services['order_factory'],
-			$this->services['scheduler']
+			$this->services['order_factory']
 		);
 		$this->services['paypal_webhooks']->register();
 
@@ -190,14 +198,17 @@ final class Plugin {
 		$this->services['mailer'] = new Mailer();
 		$this->services['mailer']->register();
 
-		add_filter( 'woocommerce_get_settings_pages', static function ( array $pages ): array {
-			// WC_Settings_Page is only loaded on admin screens; instantiating without it fatals.
-			if ( class_exists( '\WC_Settings_Page' ) ) {
-				$pages[] = new Settings();
-			}
+		add_filter(
+			'woocommerce_get_settings_pages',
+			static function ( array $pages ): array {
+				// WC_Settings_Page is only loaded on admin screens; instantiating without it fatals.
+				if ( class_exists( '\WC_Settings_Page' ) ) {
+					$pages[] = new Settings();
+				}
 
-			return $pages;
-		} );
+				return $pages;
+			}
+		);
 
 		$this->services['setup'] = new Setup_Guide( $this->services['scheduler'] );
 		$this->services['setup']->register();

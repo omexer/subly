@@ -112,8 +112,10 @@ class Mailer {
 		$emails = WC()->mailer()->get_emails();
 		$email  = $emails[ 'SubKit_' . $key ] ?? null;
 
-		if ( $email instanceof Subscription_Email ) {
-			$email->trigger( ...$args );
+		// Each email declares its own trigger() with its own arguments, so there is no
+		// shared signature to put on the base class and no method to call blindly.
+		if ( $email instanceof Subscription_Email && is_callable( array( $email, 'trigger' ) ) ) {
+			call_user_func_array( array( $email, 'trigger' ), $args );
 		}
 	}
 }

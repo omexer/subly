@@ -96,24 +96,27 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 			return $this->abort( $order, $plan['error'] );
 		}
 
-		$response = $this->client->post( '/v1/billing/subscriptions', array(
-			'plan_id'             => $plan['plan_id'],
-			'custom_id'           => (string) $order->get_id(),
-			'subscriber'          => array(
-				'name'          => array(
-					'given_name' => $order->get_billing_first_name(),
-					'surname'    => $order->get_billing_last_name(),
+		$response = $this->client->post(
+			'/v1/billing/subscriptions',
+			array(
+				'plan_id'             => $plan['plan_id'],
+				'custom_id'           => (string) $order->get_id(),
+				'subscriber'          => array(
+					'name'          => array(
+						'given_name' => $order->get_billing_first_name(),
+						'surname'    => $order->get_billing_last_name(),
+					),
+					'email_address' => $order->get_billing_email(),
 				),
-				'email_address' => $order->get_billing_email(),
-			),
-			'application_context' => array(
-				'brand_name'          => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
-				'user_action'         => 'SUBSCRIBE_NOW',
-				'shipping_preference' => 'NO_SHIPPING',
-				'return_url'          => $this->return_url( $order, 'approved' ),
-				'cancel_url'          => $this->return_url( $order, 'cancelled' ),
-			),
-		) );
+				'application_context' => array(
+					'brand_name'          => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+					'user_action'         => 'SUBSCRIBE_NOW',
+					'shipping_preference' => 'NO_SHIPPING',
+					'return_url'          => $this->return_url( $order, 'approved' ),
+					'cancel_url'          => $this->return_url( $order, 'cancelled' ),
+				),
+			)
+		);
 
 		if ( ! $response['ok'] || empty( $response['body']['id'] ) ) {
 			return $this->abort( $order, $response['error'] );
@@ -134,7 +137,10 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 			return $this->abort( $order, __( 'PayPal did not return an approval link.', 'subkit-subscriptions' ) );
 		}
 
-		return array( 'result' => 'success', 'redirect' => $approve );
+		return array(
+			'result'   => 'success',
+			'redirect' => $approve,
+		);
 	}
 
 	/**

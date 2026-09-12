@@ -28,7 +28,9 @@ class Subscription_Query {
 		// paginate makes wc_get_orders return an object, which this signature forbids.
 		unset( $args['paginate'] );
 
-		return wc_get_orders( self::normalize( $args ) );
+		$results = wc_get_orders( self::normalize( $args ) );
+
+		return is_array( $results ) ? $results : array();
 	}
 
 	/**
@@ -84,12 +86,14 @@ class Subscription_Query {
 			return null;
 		}
 
-		$found = self::get( array(
-			'limit'      => 1,
-			'status'     => null,
-			'meta_key'   => $meta_key,
-			'meta_value' => $meta_value,
-		) );
+		$found = self::get(
+			array(
+				'limit'      => 1,
+				'status'     => null,
+				'meta_key'   => $meta_key,
+				'meta_value' => $meta_value,
+			)
+		);
 
 		$subscription = $found[0] ?? null;
 
@@ -112,13 +116,15 @@ class Subscription_Query {
 
 		$statuses = is_array( $status ) ? $status : array( $status );
 
-		return array_values( array_map(
-			static function ( $one ): string {
-				$slug = $one instanceof Subscription_Status ? $one->value : (string) $one;
+		return array_values(
+			array_map(
+				static function ( $one ): string {
+					$slug = $one instanceof Subscription_Status ? $one->value : (string) $one;
 
-				return 0 === strpos( $slug, 'wc-' ) ? $slug : 'wc-' . $slug;
-			},
-			$statuses
-		) );
+					return 0 === strpos( $slug, 'wc-' ) ? $slug : 'wc-' . $slug;
+				},
+				$statuses
+			)
+		);
 	}
 }

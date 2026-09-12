@@ -52,7 +52,10 @@ class Renewal_Receipt extends Subscription_Email {
 
 	protected function call_to_action(): ?array {
 		return $this->related_order
-			? array( 'label' => __( 'View your order', 'subkit-subscriptions' ), 'url' => $this->related_order->get_view_order_url() )
+			? array(
+				'label' => __( 'View your order', 'subkit-subscriptions' ),
+				'url'   => $this->related_order->get_view_order_url(),
+			)
 			: null;
 	}
 }

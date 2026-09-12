@@ -55,7 +55,7 @@ $can_cancel = ! in_array(
 			<li>
 				<?php echo esc_html( $item->get_name() ); ?>
 				<?php if ( $item->get_quantity() > 1 ) : ?>
-					<span class="subkit-qty">&times; <?php echo esc_html( $item->get_quantity() ); ?></span>
+					<span class="subkit-qty">&times; <?php echo esc_html( (string) $item->get_quantity() ); ?></span>
 				<?php endif; ?>
 			</li>
 		<?php endforeach; ?>
@@ -71,7 +71,7 @@ $can_cancel = ! in_array(
 	 * Renders after the subscription's totals, for anything an extension needs to show
 	 * the customer here - licence keys, downloads, delivery dates.
 	 *
-	 * @param Subscription $subscription
+	 * @param \SubKit\Domain\Subscription $subscription
 	 */
 	do_action( 'subkit_after_subscription_totals', $subscription );
 	?>
@@ -80,8 +80,8 @@ $can_cancel = ! in_array(
 	/**
 	 * Extra actions a customer can take on this subscription.
 	 *
-	 * @param array        $actions      slug => button label
-	 * @param Subscription $subscription
+	 * @param array                        $actions      slug => button label
+	 * @param \SubKit\Domain\Subscription $subscription
 	 */
 	$subkit_extra_actions = (array) apply_filters( 'subkit_myaccount_actions', array(), $subscription );
 	?>
@@ -135,7 +135,7 @@ $can_cancel = ! in_array(
 		<form method="post" class="subkit-cancel">
 			<?php wp_nonce_field( 'subkit_cancel_' . $subscription->get_id() ); ?>
 			<input type="hidden" name="subkit_action" value="cancel" />
-			<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( $subscription->get_id() ); ?>" />
+			<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( (string) $subscription->get_id() ); ?>" />
 
 			<?php if ( $subscription->get_next_payment() ) : ?>
 				<p class="subkit-cancel__paid-through">

@@ -178,7 +178,11 @@ class Renewal_Processor {
 			$subscription_id,
 			Activity_Repository::TYPE_CHARGE_ATTEMPT,
 			sprintf( 'Charge attempt for period %d: %s', $slot->period_index, $result->describe() ),
-			array( 'reference' => $result->reference, 'code' => $result->code, 'period_index' => (int) $slot->period_index )
+			array(
+				'reference'    => $result->reference,
+				'code'         => $result->code,
+				'period_index' => (int) $slot->period_index,
+			)
 		);
 
 		if ( $result->is_success() ) {
@@ -260,7 +264,7 @@ class Renewal_Processor {
 	private function is_billing_site( Subscription $subscription ): bool {
 		$origin = (string) $subscription->get_meta( '_subkit_site_url' );
 
-		return '' === $origin || $origin === get_option( 'siteurl' );
+		return '' === $origin || get_option( 'siteurl' ) === $origin;
 	}
 
 	private function as_date( $value ): ?\DateTimeImmutable {

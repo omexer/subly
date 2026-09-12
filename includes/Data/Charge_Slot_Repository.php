@@ -20,10 +20,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 class Charge_Slot_Repository {
 
-	public const STATE_CLAIMED  = 'claimed';
-	public const STATE_CHARGING = 'charging';
-	public const STATE_PAID     = 'paid';
-	public const STATE_FAILED   = 'failed';
+	public const STATE_CLAIMED   = 'claimed';
+	public const STATE_CHARGING  = 'charging';
+	public const STATE_PAID      = 'paid';
+	public const STATE_FAILED    = 'failed';
 	public const STATE_ABANDONED = 'abandoned';
 
 	private function table(): string {
@@ -100,7 +100,10 @@ class Charge_Slot_Repository {
 		$wpdb->update(
 			$this->table(),
 			array( 'state' => self::STATE_CHARGING ),
-			array( 'subscription_id' => $subscription_id, 'period_index' => $period_index ),
+			array(
+				'subscription_id' => $subscription_id,
+				'period_index'    => $period_index,
+			),
 			array( '%s' ),
 			array( '%d', '%d' )
 		);
@@ -117,7 +120,10 @@ class Charge_Slot_Repository {
 
 		$wpdb->update(
 			$this->table(),
-			array( 'state' => self::STATE_PAID, 'renewal_order_id' => $renewal_order_id ),
+			array(
+				'state'            => self::STATE_PAID,
+				'renewal_order_id' => $renewal_order_id,
+			),
 			array( 'id' => $slot_id ),
 			array( '%s', '%d' ),
 			array( '%d' )
@@ -227,12 +233,17 @@ class Charge_Slot_Repository {
 	 * Deterministic key derived from (site, subscription, period, attempt_group).
 	 */
 	public function idempotency_key( object $slot ): string {
-		return sha1( implode( '|', array(
-			get_option( 'siteurl' ),
-			(int) $slot->subscription_id,
-			(int) $slot->period_index,
-			(int) $slot->attempt_group,
-		) ) );
+		return sha1(
+			implode(
+				'|',
+				array(
+					get_option( 'siteurl' ),
+					(int) $slot->subscription_id,
+					(int) $slot->period_index,
+					(int) $slot->attempt_group,
+				)
+			)
+		);
 	}
 
 	private function set_state( int $slot_id, string $state ): void {

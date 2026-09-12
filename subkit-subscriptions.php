@@ -3,7 +3,7 @@
  * Plugin Name: SubKit - Subscriptions & Recurring Payments for WooCommerce
  * Plugin URI:  https://github.com/pronob1010/subkit-subscriptions
  * Description: Turn any WooCommerce product into a subscription and let it bill itself.
- * Version:     0.1.0
+ * Version:     0.5.0
  * Author:      Pronob Mozumder
  * Text Domain: subkit-subscriptions
  * Domain Path: /languages
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SUBKIT_VERSION', '0.1.0' );
+define( 'SUBKIT_VERSION', '0.5.0' );
 define( 'SUBKIT_FILE', __FILE__ );
 define( 'SUBKIT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SUBKIT_URL', plugin_dir_url( __FILE__ ) );
@@ -56,39 +56,56 @@ function subkit_unmet_requirements() {
  *
  * Declared before the requirement check so the flags are correct even when we refuse to boot.
  */
-add_action( 'before_woocommerce_init', function () {
-	if ( ! class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-		return;
+add_action(
+	'before_woocommerce_init',
+	function () {
+		if ( ! class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			return;
+		}
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', SUBKIT_FILE, true );
+		\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', SUBKIT_FILE, true );
 	}
-	\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', SUBKIT_FILE, true );
-	\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', SUBKIT_FILE, true );
-} );
+);
 
 /**
  * Flush rewrites once so the My Account subscriptions endpoint resolves.
  */
-register_activation_hook( __FILE__, function () {
-	update_option( 'subkit_flush_rewrites', 1, false );
-} );
-
-add_action( 'init', function () {
-	if ( get_option( 'subkit_flush_rewrites' ) ) {
-		flush_rewrite_rules( false );
-		delete_option( 'subkit_flush_rewrites' );
+register_activation_hook(
+	__FILE__,
+	function () {
+		update_option( 'subkit_flush_rewrites', 1, false );
 	}
-}, 99 );
+);
 
-add_action( 'plugins_loaded', function () {
-	$unmet = subkit_unmet_requirements();
+add_action(
+	'init',
+	function () {
+		if ( get_option( 'subkit_flush_rewrites' ) ) {
+			flush_rewrite_rules( false );
+			delete_option( 'subkit_flush_rewrites' );
+		}
+	},
+	99
+);
 
-	if ( ! empty( $unmet ) ) {
-		add_action( 'admin_notices', function () use ( $unmet ) {
-			echo '<div class="notice notice-error"><p><strong>SubKit</strong> needs ' . esc_html( implode( ', and ', $unmet ) ) . '. It has not been loaded.</p></div>';
-		} );
-		return;
-	}
+add_action(
+	'plugins_loaded',
+	function () {
+		$unmet = subkit_unmet_requirements();
 
-	require_once SUBKIT_PATH . 'includes/autoload.php';
+		if ( ! empty( $unmet ) ) {
+			add_action(
+				'admin_notices',
+				function () use ( $unmet ) {
+					echo '<div class="notice notice-error"><p><strong>SubKit</strong> needs ' . esc_html( implode( ', and ', $unmet ) ) . '. It has not been loaded.</p></div>';
+				}
+			);
+			return;
+		}
 
-	\SubKit\Plugin::instance()->boot();
-}, 10 );
+		require_once SUBKIT_PATH . 'includes/autoload.php';
+
+		\SubKit\Plugin::instance()->boot();
+	},
+	10
+);

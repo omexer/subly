@@ -20,8 +20,7 @@ final class Billing_Schedule {
 		private readonly string $period = 'month',
 		private readonly int $interval = 1,
 		private readonly int $trial_days = 0,
-		private readonly ?int $max_renewals = null,
-		private readonly int $sync_day = 0
+		private readonly ?int $max_renewals = null
 	) {
 		if ( ! in_array( $period, self::PERIODS, true ) ) {
 			throw new \InvalidArgumentException( esc_html( 'Unsupported billing period: ' . $period ) );
@@ -39,8 +38,7 @@ final class Billing_Schedule {
 			$subscription->get_billing_period() ?: 'month',
 			max( 1, $subscription->get_billing_interval() ),
 			0,
-			null,
-			$subscription->get_schedule_sync_day()
+			null
 		);
 	}
 
@@ -82,6 +80,7 @@ final class Billing_Schedule {
 			'day', 'week' => $from->modify( sprintf( '+%d %s', $this->interval, $this->period ) ),
 			'month'       => $this->add_months( $from, $this->interval, $anchor_day ),
 			'year'        => $this->add_months( $from, $this->interval * 12, $anchor_day ),
+			default       => throw new \InvalidArgumentException( esc_html( 'Unsupported billing period: ' . $this->period ) ),
 		};
 	}
 
@@ -97,7 +96,7 @@ final class Billing_Schedule {
 
 		while ( $next <= $now && $guard < 1000 ) {
 			$next = $this->next_date_from( $next, $anchor_day );
-			$guard++;
+			++$guard;
 		}
 
 		return $next;
@@ -109,9 +108,9 @@ final class Billing_Schedule {
 	private function add_months( \DateTimeImmutable $from, int $months, ?int $anchor_day ): \DateTimeImmutable {
 		$anchor = $anchor_day ?? (int) $from->format( 'j' );
 
-		$target     = $from->modify( 'first day of this month' )->modify( sprintf( '+%d months', $months ) );
-		$days_in    = (int) $target->format( 't' );
-		$safe_day   = min( $anchor, $days_in );
+		$target   = $from->modify( 'first day of this month' )->modify( sprintf( '+%d months', $months ) );
+		$days_in  = (int) $target->format( 't' );
+		$safe_day = min( $anchor, $days_in );
 
 		return $target->setDate(
 			(int) $target->format( 'Y' ),
@@ -135,6 +134,7 @@ final class Billing_Schedule {
 				'week'  => __( 'every week', 'subkit-subscriptions' ),
 				'month' => __( 'every month', 'subkit-subscriptions' ),
 				'year'  => __( 'every year', 'subkit-subscriptions' ),
+				default => throw new \InvalidArgumentException( esc_html( 'Unsupported billing period: ' . $this->period ) ),
 			};
 		}
 
@@ -147,6 +147,7 @@ final class Billing_Schedule {
 			'month' => sprintf( _n( 'every %d month', 'every %d months', $this->interval, 'subkit-subscriptions' ), $this->interval ),
 			/* translators: %d: number of years */
 			'year'  => sprintf( _n( 'every %d year', 'every %d years', $this->interval, 'subkit-subscriptions' ), $this->interval ),
+			default => throw new \InvalidArgumentException( esc_html( 'Unsupported billing period: ' . $this->period ) ),
 		};
 	}
 }

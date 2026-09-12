@@ -53,7 +53,10 @@ class Subscription_Started extends Subscription_Email {
 	}
 
 	protected function call_to_action(): ?array {
-		return array( 'label' => __( 'Manage your subscription', 'subkit-subscriptions' ), 'url' => $this->manage_url() );
+		return array(
+			'label' => __( 'Manage your subscription', 'subkit-subscriptions' ),
+			'url'   => $this->manage_url(),
+		);
 	}
 
 	protected function outro(): string {

@@ -24,7 +24,7 @@ class Gateway_Registry {
 		$this->add( new Manual_Gateway() );
 
 		// Never present on a production site unless the constant is deliberately defined.
-		if ( defined( 'SUBKIT_ENABLE_TEST_GATEWAY' ) && SUBKIT_ENABLE_TEST_GATEWAY ) {
+		if ( defined( 'SUBKIT_ENABLE_TEST_GATEWAY' ) ) {
 			$this->add( new Test_Gateway() );
 		}
 

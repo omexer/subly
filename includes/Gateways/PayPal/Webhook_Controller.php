@@ -35,8 +35,7 @@ class Webhook_Controller {
 		private readonly PayPal_Client $client,
 		private readonly Charge_Slot_Repository $slots,
 		private readonly Activity_Repository $activity,
-		private readonly Renewal_Order_Factory $orders,
-		private readonly Renewal_Scheduler $scheduler
+		private readonly Renewal_Order_Factory $orders
 	) {}
 
 	public function register(): void {
@@ -205,13 +204,15 @@ class Webhook_Controller {
 	 * Has this PayPal transaction already produced a renewal order?
 	 */
 	private function already_recorded( Subscription $subscription, string $txn_id ): bool {
-		$existing = wc_get_orders( array(
-			'limit'      => 1,
-			'return'     => 'ids',
-			'status'     => 'any',
-			'meta_key'   => self::META_TXN_ID,
-			'meta_value' => $txn_id,
-		) );
+		$existing = wc_get_orders(
+			array(
+				'limit'      => 1,
+				'return'     => 'ids',
+				'status'     => 'any',
+				'meta_key'   => self::META_TXN_ID,
+				'meta_value' => $txn_id,
+			)
+		);
 
 		return ! empty( $existing );
 	}

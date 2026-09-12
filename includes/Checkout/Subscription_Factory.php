@@ -96,14 +96,16 @@ class Subscription_Factory {
 		$subscription->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
 
 		$copy = new \WC_Order_Item_Product();
-		$copy->set_props( array(
-			'name'         => $item->get_name(),
-			'product_id'   => $item->get_product_id(),
-			'variation_id' => $item->get_variation_id(),
-			'quantity'     => $item->get_quantity(),
-			'subtotal'     => $item->get_subtotal(),
-			'total'        => $item->get_total(),
-		) );
+		$copy->set_props(
+			array(
+				'name'         => $item->get_name(),
+				'product_id'   => $item->get_product_id(),
+				'variation_id' => $item->get_variation_id(),
+				'quantity'     => $item->get_quantity(),
+				'subtotal'     => $item->get_subtotal(),
+				'total'        => $item->get_total(),
+			)
+		);
 		$subscription->add_item( $copy );
 
 		$subscription->transition_to(

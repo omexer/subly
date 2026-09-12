@@ -140,9 +140,9 @@ None of the below has moved. It is the reason nothing above should go near a liv
 | | |
 |---|---|
 | **Automated tests** | None. No unit tests, no integration tests. Every "Run" above was done by hand. |
-| **CI** | None. |
-| **Static analysis** | No PHPStan. `phpcs` is not installed. |
-| **Real gateway calls** | Zero. Every payment path was verified against simulated HTTP. |
+| ~~CI~~ | **Done.** Both plugins run PHPCS and PHPStan on every push and pull request. |
+| ~~Static analysis~~ | **Done.** PHPStan level 5 and PHPCS clean on both plugins. See `docs/TESTING.md`. |
+| **Real gateway calls** | Still zero, but unblocked: `tools/sandbox-stripe.php` drives the whole reconciliation path against a real Stripe test account. Needs a test key. |
 | **Unattended renewals** | Never observed firing on their own. |
 | **Concurrency** | Two workers racing on `claim_next()` is the guarantee the architecture rests on. The index is verified; two real processes colliding has never been staged. |
 | **Browser testing** | Nothing driven through a real browser. Screens verified by output, not visually. |

@@ -177,7 +177,10 @@ class Setup_Guide {
 
 		wp_safe_redirect(
 			add_query_arg(
-				array( 'page' => Menu::SLUG, 'subkit_test' => $result ? 'pass' : 'fail' ),
+				array(
+					'page'        => Menu::SLUG,
+					'subkit_test' => $result ? 'pass' : 'fail',
+				),
 				admin_url( 'admin.php' )
 			)
 		);
@@ -208,15 +211,23 @@ class Setup_Guide {
 		$subscription->transition_to( Subscription_Status::Active );
 		$subscription->save();
 
-		$id = $subscription->get_id();
-		Test_Gateway::script_subscription( wc_get_order( $id ), array( 'success' ) );
+		$id       = $subscription->get_id();
+		$scripted = wc_get_order( $id );
+
+		if ( ! $scripted instanceof Subscription ) {
+			return false;
+		}
+
+		Test_Gateway::script_subscription( $scripted, array( 'success' ) );
 
 		$processor->process( $id );
 
-		$renewed = ! empty( array_filter(
-			$this->slots_for( $id ),
-			static fn( $slot ): bool => 'paid' === $slot->state
-		) );
+		$renewed = ! empty(
+			array_filter(
+				$this->slots_for( $id ),
+				static fn( $slot ): bool => 'paid' === $slot->state
+			)
+		);
 
 		$this->cleanup_test( $id );
 
@@ -238,7 +249,13 @@ class Setup_Guide {
 	private function cleanup_test( int $id ): void {
 		global $wpdb;
 
-		foreach ( wc_get_orders( array( 'limit' => -1, 'meta_key' => '_subkit_subscription_id', 'meta_value' => $id ) ) as $order ) {
+		foreach ( wc_get_orders(
+			array(
+				'limit'      => -1,
+				'meta_key'   => '_subkit_subscription_id',
+				'meta_value' => $id,
+			)
+		) as $order ) {
 			$order->delete( true );
 		}
 
@@ -254,12 +271,14 @@ class Setup_Guide {
 	}
 
 	private function first_subscription_product(): ?\WC_Product {
-		$products = wc_get_products( array(
-			'limit'      => 1,
-			'status'     => 'publish',
-			'meta_key'   => Subscription_Product::META_ENABLED,
-			'meta_value' => 'yes',
-		) );
+		$products = wc_get_products(
+			array(
+				'limit'      => 1,
+				'status'     => 'publish',
+				'meta_key'   => Subscription_Product::META_ENABLED,
+				'meta_value' => 'yes',
+			)
+		);
 
 		return $products[0] ?? null;
 	}

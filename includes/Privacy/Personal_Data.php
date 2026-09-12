@@ -60,20 +60,50 @@ class Personal_Data {
 				'group_label' => __( 'Subscriptions', 'subkit-subscriptions' ),
 				'item_id'     => 'subscription-' . $subscription->get_id(),
 				'data'        => array(
-					array( 'name' => __( 'Subscription', 'subkit-subscriptions' ), 'value' => '#' . $subscription->get_id() ),
-					array( 'name' => __( 'Status', 'subkit-subscriptions' ), 'value' => $subscription->get_status() ),
-					array( 'name' => __( 'Billing', 'subkit-subscriptions' ), 'value' => sprintf( '%d / %s', $subscription->get_billing_interval(), $subscription->get_billing_period() ) ),
-					array( 'name' => __( 'Recurring total', 'subkit-subscriptions' ), 'value' => wp_strip_all_tags( $subscription->get_formatted_order_total() ) ),
-					array( 'name' => __( 'Next payment', 'subkit-subscriptions' ), 'value' => (string) $subscription->get_next_payment() ),
-					array( 'name' => __( 'Trial ends', 'subkit-subscriptions' ), 'value' => (string) $subscription->get_trial_end() ),
-					array( 'name' => __( 'Payment method', 'subkit-subscriptions' ), 'value' => $subscription->get_payment_method_title() ?: $subscription->get_payment_method() ),
-					array( 'name' => __( 'Billing email', 'subkit-subscriptions' ), 'value' => $subscription->get_billing_email() ),
-					array( 'name' => __( 'Billing name', 'subkit-subscriptions' ), 'value' => trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ) ),
+					array(
+						'name'  => __( 'Subscription', 'subkit-subscriptions' ),
+						'value' => '#' . $subscription->get_id(),
+					),
+					array(
+						'name'  => __( 'Status', 'subkit-subscriptions' ),
+						'value' => $subscription->get_status(),
+					),
+					array(
+						'name'  => __( 'Billing', 'subkit-subscriptions' ),
+						'value' => sprintf( '%d / %s', $subscription->get_billing_interval(), $subscription->get_billing_period() ),
+					),
+					array(
+						'name'  => __( 'Recurring total', 'subkit-subscriptions' ),
+						'value' => wp_strip_all_tags( $subscription->get_formatted_order_total() ),
+					),
+					array(
+						'name'  => __( 'Next payment', 'subkit-subscriptions' ),
+						'value' => (string) $subscription->get_next_payment(),
+					),
+					array(
+						'name'  => __( 'Trial ends', 'subkit-subscriptions' ),
+						'value' => (string) $subscription->get_trial_end(),
+					),
+					array(
+						'name'  => __( 'Payment method', 'subkit-subscriptions' ),
+						'value' => $subscription->get_payment_method_title() ?: $subscription->get_payment_method(),
+					),
+					array(
+						'name'  => __( 'Billing email', 'subkit-subscriptions' ),
+						'value' => $subscription->get_billing_email(),
+					),
+					array(
+						'name'  => __( 'Billing name', 'subkit-subscriptions' ),
+						'value' => trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ),
+					),
 				),
 			);
 		}
 
-		return array( 'data' => $items, 'done' => true );
+		return array(
+			'data' => $items,
+			'done' => true,
+		);
 	}
 
 	/**
@@ -152,11 +182,23 @@ class Personal_Data {
 		$found = array();
 
 		if ( $user ) {
-			$found = Subscription_Query::get( array( 'limit' => -1, 'status' => null, 'customer_id' => $user->ID ) );
+			$found = Subscription_Query::get(
+				array(
+					'limit'       => -1,
+					'status'      => null,
+					'customer_id' => $user->ID,
+				)
+			);
 		}
 
 		// Guest checkouts have no user, so fall back to the billing email on the record.
-		$by_email = Subscription_Query::get( array( 'limit' => -1, 'status' => null, 'billing_email' => $email ) );
+		$by_email = Subscription_Query::get(
+			array(
+				'limit'         => -1,
+				'status'        => null,
+				'billing_email' => $email,
+			)
+		);
 
 		$all = array();
 		foreach ( array_merge( $found, $by_email ) as $subscription ) {

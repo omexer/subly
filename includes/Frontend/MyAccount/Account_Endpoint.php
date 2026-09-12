@@ -73,7 +73,10 @@ class Account_Endpoint {
 
 			wc_get_template(
 				'myaccount/subscription-details.php',
-				array( 'subscription' => $subscription, 'endpoint' => self::ENDPOINT ),
+				array(
+					'subscription' => $subscription,
+					'endpoint'     => self::ENDPOINT,
+				),
 				'',
 				SUBKIT_PATH . 'templates/'
 			);
@@ -117,7 +120,9 @@ class Account_Endpoint {
 		}
 
 		if ( 'auto_renew' === $action ) {
-			$this->set_auto_renew( $subscription, 'on' === ( isset( $_POST['subkit_auto_renew'] ) ? sanitize_key( wp_unslash( $_POST['subkit_auto_renew'] ) ) : 'on' ) );
+			$wanted = isset( $_POST['subkit_auto_renew'] ) ? sanitize_key( wp_unslash( $_POST['subkit_auto_renew'] ) ) : 'on';
+
+			$this->set_auto_renew( $subscription, 'on' === $wanted );
 			return;
 		}
 
@@ -195,12 +200,14 @@ class Account_Endpoint {
 			return array();
 		}
 
-		$found = Subscription_Query::get( array(
-			'customer_id' => $user_id,
-			'limit'       => 50,
-			'orderby'     => 'date',
-			'order'       => 'DESC',
-		) );
+		$found = Subscription_Query::get(
+			array(
+				'customer_id' => $user_id,
+				'limit'       => 50,
+				'orderby'     => 'date',
+				'order'       => 'DESC',
+			)
+		);
 
 		return array_filter( $found, static fn( $s ) => $s instanceof Subscription );
 	}

@@ -26,60 +26,76 @@ class Product_Meta_Fields {
 
 		echo '<p class="form-field"><strong>' . esc_html__( 'Subscription', 'subkit-subscriptions' ) . '</strong></p>';
 
-		woocommerce_wp_checkbox( array(
-			'id'          => Subscription_Product::META_ENABLED,
-			'label'       => __( 'Recurring', 'subkit-subscriptions' ),
-			'description' => __( 'Bill this product on a repeating schedule.', 'subkit-subscriptions' ),
-			'value'       => $product_object ? $product_object->get_meta( Subscription_Product::META_ENABLED ) : 'no',
-		) );
+		woocommerce_wp_checkbox(
+			array(
+				'id'          => Subscription_Product::META_ENABLED,
+				'label'       => __( 'Recurring', 'subkit-subscriptions' ),
+				'description' => __( 'Bill this product on a repeating schedule.', 'subkit-subscriptions' ),
+				'value'       => $product_object ? $product_object->get_meta( Subscription_Product::META_ENABLED ) : 'no',
+			)
+		);
 
 		$enabled = $product_object && 'yes' === $product_object->get_meta( Subscription_Product::META_ENABLED );
 
 		printf( '<div class="subkit-schedule-fields"%s>', $enabled ? '' : ' style="display:none"' );
 
-		woocommerce_wp_select( array(
-			'id'          => Subscription_Product::META_PERIOD,
-			'label'       => __( 'Bill every', 'subkit-subscriptions' ),
-			'options'     => array(
-				'day'   => __( 'Day', 'subkit-subscriptions' ),
-				'week'  => __( 'Week', 'subkit-subscriptions' ),
-				'month' => __( 'Month', 'subkit-subscriptions' ),
-				'year'  => __( 'Year', 'subkit-subscriptions' ),
-			),
-			'value'       => $product_object ? ( $product_object->get_meta( Subscription_Product::META_PERIOD ) ?: 'month' ) : 'month',
-			'desc_tip'    => true,
-			'description' => __( 'How often the customer is charged.', 'subkit-subscriptions' ),
-		) );
+		woocommerce_wp_select(
+			array(
+				'id'          => Subscription_Product::META_PERIOD,
+				'label'       => __( 'Bill every', 'subkit-subscriptions' ),
+				'options'     => array(
+					'day'   => __( 'Day', 'subkit-subscriptions' ),
+					'week'  => __( 'Week', 'subkit-subscriptions' ),
+					'month' => __( 'Month', 'subkit-subscriptions' ),
+					'year'  => __( 'Year', 'subkit-subscriptions' ),
+				),
+				'value'       => $product_object ? ( $product_object->get_meta( Subscription_Product::META_PERIOD ) ?: 'month' ) : 'month',
+				'desc_tip'    => true,
+				'description' => __( 'How often the customer is charged.', 'subkit-subscriptions' ),
+			)
+		);
 
-		woocommerce_wp_text_input( array(
-			'id'                => Subscription_Product::META_INTERVAL,
-			'label'             => __( 'Interval', 'subkit-subscriptions' ),
-			'type'              => 'number',
-			'custom_attributes' => array( 'min' => '1', 'step' => '1' ),
-			'value'             => $product_object ? ( $product_object->get_meta( Subscription_Product::META_INTERVAL ) ?: 1 ) : 1,
-			'desc_tip'          => true,
-			'description'       => __( 'Bill every N periods. 2 with "Month" means every two months.', 'subkit-subscriptions' ),
-		) );
+		woocommerce_wp_text_input(
+			array(
+				'id'                => Subscription_Product::META_INTERVAL,
+				'label'             => __( 'Interval', 'subkit-subscriptions' ),
+				'type'              => 'number',
+				'custom_attributes' => array(
+					'min'  => '1',
+					'step' => '1',
+				),
+				'value'             => $product_object ? ( $product_object->get_meta( Subscription_Product::META_INTERVAL ) ?: 1 ) : 1,
+				'desc_tip'          => true,
+				'description'       => __( 'Bill every N periods. 2 with "Month" means every two months.', 'subkit-subscriptions' ),
+			)
+		);
 
-		woocommerce_wp_text_input( array(
-			'id'                => Subscription_Product::META_TRIAL_DAYS,
-			'label'             => __( 'Free trial (days)', 'subkit-subscriptions' ),
-			'type'              => 'number',
-			'custom_attributes' => array( 'min' => '0', 'step' => '1' ),
-			'value'             => $product_object ? ( $product_object->get_meta( Subscription_Product::META_TRIAL_DAYS ) ?: 0 ) : 0,
-			'desc_tip'          => true,
-			'description'       => __( 'Days before the first payment is taken. 0 charges immediately.', 'subkit-subscriptions' ),
-		) );
+		woocommerce_wp_text_input(
+			array(
+				'id'                => Subscription_Product::META_TRIAL_DAYS,
+				'label'             => __( 'Free trial (days)', 'subkit-subscriptions' ),
+				'type'              => 'number',
+				'custom_attributes' => array(
+					'min'  => '0',
+					'step' => '1',
+				),
+				'value'             => $product_object ? ( $product_object->get_meta( Subscription_Product::META_TRIAL_DAYS ) ?: 0 ) : 0,
+				'desc_tip'          => true,
+				'description'       => __( 'Days before the first payment is taken. 0 charges immediately.', 'subkit-subscriptions' ),
+			)
+		);
 
-		woocommerce_wp_text_input( array(
-			'id'          => Subscription_Product::META_SIGNUP_FEE,
-			/* translators: %s: store currency symbol */
-			'label'       => sprintf( __( 'Sign-up fee (%s)', 'subkit-subscriptions' ), get_woocommerce_currency_symbol() ),
-			'data_type'   => 'price',
-			'value'       => $product_object ? ( $product_object->get_meta( Subscription_Product::META_SIGNUP_FEE ) ?: '' ) : '',
-			'desc_tip'    => true,
-			'description' => __( 'A one-off charge taken with the first payment.', 'subkit-subscriptions' ),
-		) );
+		woocommerce_wp_text_input(
+			array(
+				'id'          => Subscription_Product::META_SIGNUP_FEE,
+				/* translators: %s: store currency symbol */
+				'label'       => sprintf( __( 'Sign-up fee (%s)', 'subkit-subscriptions' ), get_woocommerce_currency_symbol() ),
+				'data_type'   => 'price',
+				'value'       => $product_object ? ( $product_object->get_meta( Subscription_Product::META_SIGNUP_FEE ) ?: '' ) : '',
+				'desc_tip'    => true,
+				'description' => __( 'A one-off charge taken with the first payment.', 'subkit-subscriptions' ),
+			)
+		);
 
 		/**
 		 * Fires inside the subscription panel so extensions can add their own fields.

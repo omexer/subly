@@ -1,0 +1,32 @@
+{
+	"name": "subkit/subkit-subscriptions",
+	"description": "Static analysis and coding standards for SubKit.",
+	"type": "wordpress-plugin",
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"php": ">=8.1"
+	},
+	"require-dev": {
+		"php-stubs/woocommerce-stubs": "^9.0",
+		"phpstan/phpstan": "^2.0",
+		"szepeviktor/phpstan-wordpress": "^2.0",
+		"squizlabs/php_codesniffer": "^3.10",
+		"wp-coding-standards/wpcs": "^3.1",
+		"phpcompatibility/phpcompatibility-wp": "^2.1",
+		"dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+	},
+	"config": {
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"analyse": "phpstan analyse --memory-limit=1G",
+		"lint": "phpcs",
+		"lint:fix": "phpcbf",
+		"check": [
+			"@lint",
+			"@analyse"
+		]
+	}
+}

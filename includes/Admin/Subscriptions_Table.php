@@ -22,11 +22,13 @@ if ( ! class_exists( '\WP_List_Table' ) ) {
 class Subscriptions_Table extends \WP_List_Table {
 
 	public function __construct() {
-		parent::__construct( array(
-			'singular' => 'subscription',
-			'plural'   => 'subscriptions',
-			'ajax'     => false,
-		) );
+		parent::__construct(
+			array(
+				'singular' => 'subscription',
+				'plural'   => 'subscriptions',
+				'ajax'     => false,
+			)
+		);
 	}
 
 	public function get_columns(): array {
@@ -43,10 +45,15 @@ class Subscriptions_Table extends \WP_List_Table {
 	public function prepare_items(): void {
 		$per_page = 20;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filters.
-		$paged    = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) );
-		$status   = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$paged  = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) );
+		$status = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-		$args = array( 'limit' => $per_page, 'paged' => $paged, 'orderby' => 'date', 'order' => 'DESC' );
+		$args = array(
+			'limit'   => $per_page,
+			'paged'   => $paged,
+			'orderby' => 'date',
+			'order'   => 'DESC',
+		);
 
 		if ( '' !== $status ) {
 			$args['status'] = $status;
@@ -55,9 +62,24 @@ class Subscriptions_Table extends \WP_List_Table {
 		$this->items           = array_filter( Subscription_Query::get( $args ), static fn( $s ) => $s instanceof Subscription );
 		$this->_column_headers = array( $this->get_columns(), array(), array() );
 
-		$total = count( Subscription_Query::ids( array_merge( $args, array( 'limit' => -1, 'paged' => 1 ) ) ) );
+		$total = count(
+			Subscription_Query::ids(
+				array_merge(
+					$args,
+					array(
+						'limit' => -1,
+						'paged' => 1,
+					)
+				)
+			)
+		);
 
-		$this->set_pagination_args( array( 'total_items' => $total, 'per_page' => $per_page ) );
+		$this->set_pagination_args(
+			array(
+				'total_items' => $total,
+				'per_page'    => $per_page,
+			)
+		);
 	}
 
 	/**
@@ -80,7 +102,10 @@ class Subscriptions_Table extends \WP_List_Table {
 
 	private function subscription_cell( Subscription $item ): string {
 		$url = add_query_arg(
-			array( 'page' => Menu::SLUG, 'subscription' => $item->get_id() ),
+			array(
+				'page'         => Menu::SLUG,
+				'subscription' => $item->get_id(),
+			),
 			admin_url( 'admin.php' )
 		);
 
@@ -113,7 +138,14 @@ class Subscriptions_Table extends \WP_List_Table {
 		);
 
 		foreach ( Subscription_Status::cases() as $status ) {
-			$count = count( Subscription_Query::ids( array( 'status' => $status->value, 'limit' => -1 ) ) );
+			$count = count(
+				Subscription_Query::ids(
+					array(
+						'status' => $status->value,
+						'limit'  => -1,
+					)
+				)
+			);
 
 			if ( 0 === $count ) {
 				continue;

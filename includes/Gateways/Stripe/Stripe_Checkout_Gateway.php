@@ -82,32 +82,35 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 
 		$amount = Money::from_decimal( $order->get_total(), $order->get_currency() );
 
-		$response = $this->client->post( '/v1/checkout/sessions', array(
-			'mode'                        => 'payment',
-			'customer_email'              => $order->get_billing_email(),
-			'client_reference_id'         => (string) $order->get_id(),
-			'success_url'                 => $this->return_url( $order, 'success' ),
-			'cancel_url'                  => $this->return_url( $order, 'cancel' ),
-			// Keep the card on file so renewals can be charged off-session later.
-			'payment_intent_data'         => array( 'setup_future_usage' => 'off_session' ),
-			'line_items'                  => array(
-				array(
-					'quantity'   => 1,
-					'price_data' => array(
-						'currency'     => strtolower( $order->get_currency() ),
-						'unit_amount'  => $amount->minor(),
-						'product_data' => array(
-							'name' => sprintf(
-								/* translators: %s: order number */
-								__( 'Order %s', 'subkit-subscriptions' ),
-								$order->get_order_number()
+		$response = $this->client->post(
+			'/v1/checkout/sessions',
+			array(
+				'mode'                => 'payment',
+				'customer_email'      => $order->get_billing_email(),
+				'client_reference_id' => (string) $order->get_id(),
+				'success_url'         => $this->return_url( $order, 'success' ),
+				'cancel_url'          => $this->return_url( $order, 'cancel' ),
+				// Keep the card on file so renewals can be charged off-session later.
+				'payment_intent_data' => array( 'setup_future_usage' => 'off_session' ),
+				'line_items'          => array(
+					array(
+						'quantity'   => 1,
+						'price_data' => array(
+							'currency'     => strtolower( $order->get_currency() ),
+							'unit_amount'  => $amount->minor(),
+							'product_data' => array(
+								'name' => sprintf(
+									/* translators: %s: order number */
+									__( 'Order %s', 'subkit-subscriptions' ),
+									$order->get_order_number()
+								),
 							),
 						),
 					),
 				),
-			),
-			'metadata'                    => array( 'subkit_order' => (string) $order->get_id() ),
-		) );
+				'metadata'            => array( 'subkit_order' => (string) $order->get_id() ),
+			)
+		);
 
 		if ( ! $response['ok'] || empty( $response['body']['url'] ) ) {
 			$order->add_order_note( sprintf( 'Stripe: %s', $response['error'] ) );
@@ -119,7 +122,10 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 		$order->update_meta_data( '_subkit_stripe_session', $response['body']['id'] );
 		$order->save();
 
-		return array( 'result' => 'success', 'redirect' => (string) $response['body']['url'] );
+		return array(
+			'result'   => 'success',
+			'redirect' => (string) $response['body']['url'],
+		);
 	}
 
 	public function handle_return(): void {

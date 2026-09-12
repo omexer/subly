@@ -202,7 +202,7 @@ class Stripe_Gateway implements Recurring_Gateway {
 	 * Zero-decimal currencies (JPY, KRW) are sent as whole units, everything else in minor.
 	 */
 	private function stripe_amount( Money $amount, string $currency ): int {
-		$zero_decimal = array( 'BIF','CLP','DJF','GNF','JPY','KMF','KRW','MGA','PYG','RWF','UGX','VND','VUV','XAF','XOF','XPF' );
+		$zero_decimal = array( 'BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF' );
 
 		if ( in_array( strtoupper( $currency ), $zero_decimal, true ) ) {
 			return (int) round( (float) $amount->decimal() );

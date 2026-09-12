@@ -31,19 +31,24 @@ class Cancellation_Survey {
 	 * @return array<string, string>
 	 */
 	public function reasons(): array {
-		return (array) apply_filters( 'subkit_cancellation_reasons', array(
-			'too_expensive'  => __( 'Too expensive', 'subkit-subscriptions' ),
-			'not_using'      => __( "I wasn't using it", 'subkit-subscriptions' ),
-			'found_better'   => __( 'I found something better', 'subkit-subscriptions' ),
-			'quality'        => __( "It wasn't what I expected", 'subkit-subscriptions' ),
-			'temporary'      => __( 'Only pausing for now', 'subkit-subscriptions' ),
-			'other'          => __( 'Something else', 'subkit-subscriptions' ),
-		) );
+		return (array) apply_filters(
+			'subkit_cancellation_reasons',
+			array(
+				'too_expensive' => __( 'Too expensive', 'subkit-subscriptions' ),
+				'not_using'     => __( "I wasn't using it", 'subkit-subscriptions' ),
+				'found_better'  => __( 'I found something better', 'subkit-subscriptions' ),
+				'quality'       => __( "It wasn't what I expected", 'subkit-subscriptions' ),
+				'temporary'     => __( 'Only pausing for now', 'subkit-subscriptions' ),
+				'other'         => __( 'Something else', 'subkit-subscriptions' ),
+			)
+		);
 	}
 
 	public function handle_submission(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( 'cancel_survey' !== ( $_POST['subkit_action'] ?? '' ) ) {
+		$action = isset( $_POST['subkit_action'] ) ? sanitize_key( wp_unslash( $_POST['subkit_action'] ) ) : '';
+
+		if ( 'cancel_survey' !== $action ) {
 			return;
 		}
 
@@ -102,11 +107,16 @@ class Cancellation_Survey {
 	public function tally(): array {
 		$counts = array_fill_keys( array_keys( $this->reasons() ), 0 );
 
-		foreach ( \SubKit\Data\Subscription_Query::get( array( 'limit' => -1, 'status' => null ) ) as $subscription ) {
+		foreach ( \SubKit\Data\Subscription_Query::get(
+			array(
+				'limit'  => -1,
+				'status' => null,
+			)
+		) as $subscription ) {
 			$reason = (string) $subscription->get_meta( self::META_REASON );
 
 			if ( isset( $counts[ $reason ] ) ) {
-				$counts[ $reason ]++;
+				++$counts[ $reason ];
 			}
 		}
 

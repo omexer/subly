@@ -13,8 +13,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Payment_Failed extends Subscription_Email {
 
-	private string $retry_note = '';
-
 	public function __construct() {
 		$this->id             = 'subkit_payment_failed';
 		$this->title          = __( 'Payment failed', 'subkit-subscriptions' );
@@ -55,7 +53,10 @@ class Payment_Failed extends Subscription_Email {
 
 	protected function call_to_action(): ?array {
 		return $this->related_order
-			? array( 'label' => __( 'Pay now', 'subkit-subscriptions' ), 'url' => $this->related_order->get_checkout_payment_url() )
+			? array(
+				'label' => __( 'Pay now', 'subkit-subscriptions' ),
+				'url'   => $this->related_order->get_checkout_payment_url(),
+			)
 			: null;
 	}
 

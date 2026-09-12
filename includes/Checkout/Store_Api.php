@@ -54,7 +54,12 @@ class Store_Api {
 		$products = $this->subscription_products_in_cart();
 
 		if ( empty( $products ) ) {
-			return array( 'has_subscription' => false, 'price_line' => '', 'lines' => array(), 'consent' => '' );
+			return array(
+				'has_subscription' => false,
+				'price_line'       => '',
+				'lines'            => array(),
+				'consent'          => '',
+			);
 		}
 
 		$product = reset( $products );

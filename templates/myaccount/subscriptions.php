@@ -23,7 +23,8 @@ if ( empty( $subscriptions ) ) : ?>
 <?php endif; ?>
 
 <ul class="subkit-subscriptions">
-	<?php foreach ( $subscriptions as $subscription ) :
+	<?php
+	foreach ( $subscriptions as $subscription ) :
 		$state = Status_Presenter::for( $subscription );
 		?>
 		<li class="subkit-card subkit-card--<?php echo esc_attr( $state['tone'] ); ?>">

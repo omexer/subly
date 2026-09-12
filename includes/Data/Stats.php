@@ -73,7 +73,12 @@ class Stats {
 		$total    = Money::zero( $store );
 		$excluded = 0;
 
-		foreach ( Subscription_Query::get( array( 'status' => $this->live_statuses(), 'limit' => -1 ) ) as $subscription ) {
+		foreach ( Subscription_Query::get(
+			array(
+				'status' => $this->live_statuses(),
+				'limit'  => -1,
+			)
+		) as $subscription ) {
 			if ( ! $subscription instanceof Subscription ) {
 				continue;
 			}
@@ -86,7 +91,10 @@ class Stats {
 			$total = $total->add( $this->monthly_value( $subscription ) );
 		}
 
-		return array( 'mrr' => $total, 'excluded' => $excluded );
+		return array(
+			'mrr'      => $total,
+			'excluded' => $excluded,
+		);
 	}
 
 	/**
@@ -122,14 +130,28 @@ class Stats {
 		$counts = array();
 
 		foreach ( Subscription_Status::cases() as $status ) {
-			$counts[ $status->value ] = count( Subscription_Query::ids( array( 'status' => $status->value, 'limit' => -1 ) ) );
+			$counts[ $status->value ] = count(
+				Subscription_Query::ids(
+					array(
+						'status' => $status->value,
+						'limit'  => -1,
+					)
+				)
+			);
 		}
 
 		return $counts;
 	}
 
 	public function active_count(): int {
-		return count( Subscription_Query::ids( array( 'status' => $this->live_statuses(), 'limit' => -1 ) ) );
+		return count(
+			Subscription_Query::ids(
+				array(
+					'status' => $this->live_statuses(),
+					'limit'  => -1,
+				)
+			)
+		);
 	}
 
 	/**

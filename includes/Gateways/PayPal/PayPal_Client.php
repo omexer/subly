@@ -91,10 +91,20 @@ class PayPal_Client {
 		$body   = is_array( $body ) ? $body : array();
 
 		if ( $status >= 200 && $status < 300 ) {
-			return array( 'ok' => true, 'status' => $status, 'body' => $body, 'error' => '' );
+			return array(
+				'ok'     => true,
+				'status' => $status,
+				'body'   => $body,
+				'error'  => '',
+			);
 		}
 
-		return array( 'ok' => false, 'status' => $status, 'body' => $body, 'error' => $this->error_message( $body ) );
+		return array(
+			'ok'     => false,
+			'status' => $status,
+			'body'   => $body,
+			'error'  => $this->error_message( $body ),
+		);
 	}
 
 	/**
@@ -112,7 +122,12 @@ class PayPal_Client {
 	}
 
 	private function fail( int $status, string $error ): array {
-		return array( 'ok' => false, 'status' => $status, 'body' => array(), 'error' => $error );
+		return array(
+			'ok'     => false,
+			'status' => $status,
+			'body'   => array(),
+			'error'  => $error,
+		);
 	}
 
 	/**

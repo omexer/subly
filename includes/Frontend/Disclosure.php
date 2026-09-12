@@ -109,7 +109,7 @@ class Disclosure {
 			return '';
 		}
 
-		$html = '<div class="subkit-disclosure" role="group" aria-label="' . esc_attr__( 'Subscription terms', 'subkit-subscriptions' ) . '">';
+		$html  = '<div class="subkit-disclosure" role="group" aria-label="' . esc_attr__( 'Subscription terms', 'subkit-subscriptions' ) . '">';
 		$html .= '<p class="subkit-disclosure__price">' . wp_kses_post( $this->price_line( $product ) ) . '</p>';
 		$html .= '<ul class="subkit-disclosure__facts">';
 

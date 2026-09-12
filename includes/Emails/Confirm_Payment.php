@@ -62,7 +62,10 @@ class Confirm_Payment extends Subscription_Email {
 	protected function call_to_action(): ?array {
 		$url = $this->action_url ?: ( $this->related_order ? $this->related_order->get_checkout_payment_url() : '' );
 
-		return $url ? array( 'label' => __( 'Confirm payment', 'subkit-subscriptions' ), 'url' => $url ) : null;
+		return $url ? array(
+			'label' => __( 'Confirm payment', 'subkit-subscriptions' ),
+			'url'   => $url,
+		) : null;
 	}
 
 	protected function outro(): string {

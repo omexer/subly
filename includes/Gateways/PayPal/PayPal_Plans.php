@@ -61,14 +61,19 @@ class PayPal_Plans {
 	private function fingerprint( \WC_Product $product ): string {
 		$schedule = Subscription_Product::schedule( $product );
 
-		return sha1( implode( '|', array(
-			$product->get_price(),
-			get_woocommerce_currency(),
-			$schedule->period(),
-			$schedule->interval(),
-			$schedule->trial_days(),
-			(string) Subscription_Product::signup_fee( $product )->minor(),
-		) ) );
+		return sha1(
+			implode(
+				'|',
+				array(
+					$product->get_price(),
+					get_woocommerce_currency(),
+					$schedule->period(),
+					$schedule->interval(),
+					$schedule->trial_days(),
+					(string) Subscription_Product::signup_fee( $product )->minor(),
+				)
+			)
+		);
 	}
 
 	/**
@@ -77,23 +82,38 @@ class PayPal_Plans {
 	private function paypal_product_for( \WC_Product $product ): array {
 		$existing = (string) $product->get_meta( self::META_PRODUCT );
 		if ( '' !== $existing ) {
-			return array( 'ok' => true, 'id' => $existing, 'error' => '' );
+			return array(
+				'ok'    => true,
+				'id'    => $existing,
+				'error' => '',
+			);
 		}
 
-		$response = $this->client->post( '/v1/catalogs/products', array(
-			'name'        => wp_strip_all_tags( $product->get_name() ),
-			'type'        => $product->is_virtual() ? 'DIGITAL' : 'PHYSICAL',
-			'category'    => 'MERCHANDISE',
-		) );
+		$response = $this->client->post(
+			'/v1/catalogs/products',
+			array(
+				'name'     => wp_strip_all_tags( $product->get_name() ),
+				'type'     => $product->is_virtual() ? 'DIGITAL' : 'PHYSICAL',
+				'category' => 'MERCHANDISE',
+			)
+		);
 
 		if ( ! $response['ok'] || empty( $response['body']['id'] ) ) {
-			return array( 'ok' => false, 'id' => '', 'error' => $response['error'] );
+			return array(
+				'ok'    => false,
+				'id'    => '',
+				'error' => $response['error'],
+			);
 		}
 
 		$product->update_meta_data( self::META_PRODUCT, $response['body']['id'] );
 		$product->save();
 
-		return array( 'ok' => true, 'id' => (string) $response['body']['id'], 'error' => '' );
+		return array(
+			'ok'    => true,
+			'id'    => (string) $response['body']['id'],
+			'error' => '',
+		);
 	}
 
 	/**
@@ -110,8 +130,16 @@ class PayPal_Plans {
 				'tenure_type'    => 'TRIAL',
 				'sequence'       => $sequence++,
 				'total_cycles'   => 1,
-				'frequency'      => array( 'interval_unit' => 'DAY', 'interval_count' => $schedule->trial_days() ),
-				'pricing_scheme' => array( 'fixed_price' => array( 'value' => '0', 'currency_code' => $currency ) ),
+				'frequency'      => array(
+					'interval_unit'  => 'DAY',
+					'interval_count' => $schedule->trial_days(),
+				),
+				'pricing_scheme' => array(
+					'fixed_price' => array(
+						'value'         => '0',
+						'currency_code' => $currency,
+					),
+				),
 			);
 		}
 
@@ -154,10 +182,18 @@ class PayPal_Plans {
 		$response = $this->client->post( '/v1/billing/plans', $payload );
 
 		if ( ! $response['ok'] || empty( $response['body']['id'] ) ) {
-			return array( 'ok' => false, 'id' => '', 'error' => $response['error'] );
+			return array(
+				'ok'    => false,
+				'id'    => '',
+				'error' => $response['error'],
+			);
 		}
 
-		return array( 'ok' => true, 'id' => (string) $response['body']['id'], 'error' => '' );
+		return array(
+			'ok'    => true,
+			'id'    => (string) $response['body']['id'],
+			'error' => '',
+		);
 	}
 
 	private function interval_unit( Billing_Schedule $schedule ): string {
@@ -170,10 +206,18 @@ class PayPal_Plans {
 	}
 
 	private function ok( string $plan_id ): array {
-		return array( 'ok' => true, 'plan_id' => $plan_id, 'error' => '' );
+		return array(
+			'ok'      => true,
+			'plan_id' => $plan_id,
+			'error'   => '',
+		);
 	}
 
 	private function fail( string $error ): array {
-		return array( 'ok' => false, 'plan_id' => '', 'error' => $error );
+		return array(
+			'ok'      => false,
+			'plan_id' => '',
+			'error'   => $error,
+		);
 	}
 }

@@ -241,7 +241,10 @@ class Menu {
 	private function render_process_button( Subscription $subscription ): void {
 		$url = wp_nonce_url(
 			add_query_arg(
-				array( 'action' => 'subkit_process_renewal', 'subscription' => $subscription->get_id() ),
+				array(
+					'action'       => 'subkit_process_renewal',
+					'subscription' => $subscription->get_id(),
+				),
 				admin_url( 'admin-post.php' )
 			),
 			'subkit_process_renewal_' . $subscription->get_id()
@@ -306,11 +309,13 @@ class Menu {
 			printf(
 				'<div><strong>%s</strong><br><span>%s</span></div>',
 				esc_html__( 'Not counted', 'subkit-subscriptions' ),
-				esc_html( sprintf(
+				esc_html(
+					sprintf(
 					/* translators: %d: number of subscriptions */
-					_n( '%d subscription in another currency', '%d subscriptions in other currencies', $excluded, 'subkit-subscriptions' ),
-					$excluded
-				) )
+						_n( '%d subscription in another currency', '%d subscriptions in other currencies', $excluded, 'subkit-subscriptions' ),
+						$excluded
+					)
+				)
 			);
 		}
 
@@ -348,7 +353,16 @@ class Menu {
 
 		$this->processor->process( $id );
 
-		wp_safe_redirect( add_query_arg( array( 'page' => self::SLUG, 'subscription' => $id, 'processed' => 1 ), admin_url( 'admin.php' ) ) );
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'         => self::SLUG,
+					'subscription' => $id,
+					'processed'    => 1,
+				),
+				admin_url( 'admin.php' )
+			)
+		);
 		exit;
 	}
 

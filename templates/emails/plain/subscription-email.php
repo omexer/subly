@@ -19,7 +19,7 @@ $subkit_text = static function ( $value ): string {
 	return wp_specialchars_decode( esc_html( wp_strip_all_tags( (string) $value ) ), ENT_QUOTES );
 };
 
-echo "= " . $subkit_text( $email_heading ) . " =\n\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+echo '= ' . $subkit_text( $email_heading ) . " =\n\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 echo $subkit_text( $intro ) . "\n\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 
 foreach ( $facts as $subkit_label => $subkit_value ) {

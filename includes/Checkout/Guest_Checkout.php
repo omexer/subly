@@ -149,15 +149,23 @@ class Guest_Checkout {
 			return 0;
 		}
 
-		$username = wc_create_new_customer_username( $email, array(
-			'first_name' => $order->get_billing_first_name(),
-			'last_name'  => $order->get_billing_last_name(),
-		) );
+		$username = wc_create_new_customer_username(
+			$email,
+			array(
+				'first_name' => $order->get_billing_first_name(),
+				'last_name'  => $order->get_billing_last_name(),
+			)
+		);
 
-		$user_id = wc_create_new_customer( $email, $username, '', array(
-			'first_name' => $order->get_billing_first_name(),
-			'last_name'  => $order->get_billing_last_name(),
-		) );
+		$user_id = wc_create_new_customer(
+			$email,
+			$username,
+			'',
+			array(
+				'first_name' => $order->get_billing_first_name(),
+				'last_name'  => $order->get_billing_last_name(),
+			)
+		);
 
 		if ( is_wp_error( $user_id ) ) {
 			return 0;

@@ -7,15 +7,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-spl_autoload_register( function ( $class ) {
-	if ( 0 !== strpos( $class, 'SubKit\\' ) ) {
-		return;
-	}
+spl_autoload_register(
+	function ( $class ) {
+		if ( 0 !== strpos( $class, 'SubKit\\' ) ) {
+				return;
+		}
 
-	$relative = substr( $class, strlen( 'SubKit\\' ) );
-	$path     = SUBKIT_PATH . 'includes/' . str_replace( '\\', '/', $relative ) . '.php';
+		$relative = substr( $class, strlen( 'SubKit\\' ) );
+		$path     = SUBKIT_PATH . 'includes/' . str_replace( '\\', '/', $relative ) . '.php';
 
-	if ( is_readable( $path ) ) {
-		require_once $path;
+		if ( is_readable( $path ) ) {
+			require_once $path;
+		}
 	}
-} );
+);

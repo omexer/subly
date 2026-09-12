@@ -48,7 +48,10 @@ class Settings extends \WC_Settings_Page {
 				'id'    => 'subkit_health_title',
 			),
 			array( 'type' => 'subkit_status' ),
-			array( 'type' => 'sectionend', 'id' => 'subkit_health_title' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_health_title',
+			),
 
 			array(
 				'title' => __( 'Renewals', 'subkit-subscriptions' ),
@@ -75,7 +78,10 @@ class Settings extends \WC_Settings_Page {
 				'default'  => 7,
 				'desc_tip' => true,
 			),
-			array( 'type' => 'sectionend', 'id' => 'subkit_renewals_title' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_renewals_title',
+			),
 
 			array(
 				'title' => __( 'Access', 'subkit-subscriptions' ),
@@ -95,11 +101,11 @@ class Settings extends \WC_Settings_Page {
 				),
 			),
 			array(
-				'title'    => __( 'Let customers turn off renewal', 'subkit-subscriptions' ),
-				'desc'     => __( 'Show a switch in My Account that ends the subscription at the end of the paid period instead of cancelling it outright.', 'subkit-subscriptions' ),
-				'type'     => 'checkbox',
-				'id'       => 'subkit_allow_auto_renew_toggle',
-				'default'  => 'no',
+				'title'   => __( 'Let customers turn off renewal', 'subkit-subscriptions' ),
+				'desc'    => __( 'Show a switch in My Account that ends the subscription at the end of the paid period instead of cancelling it outright.', 'subkit-subscriptions' ),
+				'type'    => 'checkbox',
+				'id'      => 'subkit_allow_auto_renew_toggle',
+				'default' => 'no',
 			),
 			array(
 				'title'    => __( 'Role while subscribed', 'subkit-subscriptions' ),
@@ -117,7 +123,10 @@ class Settings extends \WC_Settings_Page {
 				'default'  => '',
 				'options'  => self::role_options(),
 			),
-			array( 'type' => 'sectionend', 'id' => 'subkit_access_title' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_access_title',
+			),
 		);
 	}
 
@@ -172,10 +181,16 @@ class Settings extends \WC_Settings_Page {
 				'id'                => 'subkit_paypal_webhook_url',
 				'type'              => 'text',
 				'value'             => rest_url( 'subkit/v1/webhook/paypal' ),
-				'custom_attributes' => array( 'readonly' => 'readonly', 'onclick' => 'this.select()' ),
+				'custom_attributes' => array(
+					'readonly' => 'readonly',
+					'onclick'  => 'this.select()',
+				),
 				'css'               => 'width:26rem',
 			),
-			array( 'type' => 'sectionend', 'id' => 'subkit_paypal_title' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_paypal_title',
+			),
 		);
 	}
 
@@ -216,7 +231,10 @@ class Settings extends \WC_Settings_Page {
 				'type'  => 'password',
 				'css'   => 'width:26rem',
 			),
-			array( 'type' => 'sectionend', 'id' => 'subkit_stripe_title' ),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_stripe_title',
+			),
 		);
 	}
 

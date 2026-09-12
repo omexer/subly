@@ -94,22 +94,30 @@ class Status_Presenter {
 		$authenticate = (string) $order->get_meta( '_subkit_action_url' );
 
 		return $authenticate
-			? array( 'label' => __( 'Confirm payment', 'subkit-subscriptions' ), 'url' => $authenticate )
-			: array( 'label' => __( 'Pay now', 'subkit-subscriptions' ), 'url' => $order->get_checkout_payment_url() );
+			? array(
+				'label' => __( 'Confirm payment', 'subkit-subscriptions' ),
+				'url'   => $authenticate,
+			)
+			: array(
+				'label' => __( 'Pay now', 'subkit-subscriptions' ),
+				'url'   => $order->get_checkout_payment_url(),
+			);
 	}
 
 	/**
 	 * The most recent renewal order still awaiting payment.
 	 */
 	public static function payable_order( Subscription $subscription ): ?\WC_Order {
-		$orders = wc_get_orders( array(
-			'limit'      => 1,
-			'orderby'    => 'date',
-			'order'      => 'DESC',
-			'status'     => array( 'pending', 'failed', 'on-hold' ),
-			'meta_key'   => '_subkit_subscription_id',
-			'meta_value' => $subscription->get_id(),
-		) );
+		$orders = wc_get_orders(
+			array(
+				'limit'      => 1,
+				'orderby'    => 'date',
+				'order'      => 'DESC',
+				'status'     => array( 'pending', 'failed', 'on-hold' ),
+				'meta_key'   => '_subkit_subscription_id',
+				'meta_value' => $subscription->get_id(),
+			)
+		);
 
 		$order = $orders[0] ?? null;
 

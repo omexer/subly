@@ -30,24 +30,28 @@ class Renewal_Order_Factory {
 
 		foreach ( $subscription->get_items() as $item ) {
 			$copy = new \WC_Order_Item_Product();
-			$copy->set_props( array(
-				'name'         => $item->get_name(),
-				'product_id'   => $item->get_product_id(),
-				'variation_id' => $item->get_variation_id(),
-				'quantity'     => $item->get_quantity(),
-				'subtotal'     => $item->get_subtotal(),
-				'total'        => $item->get_total(),
-			) );
+			$copy->set_props(
+				array(
+					'name'         => $item->get_name(),
+					'product_id'   => $item->get_product_id(),
+					'variation_id' => $item->get_variation_id(),
+					'quantity'     => $item->get_quantity(),
+					'subtotal'     => $item->get_subtotal(),
+					'total'        => $item->get_total(),
+				)
+			);
 			$order->add_item( $copy );
 		}
 
 		foreach ( $subscription->get_items( 'shipping' ) as $shipping ) {
 			$copy = new \WC_Order_Item_Shipping();
-			$copy->set_props( array(
-				'method_title' => $shipping->get_method_title(),
-				'method_id'    => $shipping->get_method_id(),
-				'total'        => $shipping->get_total(),
-			) );
+			$copy->set_props(
+				array(
+					'method_title' => $shipping->get_method_title(),
+					'method_id'    => $shipping->get_method_id(),
+					'total'        => $shipping->get_total(),
+				)
+			);
 			$order->add_item( $copy );
 		}
 

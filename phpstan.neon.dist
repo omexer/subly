@@ -1,0 +1,44 @@
+parameters:
+	level: 5
+	phpVersion: 80100
+	paths:
+		- subkit-subscriptions.php
+		- includes
+		- templates
+	scanFiles:
+		- vendor/php-stubs/woocommerce-stubs/woocommerce-stubs.php
+		- tools/phpstan-stubs.php
+	bootstrapFiles:
+		- tools/phpstan-bootstrap.php
+	treatPhpDocTypesAsCertain: false
+	excludePaths:
+		- tools/r0-spike.php
+		- tools/phpstan-stubs.php
+	ignoreErrors:
+		# get_items() is typed as WC_Order_Item[] in the stubs, but line items are really
+		# WC_Order_Item_Product and shipping lines WC_Order_Item_Shipping. The stub is
+		# narrower than WooCommerce itself; the calls are correct.
+		-
+			identifier: method.notFound
+			message: '#Call to an undefined method WC_Order_Item::#'
+		# WC_Data::update_meta_data() declares no type for $value at all; the stub's
+		# array|string is narrower than WooCommerce itself.
+		-
+			identifier: argument.type
+			message: '#\$value of method WC_Data::update_meta_data\(\) expects array\|string#'
+		# WooCommerce's own order data store, deliberately not in the public stubs.
+		-
+			identifier: class.notFound
+			message: '#OrdersTableDataStore not found#'
+		# wc_get_orders() is stubbed as returning WC_Order; ours are a registered order
+		# type, so the data store hands back Subscription objects.
+		-
+			identifier: return.type
+			message: '#should return array<int\|SubKit\\Domain\\Subscription> but returns array<WC_Order>#'
+		# process_admin_options() returns bool and every WooCommerce gateway hooks it to
+		# an action exactly like this.
+		-
+			identifier: return.void
+			message: '#Action callback returns bool but should not return anything#'
+includes:
+	- vendor/szepeviktor/phpstan-wordpress/extension.neon

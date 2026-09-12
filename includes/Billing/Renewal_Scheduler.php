@@ -94,15 +94,17 @@ class Renewal_Scheduler {
 	 * Find active subscriptions that are past due with nothing queued, and queue them.
 	 */
 	public function sweep(): void {
-		$due = Subscription_Query::ids( array(
-			'status'  => Subscription_Status::Active->value,
-			'limit'   => self::SWEEP_BATCH,
-			'orderby' => 'date',
-			'order'   => 'ASC',
-		) );
+		$due = Subscription_Query::ids(
+			array(
+				'status'  => Subscription_Status::Active->value,
+				'limit'   => self::SWEEP_BATCH,
+				'orderby' => 'date',
+				'order'   => 'ASC',
+			)
+		);
 
-		$now     = time();
-		$queued  = 0;
+		$now    = time();
+		$queued = 0;
 
 		foreach ( $due as $subscription_id ) {
 			$subscription = wc_get_order( $subscription_id );
@@ -120,7 +122,7 @@ class Renewal_Scheduler {
 			}
 
 			$this->schedule_at( $subscription_id, $now );
-			$queued++;
+			++$queued;
 		}
 
 		if ( $queued > 0 ) {
@@ -137,14 +139,16 @@ class Renewal_Scheduler {
 			return false;
 		}
 
-		$overdue = as_get_scheduled_actions( array(
-			'group'        => self::GROUP,
-			'status'       => \ActionScheduler_Store::STATUS_PENDING,
-			'date'         => gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS ),
-			'date_compare' => '<',
-			'per_page'     => 1,
-			'return'       => 'ids',
-		) );
+		$overdue = as_get_scheduled_actions(
+			array(
+				'group'        => self::GROUP,
+				'status'       => \ActionScheduler_Store::STATUS_PENDING,
+				'date'         => gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS ),
+				'date_compare' => '<',
+				'per_page'     => 1,
+				'return'       => 'ids',
+			)
+		);
 
 		return empty( $overdue );
 	}

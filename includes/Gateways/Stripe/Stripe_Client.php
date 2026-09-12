@@ -58,7 +58,11 @@ class Stripe_Client {
 			return $this->fail( 'Stripe is not configured.' );
 		}
 
-		$args = array( 'method' => $method, 'timeout' => 30, 'headers' => $headers );
+		$args = array(
+			'method'  => $method,
+			'timeout' => 30,
+			'headers' => $headers,
+		);
 
 		if ( null !== $body ) {
 			$args['body'] = $body;
@@ -75,7 +79,13 @@ class Stripe_Client {
 		$parsed = is_array( $parsed ) ? $parsed : array();
 
 		if ( $status >= 200 && $status < 300 ) {
-			return array( 'ok' => true, 'status' => $status, 'body' => $parsed, 'error' => '', 'code' => '' );
+			return array(
+				'ok'     => true,
+				'status' => $status,
+				'body'   => $parsed,
+				'error'  => '',
+				'code'   => '',
+			);
 		}
 
 		return array(
@@ -95,6 +105,12 @@ class Stripe_Client {
 	}
 
 	private function fail( string $error ): array {
-		return array( 'ok' => false, 'status' => 0, 'body' => array(), 'error' => $error, 'code' => '' );
+		return array(
+			'ok'     => false,
+			'status' => 0,
+			'body'   => array(),
+			'error'  => $error,
+			'code'   => '',
+		);
 	}
 }

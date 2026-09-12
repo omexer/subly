@@ -11,6 +11,8 @@
  * @var string      $outro
  */
 
+/** @var \WC_Email $email Supplied by WC_Email::get_content_html(). */
+
 defined( 'ABSPATH' ) || exit;
 
 do_action( 'woocommerce_email_header', $email_heading, $email );
@@ -22,7 +24,10 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 	<table cellspacing="0" cellpadding="6" style="width:100%;border:1px solid #e5e5e5;margin-bottom:1.5em" border="1">
 		<tbody>
 		<?php foreach ( $facts as $subkit_label => $subkit_value ) : ?>
-			<?php if ( '' === $subkit_value ) { continue; } ?>
+			<?php
+			if ( '' === $subkit_value ) {
+				continue; }
+			?>
 			<tr>
 				<th scope="row" style="text-align:left;width:40%;border:1px solid #e5e5e5;padding:8px"><?php echo esc_html( $subkit_label ); ?></th>
 				<td style="border:1px solid #e5e5e5;padding:8px"><?php echo esc_html( $subkit_value ); ?></td>

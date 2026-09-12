@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<ruleset name="SubKit">
+	<description>WordPress coding standards for SubKit.</description>
+
+	<file>subkit-subscriptions.php</file>
+	<file>includes</file>
+	<file>templates</file>
+
+	<exclude-pattern>*/vendor/*</exclude-pattern>
+	<exclude-pattern>*/node_modules/*</exclude-pattern>
+	<exclude-pattern>tools/r0-spike.php</exclude-pattern>
+
+	<arg name="extensions" value="php"/>
+	<arg name="basepath" value="."/>
+	<arg name="colors"/>
+	<arg value="sp"/>
+	<arg name="parallel" value="8"/>
+
+	<config name="minimum_wp_version" value="6.5"/>
+	<config name="testVersion" value="8.1-"/>
+
+	<rule ref="WordPress-Core">
+		<!--
+		Class files are named for their class so the autoloader can map namespace to path.
+		WordPress's class-foo-bar.php convention assumes a manual require list.
+		-->
+		<exclude name="WordPress.Files.FileName.NotHyphenatedLowercase"/>
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
+
+		<!-- An enum and the interface it types belong in one file; splitting them hides the pairing. -->
+		<exclude name="Generic.Files.OneObjectStructurePerFile.MultipleFound"/>
+	</rule>
+
+	<!--
+	Documentation sniffs are deliberately not enabled. This codebase's standard is that a
+	comment earns its place by explaining a non-obvious why; a rule demanding a docblock on
+	every file, class, property and parameter produces the restatement it is meant to
+	prevent. Comments that do exist are still checked for spelling of the text domain and
+	for translator notes, below.
+	-->
+
+	<rule ref="WordPress.WP.I18n">
+		<properties>
+			<property name="text_domain" type="array">
+				<element value="subkit-subscriptions"/>
+			</property>
+		</properties>
+	</rule>
+
+	<rule ref="WordPress.Security"/>
+	<rule ref="WordPress.DB"/>
+	<rule ref="WordPress.PHP.YodaConditions"/>
+
+	<!--
+	Short ternaries are used only to default an empty string, and every one was checked
+	for a falsy-but-valid value. Banning them would turn each into a longer restatement.
+	-->
+	<rule ref="Universal.Operators.DisallowShortTernary">
+		<severity>0</severity>
+	</rule>
+
+	<!-- $class in the autoloader and $default in a settings reader read better than the alternatives. -->
+	<rule ref="Universal.NamingConventions.NoReservedKeywordParameterNames">
+		<severity>0</severity>
+	</rule>
+
+	<rule ref="PHPCompatibilityWP">
+		<!--
+		This sniff predates enums: it reads an enum body as a plain function and reports
+		every $this inside it. Verified false: Subscription_Status is a PHP 8.1 enum.
+		-->
+		<exclude name="PHPCompatibility.Variables.ForbiddenThisUseContexts"/>
+		<exclude name="PHPCompatibility.FunctionDeclarations.NewParamTypeDeclarations.SelfOutsideClassScopeFound"/>
+	</rule>
+</ruleset>
