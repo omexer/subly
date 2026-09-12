@@ -45,12 +45,17 @@ class Product_Types {
 	 * supplies the resolver and answers yes here.
 	 */
 	public static function variable_supported(): bool {
+		// The default covers a Pro older than the filter: its resolver is only loaded when
+		// the module actually booted, so it answers the same question. Never autoloaded -
+		// that would say yes merely because the file is on disk.
+		$supported = class_exists( '\SubKitPro\Product\Variation_Subscription', false );
+
 		/**
 		 * Filter whether variable subscriptions can be billed.
 		 *
 		 * @param bool $supported
 		 */
-		return (bool) apply_filters( 'subkit_variable_subscriptions_supported', false );
+		return (bool) apply_filters( 'subkit_variable_subscriptions_supported', $supported );
 	}
 
 	/**
