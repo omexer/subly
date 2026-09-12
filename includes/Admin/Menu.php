@@ -100,6 +100,8 @@ class Menu {
 	}
 
 	private function render_checklist(): void {
+		$this->render_product_notice();
+
 		echo '<div class="card" style="max-width:46rem;padding:1rem 1.25rem"><h2 style="margin-top:.5rem">'
 			. esc_html__( 'Get your first subscription running', 'subkit-subscriptions' ) . '</h2><ol style="margin:0;padding-left:1.25rem">';
 
@@ -113,9 +115,77 @@ class Menu {
 					? sprintf( ' <a href="%s">%s</a>', esc_url( (string) $step['action']['url'] ), esc_html( (string) $step['action']['label'] ) )
 					: ''
 			);
+
+			if ( 'create_product' === ( $step['form'] ?? '' ) ) {
+				$this->render_product_form();
+			}
 		}
 
 		echo '</ol></div>';
+	}
+
+	private function render_product_notice(): void {
+		$result = isset( $_GET['subkit_product'] ) ? sanitize_key( wp_unslash( $_GET['subkit_product'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		$message = match ( $result ) {
+			'created' => __( 'Your subscription product is published and ready to sell.', 'subkit-subscriptions' ),
+			'invalid' => __( 'Check the name, the price and the interval: the price must be above zero and the interval a whole number of periods.', 'subkit-subscriptions' ),
+			'failed'  => __( 'The product could not be created.', 'subkit-subscriptions' ),
+			default   => '',
+		};
+
+		if ( '' !== $message ) {
+			printf(
+				'<div class="notice notice-%s"><p>%s</p></div>',
+				'created' === $result ? 'success' : 'error',
+				esc_html( $message )
+			);
+		}
+	}
+
+	/**
+	 * Creating the first product here rather than sending the merchant to find the
+	 * Product data panel, which is the step people get stuck on.
+	 */
+	private function render_product_form(): void {
+		?>
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:.6rem 0 0;display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end">
+			<?php wp_nonce_field( 'subkit_create_product' ); ?>
+			<input type="hidden" name="action" value="subkit_create_product" />
+
+			<label style="display:block">
+				<span class="description"><?php esc_html_e( 'Name', 'subkit-subscriptions' ); ?></span><br>
+				<input type="text" name="subkit_name" required style="width:14rem" />
+			</label>
+
+			<label style="display:block">
+				<span class="description"><?php esc_html_e( 'Price', 'subkit-subscriptions' ); ?></span><br>
+				<input type="text" name="subkit_price" required style="width:6rem" />
+			</label>
+
+			<label style="display:block">
+				<span class="description"><?php esc_html_e( 'Every', 'subkit-subscriptions' ); ?></span><br>
+				<input type="number" name="subkit_interval" value="1" min="1" max="365" style="width:4.5rem" />
+			</label>
+
+			<label style="display:block">
+				<span class="screen-reader-text"><?php esc_html_e( 'Billing period', 'subkit-subscriptions' ); ?></span>
+				<select name="subkit_period">
+					<option value="day"><?php esc_html_e( 'Days', 'subkit-subscriptions' ); ?></option>
+					<option value="week"><?php esc_html_e( 'Weeks', 'subkit-subscriptions' ); ?></option>
+					<option value="month" selected><?php esc_html_e( 'Months', 'subkit-subscriptions' ); ?></option>
+					<option value="year"><?php esc_html_e( 'Years', 'subkit-subscriptions' ); ?></option>
+				</select>
+			</label>
+
+			<label style="display:block">
+				<span class="description"><?php esc_html_e( 'Free trial (days)', 'subkit-subscriptions' ); ?></span><br>
+				<input type="number" name="subkit_trial" value="0" min="0" max="365" style="width:5.5rem" />
+			</label>
+
+			<button type="submit" class="button button-primary"><?php esc_html_e( 'Create it', 'subkit-subscriptions' ); ?></button>
+		</form>
+		<?php
 	}
 
 	private function render_detail( int $id ): void {

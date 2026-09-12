@@ -31,6 +31,7 @@ class Setup_Guide {
 		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
 		add_action( 'admin_post_subkit_dismiss_setup', array( $this, 'dismiss' ) );
 		add_action( 'admin_post_subkit_test_renewal', array( $this, 'run_test_renewal' ) );
+		add_action( 'admin_post_subkit_create_product', array( $this, 'create_first_product' ) );
 	}
 
 	/**
@@ -93,10 +94,13 @@ class Setup_Guide {
 					/* translators: %s: product name */
 					? sprintf( __( '"%s" is ready to sell.', 'subkit-subscriptions' ), $product->get_name() )
 					: __( 'Edit any simple product and tick Subscription in the Product data panel.', 'subkit-subscriptions' ),
-				'action' => array(
-					'label' => $product ? __( 'Edit', 'subkit-subscriptions' ) : __( 'Add a product', 'subkit-subscriptions' ),
-					'url'   => $product ? get_edit_post_link( $product->get_id(), '' ) : admin_url( 'post-new.php?post_type=product' ),
-				),
+				'action' => $product
+					? array(
+						'label' => __( 'Edit', 'subkit-subscriptions' ),
+						'url'   => get_edit_post_link( $product->get_id(), '' ),
+					)
+					: null,
+				'form'   => $product ? null : 'create_product',
 			),
 			array(
 				'done'   => $queue_ok,
@@ -116,6 +120,46 @@ class Setup_Guide {
 				),
 			),
 		);
+	}
+
+	/**
+	 * Make the first subscription product from the guide, so the merchant never has to
+	 * find the Product data panel to get started.
+	 */
+	public function create_first_product(): void {
+		if ( ! current_user_can( Menu::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'subkit_create_product' ) ) {
+			wp_die( esc_html__( 'That request could not be verified.', 'subkit-subscriptions' ) );
+		}
+
+		$name  = sanitize_text_field( wp_unslash( $_POST['subkit_name'] ?? '' ) );
+		$price = wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['subkit_price'] ?? '' ) ) );
+
+		$period   = sanitize_key( wp_unslash( $_POST['subkit_period'] ?? 'month' ) );
+		$period   = in_array( $period, array( 'day', 'week', 'month', 'year' ), true ) ? $period : 'month';
+		$interval = intval( wp_unslash( $_POST['subkit_interval'] ?? 1 ) );
+		$trial    = intval( wp_unslash( $_POST['subkit_trial'] ?? 0 ) );
+
+		// intval with a range check, not absint: absint would turn a posted -4 into 4.
+		if ( '' === $name || '' === $price || (float) $price <= 0 || $interval < 1 || $interval > 365 || $trial < 0 || $trial > 365 ) {
+			$this->redirect_back( 'invalid' );
+		}
+
+		$product = new \WC_Product_Simple();
+		$product->set_name( $name );
+		$product->set_regular_price( $price );
+		$product->set_status( 'publish' );
+		$product->update_meta_data( Subscription_Product::META_ENABLED, 'yes' );
+		$product->update_meta_data( Subscription_Product::META_PERIOD, $period );
+		$product->update_meta_data( Subscription_Product::META_INTERVAL, $interval );
+		$product->update_meta_data( Subscription_Product::META_TRIAL_DAYS, $trial );
+		$product->save();
+
+		$this->redirect_back( $product->get_id() ? 'created' : 'failed' );
+	}
+
+	private function redirect_back( string $result ): void {
+		wp_safe_redirect( add_query_arg( 'subkit_product', $result, admin_url( 'admin.php?page=' . Menu::SLUG ) ) );
+		exit;
 	}
 
 	/**
