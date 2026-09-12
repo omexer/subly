@@ -25,11 +25,34 @@ class Subscription_Query {
 	 * @return Subscription[]|int[]
 	 */
 	public static function get( array $args = array() ): array {
-		$args['type'] = Subscription::TYPE;
+		// paginate makes wc_get_orders return an object, which this signature forbids.
+		unset( $args['paginate'] );
 
+		return wc_get_orders( self::normalize( $args ) );
+	}
+
+	/**
+	 * A page of results plus the totals an API needs to describe it.
+	 *
+	 * @return array{items: Subscription[], total: int, pages: int}
+	 */
+	public static function paginate( array $args = array() ): array {
+		$args['paginate'] = true;
+
+		$results = wc_get_orders( self::normalize( $args ) );
+
+		return array(
+			'items' => is_object( $results ) ? (array) $results->orders : array(),
+			'total' => is_object( $results ) ? (int) $results->total : 0,
+			'pages' => is_object( $results ) ? (int) $results->max_num_pages : 0,
+		);
+	}
+
+	private static function normalize( array $args ): array {
+		$args['type']   = Subscription::TYPE;
 		$args['status'] = self::prefix_statuses( $args['status'] ?? null );
 
-		return wc_get_orders( $args );
+		return $args;
 	}
 
 	/**
