@@ -28,6 +28,9 @@ use SubKit\Product\Product_Meta_Fields;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
 use SubKit\Admin\Setup_Guide;
+use SubKit\Admin\Reports_Page;
+use SubKit\Reports\Metrics;
+use SubKit\Billing\Recurring_Coupon;
 use SubKit\Emails\Mailer;
 use SubKit\Privacy\Personal_Data;
 use SubKit\Lifecycle\Cancellation_Survey;
@@ -193,6 +196,14 @@ final class Plugin {
 
 			return $pages;
 		} );
+
+		$this->services['coupons'] = new Recurring_Coupon();
+		$this->services['coupons']->register();
+
+		$this->services['metrics'] = new Metrics();
+
+		$this->services['reports'] = new Reports_Page( $this->services['metrics'], $this->services['survey'] );
+		$this->services['reports']->register();
 
 		$this->services['setup'] = new Setup_Guide( $this->services['scheduler'] );
 		$this->services['setup']->register();
