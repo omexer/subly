@@ -30,6 +30,7 @@ class Settings extends \WC_Settings_Page {
 		return array(
 			''       => __( 'General', 'subkit-subscriptions' ),
 			'paypal' => __( 'PayPal', 'subkit-subscriptions' ),
+			'stripe' => __( 'Stripe', 'subkit-subscriptions' ),
 		);
 	}
 
@@ -120,6 +121,47 @@ class Settings extends \WC_Settings_Page {
 				'css'               => 'width:26rem',
 			),
 			array( 'type' => 'sectionend', 'id' => 'subkit_paypal_title' ),
+		);
+	}
+
+	public function get_settings_for_stripe_section(): array {
+		return array(
+			array(
+				'title' => __( 'Stripe', 'subkit-subscriptions' ),
+				'type'  => 'title',
+				'desc'  => __( 'Cards are collected by Stripe and charged again automatically when a renewal falls due. SubKit keeps the schedule; Stripe only stores the card.', 'subkit-subscriptions' ),
+				'id'    => 'subkit_stripe_title',
+			),
+			array(
+				'title'   => __( 'Enable Stripe', 'subkit-subscriptions' ),
+				'desc'    => __( 'Offer card payments for subscription purchases', 'subkit-subscriptions' ),
+				'id'      => 'subkit_stripe_enabled',
+				'type'    => 'checkbox',
+				'default' => 'no',
+			),
+			array(
+				'title'   => __( 'Environment', 'subkit-subscriptions' ),
+				'id'      => 'subkit_stripe_live',
+				'type'    => 'select',
+				'default' => 'no',
+				'options' => array(
+					'no'  => __( 'Test mode', 'subkit-subscriptions' ),
+					'yes' => __( 'Live', 'subkit-subscriptions' ),
+				),
+			),
+			array(
+				'title' => __( 'Test secret key', 'subkit-subscriptions' ),
+				'id'    => 'subkit_stripe_test_secret',
+				'type'  => 'password',
+				'css'   => 'width:26rem',
+			),
+			array(
+				'title' => __( 'Live secret key', 'subkit-subscriptions' ),
+				'id'    => 'subkit_stripe_secret',
+				'type'  => 'password',
+				'css'   => 'width:26rem',
+			),
+			array( 'type' => 'sectionend', 'id' => 'subkit_stripe_title' ),
 		);
 	}
 

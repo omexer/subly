@@ -21,6 +21,9 @@ use SubKit\Gateways\PayPal\PayPal_Client;
 use SubKit\Gateways\PayPal\PayPal_Plans;
 use SubKit\Gateways\PayPal\PayPal_Gateway;
 use SubKit\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
+use SubKit\Gateways\Stripe\Stripe_Checkout_Gateway;
+use SubKit\Gateways\Stripe\Stripe_Client;
+use SubKit\Gateways\Stripe\Stripe_Gateway;
 use SubKit\Product\Product_Meta_Fields;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
@@ -130,9 +133,21 @@ final class Plugin {
 			return $gateways;
 		} );
 
+		$this->services['stripe_client'] = Stripe_Client::from_settings();
+
+		add_filter( 'woocommerce_payment_gateways', function ( array $gateways ): array {
+			$gateways[] = new Stripe_Checkout_Gateway( $this->services['stripe_client'] );
+
+			return $gateways;
+		} );
+
 		add_action( 'subkit_register_gateways', function ( Gateway_Registry $registry ): void {
 			if ( $this->services['paypal_client']->is_enabled() ) {
 				$registry->add( new PayPal_Gateway( $this->services['paypal_client'] ) );
+			}
+
+			if ( $this->services['stripe_client']->is_enabled() ) {
+				$registry->add( new Stripe_Gateway( $this->services['stripe_client'] ) );
 			}
 		} );
 
