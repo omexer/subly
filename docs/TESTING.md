@@ -96,6 +96,35 @@ Not written yet, and each needs its own sandbox account:
 
 ---
 
+## Exercising the licence screens without a store
+
+Pro has no store behind it yet, so every key comes back *"Licensing is not configured for
+this build"* and the licence screens cannot be reached at all. To click through them, add
+this to `wp-config.php`:
+
+```php
+define( 'SUBKIT_PRO_TEST_LICENCE', true );
+```
+
+Then **SubKit → Settings → Licence** gains a **Use a test licence** button. No store is
+contacted and any key is accepted.
+
+| Key | What it shows |
+|---|---|
+| anything, or the button | Active, receiving updates |
+| `TEST-EXPIRED` | Expired: billing continues, updates stopped |
+| `TEST-REVOKED` | Refused, with the revoked message |
+
+Two things it deliberately will not do. It never offers an update, because there is no
+package and pointing WordPress at a fake one would break the site rather than test
+anything. And an empty key is still refused, so the validation path stays honest.
+
+**Remove the constant when you are done.** A site left in this state accepts any licence
+key, so it warns on the licence screen and on every admin page until you do. The constant
+lives in `wp-config.php` and so cannot travel inside the plugin.
+
+---
+
 ## What is still not tested
 
 Be clear-eyed about this list. It is short and it is the important part.
