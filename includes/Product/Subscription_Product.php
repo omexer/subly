@@ -26,7 +26,14 @@ class Subscription_Product {
 	public static function is_subscription( $product ): bool {
 		$product = self::resolve( $product );
 
-		return $product instanceof \WC_Product && 'yes' === self::meta( $product, self::META_ENABLED );
+		if ( ! $product instanceof \WC_Product ) {
+			return false;
+		}
+
+		// The product type is the answer for anything made since the types existed. The
+		// meta still counts, so products created when this was a checkbox keep billing.
+		return Product_Types::is_subscription_type( $product )
+			|| 'yes' === self::meta( $product, self::META_ENABLED );
 	}
 
 	public static function schedule( $product ): Billing_Schedule {

@@ -27,6 +27,7 @@ use SubKit\Gateways\Stripe\Stripe_Checkout_Gateway;
 use SubKit\Gateways\Stripe\Stripe_Client;
 use SubKit\Gateways\Stripe\Stripe_Gateway;
 use SubKit\Product\Product_Meta_Fields;
+use SubKit\Product\Product_Types;
 use SubKit\Admin\Assets as Admin_Assets;
 use SubKit\Admin\Help_Page;
 use SubKit\Admin\Integrations_Page;
@@ -104,6 +105,9 @@ final class Plugin {
 
 		$this->services['stats'] = new Stats();
 		$this->services['stats']->register();
+
+		$this->services['product_types'] = new Product_Types();
+		$this->services['product_types']->register();
 
 		$this->services['product_fields'] = new Product_Meta_Fields();
 		$this->services['product_fields']->register();

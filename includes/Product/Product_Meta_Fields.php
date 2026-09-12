@@ -22,22 +22,23 @@ class Product_Meta_Fields {
 	public function render(): void {
 		global $product_object;
 
-		echo '<div class="options_group subkit-product-options show_if_simple">';
-
-		echo '<p class="form-field"><strong>' . esc_html__( 'Subscription', 'subkit-subscriptions' ) . '</strong></p>';
-
-		woocommerce_wp_checkbox(
-			array(
-				'id'          => Subscription_Product::META_ENABLED,
-				'label'       => __( 'Recurring', 'subkit-subscriptions' ),
-				'description' => __( 'Bill this product on a repeating schedule.', 'subkit-subscriptions' ),
-				'value'       => $product_object ? $product_object->get_meta( Subscription_Product::META_ENABLED ) : 'no',
-			)
+		printf(
+			'<div class="options_group subkit-product-options show_if_%s show_if_%s">',
+			esc_attr( Product_Types::SIMPLE ),
+			esc_attr( Product_Types::VARIABLE )
 		);
 
-		$enabled = $product_object && 'yes' === $product_object->get_meta( Subscription_Product::META_ENABLED );
+		echo '<p class="form-field"><strong>' . esc_html__( 'Billing schedule', 'subkit-subscriptions' ) . '</strong></p>';
 
-		printf( '<div class="subkit-schedule-fields"%s>', $enabled ? '' : ' style="display:none"' );
+		// A legacy product says yes through this; a new one says yes by being the type.
+		if ( $product_object && 'yes' === $product_object->get_meta( Subscription_Product::META_ENABLED ) && ! Product_Types::is_subscription_type( $product_object ) ) {
+			printf(
+				'<p class="form-field"><span class="description">%s</span></p>',
+				esc_html__( 'This product bills recurringly but is still a simple product. Change its type to Subscription when convenient; it keeps working either way.', 'subkit-subscriptions' )
+			);
+		}
+
+		echo '<div class="subkit-schedule-fields">';
 
 		woocommerce_wp_select(
 			array(
@@ -136,11 +137,13 @@ class Product_Meta_Fields {
 	public function save( \WC_Product $product ): void {
 		// Nonce is verified by WooCommerce before this hook fires.
 		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		$enabled = isset( $_POST[ Subscription_Product::META_ENABLED ] ) ? 'yes' : 'no';
+		// The type is the switch now. The meta is still written so anything reading it
+		// directly - an older extension, a report - keeps seeing the truth.
+		$is_subscription = Product_Types::is_subscription_type( $product );
 
-		$product->update_meta_data( Subscription_Product::META_ENABLED, $enabled );
+		$product->update_meta_data( Subscription_Product::META_ENABLED, $is_subscription ? 'yes' : 'no' );
 
-		if ( 'no' === $enabled ) {
+		if ( ! $is_subscription ) {
 			return;
 		}
 

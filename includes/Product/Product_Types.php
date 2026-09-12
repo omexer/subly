@@ -1,0 +1,156 @@
+<?php
+
+namespace SubKit\Product;
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Subscription and Variable subscription as entries in the Product data dropdown.
+ *
+ * A checkbox buried inside Simple product was the wrong place to ask: it reads as an
+ * option on a one-off product rather than a different kind of product, and merchants
+ * missed it. Choosing the type is the same decision as choosing Variable.
+ *
+ * The classes still extend WC_Product_Simple and WC_Product_Variable, so every gateway,
+ * tax rule and shipping method treats them exactly as before - the decorator that reads
+ * the schedule off a product has not changed, only how a merchant says yes to it.
+ */
+class Product_Types {
+
+	public const SIMPLE   = 'subkit_subscription';
+	public const VARIABLE = 'subkit_variable_subscription';
+
+	public function register(): void {
+		add_filter( 'product_type_selector', array( $this, 'add_to_selector' ) );
+		add_filter( 'woocommerce_product_class', array( $this, 'map_class' ), 10, 2 );
+		add_filter( 'woocommerce_data_stores', array( $this, 'map_data_stores' ) );
+		add_action( 'init', array( $this, 'register_terms' ), 5 );
+
+		// Price, tax and inventory are hidden for any type WooCommerce does not know.
+		add_filter( 'woocommerce_product_data_tabs', array( $this, 'show_standard_tabs' ) );
+		add_action( 'admin_footer', array( $this, 'show_standard_fields' ) );
+
+		add_filter( 'woocommerce_product_supports', array( $this, 'supports' ), 10, 3 );
+	}
+
+	/**
+	 * @return string[]
+	 */
+	public static function all(): array {
+		return array( self::SIMPLE, self::VARIABLE );
+	}
+
+	public static function is_subscription_type( $product ): bool {
+		return $product instanceof \WC_Product && in_array( $product->get_type(), self::all(), true );
+	}
+
+	/**
+	 * Point each type at the data store its parent class expects.
+	 *
+	 * WooCommerce resolves the store by type name, so an unregistered one silently falls
+	 * back to the simple-product store - which has no concept of children. A variable
+	 * subscription loaded that way reports no variations at all.
+	 *
+	 * @param array $stores
+	 */
+	public function map_data_stores( $stores ): array {
+		$stores[ 'product-' . self::SIMPLE ]   = 'WC_Product_Data_Store_CPT';
+		$stores[ 'product-' . self::VARIABLE ] = 'WC_Product_Variable_Data_Store_CPT';
+
+		return (array) $stores;
+	}
+
+	/**
+	 * WooCommerce stores the type as a term, so a new one has to exist before a product
+	 * can be saved as it.
+	 */
+	public function register_terms(): void {
+		foreach ( self::all() as $type ) {
+			if ( ! get_term_by( 'slug', $type, 'product_type' ) ) {
+				wp_insert_term( $type, 'product_type' );
+			}
+		}
+	}
+
+	/**
+	 * @param array $types
+	 */
+	public function add_to_selector( $types ): array {
+		$types[ self::SIMPLE ]   = __( 'Subscription', 'subkit-subscriptions' );
+		$types[ self::VARIABLE ] = __( 'Variable subscription', 'subkit-subscriptions' );
+
+		return (array) $types;
+	}
+
+	/**
+	 * @param string $classname
+	 * @param string $type
+	 */
+	public function map_class( $classname, $type ): string {
+		return match ( $type ) {
+			self::SIMPLE   => Simple_Subscription::class,
+			self::VARIABLE => Variable_Subscription::class,
+			default        => (string) $classname,
+		};
+	}
+
+	/**
+	 * @param array $tabs
+	 */
+	public function show_standard_tabs( $tabs ): array {
+		$classes = array_map( static fn( string $type ): string => 'show_if_' . $type, self::all() );
+
+		foreach ( array( 'general', 'inventory', 'shipping', 'linked_product', 'attribute', 'advanced' ) as $tab ) {
+			if ( isset( $tabs[ $tab ]['class'] ) ) {
+				$tabs[ $tab ]['class'] = array_merge( (array) $tabs[ $tab ]['class'], $classes );
+			}
+		}
+
+		if ( isset( $tabs['variations']['class'] ) ) {
+			$tabs['variations']['class'][] = 'show_if_' . self::VARIABLE;
+		}
+
+		return (array) $tabs;
+	}
+
+	/**
+	 * WooCommerce shows the price fields only for types it ships with, and the variations
+	 * machinery only for its own variable type. Both are class-driven in the DOM, so the
+	 * fix is to let our types answer to the same classes.
+	 */
+	public function show_standard_fields(): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( ! $screen || 'product' !== $screen->id ) {
+			return;
+		}
+		?>
+		<script>
+		jQuery( function ( $ ) {
+			var simple = <?php echo wp_json_encode( self::SIMPLE ); ?>,
+				variable = <?php echo wp_json_encode( self::VARIABLE ); ?>;
+
+			$( '.pricing' ).addClass( 'show_if_' + simple );
+			$( '.show_if_simple' ).not( '.subkit-product-options' ).addClass( 'show_if_' + simple );
+			$( '.show_if_variable' ).addClass( 'show_if_' + variable );
+
+			$( 'body' ).trigger( 'woocommerce-product-type-change', $( '#product-type' ).val() );
+		} );
+		</script>
+		<?php
+	}
+
+	/**
+	 * @param bool   $supports
+	 * @param string $feature
+	 */
+	public function supports( $supports, $feature, $product ): bool {
+		if ( 'ajax_add_to_cart' === $feature && self::is_subscription_type( $product ) ) {
+			return false;
+		}
+
+		return (bool) $supports;
+	}
+}
