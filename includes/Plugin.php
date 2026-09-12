@@ -27,6 +27,8 @@ use SubKit\Gateways\Stripe\Stripe_Checkout_Gateway;
 use SubKit\Gateways\Stripe\Stripe_Client;
 use SubKit\Gateways\Stripe\Stripe_Gateway;
 use SubKit\Product\Product_Meta_Fields;
+use SubKit\Admin\Help_Page;
+use SubKit\Admin\Integrations_Page;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
 use SubKit\Admin\Setup_Guide;
@@ -219,6 +221,12 @@ final class Plugin {
 			$this->services['setup']
 		);
 		$this->services['admin_menu']->register();
+
+		$this->services['integrations_page'] = new Integrations_Page();
+		$this->services['integrations_page']->register();
+
+		$this->services['help_page'] = new Help_Page();
+		$this->services['help_page']->register();
 
 		/**
 		 * Fires once SubKit Free is loaded and its public API is available.
