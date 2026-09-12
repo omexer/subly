@@ -3,6 +3,7 @@
 namespace SubKit\Admin;
 
 use SubKit\Billing\Renewal_Scheduler;
+use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Data\Migrator;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -27,11 +28,15 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	public function get_sections(): array {
-		return array(
+		$sections = array(
 			''       => __( 'General', 'subkit-subscriptions' ),
 			'paypal' => __( 'PayPal', 'subkit-subscriptions' ),
 			'stripe' => __( 'Stripe', 'subkit-subscriptions' ),
 		);
+
+		// Core applies this in the method we are overriding; without it an extension can
+		// add settings but has no tab to put them on.
+		return (array) apply_filters( 'woocommerce_get_sections_' . $this->id, $sections );
 	}
 
 	public function get_settings_for_default_section(): array {
@@ -179,6 +184,11 @@ class Settings extends \WC_Settings_Page {
 	public function render_status(): void {
 		$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
 		$migrator  = new Migrator();
+		$slots     = \SubKit\Plugin::instance()->get( 'charge_slots' );
+
+		// An hour, not the repository's 15 minutes: a charge still being retried is not
+		// stuck, and a warning that clears itself teaches merchants to ignore it.
+		$stuck = $slots instanceof Charge_Slot_Repository ? $slots->stuck_charging( 60 ) : array();
 
 		$checks = array(
 			array(
@@ -186,6 +196,21 @@ class Settings extends \WC_Settings_Page {
 				'ok'    => $scheduler instanceof Renewal_Scheduler ? $scheduler->queue_is_healthy() : false,
 				'good'  => __( 'Processing normally', 'subkit-subscriptions' ),
 				'bad'   => __( 'Overdue tasks are piling up. Check that WordPress cron is running.', 'subkit-subscriptions' ),
+			),
+			array(
+				'label' => __( 'Unresolved charges', 'subkit-subscriptions' ),
+				'ok'    => empty( $stuck ),
+				'good'  => __( 'None', 'subkit-subscriptions' ),
+				'bad'   => sprintf(
+					/* translators: %d: number of subscriptions */
+					_n(
+						'%d subscription has a charge whose outcome is still unknown and is not billing. Open it and check the gateway.',
+						'%d subscriptions have a charge whose outcome is still unknown and are not billing. Open them and check the gateway.',
+						count( $stuck ),
+						'subkit-subscriptions'
+					),
+					count( $stuck )
+				),
 			),
 			array(
 				'label' => __( 'Double-charge protection', 'subkit-subscriptions' ),
