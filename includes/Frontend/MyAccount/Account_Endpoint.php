@@ -116,11 +116,39 @@ class Account_Endpoint {
 			return;
 		}
 
+		if ( 'auto_renew' === $action ) {
+			$this->set_auto_renew( $subscription, 'on' === ( isset( $_POST['subkit_auto_renew'] ) ? sanitize_key( wp_unslash( $_POST['subkit_auto_renew'] ) ) : 'on' ) );
+			return;
+		}
+
 		if ( 'cancel' === $action ) {
 			$when = isset( $_POST['subkit_when'] ) ? sanitize_key( wp_unslash( $_POST['subkit_when'] ) ) : 'period_end';
 
 			$this->cancel( $subscription, 'immediate' === $when );
 		}
+	}
+
+	private function set_auto_renew( Subscription $subscription, bool $on ): void {
+		if ( ! \SubKit\Lifecycle\Auto_Renewal::is_offered() ) {
+			return;
+		}
+
+		$auto = \SubKit\Plugin::instance()->get( 'auto_renewal' );
+
+		if ( ! $auto instanceof \SubKit\Lifecycle\Auto_Renewal ) {
+			return;
+		}
+
+		$auto->set( $subscription, $on );
+
+		wc_add_notice(
+			$on
+				? __( 'Automatic renewal is back on. Your subscription will keep renewing.', 'subkit-subscriptions' )
+				: __( 'Automatic renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be charged again.', 'subkit-subscriptions' )
+		);
+
+		wp_safe_redirect( wc_get_account_endpoint_url( self::ENDPOINT . '/' . $subscription->get_id() ) );
+		exit;
 	}
 
 	private function cancel( Subscription $subscription, bool $immediately ): void {

@@ -30,7 +30,10 @@ use SubKit\Admin\Settings;
 use SubKit\Admin\Setup_Guide;
 use SubKit\Emails\Mailer;
 use SubKit\Privacy\Personal_Data;
+use SubKit\Lifecycle\Auto_Renewal;
 use SubKit\Lifecycle\Cancellation_Survey;
+use SubKit\Lifecycle\Role_Management;
+use SubKit\Frontend\Downloadable_Access;
 use SubKit\Frontend\MyAccount\Account_Endpoint;
 use SubKit\Frontend\MyAccount\Assets as Account_Assets;
 
@@ -160,6 +163,15 @@ final class Plugin {
 			$this->services['scheduler']
 		);
 		$this->services['paypal_webhooks']->register();
+
+		$this->services['auto_renewal'] = new Auto_Renewal( $this->services['activity'] );
+		$this->services['auto_renewal']->register();
+
+		$this->services['roles'] = new Role_Management();
+		$this->services['roles']->register();
+
+		$this->services['downloads'] = new Downloadable_Access();
+		$this->services['downloads']->register();
 
 		$this->services['survey'] = new Cancellation_Survey( $this->services['activity'] );
 		$this->services['survey']->register();

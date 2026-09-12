@@ -66,6 +66,37 @@ $can_cancel = ! in_array(
 		<?php echo wp_kses_post( $subscription->get_formatted_order_total() ); ?>
 	</p>
 
+	<?php
+	$subkit_auto_offered = \SubKit\Lifecycle\Auto_Renewal::is_offered() && $can_cancel;
+	$subkit_auto_on      = \SubKit\Lifecycle\Auto_Renewal::is_on( $subscription );
+	?>
+	<?php if ( $subkit_auto_offered ) : ?>
+		<h3><?php esc_html_e( 'Automatic renewal', 'subkit-subscriptions' ); ?></h3>
+
+		<p class="subkit-auto-renew__state">
+			<?php
+			echo $subkit_auto_on
+				? esc_html__( 'This subscription renews automatically.', 'subkit-subscriptions' )
+				: esc_html__( 'Automatic renewal is off. You keep access until the end of the period you have paid for, and you will not be charged again.', 'subkit-subscriptions' );
+			?>
+		</p>
+
+		<form method="post" class="subkit-auto-renew">
+			<?php wp_nonce_field( 'subkit_auto_renew_' . $subscription->get_id() ); ?>
+			<input type="hidden" name="subkit_action" value="auto_renew" />
+			<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( (string) $subscription->get_id() ); ?>" />
+			<input type="hidden" name="subkit_auto_renew" value="<?php echo $subkit_auto_on ? 'off' : 'on'; ?>" />
+
+			<button type="submit" class="button subkit-btn">
+				<?php
+				echo $subkit_auto_on
+					? esc_html__( 'Turn off automatic renewal', 'subkit-subscriptions' )
+					: esc_html__( 'Turn automatic renewal back on', 'subkit-subscriptions' );
+				?>
+			</button>
+		</form>
+	<?php endif; ?>
+
 	<?php if ( $can_cancel ) : ?>
 		<h3><?php esc_html_e( 'Cancel this subscription', 'subkit-subscriptions' ); ?></h3>
 

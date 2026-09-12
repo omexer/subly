@@ -76,6 +76,37 @@ class Settings extends \WC_Settings_Page {
 				'desc_tip' => true,
 			),
 			array( 'type' => 'sectionend', 'id' => 'subkit_renewals_title' ),
+
+			array(
+				'title' => __( 'Access', 'subkit-subscriptions' ),
+				'type'  => 'title',
+				'desc'  => __( 'What a live subscription grants, and what lapsing takes away.', 'subkit-subscriptions' ),
+				'id'    => 'subkit_access_title',
+			),
+			array(
+				'title'    => __( 'Let customers turn off renewal', 'subkit-subscriptions' ),
+				'desc'     => __( 'Show a switch in My Account that ends the subscription at the end of the paid period instead of cancelling it outright.', 'subkit-subscriptions' ),
+				'type'     => 'checkbox',
+				'id'       => 'subkit_allow_auto_renew_toggle',
+				'default'  => 'no',
+			),
+			array(
+				'title'    => __( 'Role while subscribed', 'subkit-subscriptions' ),
+				'desc_tip' => __( 'Assigned when a subscription becomes active. Administrators are never changed.', 'subkit-subscriptions' ),
+				'type'     => 'select',
+				'id'       => 'subkit_active_role',
+				'default'  => '',
+				'options'  => self::role_options(),
+			),
+			array(
+				'title'    => __( 'Role once it ends', 'subkit-subscriptions' ),
+				'desc_tip' => __( 'Assigned only when the customer has no other live subscription.', 'subkit-subscriptions' ),
+				'type'     => 'select',
+				'id'       => 'subkit_inactive_role',
+				'default'  => '',
+				'options'  => self::role_options(),
+			),
+			array( 'type' => 'sectionend', 'id' => 'subkit_access_title' ),
 		);
 	}
 
@@ -181,6 +212,19 @@ class Settings extends \WC_Settings_Page {
 	/**
 	 * A plain readout of whether renewals can actually run.
 	 */
+	/**
+	 * @return array<string, string>
+	 */
+	private static function role_options(): array {
+		$options = array( '' => __( 'Leave the role alone', 'subkit-subscriptions' ) );
+
+		foreach ( wp_roles()->get_names() as $slug => $label ) {
+			$options[ $slug ] = translate_user_role( $label );
+		}
+
+		return $options;
+	}
+
 	public function render_status(): void {
 		$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
 		$migrator  = new Migrator();
