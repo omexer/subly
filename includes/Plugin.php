@@ -16,7 +16,9 @@ use SubKit\Checkout\Subscription_Factory;
 use SubKit\Frontend\Disclosure;
 use SubKit\Frontend\Product_Display;
 use SubKit\Gateways\Gateway_Registry;
+use SubKit\Gateways\PayPal\PayPal_Checkout_Gateway;
 use SubKit\Gateways\PayPal\PayPal_Client;
+use SubKit\Gateways\PayPal\PayPal_Plans;
 use SubKit\Gateways\PayPal\PayPal_Gateway;
 use SubKit\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
 use SubKit\Product\Product_Meta_Fields;
@@ -116,6 +118,17 @@ final class Plugin {
 		$this->services['account_assets']->register();
 
 		$this->services['paypal_client'] = PayPal_Client::from_settings();
+		$this->services['paypal_plans']  = new PayPal_Plans( $this->services['paypal_client'] );
+
+		// WC_Payment_Gateway is only defined once WooCommerce has loaded its gateway classes.
+		add_filter( 'woocommerce_payment_gateways', function ( array $gateways ): array {
+			$gateways[] = new PayPal_Checkout_Gateway(
+				$this->services['paypal_client'],
+				$this->services['paypal_plans']
+			);
+
+			return $gateways;
+		} );
 
 		add_action( 'subkit_register_gateways', function ( Gateway_Registry $registry ): void {
 			if ( $this->services['paypal_client']->is_enabled() ) {
