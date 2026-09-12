@@ -30,6 +30,9 @@ use SubKit\Admin\Settings;
 use SubKit\Admin\Setup_Guide;
 use SubKit\Emails\Mailer;
 use SubKit\Privacy\Personal_Data;
+use SubKit\Lifecycle\Cancellation_Survey;
+use SubKit\Lifecycle\Dunning;
+use SubKit\Access\Access_Control;
 use SubKit\Frontend\MyAccount\Account_Endpoint;
 use SubKit\Frontend\MyAccount\Assets as Account_Assets;
 
@@ -159,6 +162,15 @@ final class Plugin {
 			$this->services['scheduler']
 		);
 		$this->services['paypal_webhooks']->register();
+
+		$this->services['dunning'] = new Dunning( $this->services['activity'], $this->services['scheduler'] );
+		$this->services['dunning']->register();
+
+		$this->services['survey'] = new Cancellation_Survey( $this->services['activity'] );
+		$this->services['survey']->register();
+
+		$this->services['access'] = new Access_Control();
+		$this->services['access']->register();
 
 		$this->services['privacy'] = new Personal_Data( $this->services['activity'] );
 		$this->services['privacy']->register();

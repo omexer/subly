@@ -62,6 +62,14 @@ class Settings extends \WC_Settings_Page {
 				),
 				'desc_tip' => __( 'Charging for every missed period bills a customer several times at once for an outage they did not cause. Only use it if you ship goods for every period regardless.', 'subkit-subscriptions' ),
 			),
+			array(
+				'title'    => __( 'Grace period (days)', 'subkit-subscriptions' ),
+				'desc'     => __( 'How long to keep trying after a payment fails before giving up. Access continues during this window.', 'subkit-subscriptions' ),
+				'id'       => 'subkit_grace_period_days',
+				'type'     => 'number',
+				'default'  => 7,
+				'desc_tip' => true,
+			),
 			array( 'type' => 'sectionend', 'id' => 'subkit_renewals_title' ),
 		);
 	}

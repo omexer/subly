@@ -132,6 +132,15 @@ class Subscription extends \WC_Order {
 		}
 
 		$this->set_status( $to->value, $note );
+
+		/**
+		 * Fires on every legal status transition.
+		 *
+		 * @param Subscription $subscription
+		 * @param string       $from
+		 * @param string       $to
+		 */
+		do_action( 'subkit_subscription_status_changed', $this, $from instanceof Subscription_Status ? $from->value : '', $to->value );
 	}
 
 	// -------------------------------------------------------------- schedule props
