@@ -65,6 +65,45 @@ class Assets {
 		);
 
 		wp_localize_script( 'subkit-admin', 'subkitAdmin', $data );
+
+		$this->enqueue_overview( (string) $hook );
+	}
+
+	/**
+	 * The React overview, on the landing screen only.
+	 *
+	 * Skipped entirely when the build is not present - a checkout of the repository
+	 * without a build step should show the server-rendered screen, not a blank panel.
+	 */
+	private function enqueue_overview( string $hook ): void {
+		if ( 'toplevel_page_' . Menu::SLUG !== $hook ) {
+			return;
+		}
+
+		$ui       = SUBKIT_PATH . 'build/ui.asset.php';
+		$overview = SUBKIT_PATH . 'build/overview.asset.php';
+
+		if ( ! is_readable( $ui ) || ! is_readable( $overview ) ) {
+			return;
+		}
+
+		$ui       = require $ui;
+		$overview = require $overview;
+
+		wp_enqueue_style( 'subkit-ui', SUBKIT_URL . 'build/ui.css', array(), $ui['version'] );
+		wp_style_add_data( 'subkit-ui', 'rtl', 'replace' );
+		wp_enqueue_script( 'subkit-ui', SUBKIT_URL . 'build/ui.js', $ui['dependencies'], $ui['version'], true );
+
+		wp_enqueue_script(
+			'subkit-overview',
+			SUBKIT_URL . 'build/overview.js',
+			array_merge( $overview['dependencies'], array( 'subkit-ui' ) ),
+			$overview['version'],
+			true
+		);
+
+		wp_set_script_translations( 'subkit-overview', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
+		wp_set_script_translations( 'subkit-ui', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
 	}
 
 	private function is_subkit_screen( string $hook ): bool {

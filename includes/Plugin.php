@@ -12,6 +12,7 @@ use SubKit\Data\Cleanup;
 use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
 use SubKit\Data\Stats;
+use SubKit\Rest\Overview_Controller;
 use SubKit\Checkout\Cart_Validation;
 use SubKit\Checkout\Guest_Checkout;
 use SubKit\Checkout\Store_Api;
@@ -110,6 +111,9 @@ final class Plugin {
 
 		$this->services['stats'] = new Stats();
 		$this->services['stats']->register();
+
+		$this->services['overview_api'] = new Overview_Controller( $this->services['stats'] );
+		$this->services['overview_api']->register();
 
 		$this->services['product_types'] = new Product_Types();
 		$this->services['product_types']->register();

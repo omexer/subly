@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.9.2
+Stable tag: 0.10.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,11 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.10.0 =
+* The figures above the subscriptions list are now a live panel: monthly recurring revenue with a 30-day trend line, live subscriptions, and a bar showing where every subscription stands. Built with React and shadcn/ui.
+* The panel is drawn beside the old one and only replaces it once real figures arrive, so a failed request leaves the working summary on screen rather than an error.
+* New for developers: a read-only /subkit/v1/overview endpoint, and the shared admin components SubKit Pro's screens will be rebuilt on.
 
 = 0.9.2 =
 * The plugin is now called SubKit – WooCommerce Subscriptions. Nothing else changes; the same plugin, updated in place.

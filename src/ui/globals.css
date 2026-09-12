@@ -1,0 +1,56 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/**
+ * shadcn's tokens, scoped to our own container rather than :root - wp-admin is not ours
+ * to restyle, and a plugin that redefines --background for the whole page is a plugin
+ * that breaks the next one.
+ */
+.subkit-ui {
+	--sk-background: 0 0% 100%;
+	--sk-foreground: 240 10% 12%;
+	--sk-card: 0 0% 100%;
+	--sk-card-foreground: 240 10% 12%;
+	--sk-primary: 229 82% 57%;
+	--sk-primary-foreground: 0 0% 100%;
+	--sk-secondary: 240 5% 96%;
+	--sk-secondary-foreground: 240 6% 25%;
+	--sk-muted: 240 5% 96%;
+	--sk-muted-foreground: 240 4% 46%;
+	--sk-accent: 240 5% 96%;
+	--sk-accent-foreground: 240 6% 25%;
+	--sk-destructive: 0 72% 45%;
+	--sk-destructive-foreground: 0 0% 100%;
+	--sk-success: 136 100% 22%;
+	--sk-success-foreground: 0 0% 100%;
+	--sk-border: 240 6% 90%;
+	--sk-input: 240 6% 90%;
+	--sk-ring: 229 82% 57%;
+	--sk-radius: 0.65rem;
+
+	color: hsl( var( --sk-foreground ) );
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.subkit-ui *,
+.subkit-ui *::before,
+.subkit-ui *::after {
+	box-sizing: border-box;
+}
+
+/* Preflight is off, so the few resets we actually want are stated here, scoped. */
+.subkit-ui h2,
+.subkit-ui h3,
+.subkit-ui p,
+.subkit-ui ul,
+.subkit-ui ol {
+	margin: 0;
+	padding: 0;
+}
+
+.subkit-ui ul,
+.subkit-ui ol {
+	list-style: none;
+}

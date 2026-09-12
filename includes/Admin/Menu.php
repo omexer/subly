@@ -381,7 +381,7 @@ class Menu {
 			? round( ( ( $mrr->minor() - $oldest['mrr'] ) / $oldest['mrr'] ) * 100, 1 )
 			: null;
 
-		echo '<div class="subkit-stats">';
+		echo '<div id="subkit-overview-fallback"><div class="subkit-stats">';
 
 		printf(
 			'<div class="subkit-stat"><span class="subkit-stat__label">%s</span><span class="subkit-stat__value">%s</span>%s</div>',
@@ -415,7 +415,7 @@ class Menu {
 			);
 		}
 
-		echo '</div>';
+		echo '</div></div>';
 	}
 
 	private function render_activity( int $id ): void {
