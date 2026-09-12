@@ -33,6 +33,7 @@ class Subscriptions_Table extends \WP_List_Table {
 
 	public function get_columns(): array {
 		return array(
+			'cb'           => '<input type="checkbox" />',
 			'subscription' => __( 'Subscription', 'subkit-subscriptions' ),
 			'customer'     => __( 'Customer', 'subkit-subscriptions' ),
 			'status'       => __( 'Status', 'subkit-subscriptions' ),
@@ -42,25 +43,70 @@ class Subscriptions_Table extends \WP_List_Table {
 		);
 	}
 
+	/**
+	 * @param Subscription $item
+	 */
+	public function column_cb( $item ): string {
+		return $item instanceof Subscription
+			? sprintf( '<input type="checkbox" name="subscription[]" value="%d" />', (int) $item->get_id() )
+			: '';
+	}
+
+	/**
+	 * @return array<string, array{0: string, 1: bool}>
+	 */
+	public function get_sortable_columns(): array {
+		return array(
+			'subscription' => array( 'ID', false ),
+			'next_payment' => array( 'next_payment', false ),
+			'total'        => array( 'total', false ),
+		);
+	}
+
+	/**
+	 * @return array<string, string>
+	 */
+	public function get_bulk_actions(): array {
+		return array(
+			'cancel' => __( 'Cancel', 'subkit-subscriptions' ),
+			'hold'   => __( 'Put on hold', 'subkit-subscriptions' ),
+			'resume' => __( 'Reactivate', 'subkit-subscriptions' ),
+		);
+	}
+
 	public function prepare_items(): void {
+		$this->process_bulk_action();
+
 		$per_page = 20;
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filters.
 		$paged  = max( 1, absint( wp_unslash( $_GET['paged'] ?? 1 ) ) );
 		$status = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$search = isset( $_REQUEST['s'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['s'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filters.
+		$orderby = isset( $_GET['orderby'] ) ? sanitize_key( wp_unslash( $_GET['orderby'] ) ) : 'date';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filters.
+		$order = 'asc' === strtolower( sanitize_key( wp_unslash( $_GET['order'] ?? 'desc' ) ) ) ? 'ASC' : 'DESC';
 
 		$args = array(
 			'limit'   => $per_page,
 			'paged'   => $paged,
-			'orderby' => 'date',
-			'order'   => 'DESC',
+			'orderby' => $this->orderby_for( $orderby ),
+			'order'   => $order,
 		);
 
 		if ( '' !== $status ) {
 			$args['status'] = $status;
 		}
 
+		if ( '' !== $search ) {
+			// Matches the customer's name, email and the subscription id, which is what
+			// somebody typing into this box is holding.
+			$args['s'] = $search;
+		}
+
 		$this->items           = array_filter( Subscription_Query::get( $args ), static fn( $s ) => $s instanceof Subscription );
-		$this->_column_headers = array( $this->get_columns(), array(), array() );
+		$this->_column_headers = array( $this->get_columns(), array(), $this->get_sortable_columns(), 'subscription' );
 
 		$total = count(
 			Subscription_Query::ids(
@@ -87,7 +133,7 @@ class Subscriptions_Table extends \WP_List_Table {
 	 */
 	public function column_default( $item, $column_name ): string {
 		return match ( $column_name ) {
-			'subscription' => $this->subscription_cell( $item ),
+			'subscription' => $this->subscription_cell( $item ) . $this->row_actions_for( $item ),
 			'customer'     => esc_html( trim( $item->get_billing_first_name() . ' ' . $item->get_billing_last_name() ) ?: $item->get_billing_email() ?: '—' ),
 			// The pill carries colour, but the label is always readable text inside it:
 			// a merchant scanning for problems must not have to decode a swatch.
@@ -103,6 +149,135 @@ class Subscriptions_Table extends \WP_List_Table {
 			'gateway'      => esc_html( $item->get_payment_method_title() ?: $item->get_payment_method() ?: '—' ),
 			default        => '',
 		};
+	}
+
+	private function row_actions_for( Subscription $item ): string {
+		$view = add_query_arg(
+			array(
+				'page'         => Menu::SLUG,
+				'subscription' => $item->get_id(),
+			),
+			admin_url( 'admin.php' )
+		);
+
+		$actions = array(
+			'view' => sprintf( '<a href="%s">%s</a>', esc_url( $view ), esc_html__( 'View', 'subkit-subscriptions' ) ),
+		);
+
+		$status = $item->get_status_enum();
+
+		if ( $status && $status->is_billable() ) {
+			$actions['renew'] = sprintf(
+				'<a href="%s">%s</a>',
+				esc_url(
+					wp_nonce_url(
+						add_query_arg(
+							array(
+								'action'       => 'subkit_process_renewal',
+								'subscription' => $item->get_id(),
+							),
+							admin_url( 'admin-post.php' )
+						),
+						'subkit_process_renewal_' . $item->get_id()
+					)
+				),
+				esc_html__( 'Renew now', 'subkit-subscriptions' )
+			);
+		}
+
+		if ( $item->get_parent_order_id() ) {
+			$actions['order'] = sprintf(
+				'<a href="%s">%s</a>',
+				esc_url( (string) $this->get_edit_order_url( $item->get_parent_order_id() ) ),
+				esc_html__( 'Parent order', 'subkit-subscriptions' )
+			);
+		}
+
+		return $this->row_actions( $actions );
+	}
+
+	/**
+	 * wc_get_orders understands date and ID; anything of ours is order meta.
+	 */
+	private function orderby_for( string $orderby ): string {
+		return match ( $orderby ) {
+			'ID'           => 'ID',
+			'next_payment' => 'meta_value',
+			'total'        => 'total',
+			default        => 'date',
+		};
+	}
+
+	private function process_bulk_action(): void {
+		$action = $this->current_action();
+
+		if ( ! $action || ! current_user_can( Menu::CAPABILITY ) ) {
+			return;
+		}
+
+		check_admin_referer( 'bulk-' . $this->_args['plural'] );
+
+		// intval with a floor, not absint: a posted -4 must be discarded, not turned into 4.
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- checked immediately above.
+		$ids = array_filter( array_map( 'intval', (array) ( $_REQUEST['subscription'] ?? array() ) ), static fn( int $id ): bool => $id > 0 );
+
+		if ( ! $ids ) {
+			return;
+		}
+
+		$target = match ( $action ) {
+			'cancel' => Subscription_Status::Cancelled,
+			'hold'   => Subscription_Status::OnHold,
+			'resume' => Subscription_Status::Active,
+			default  => null,
+		};
+
+		if ( ! $target ) {
+			return;
+		}
+
+		$changed = 0;
+
+		foreach ( $ids as $id ) {
+			$subscription = wc_get_order( $id );
+
+			if ( ! $subscription instanceof Subscription ) {
+				continue;
+			}
+
+			$from = $subscription->get_status_enum();
+
+			// Skipped rather than forced: the state machine decides what is legal, and a
+			// bulk action must not be a way around it.
+			if ( ! $from || ! $from->can_transition_to( $target ) ) {
+				continue;
+			}
+
+			$subscription->transition_to( $target, __( 'Changed in bulk from the subscriptions list.', 'subkit-subscriptions' ) );
+			$subscription->save();
+			++$changed;
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array(
+					'page'           => Menu::SLUG,
+					'subkit_changed' => $changed,
+					'subkit_asked'   => count( $ids ),
+				),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * A parent order lives on the WooCommerce orders screen, wherever HPOS puts it.
+	 */
+	private function get_edit_order_url( int $order_id ): string {
+		$order = wc_get_order( $order_id );
+
+		return $order ? (string) $order->get_edit_order_url() : '';
 	}
 
 	private function subscription_cell( Subscription $item ): string {

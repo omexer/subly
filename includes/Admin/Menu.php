@@ -109,9 +109,22 @@ class Menu {
 
 		$this->render_summary();
 
+		$this->render_bulk_notice();
+
 		$table->views();
-		echo '<form method="get"><input type="hidden" name="page" value="' . esc_attr( self::SLUG ) . '" />';
+
+		echo '<form method="get">';
+		printf( '<input type="hidden" name="page" value="%s" />', esc_attr( self::SLUG ) );
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filter.
+		if ( isset( $_GET['status'] ) ) {
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filter.
+			printf( '<input type="hidden" name="status" value="%s" />', esc_attr( sanitize_text_field( wp_unslash( $_GET['status'] ) ) ) );
+		}
+
+		$table->search_box( __( 'Search subscriptions', 'subkit-subscriptions' ), 'subkit-search' );
 		$table->display();
+
 		echo '</form></div>';
 	}
 
@@ -169,6 +182,45 @@ class Menu {
 		}
 
 		echo '</ol></div>';
+	}
+
+	private function render_bulk_notice(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+		if ( ! isset( $_GET['subkit_changed'] ) ) {
+			return;
+		}
+
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+		$changed = max( 0, (int) sanitize_text_field( wp_unslash( $_GET['subkit_changed'] ) ) );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
+		$asked = isset( $_GET['subkit_asked'] ) ? max( 0, (int) sanitize_text_field( wp_unslash( $_GET['subkit_asked'] ) ) ) : 0;
+		$held  = $asked - $changed;
+
+		printf(
+			'<div class="notice notice-%s"><p>%s%s</p></div>',
+			$changed ? 'success' : 'warning',
+			esc_html(
+				sprintf(
+					/* translators: %d: number of subscriptions */
+					_n( '%d subscription updated.', '%d subscriptions updated.', $changed, 'subkit-subscriptions' ),
+					$changed
+				)
+			),
+			$held > 0
+				? ' ' . esc_html(
+					sprintf(
+						/* translators: %d: number of subscriptions left alone */
+						_n(
+							'%d was left alone because that change is not allowed from its current status.',
+							'%d were left alone because that change is not allowed from their current status.',
+							$held,
+							'subkit-subscriptions'
+						),
+						$held
+					)
+				)
+				: ''
+		);
 	}
 
 	private function render_product_notice(): void {
