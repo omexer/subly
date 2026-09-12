@@ -34,14 +34,46 @@ class Menu {
 		add_action( 'admin_post_subkit_process_renewal', array( $this, 'process_renewal_now' ) );
 	}
 
+	/**
+	 * Extensions add their screens under this, not under WooCommerce.
+	 */
+	public const PARENT = self::SLUG;
+
 	public function add_menu(): void {
-		add_submenu_page(
-			'woocommerce',
+		add_menu_page(
 			__( 'Subscriptions', 'subkit-subscriptions' ),
 			__( 'Subscriptions', 'subkit-subscriptions' ),
 			self::CAPABILITY,
 			self::SLUG,
+			array( $this, 'render' ),
+			'dashicons-update',
+			// Directly below WooCommerce, which sits at 55.6.
+			56
+		);
+
+		// Without this the top-level entry repeats itself as its own first child.
+		add_submenu_page(
+			self::SLUG,
+			__( 'Subscriptions', 'subkit-subscriptions' ),
+			__( 'All subscriptions', 'subkit-subscriptions' ),
+			self::CAPABILITY,
+			self::SLUG,
 			array( $this, 'render' )
+		);
+
+		add_action( 'admin_menu', array( $this, 'add_settings_link' ), 99 );
+	}
+
+	/**
+	 * Last, so it sits below whatever Pro has added.
+	 */
+	public function add_settings_link(): void {
+		add_submenu_page(
+			self::SLUG,
+			__( 'Settings', 'subkit-subscriptions' ),
+			__( 'Settings', 'subkit-subscriptions' ),
+			self::CAPABILITY,
+			'admin.php?page=wc-settings&tab=subkit'
 		);
 	}
 
