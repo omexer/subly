@@ -184,7 +184,7 @@ Open a subscription for its schedule, its orders and a full activity log of ever
 | **Gateway restriction** | Narrow which payment methods a subscription purchase may use |
 | **Split payments** | A set price times N payments, with access that can outlive the plan |
 | **QR status page** | A code for the packing slip, linking to a private status page |
-| **Integrations** | LearnDash, TutorLMS, LearnPress, MailPoet, FluentCRM, WP Fusion, AutomatorWP, License Manager for WooCommerce, WP Software License |
+| **Integrations** | Nine of them — courses, email and CRM, automation, licence keys. See [docs/INTEGRATIONS.md](INTEGRATIONS.md) for what each one does once connected. |
 
 ### The licence
 
