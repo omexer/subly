@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.8.0
+Stable tag: 0.9.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,13 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.9.0 =
+* The subscriptions list gains search, sortable columns, checkboxes, bulk actions and per-row actions.
+* Bulk changes respect the subscription's status rules: one that cannot legally change is skipped and reported, never forced.
+* Integrations can install and activate the plugin they need, where that plugin is on WordPress.org.
+* Subscription health gains Retry now and Ask the customer.
+* Row actions no longer reload the page, and still work with JavaScript switched off.
 
 = 0.8.0 =
 * Reports opens with charts: recurring revenue over time, new subscriptions per day, and a status ring with a legend.

@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.8.0 (free) · SubKit Pro 0.8.0 · development release**
+**SubKit 0.9.0 (free) · SubKit Pro 0.9.0 · development release**
 
 Read [What is not proven yet](#what-is-not-proven-yet) before you put this anywhere near a real customer. It is short, and it is the honest part.
 
@@ -28,7 +28,7 @@ SubKit refuses to load and shows a notice if any of these are missing, rather th
 ## Install
 
 1. Install and activate **SubKit — Subscriptions & Recurring Payments for WooCommerce**.
-2. For Pro: install **SubKit Subscriptions Pro** and activate it *after* the free plugin. Pro boots from a hook the free plugin fires, so the order matters. If Pro is activated alone it says so and does nothing. Pro needs free 0.6.0 or newer and refuses to boot against an older one rather than half-working.
+2. For Pro: install **SubKit Subscriptions Pro** and activate it *after* the free plugin. Pro boots from a hook the free plugin fires, so the order matters. If Pro is activated alone it says so and does nothing. Pro needs free 0.9.0 or newer and refuses to boot against an older one rather than half-working.
 
 > The folder name does not matter. Installing the free plugin from a GitHub ZIP gives you a folder called `subkit-subscriptions-main`, and Pro is happy either way.
 3. Go to **SubKit** in the admin menu, directly below WooCommerce, for the setup checklist.
