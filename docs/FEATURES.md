@@ -106,17 +106,18 @@ Verification key:
 | **Mollie renewals** | Mocked | Idempotency-Key + payment metadata |
 | **Razorpay renewals** | Mocked | Order receipt as the idempotency handle |
 | **Xendit renewals** | Mocked | Refuses to replay past the 24h key window |
+| **Subscription limits** (one active / one ever / N per customer) | Run | Guests refused, not waved through |
+| **Payment cap** (end after N charges) | Run | |
+| **Gateway restriction** for subscription purchases | Run | Through Woo's own filter, never the renewal registry |
+| **Split payments** (per-payment price x N) | Run | Totals reconcile exactly; distinct from instalments |
+| **Retained access** after a completed split plan | Run | Lifetime or a dated window, honoured after expiry |
+| **Live QR status page** | Run | Unguessable token; enumeration proven to fail |
+| **QR encoder** (ours, versions 1-10) | Run | Proven by decoding what it draws |
 | LearnDash, TutorLMS, LearnPress | Wired | Host plugins not installed |
 | MailPoet, FluentCRM | Wired | Host plugins not installed |
-
-### In flight — not committed, not reviewed
-
-| Feature | State |
-|---|---|
-| WP Fusion, AutomatorWP, LicenseManagerWoo, WP Software License | In flight |
-| Subscription limits + gateway restriction | In flight |
-| Split payments | In flight |
-| Live QR status page | In flight — built on unguessable tokens, **not** the enumerable subscription id the reference uses |
+| WP Fusion, AutomatorWP | Mocked | Proven inert without the host; active path against fakes |
+| License Manager for WooCommerce | Mocked | Same |
+| WP Software License | Mocked | `update_licence_status` is a **guess**; guarded, needs a real install |
 
 ---
 
@@ -127,7 +128,8 @@ Verification key:
 | Migration importer from another subscriptions plugin | Neither plugin we benchmarked has one either |
 | Multiple subscriptions per cart | Blocked on purpose |
 | Removing WordPress comment metaboxes | A custom-post-type problem we do not have |
-| Vendored 11,000-line QR library | Writing a focused encoder instead |
+| Vendored 11,000-line QR library | Wrote a focused encoder instead, verified by decoding its own output |
+| A status page keyed on the subscription id | The reference does this with no ownership check; it leaks every customer's subscription |
 
 ---
 

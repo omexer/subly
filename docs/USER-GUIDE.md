@@ -160,7 +160,11 @@ Pro adds per-product role overrides and gates the download capability itself.
 | **Reports** | MRR, ARR, churn, LTV |
 | **Content access** | Per-product roles and download gating |
 | **REST API** | List, read, update, run lifecycle actions, read the activity log |
-| **Integrations** | LearnDash, TutorLMS, LearnPress, MailPoet, FluentCRM |
+| **Subscription limits** | One active, one ever, or a fixed number per customer; plus a cap on total payments |
+| **Gateway restriction** | Narrow which payment methods a subscription purchase may use |
+| **Split payments** | A set price times N payments, with access that can outlive the plan |
+| **QR status page** | A code for the packing slip, linking to a private status page |
+| **Integrations** | LearnDash, TutorLMS, LearnPress, MailPoet, FluentCRM, WP Fusion, AutomatorWP, License Manager for WooCommerce, WP Software License |
 
 ### The licence
 
@@ -194,6 +198,7 @@ Worth knowing, because these are the parts that protect money:
 - **Cancelling is always available to the customer.**
 - **Erasing personal data will not touch an active subscription.** It refuses and tells you to cancel first, so billing stops at the provider before the record is scrubbed.
 - **A lapsed licence never stops billing.**
+- **The QR status page cannot be enumerated.** It resolves by an unguessable token per subscription and refuses a subscription id outright, so nobody can walk through your customers' subscriptions. It never shows an email, phone, name, address or payment method.
 
 ---
 
