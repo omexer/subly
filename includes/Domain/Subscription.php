@@ -153,6 +153,10 @@ class Subscription extends \WC_Order {
 		/**
 		 * Fires on every legal status transition.
 		 *
+		 * The subscription is NOT saved yet - this runs inside transition_to(), before the
+		 * caller's save(). A listener that calls save() here commits a half-finished
+		 * transition, so persist your own state elsewhere or defer it.
+		 *
 		 * @param Subscription $subscription
 		 * @param string       $from
 		 * @param string       $to

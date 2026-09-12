@@ -68,6 +68,16 @@ $can_cancel = ! in_array(
 
 	<?php
 	/**
+	 * Renders after the subscription's totals, for anything an extension needs to show
+	 * the customer here - licence keys, downloads, delivery dates.
+	 *
+	 * @param Subscription $subscription
+	 */
+	do_action( 'subkit_after_subscription_totals', $subscription );
+	?>
+
+	<?php
+	/**
 	 * Extra actions a customer can take on this subscription.
 	 *
 	 * @param array        $actions      slug => button label
