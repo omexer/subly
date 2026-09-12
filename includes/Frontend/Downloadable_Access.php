@@ -77,6 +77,17 @@ class Downloadable_Access {
 			}
 		}
 
-		return $found;
+		/**
+		 * Whether this customer may still have the product's files.
+		 *
+		 * A lapsed subscription is not always the end of access - a plan bought outright
+		 * over a fixed number of payments can grant access beyond its own life - so an
+		 * extension gets to widen this answer. It can only ever grant, never revoke.
+		 *
+		 * @param bool $found
+		 * @param int  $user_id
+		 * @param int  $product_id
+		 */
+		return (bool) apply_filters( 'subkit_has_product_access', $found, $user_id, $product_id );
 	}
 }
