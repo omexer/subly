@@ -76,6 +76,23 @@ class Subscription extends \WC_Order {
 		return parent::get_prop( $prop, $context );
 	}
 
+	/**
+	 * Hydrate before writing, for the same reason as reading - and one worse failure.
+	 *
+	 * WC_Data::set_prop only records a change when the new value differs from $data. On a
+	 * freshly loaded object $data still holds this class's defaults, so setting a prop
+	 * back to its default - set_next_payment( null ) on a subscription that has one -
+	 * looked like no change at all, and hydration then restored the stored value on save.
+	 * The write vanished silently.
+	 */
+	protected function set_prop( $prop, $value ) {
+		if ( ! $this->extra_hydrated && isset( self::META_MAP[ $prop ] ) ) {
+			$this->hydrate_extra_data();
+		}
+
+		parent::set_prop( $prop, $value );
+	}
+
 	public function get_type() {
 		return self::TYPE;
 	}
