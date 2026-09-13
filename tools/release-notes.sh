@@ -25,5 +25,5 @@ if [ -n "$previous" ]; then
 else
 	echo "The first tagged release. Most recent changes:"
 	echo
-	git log --no-merges --pretty='- %s' "$ref" | head -30
+	git log --no-merges -n 30 --pretty='- %s' "$ref"
 fi

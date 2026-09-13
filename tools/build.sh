@@ -59,7 +59,7 @@ for entry in "$pkg"/* "$pkg"/.[!.]*; do
 	esac
 done
 
-forbidden="$(find "$pkg" \( -name node_modules -o -name .git -o -name .github -o -name docs -o -name src -o -name .DS_Store -o -name '*.map' -o -name '.env*' \) -print | head -5)"
+forbidden="$(find "$pkg" \( -name node_modules -o -name .git -o -name .github -o -name docs -o -name src -o -name .DS_Store -o -name '*.map' -o -name '.env*' \) -print | sed -n '1,5p')"
 [ -z "$forbidden" ] || fail "forbidden paths inside the zip: ${forbidden//$stage\//}"
 
 for required in "$main" includes/autoload.php build; do
