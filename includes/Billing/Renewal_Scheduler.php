@@ -3,7 +3,6 @@
 namespace SubKit\Billing;
 
 use SubKit\Data\Activity_Repository;
-use SubKit\Data\Subscription_Query;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
 
@@ -26,6 +25,9 @@ class Renewal_Scheduler {
 
 	/** Cap per sweep so a site dark for a month does not fire thousands of charges at once. */
 	private const SWEEP_BATCH = 50;
+
+	// Due rows already holding a scheduled action are skipped; stop scanning past these.
+	private const SWEEP_SCAN = 1000;
 
 	public function __construct( private readonly Activity_Repository $activity ) {}
 
@@ -94,40 +96,70 @@ class Renewal_Scheduler {
 	 * Find active subscriptions that are past due with nothing queued, and queue them.
 	 */
 	public function sweep(): void {
-		$due = Subscription_Query::ids(
-			array(
-				'status'  => Subscription_Status::Active->value,
-				'limit'   => self::SWEEP_BATCH,
-				'orderby' => 'date',
-				'order'   => 'ASC',
-			)
-		);
-
 		$now    = time();
+		$cutoff = gmdate( 'Y-m-d H:i:s', $now );
 		$queued = 0;
 
-		foreach ( $due as $subscription_id ) {
-			$subscription = wc_get_order( $subscription_id );
-			if ( ! $subscription instanceof Subscription ) {
-				continue;
+		for ( $offset = 0; $queued < self::SWEEP_BATCH && $offset < self::SWEEP_SCAN; $offset += self::SWEEP_BATCH ) {
+			$due = $this->due_ids( $cutoff, self::SWEEP_BATCH, $offset );
+
+			foreach ( $due as $subscription_id ) {
+				$subscription = wc_get_order( $subscription_id );
+				if ( ! $subscription instanceof Subscription ) {
+					continue;
+				}
+
+				$next = $subscription->get_next_payment();
+				if ( empty( $next ) || strtotime( $next . ' UTC' ) > $now ) {
+					continue;
+				}
+
+				if ( as_next_scheduled_action( self::ACTION_RENEWAL, array( 'subscription_id' => $subscription_id ), self::GROUP ) ) {
+					continue;
+				}
+
+				$this->schedule_at( $subscription_id, $now );
+				++$queued;
 			}
 
-			$next = $subscription->get_next_payment();
-			if ( empty( $next ) || strtotime( $next . ' UTC' ) > $now ) {
-				continue;
+			if ( count( $due ) < self::SWEEP_BATCH ) {
+				break;
 			}
-
-			if ( as_next_scheduled_action( self::ACTION_RENEWAL, array( 'subscription_id' => $subscription_id ), self::GROUP ) ) {
-				continue;
-			}
-
-			$this->schedule_at( $subscription_id, $now );
-			++$queued;
 		}
 
 		if ( $queued > 0 ) {
 			do_action( 'subkit_swept_overdue', $queued );
 		}
+	}
+
+	/**
+	 * Active subscriptions whose next payment is at or before the cutoff, soonest first.
+	 *
+	 * Read from the meta table directly: wc_get_orders() drops meta queries on legacy post
+	 * storage and would return every subscription.
+	 *
+	 * @return int[]
+	 */
+	private function due_ids( string $cutoff, int $limit, int $offset ): array {
+		global $wpdb;
+
+		$hpos = class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
+			&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
+
+		$status = 'wc-' . Subscription_Status::Active->value;
+
+		if ( $hpos ) {
+			$orders = $wpdb->prefix . 'wc_orders';
+			$meta   = $wpdb->prefix . 'wc_orders_meta';
+
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names come from $wpdb, values are prepared.
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT o.id FROM {$orders} o INNER JOIN {$meta} m ON m.order_id = o.id AND m.meta_key = %s WHERE o.type = %s AND o.status = %s AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, o.id ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $status, $cutoff, $limit, $offset ) );
+		} else {
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API filters orders by meta on legacy storage.
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = %s WHERE p.post_type = %s AND p.post_status = %s AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, p.ID ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $status, $cutoff, $limit, $offset ) );
+		}
+
+		return array_map( 'intval', (array) $ids );
 	}
 
 	/**
