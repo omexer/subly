@@ -1,0 +1,86 @@
+name: Release
+
+on:
+  push:
+    tags: [ 'v[0-9]+.[0-9]+.[0-9]+' ]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to dry-run: runs every check and builds the zip, publishes nothing'
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  static-analysis:
+    uses: ./.github/workflows/static-analysis.yml
+
+  admin-ui:
+    uses: ./.github/workflows/admin-ui.yml
+
+  release:
+    name: Build and publish
+    needs: [ static-analysis, admin-ui ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: none
+
+      - name: Work out the version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = push ]; then version="${GITHUB_REF_NAME#v}"; else version="$INPUT_VERSION"; fi
+          printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+$' || { echo "::error::'$version' is not MAJOR.MINOR.PATCH"; exit 1; }
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: The tagged commit is on main
+        if: github.event_name == 'push'
+        run: git merge-base --is-ancestor "$GITHUB_SHA" origin/main
+
+      - name: The plugin says the same version as the tag
+        run: bash tools/check-version.sh "${{ steps.version.outputs.version }}"
+
+      - name: Build the zip
+        run: bash tools/build.sh
+
+      - name: Write the release notes
+        run: bash tools/release-notes.sh "${{ steps.version.outputs.version }}" > "$RUNNER_TEMP/notes.md"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.version.outputs.version }}
+          path: dist/
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Publish the GitHub release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          prerelease=""
+          case "$VERSION" in 0.*) prerelease="--prerelease" ;; esac
+          gh release create "v$VERSION" dist/*.zip dist/*.sha256 \
+            --verify-tag \
+            --title "SubKit $VERSION" \
+            --notes-file "$RUNNER_TEMP/notes.md" \
+            $prerelease

@@ -4,10 +4,20 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: static-analysis-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyse:
+    name: PHPStan and coding standards
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v4
@@ -26,3 +36,64 @@ jobs:
 
       - name: Static analysis
         run: ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+
+  syntax:
+    name: PHP ${{ matrix.php }} syntax
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '8.1', '8.2', '8.3', '8.4' ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+          tools: none
+
+      # Any output at all fails, deprecations included: a notice today is a fatal in the next PHP.
+      - name: Lint every file that ships
+        run: |
+          files="$( { ls ./*.php; git ls-files includes templates | grep '\.php$'; } )"
+          problems="$(printf '%s\n' "$files" | xargs -n1 php -d error_reporting=E_ALL -d display_errors=stderr -l 2>&1 | grep -v '^No syntax errors detected' || true)"
+          if [ -n "$problems" ]; then printf '%s\n' "$problems"; exit 1; fi
+          echo "$(printf '%s\n' "$files" | wc -l) files clean"
+
+  version:
+    name: Version consistency
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: bash tools/check-version.sh
+
+  package:
+    name: Plugin zip
+    needs: [ syntax, version ]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.1'
+          coverage: none
+          tools: none
+
+      - name: Build the zip
+        run: bash tools/build.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: plugin-zip
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error

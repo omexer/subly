@@ -1,0 +1,20 @@
+# Paths tools/build.sh removes from the plugin zip: literal paths from the repository root.
+# A top-level file that is neither listed here nor on build.sh's allow list stops the build.
+/.distignore
+/.eslintrc.js
+/.github
+/.gitignore
+/babel.config.js
+/composer.json
+/composer.lock
+/docs
+/jest.config.js
+/package-lock.json
+/package.json
+/phpcs.xml.dist
+/phpstan.neon.dist
+/postcss.config.js
+/src
+/tailwind.config.js
+/tools
+/webpack.config.js

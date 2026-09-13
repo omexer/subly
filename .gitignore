@@ -9,3 +9,6 @@ vendor/
 
 # Local admin-screen preview build (tools/preview)
 .preview/
+
+# Release zips built by tools/build.sh
+/dist/

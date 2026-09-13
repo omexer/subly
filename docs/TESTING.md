@@ -26,7 +26,7 @@ That runs both. Individually:
 
 Both are expected to pass with **zero errors**. The only thing you should see is a handful of `slow_db_query` warnings on deliberate meta lookups.
 
-`.github/workflows/static-analysis.yml` runs both on every push and pull request, so a regression fails the build rather than reaching a release.
+`.github/workflows/static-analysis.yml` runs both on every push and pull request, so a regression fails the build rather than reaching a release. The same workflow lints every shipped PHP file under PHP 8.1, 8.2, 8.3 and 8.4 — failing on a deprecation as well as an error — checks that the version agrees everywhere it is written, and builds the plugin zip. How a release is cut is in [`RELEASING.md`](RELEASING.md).
 
 ### What is deliberately switched off, and why
 
