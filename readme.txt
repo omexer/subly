@@ -2,50 +2,88 @@
 Contributors: pronob1010
 Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
-Tested up to: 7.0
+Tested up to: 6.9
 Requires PHP: 8.1
 Stable tag: 0.13.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Turn any WooCommerce product into a subscription and let it bill itself, with full customer self-service.
+Sell subscriptions in WooCommerce: recurring billing, free trials, Stripe and PayPal, and customers who manage their own plan.
 
 == Description ==
 
-SubKit turns WooCommerce products into subscriptions and runs the renewal billing loop for you.
+SubKit turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
 
-**This is an early development release and is not ready for production stores.**
+**This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real Stripe or PayPal account, and no renewal has yet been watched happening on its own over time.
 
-= Working today =
+= Selling subscriptions =
 
-* Simple products can be sold as subscriptions on any daily, weekly, monthly or yearly schedule.
-* Free trials.
-* A renewal engine built on Action Scheduler, with an hourly sweeper that catches renewals WP-Cron missed.
-* Charge-slot ledger with a database-level guarantee against double charging.
-* Clear recurring-payment disclosure on the product page, in the cart and at checkout.
-* Customers can view and cancel their own subscriptions from My Account.
-* Admin subscription list and detail screens under WooCommerce, with a full activity trail.
-* HPOS native.
+* A **Subscription** product type in the Product data panel, billed every day, week, month or year, or any multiple of them.
+* Free trials and sign-up fees.
+* The price says how often it recurs wherever WooCommerce shows it, and the terms — the trial, the first payment, what follows, cancel anytime — are spelled out on the product page, in the cart and at checkout.
+* Works with both the classic checkout and the block checkout.
+* A guest can buy a subscription and have an account made at checkout, or you can require a login first.
 
-= Not built yet =
+= Taking payment =
 
-Stripe and PayPal adapters, block checkout integration, renewal emails, reporting, and everything else on the roadmap.
+* **Stripe** saves the card at checkout and renewals are charged automatically.
+* **PayPal** runs the schedule itself, and SubKit keeps in step through PayPal's webhooks.
+* With no gateway at all, renewals become invoices the customer pays by hand.
+* A safeguard in the database means a renewal can never be charged twice, even when two processes try at the same moment.
+* A charge whose result never arrived is checked with the gateway, not simply tried again.
+* Renewals missed while the site's scheduler was not running are picked up by an hourly check.
+* A copy of the site on staging refuses to bill anyone.
+
+= For your customers =
+
+* My Account lists their subscriptions, what they pay and when the next payment is.
+* They can cancel at the end of the period they paid for, or straight away. You cannot switch cancelling off.
+* They can turn off automatic renewal and keep what they paid for until the period ends.
+* They can pay a renewal that failed.
+
+= Running your store =
+
+* **Home** walks you through setting up — connect a payment method, create a product, run a test renewal that charges nobody — then shows recurring revenue, what needs your attention and your latest subscriptions.
+* **All subscriptions** lets you search, filter, sort and change subscriptions in bulk, and open any one to see its history, charge it now or move its dates.
+* Six emails for the moments that matter, each to the right person.
+* Customer roles and downloadable files that follow the subscription.
+* Integrations and Help screens, with a system report that never contains your keys.
+* A REST API for subscriptions, authenticated with WooCommerce's own API keys.
+
+= SubKit Pro =
+
+A separate plugin adds variable subscriptions, instalment and split payment plans, pause and resume, plan switching, recurring coupons, failed-payment recovery, reports, subscription health, delivery schedules, purchase limits, Mollie, Razorpay and Xendit renewals, and integrations with course, email, CRM, automation and licence-key plugins.
 
 == Installation ==
 
-1. Upload the `subkit-subscriptions` folder to `/wp-content/plugins/`.
-2. Activate through the Plugins screen.
-3. Edit a simple product and tick **Subscription** in the Product data panel.
+1. Install and activate WooCommerce 8.0 or newer.
+2. Upload the `subkit-subscriptions` folder to `/wp-content/plugins/`, or upload the ZIP from **Plugins → Add New → Upload Plugin**.
+3. Activate SubKit.
+4. Open **SubKit → Home** and follow the setup checklist: connect a payment method, create a subscription product, and run a test renewal.
+
+To turn a product into a subscription yourself, edit it and choose **Subscription** in the **Product data** dropdown.
 
 == Frequently Asked Questions ==
 
 = Is this ready for a live store? =
 
-No. It is a development release. The renewal loop works and is tested, but there are no production payment gateway adapters yet.
+Not yet. The renewal engine is built and tested against a running WordPress, and Stripe and PayPal are both included. What has not happened yet is a payment through a real Stripe or PayPal account, and a renewal watched firing on its own over days. Until both have, use it on a staging site.
+
+= Which payment methods can renew automatically? =
+
+Stripe and PayPal, both included. SubKit Pro adds renewals through Mollie, Razorpay and Xendit, using the payment details those plugins already saved at checkout. Without any of them, each renewal is an invoice the customer pays.
+
+= Can a customer be charged twice for the same renewal? =
+
+No. Each billing period can hold exactly one charge, enforced by a unique index in the database, so a second attempt is refused before it reaches the payment gateway — even if two processes try at the same moment.
+
+= Can customers cancel on their own? =
+
+Yes, from My Account, and that cannot be turned off. A customer who cannot cancel is a chargeback waiting to happen.
 
 = Does it work with High-Performance Order Storage? =
 
-Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
+Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS tables. WooCommerce's older post-based order storage is supported in the code as well, but has not been tested end to end.
 
 == Changelog ==
 
@@ -137,3 +175,11 @@ Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tab
 
 = 0.1.0 =
 * First development release: subscription products, renewal pipeline, My Account screens, admin screens.
+
+== Upgrade Notice ==
+
+= 0.13.1 =
+Fixes missed renewals being skipped on stores with more than 50 active subscriptions.
+
+= 0.13.0 =
+SubKit now opens on a Home screen, and the subscriptions list moves to SubKit → All subscriptions. Old links still work.
