@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.13.1
+Stable tag: 0.13.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,10 @@ Yes, from My Account, and that cannot be turned off. A customer who cannot cance
 Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS tables. WooCommerce's older post-based order storage is supported in the code as well, but has not been tested end to end.
 
 == Changelog ==
+
+= 0.13.2 =
+* The plugin description now says what SubKit does today - the Stripe and PayPal gateways, the block checkout, Home and the rest - and why it is still a development release. It had not been updated since the first release.
+* No code changes.
 
 = 0.13.1 =
 * Fixed: on a store with more than 50 active subscriptions, the hourly check for missed renewals could skip overdue ones indefinitely. It looked at the 50 oldest subscriptions and only then checked which were due, so a newer subscription whose renewal had been missed was never picked up. It now asks for due subscriptions directly, soonest first.

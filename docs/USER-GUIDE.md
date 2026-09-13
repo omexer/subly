@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.13.1 · SubKit Pro 0.12.1 · development release**
+**SubKit 0.13.2 · SubKit Pro 0.12.1 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
