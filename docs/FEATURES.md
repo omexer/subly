@@ -1,6 +1,6 @@
 # SubKit — Feature Inventory
 
-Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at 0.6.0, not from memory.
+Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.13.1 and SubKit Pro 0.12.1, not from memory.
 
 Verification key:
 
@@ -120,9 +120,6 @@ Verification key:
 | Health row actions: retry now, ask the customer | Run | Retry runs the real pipeline; the slot still guards the charge |
 | Row actions over AJAX | Run | Progressive enhancement: plain submits without JavaScript |
 | **Reports charts** (area, bars, ring) | Run | Inline SVG; edge cases drawn, not crashed |
-| Health row actions: retry now, ask the customer | Run | Retry runs the real pipeline; the slot still guards the charge |
-| Row actions over AJAX | Run | Progressive enhancement: plain submits without JavaScript |
-| **Reports charts** (area, bars, ring) | Run | Inline SVG; edge cases drawn, not crashed |
 | **Delivery schedules** (cadence, manifest, print) | Run | Guards refuse rather than coerce |
 | **Reports** (MRR, ARR, churn, LTV) | Run | |
 | **Content access** (per-product roles, download capability) | Wired | |
@@ -159,17 +156,17 @@ Verification key:
 
 ## The gap that is not a feature
 
-None of the below has moved. It is the reason nothing above should go near a live store yet.
+The rows below that are not struck through are the reason nothing above should go near a live store yet.
 
 | | |
 |---|---|
-| **Automated tests** | None. No unit tests, no integration tests. Every "Run" above was done by hand. |
+| **Automated PHP tests** | None. No unit tests, no integration tests. Every "Run" above was done by hand or by a harness. The admin screens have 30 JavaScript tests; the PHP that bills people has none. |
 | ~~CI~~ | **Done.** Both plugins run PHPCS and PHPStan on every push and pull request. |
 | ~~Static analysis~~ | **Done.** PHPStan level 5 and PHPCS clean on both plugins. See `docs/TESTING.md`. |
 | **Real gateway calls** | Still zero, but unblocked: `tools/sandbox-stripe.php` drives the whole reconciliation path against a real Stripe test account. Needs a test key. |
 | **Unattended renewals** | Never observed firing on their own. |
 | ~~Concurrency~~ | **Done.** `tools/concurrency-test.php` races eight real processes: one claim wins, seven are refused, one charge reaches the gateway. |
-| **Browser testing** | Nothing driven through a real browser. Screens verified by output, not visually. |
+| **Browser testing** | The admin screens are screenshotted through `tools/preview`, without WordPress's own sidebar and admin bar. No test drives a real wp-admin, and the storefront and checkout have never been driven through a browser. |
 
-What remains is the test suite and a real gateway call. The concurrency guarantee - the one
+What remains is a PHP test suite, a real gateway call, and a renewal watched firing on its own. The concurrency guarantee - the one
 that would have invalidated everything else - now holds under a real race.
