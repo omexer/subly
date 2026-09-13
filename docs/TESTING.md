@@ -1,6 +1,6 @@
 # Testing SubKit
 
-Two kinds of check. **Static analysis** runs anywhere and catches type and standards problems before the code runs. **Sandbox tests** talk to a real payment gateway and are the only way to prove the parts that matter most.
+Four kinds of check. **Static analysis** runs anywhere and catches type and standards problems before the code runs. **JavaScript tests** cover the React admin screens. **Screenshots** of those screens catch what tests cannot see. **Sandbox tests** talk to a real payment gateway and are the only way to prove the parts that matter most.
 
 ---
 
@@ -38,6 +38,48 @@ Every exclusion is written in `phpcs.xml.dist` / `phpstan.neon.dist` with its re
 - **Stub gaps.** `WC_Data::update_meta_data()` declares no type for its value at all, and `get_items()` is stubbed as returning the base item class. Both stubs are narrower than WooCommerce itself.
 
 If you add an exclusion, write the reason next to it.
+
+---
+
+## JavaScript tests and the admin build
+
+The admin screens are React, built with `@wordpress/scripts`. Run these from either plugin directory.
+
+```bash
+npm ci
+```
+
+| Command | What it does |
+|---|---|
+| `npm run test:unit` | Jest. Free: Home, the subscriptions list, a subscription's screen, and block-checkout registration. Pro: Reports and Health |
+| `npm run lint:js` | ESLint with WordPress's rules |
+| `npm run build` | Builds `build/` |
+
+`build/` is committed, because a plugin installed from a zip has no build step. `.github/workflows/admin-ui.yml` runs lint, tests and a build on every push, then **fails if `build/` differs from what was committed** — the check for source changed and assets not rebuilt.
+
+Pro's tests stand in for the free plugin's UI kit with `tools/subkit-ui-stub.js`. At runtime that kit is a global the free plugin puts on the page, not a package Pro can import, so the stub is what makes Pro's screens testable on their own.
+
+A few assertions are mutation-checked — broken on purpose to prove the test notices — noted in the commit that added them.
+
+---
+
+## Looking at the admin screens
+
+A test proves a screen shows the right text. It cannot tell you the screen looks broken. In 0.13.0 five layout defects passed every test and were found only by screenshot: borders that drew nothing, the browser's own button styling showing through, a reset that outranked the utility classes, a library that silently stopped merging classes, and integration icons of 840 KB.
+
+`tools/preview` builds every React screen as a plain page against fixture data, so it can be opened without WordPress. From the free plugin, inside a WordPress install:
+
+```bash
+tools/preview/build.sh
+```
+
+```bash
+python3 -m http.server 8765 --directory .preview
+```
+
+Then open `http://localhost:8765/#dashboard`, and swap the hash for `#list`, `#detail`, `#reports` or `#health`. Add `?setup=done` before the hash to see Home once setup is finished. Pro's screens are included, so check out the Pro plugin beside the free one first.
+
+The preview draws SubKit's own frame but not WordPress's sidebar and admin bar. Look at the real admin once before a release.
 
 ---
 
@@ -167,8 +209,8 @@ Be clear-eyed about this list. It is short and it is the important part.
 
 | | |
 |---|---|
-| **Automated test suite** | There is none. No PHPUnit, no integration tests. Everything is verified by hand or by a harness like the one above. |
+| **Automated PHP test suite** | There is none. No PHPUnit, no integration tests. PHP is verified by static analysis, by harnesses like the ones above, and by hand. The admin screens' JavaScript does have tests — 30, across both plugins. |
 | ~~Concurrency~~ | **Tested.** See below. |
 | **Unattended renewals** | Scheduled renewals fire correctly when run directly. No renewal has been watched happening on its own overnight. |
-| **Browser** | Nothing has been driven through a real browser. Screens are verified by their output, not visually. |
+| **Browser** | The admin screens are screenshotted through `tools/preview`, which renders them without WordPress's own sidebar and admin bar. No test drives a real wp-admin, and no test drives the storefront or checkout through a browser at all. |
 | **Real gateway calls** | Until you run the harness above, every payment path in this plugin has only ever met a simulated response. |

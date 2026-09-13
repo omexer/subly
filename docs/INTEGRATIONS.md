@@ -3,8 +3,9 @@
 An integration hands a subscription to the plugin that grants what the customer is paying
 for — a course, a mailing list, a licence key — and takes it back when they stop paying.
 
-All of them are **SubKit Pro**. Find them under **SubKit → Integrations**, which shows every
-integration, the plugin it needs, and whether that plugin is active right now.
+All of them are **SubKit Pro**. Find them under **SubKit → Integrations**: a card for each,
+grouped by what it connects to, saying what it does, which plugin it needs, whether that
+plugin is active right now, and — for plugins on WordPress.org — an Install button.
 
 For *which* integration a given business needs — and the two builds that need four at once —
 see [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md).
