@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.12.2 · SubKit Pro 0.11.0 · development release**
+**SubKit 0.12.3 · SubKit Pro 0.11.0 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -180,7 +180,8 @@ refuses to save that.
 ### What the customer sees
 
 SubKit writes the terms on the product page automatically — as separate plain facts, not one
-long sentence:
+long sentence. The first line is the product's own price, which now says how often it
+recurs; the facts follow underneath:
 
 ```
 $29.00 every month
@@ -192,6 +193,12 @@ Cancel anytime
 ```
 
 The same terms follow the product into the cart and the checkout.
+
+The price says how often it recurs everywhere WooCommerce prints one — the shop, category
+pages, related products — not only on the product page. A product on sale keeps its
+struck-through old price, with the interval after it. An instalment or split plan shows the
+plan instead (for example *3 payments of £100*), because the price plus "every month" would
+state a total the customer is not going to pay.
 
 > **One subscription per cart.** A customer cannot buy two subscriptions at once — that is
 > deliberate. A subscription plus ordinary products is fine.

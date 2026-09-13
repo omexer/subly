@@ -20,6 +20,9 @@ class Product_Display {
 
 	public function register(): void {
 		add_action( 'woocommerce_single_product_summary', array( $this, 'on_product_page' ), 11 );
+		// Late, so it sees WooCommerce's finished markup - sale strikethrough and tax suffix
+		// included - and adds to it rather than being overwritten by it.
+		add_filter( 'woocommerce_get_price_html', array( $this, 'price_html' ), 20, 2 );
 		add_filter( 'woocommerce_cart_item_price', array( $this, 'on_cart_line' ), 10, 3 );
 		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'on_checkout_totals' ) );
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'before_place_order' ) );
@@ -32,6 +35,18 @@ class Product_Display {
 		if ( $product instanceof \WC_Product && Subscription_Product::is_subscription( $product ) ) {
 			echo wp_kses_post( $this->disclosure->render( $product ) );
 		}
+	}
+
+	/**
+	 * Everywhere WooCommerce prints a price: product page, shop, category, related products.
+	 *
+	 * @param string $html
+	 * @param mixed  $product
+	 */
+	public function price_html( $html, $product ): string {
+		return $product instanceof \WC_Product
+			? $this->disclosure->price_html( (string) $html, $product )
+			: (string) $html;
 	}
 
 	/**
@@ -77,7 +92,6 @@ class Product_Display {
 		wp_add_inline_style(
 			'subkit-frontend',
 			'.subkit-disclosure{margin:1em 0}
-			 .subkit-disclosure__price{font-size:1.15em;font-weight:600;margin:0 0 .35em}
 			 .subkit-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
 			 .subkit-cart-terms{display:block;font-size:.85em;opacity:.8}
 			 .subkit-checkout-consent{margin:0 0 1em;font-size:.9em}

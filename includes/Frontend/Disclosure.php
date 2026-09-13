@@ -89,19 +89,45 @@ class Disclosure {
 	 * The headline price, e.g. "$29.00 / month".
 	 */
 	public function price_line( \WC_Product $product ): string {
-		$price    = Subscription_Product::recurring_price( $product );
-		$schedule = Subscription_Product::schedule( $product );
-
-		/* translators: 1: price, 2: billing interval such as "every month" */
-		$line = sprintf( __( '%1$s %2$s', 'subkit-subscriptions' ), $this->amount( $price ), $schedule->describe() );
-
 		/**
 		 * Filter the headline price line, e.g. to state an instalment plan instead.
 		 *
 		 * @param string      $line
 		 * @param \WC_Product $product
 		 */
-		return (string) apply_filters( 'subkit_disclosure_price_line', $line, $product );
+		return (string) apply_filters( 'subkit_disclosure_price_line', $this->default_price_line( $product ), $product );
+	}
+
+	/**
+	 * The product's price as WooCommerce prints it, made to say how often it recurs.
+	 *
+	 * WooCommerce's own markup is kept and the interval appended, rather than replaced by
+	 * price_line(): it carries the sale strikethrough and the tax suffix, and a plain
+	 * amount would drop both. The exception is a headline something has rewritten - an
+	 * instalment or split plan - where the bare amount plus "every month" would state a
+	 * price the customer is not going to pay.
+	 */
+	public function price_html( string $woo_html, \WC_Product $product ): string {
+		if ( '' === $woo_html || ! Subscription_Product::is_subscription( $product ) ) {
+			return $woo_html;
+		}
+
+		$line = $this->price_line( $product );
+
+		if ( $line !== $this->default_price_line( $product ) ) {
+			return $line;
+		}
+
+		return $woo_html . ' <span class="subkit-price-interval">' . esc_html( Subscription_Product::schedule( $product )->describe() ) . '</span>';
+	}
+
+	private function default_price_line( \WC_Product $product ): string {
+		return sprintf(
+			/* translators: 1: price, 2: billing interval such as "every month" */
+			__( '%1$s %2$s', 'subkit-subscriptions' ),
+			$this->amount( Subscription_Product::recurring_price( $product ) ),
+			Subscription_Product::schedule( $product )->describe()
+		);
 	}
 
 	public function render( \WC_Product $product ): string {
@@ -109,8 +135,9 @@ class Disclosure {
 			return '';
 		}
 
+		// No headline price here: the product's own price line says it, and saying it twice
+		// is what made the page read "$5.00" then "$5.00 every month".
 		$html  = '<div class="subkit-disclosure" role="group" aria-label="' . esc_attr__( 'Subscription terms', 'subkit-subscriptions' ) . '">';
-		$html .= '<p class="subkit-disclosure__price">' . wp_kses_post( $this->price_line( $product ) ) . '</p>';
 		$html .= '<ul class="subkit-disclosure__facts">';
 
 		foreach ( $this->lines( $product ) as $line ) {

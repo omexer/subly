@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.12.2
+Stable tag: 0.12.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,10 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.12.3 =
+* Fixed: the product page showed the price twice - "$5.00", then "$5.00 every month" - because WooCommerce printed the plain price and the terms block printed it again. The price itself now says how often it recurs, and the terms block starts with the facts.
+* The price now says how often it recurs wherever WooCommerce prints one: the shop, category pages, related products. A product on sale keeps its struck-through old price. An instalment or split plan shows the plan instead of a price that would misstate it.
 
 = 0.12.2 =
 * Fixed: SubKit's payment methods never appeared on the block checkout, which is the default checkout in current WooCommerce. A classic gateway is invisible there until it registers itself with the blocks registry, so a shop using blocks saw "There are no payment methods available" while the payments screen said Active. Both gateways now register.
