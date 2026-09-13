@@ -322,6 +322,11 @@ These three renew against a payment mandate that the merchant's **existing** plu
 at checkout. Keep Mollie Payments for WooCommerce, WooCommerce Razorpay or the Xendit plugin
 installed and configured for the first payment. SubKit only handles the renewals.
 
+**If a Xendit renewal's answer never arrives** — a timeout, a dropped connection — SubKit asks
+Xendit again for the same charge, which cannot bill the customer twice. It can only do that for
+24 hours. After that it stops and marks the charge as unresolved, so you can check your Xendit
+dashboard and settle it by hand, rather than risk charging again.
+
 ### Every gateway field
 
 | Field | Appears on | What to put in it |
@@ -516,6 +521,10 @@ Three behaviours worth knowing before you build on it:
 **Renewals are not happening.** Check **Settings → General → Health**. If the renewal queue is
 red, WordPress's scheduler is not running — on a quiet site it needs real traffic or a server
 cron. Ask your host for a "server cron" pointing at `wp-cron.php`.
+
+Once the scheduler is running again you do not need to do anything about the renewals it
+missed. An hourly check picks up every subscription whose renewal is overdue, the most overdue
+first, however many subscriptions the store has.
 
 **A subscription stopped billing and nothing explains it.** Check **Unresolved charges** in
 that same panel. If a charge's outcome was never learned, SubKit stops rather than risk

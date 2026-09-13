@@ -26,7 +26,7 @@ Verification key:
 | Reconciliation of unknown outcomes | Mocked | Every gateway implements it; no real timeout has ever occurred |
 | Renewal pipeline | Run | Nothing contacts a gateway before the slot is claimed |
 | Retry and scheduling via Action Scheduler | Wired | Never observed firing unattended |
-| Hourly sweeper for missed renewals | Wired | |
+| Hourly sweeper for missed renewals | Run | Asks for due subscriptions directly, soonest first; proven with 53 subscriptions. On legacy order storage, checked for SQL errors only |
 | Staging-clone protection | Run | A copied site refuses to bill |
 | Activity log per subscription | Run | |
 | Ledger and activity rows removed with the subscription | Run | On deletion only, never on trashing, so a restore stays safe |
@@ -109,7 +109,7 @@ Verification key:
 
 | Feature | Verification | Notes |
 |---|---|---|
-| **Licensing** (activate, validate, updates, seat release) | Mocked | Gates updates and support only — **never billing** |
+| **Licensing** (activate, validate, updates, seat release) | Mocked | Gates updates and support only — **never billing**. Core now asks the updater about Pro (proven); the release it fetches is still mocked |
 | **Variable subscriptions** | Run | Per-variation schedule, inheritance, "From" price |
 | **Instalment plans** | Run | Fixed total over N charges, then stops |
 | **Pause and resume** | Run | Remaining time preserved |
@@ -129,7 +129,7 @@ Verification key:
 | **REST API**: pause and resume, reports, health | Run | 401 / 404 / 409 / 400 paths all proven. The subscriptions routes themselves are free. |
 | **Mollie renewals** | Mocked | Idempotency-Key + payment metadata |
 | **Razorpay renewals** | Mocked | Order receipt as the idempotency handle |
-| **Xendit renewals** | Mocked | Refuses to replay past the 24h key window |
+| **Xendit renewals** | Mocked | Refuses to replay past the 24h key window; reconciliation finds the renewal order from its attempt record |
 | **Subscription limits** (one active / one ever / N per customer) | Run | Guests refused, not waved through |
 | **Payment cap** (end after N charges) | Run | |
 | **Gateway restriction** for subscription purchases | Run | Through Woo's own filter, never the renewal registry |
