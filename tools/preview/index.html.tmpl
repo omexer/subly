@@ -1,0 +1,30 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>SubKit admin preview</title>
+<link rel="stylesheet" href="{{WP}}/wp-includes/css/dashicons.min.css">
+<link rel="stylesheet" href="{{WP}}/wp-includes/css/buttons.min.css">
+<link rel="stylesheet" href="{{WP}}/wp-admin/css/common.min.css">
+<link rel="stylesheet" href="{{WP}}/wp-admin/css/forms.min.css">
+<link rel="stylesheet" href="{{PLUGIN}}/assets/css/admin.css">
+<link rel="stylesheet" href="preview.css">
+<style>html,body{margin:0}body{background:#f6f7fb;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}#wpcontent{margin:0;padding:0}.subkit-shell__bar{top:0}</style>
+</head>
+<body class="wp-admin subkit-admin">
+<div id="wpwrap"><div id="wpcontent"><div id="wpbody-content">
+<div class="subkit-shell">
+	<header class="subkit-shell__bar"><div class="subkit-shell__inner">
+		<nav class="subkit-crumbs"><a class="subkit-crumbs__home" href="#dashboard">{{MARK}}<span>SubKit</span></a><span class="subkit-crumbs__sep">/</span><span class="subkit-crumbs__current">Home</span></nav>
+		<div class="subkit-shell__meta"><a href="#">Help</a><a href="#">Settings</a></div>
+	</div></header>
+	<div class="wrap subkit-shell__body">
+		<div class="subkit-head"><div class="subkit-head__text"><h1 class="subkit-head__title"></h1><p class="subkit-head__subtitle"></p></div></div>
+		<div id="screen" class="subkit-ui"></div>
+	</div>
+	<footer class="subkit-shell__foot">SubKit 0.13.0 · <a href="#">Help and system report</a></footer>
+</div>
+</div></div></div>
+<script src="preview.js"></script>
+</body>
+</html>

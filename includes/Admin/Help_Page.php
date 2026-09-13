@@ -104,24 +104,71 @@ class Help_Page {
 			$text .= $label . ': ' . $value . "\n";
 		}
 
-		echo '<div class="wrap subkit-page"><h1>' . esc_html__( 'Help', 'subkit-subscriptions' ) . '</h1>';
+		Page_Shell::open(
+			__( 'Help', 'subkit-subscriptions' ),
+			__( 'Where to look first, and the report to send if you still need a hand.', 'subkit-subscriptions' )
+		);
 
-		echo '<div class="subkit-card"><h2>' . esc_html__( 'Before you ask', 'subkit-subscriptions' ) . '</h2><ul style="list-style:disc;margin-left:1.2rem">';
-		echo '<li>' . esc_html__( 'The setup checklist on the Subscriptions screen runs a real renewal end to end without charging anyone. If that fails, it usually says why.', 'subkit-subscriptions' ) . '</li>';
-		echo '<li>' . esc_html__( 'Every subscription has an Activity log recording each charge attempt and status change, with the reason.', 'subkit-subscriptions' ) . '</li>';
-		echo '<li>' . esc_html__( 'The Status panel under Settings reports the renewal queue, unresolved charges and the double-charge index.', 'subkit-subscriptions' ) . '</li>';
-		echo '</ul></div>';
+		echo '<h2 class="subkit-section-title">' . esc_html__( 'Check these first', 'subkit-subscriptions' ) . '</h2>';
+		echo '<div class="subkit-grid">';
 
-		echo '<div class="subkit-card"><h2>' . esc_html__( 'System report', 'subkit-subscriptions' ) . '</h2>';
-		echo '<p class="subkit-lede">' . esc_html__( 'Paste this into your support request. It contains no keys or customer data.', 'subkit-subscriptions' ) . '</p>';
+		// Every tile lands somewhere inside this site. Documentation links would be the
+		// obvious addition, and would 404 for every merchant until the docs are public.
+		$tiles = array(
+			array(
+				'icon'  => '1',
+				'title' => __( 'Run the setup checks', 'subkit-subscriptions' ),
+				'body'  => __( 'Home runs a real renewal end to end without charging anyone. If renewals are the problem, that test usually says why.', 'subkit-subscriptions' ),
+				'label' => __( 'Open Home', 'subkit-subscriptions' ),
+				'url'   => admin_url( 'admin.php?page=' . Menu::SLUG ),
+			),
+			array(
+				'icon'  => '2',
+				'title' => __( 'Read the activity log', 'subkit-subscriptions' ),
+				'body'  => __( 'Every subscription records each charge attempt and status change, with the reason. Open one and scroll to Activity.', 'subkit-subscriptions' ),
+				'label' => __( 'All subscriptions', 'subkit-subscriptions' ),
+				'url'   => admin_url( 'admin.php?page=' . Menu::LIST_SLUG ),
+			),
+			array(
+				'icon'  => '3',
+				'title' => __( 'Check renewal health', 'subkit-subscriptions' ),
+				'body'  => __( 'Settings shows whether the renewal queue is running, any charge whose outcome is unknown, and the double-charge safeguard.', 'subkit-subscriptions' ),
+				'label' => __( 'Open settings', 'subkit-subscriptions' ),
+				'url'   => admin_url( 'admin.php?page=wc-settings&tab=subkit' ),
+			),
+		);
+
+		foreach ( $tiles as $tile ) {
+			printf(
+				'<div class="subkit-tile"><div class="subkit-tile__top"><span class="subkit-tile__icon" aria-hidden="true">%s</span><h3 class="subkit-tile__title">%s</h3></div><p class="subkit-tile__body">%s</p><div class="subkit-tile__foot"><a class="subkit-btn subkit-btn--sm" href="%s">%s</a></div></div>',
+				esc_html( $tile['icon'] ),
+				esc_html( $tile['title'] ),
+				esc_html( $tile['body'] ),
+				esc_url( $tile['url'] ),
+				esc_html( $tile['label'] )
+			);
+		}
+
+		echo '</div>';
+
+		echo '<h2 class="subkit-section-title">' . esc_html__( 'System report', 'subkit-subscriptions' ) . '</h2>';
+		echo '<div class="subkit-card subkit-report-card">';
+		echo '<div class="subkit-report-card__head"><p class="subkit-lede">' . esc_html__( 'Paste this into your support request. It contains no keys and no customer data.', 'subkit-subscriptions' ) . '</p>';
+		printf(
+			'<button type="button" class="subkit-btn subkit-btn--primary subkit-btn--sm" data-subkit-copy="subkit-report" data-subkit-copied="%s">%s</button></div>',
+			esc_attr__( 'Copied', 'subkit-subscriptions' ),
+			esc_html__( 'Copy report', 'subkit-subscriptions' )
+		);
 
 		printf(
-			'<textarea readonly rows="%d" class="subkit-report" onclick="this.select()">%s</textarea>',
+			'<textarea id="subkit-report" readonly rows="%d" class="subkit-report">%s</textarea>',
 			(int) min( 24, count( $report ) + 1 ),
 			esc_textarea( $text )
 		);
 
-		echo '</div></div>';
+		echo '</div>';
+
+		Page_Shell::close();
 	}
 
 	private function hpos(): bool {

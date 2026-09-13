@@ -12,7 +12,7 @@
 	--sk-foreground: 240 10% 12%;
 	--sk-card: 0 0% 100%;
 	--sk-card-foreground: 240 10% 12%;
-	--sk-primary: 229 82% 57%;
+	--sk-primary: 243 75% 59%;
 	--sk-primary-foreground: 0 0% 100%;
 	--sk-secondary: 240 5% 96%;
 	--sk-secondary-foreground: 240 6% 25%;
@@ -26,7 +26,7 @@
 	--sk-success-foreground: 0 0% 100%;
 	--sk-border: 240 6% 90%;
 	--sk-input: 240 6% 90%;
-	--sk-ring: 229 82% 57%;
+	--sk-ring: 243 75% 59%;
 	--sk-radius: 0.65rem;
 
 	color: hsl( var( --sk-foreground ) );
@@ -34,13 +34,64 @@
 	line-height: 1.5;
 }
 
-.subkit-ui *,
-.subkit-ui *::before,
-.subkit-ui *::after {
+:where(.subkit-ui) *,
+:where(.subkit-ui) *::before,
+:where(.subkit-ui) *::after {
 	box-sizing: border-box;
 }
 
-/* Preflight is off, so the few resets we actually want are stated here, scoped. */
+/* Preflight is off, so the resets the components rely on are stated here, scoped - and
+   inside :where(), so they carry no specificity and every utility class still wins. */
+
+/* Tailwind's border utilities set a width and nothing else; preflight is what normally
+   supplies the style and colour. Without this every border class draws nothing. */
+.subkit-ui *,
+.subkit-ui *::before,
+.subkit-ui *::after {
+	border-width: 0;
+	border-style: solid;
+	border-color: hsl( var( --sk-border ) );
+}
+
+/* The browser's and wp-admin's own button, input and link styles would otherwise show
+   through every component built from those elements. */
+:where(.subkit-ui) :where(button, input, select, textarea) {
+	margin: 0;
+	font: inherit;
+	color: inherit;
+	letter-spacing: inherit;
+}
+
+:where(.subkit-ui) button {
+	background: transparent;
+	box-shadow: none;
+	cursor: pointer;
+	line-height: inherit;
+}
+
+:where(.subkit-ui) button:disabled {
+	cursor: default;
+}
+
+:where(.subkit-ui) a {
+	color: inherit;
+	text-decoration: none;
+	box-shadow: none;
+}
+
+:where(.subkit-ui) :where(a, button):focus-visible {
+	outline: 2px solid hsl( var( --sk-ring ) );
+	outline-offset: 2px;
+}
+
+:where(.subkit-ui) svg {
+	display: inline-block;
+	vertical-align: middle;
+}
+
+:where(.subkit-ui) input[type="checkbox"] {
+	border-width: 1px;
+}
 .subkit-ui h2,
 .subkit-ui h3,
 .subkit-ui p,

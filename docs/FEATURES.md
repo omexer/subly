@@ -73,7 +73,7 @@ Verification key:
 | Subscriptions list and detail screen | Run | |
 | List search, sorting, bulk and row actions | Run | Bulk changes respect the status rules; illegal ones are skipped and reported |
 | Install an integration's plugin in place | Run | Allow list built from the screen; arbitrary slugs refused |
-| MRR and live count above the list | Run | Yearly, weekly, every-2-months all normalise correctly |
+| MRR and live count on Home | Run | Yearly, weekly, every-2-months all normalise correctly |
 | Daily MRR snapshot, capped at 400 days | Run | History cannot be recomputed, so it is recorded |
 | Setup checklist | Run | |
 | One top-level SubKit menu | Run | Seven screens, verified through WordPress's own menu globals |
@@ -96,8 +96,10 @@ Verification key:
 | Feature | Verification | Notes |
 |---|---|---|
 | **REST API**: list, read, update, act on, and read the history of a subscription | Run | Proven with Pro on and off; 401 / 404 / 409 / 400 paths all covered |
-| Overview endpoint | Run | What the landing screen draws |
-| React overview screen | Run | Renders beside the server-rendered summary; a failed request leaves that showing |
+| Overview endpoint | Run | Recurring revenue, live count and status breakdown |
+| Dashboard endpoint | Run | Setup steps, numbers, what needs attention, recent subscriptions |
+| React Home screen | Run | Setup until done, then numbers, attention and recent subscriptions; a failed request leaves the server-rendered Home showing |
+| One frame for every SubKit screen | Run | Header with breadcrumbs, page heading, footer; checked by screenshot, not only by test |
 | React subscriptions list | Run | Tabs, search, server-side sorting, bulk actions, paging; 6 tests, bulk-ids assertion mutation-checked |
 | React subscription detail | Run | Facts, actions, date editing, activity; a panel added by another plugin stays visible |
 

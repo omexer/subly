@@ -58,45 +58,105 @@ class Integrations_Page {
 
 		$integrations = $this->integrations();
 
-		echo '<div class="wrap subkit-page"><h1>' . esc_html__( 'Integrations', 'subkit-subscriptions' ) . '</h1>';
+		Page_Shell::open(
+			__( 'Integrations', 'subkit-subscriptions' ),
+			__( 'Hand a subscription to the plugin that delivers what it pays for, and take it back when it ends.', 'subkit-subscriptions' )
+		);
 
 		if ( ! $integrations ) {
 			printf(
-				'<div class="subkit-card"><div class="subkit-empty"><p class="subkit-empty__title">%s</p><p>%s</p></div></div></div>',
+				'<div class="subkit-card"><div class="subkit-empty"><p class="subkit-empty__title">%s</p><p>%s</p></div></div>',
 				esc_html__( 'Nothing to connect yet', 'subkit-subscriptions' ),
 				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. SubKit Pro adds them.', 'subkit-subscriptions' )
 			);
 
+			Page_Shell::close();
 			return;
 		}
 
-		echo '<p class="subkit-lede">' . esc_html__( 'An integration only does anything while the plugin it connects to is active.', 'subkit-subscriptions' ) . '</p>';
-		echo '<table class="widefat striped subkit-table subkit-facts"><thead><tr><th>'
-			. esc_html__( 'Integration', 'subkit-subscriptions' ) . '</th><th>'
-			. esc_html__( 'Needs', 'subkit-subscriptions' ) . '</th><th>'
-			. esc_html__( 'Status', 'subkit-subscriptions' ) . '</th><th></th></tr></thead><tbody>';
+		$groups = array();
 
 		foreach ( $integrations as $integration ) {
-			$active = ! empty( $integration['active'] );
-
-			printf(
-				'<tr><th scope="row">%s</th><td>%s</td><td><span class="subkit-pill subkit-pill--%s">%s</span></td><td>',
-				esc_html( (string) ( $integration['title'] ?? '' ) ),
-				esc_html( (string) ( $integration['requires'] ?? '' ) ),
-				$active ? 'sk-active' : 'sk-cancelled',
-				esc_html(
-					$active
-						? __( 'Connected', 'subkit-subscriptions' )
-						: __( 'Plugin not active', 'subkit-subscriptions' )
-				)
-			);
-
-			$this->render_action( $integration, $active );
-
-			echo '</td></tr>';
+			$category              = (string) ( $integration['category'] ?? '' );
+			$category              = '' !== $category ? $category : __( 'Other', 'subkit-subscriptions' );
+			$groups[ $category ][] = $integration;
 		}
 
-		echo '</tbody></table></div>';
+		foreach ( $groups as $category => $items ) {
+			echo '<h2 class="subkit-section-title">' . esc_html( $category ) . '</h2><div class="subkit-grid">';
+
+			foreach ( $items as $integration ) {
+				$this->render_tile( $integration );
+			}
+
+			echo '</div>';
+		}
+
+		echo '<p class="subkit-lede" style="margin-top:24px">' . esc_html__( 'An integration only does anything while the plugin it connects to is active, and only for products you have configured it on.', 'subkit-subscriptions' ) . '</p>';
+
+		Page_Shell::close();
+	}
+
+	/**
+	 * @param array<string, mixed> $integration
+	 */
+	private function render_tile( array $integration ): void {
+		$active      = ! empty( $integration['active'] );
+		$title       = (string) ( $integration['title'] ?? '' );
+		$description = (string) ( $integration['description'] ?? '' );
+
+		echo '<div class="subkit-tile"><div class="subkit-tile__top">';
+
+		$this->render_icon( $integration );
+
+		printf(
+			'<div><h3 class="subkit-tile__title">%s</h3><p class="subkit-tile__meta">%s</p></div></div>',
+			esc_html( $title ),
+			esc_html(
+				sprintf(
+					/* translators: %s: the plugin an integration needs */
+					__( 'Needs %s', 'subkit-subscriptions' ),
+					(string) ( $integration['requires'] ?? $title )
+				)
+			)
+		);
+
+		if ( '' !== $description ) {
+			echo '<p class="subkit-tile__body">' . esc_html( $description ) . '</p>';
+		}
+
+		printf(
+			'<div class="subkit-tile__foot"><span class="subkit-badge %s">%s</span><span class="subkit-tile__action">',
+			$active ? 'subkit-badge--good' : '',
+			esc_html( $active ? __( 'Connected', 'subkit-subscriptions' ) : __( 'Not active', 'subkit-subscriptions' ) )
+		);
+
+		$this->render_action( $integration, $active );
+
+		echo '</span></div></div>';
+	}
+
+	/**
+	 * The plugin's WordPress.org icon when it has one, otherwise its initial: a broken
+	 * image in a grid of logos looks like the integration itself is broken.
+	 *
+	 * @param array<string, mixed> $integration
+	 */
+	private function render_icon( array $integration ): void {
+		$title = (string) ( $integration['title'] ?? '?' );
+		$icon  = (string) ( $integration['icon'] ?? '' );
+		$first = strtoupper( function_exists( 'mb_substr' ) ? mb_substr( $title, 0, 1 ) : substr( $title, 0, 1 ) );
+
+		if ( '' === $icon ) {
+			printf( '<span class="subkit-tile__icon" aria-hidden="true">%s</span>', esc_html( $first ) );
+			return;
+		}
+
+		printf(
+			'<span class="subkit-tile__icon" aria-hidden="true" data-initial="%s"><img src="%s" alt="" width="40" height="40" loading="lazy" onerror="this.parentNode.textContent=this.parentNode.dataset.initial"></span>',
+			esc_attr( $first ),
+			esc_url( $icon )
+		);
 	}
 
 	/**
@@ -111,7 +171,7 @@ class Integrations_Page {
 
 		if ( '' !== $slug && current_user_can( 'install_plugins' ) && current_user_can( 'activate_plugins' ) ) {
 			printf(
-				'<button type="button" class="button button-small subkit-install" data-slug="%s">%s</button>',
+				'<button type="button" class="subkit-btn subkit-btn--primary subkit-btn--sm subkit-install" data-slug="%s">%s</button>',
 				esc_attr( $slug ),
 				esc_html__( 'Install', 'subkit-subscriptions' )
 			);
@@ -126,7 +186,7 @@ class Integrations_Page {
 		}
 
 		printf(
-			'<a class="button button-small" href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+			'<a class="subkit-btn subkit-btn--sm" href="%s" target="_blank" rel="noopener noreferrer">%s <span aria-hidden="true">&#8599;</span></a>',
 			esc_url( $url ),
 			esc_html__( 'Get it', 'subkit-subscriptions' )
 		);

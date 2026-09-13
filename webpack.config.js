@@ -14,7 +14,7 @@ module.exports = {
 			import: './src/ui/index.js',
 			library: { name: [ 'subkit', 'ui' ], type: 'window' },
 		},
-		overview: './src/overview/index.js',
+		dashboard: './src/dashboard/index.js',
 		subscriptions: './src/subscriptions/index.js',
 		blocks: './src/blocks/index.js',
 	},

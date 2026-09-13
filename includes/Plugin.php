@@ -12,6 +12,7 @@ use SubKit\Data\Cleanup;
 use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
 use SubKit\Data\Stats;
+use SubKit\Rest\Dashboard_Controller;
 use SubKit\Rest\Overview_Controller;
 use SubKit\Rest\Subscriptions_Controller;
 use SubKit\Checkout\Cart_Validation;
@@ -234,6 +235,10 @@ final class Plugin {
 
 		$this->services['setup'] = new Setup_Guide( $this->services['scheduler'] );
 		$this->services['setup']->register();
+
+		// After the setup guide, which it reads the steps from.
+		$this->services['dashboard_api'] = new Dashboard_Controller( $this->services['stats'], $this->services['setup'] );
+		$this->services['dashboard_api']->register();
 
 		$this->services['gateway_notice'] = new Gateway_Notice();
 		$this->services['gateway_notice']->register();

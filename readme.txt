@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.0
 Requires PHP: 8.1
-Stable tag: 0.12.3
+Stable tag: 0.13.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -48,6 +48,11 @@ No. It is a development release. The renewal loop works and is tested, but there
 Yes. Subscriptions are stored as a native WooCommerce order type in the HPOS tables.
 
 == Changelog ==
+
+= 0.13.0 =
+* SubKit has a Home screen. Until setup is finished it leads with the checklist; after that it shows recurring revenue, what needs your attention, and your most recent subscriptions.
+* The subscriptions list has its own page, SubKit → All subscriptions. Old links to a subscription or a filtered list still work: they are sent to the new address.
+* Every SubKit screen sits in the same frame now - a header with breadcrumbs, the page heading and a footer - in a new design. Integrations are cards grouped by what they connect to, and Help collects where to look first, with a one-click copy of the system report.
 
 = 0.12.3 =
 * Fixed: the product page showed the price twice - "$5.00", then "$5.00 every month" - because WooCommerce printed the plain price and the terms block printed it again. The price itself now says how often it recurs, and the terms block starts with the facts.

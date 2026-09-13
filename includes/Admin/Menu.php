@@ -12,15 +12,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Admin screens, nested under WooCommerce.
- *
- * Not a top-level menu: Woo convention is to nest, it puts us next to Orders where
- * merchants already look, and stores running a dozen extensions resent the land grab.
- * UX Spec 4.
+ * The SubKit menu: Home, and the subscriptions list with its detail screen.
  */
 class Menu {
 
 	public const SLUG       = 'subkit-subscriptions';
+	public const LIST_SLUG  = 'subkit-subscriptions-list';
 	public const CAPABILITY = 'manage_woocommerce';
 
 	public function __construct(
@@ -42,7 +39,7 @@ class Menu {
 	public function add_menu(): void {
 		// Menu label is the product; the page title stays what the page actually shows.
 		add_menu_page(
-			__( 'Subscriptions', 'subkit-subscriptions' ),
+			__( 'SubKit', 'subkit-subscriptions' ),
 			__( 'SubKit', 'subkit-subscriptions' ),
 			self::CAPABILITY,
 			self::SLUG,
@@ -55,12 +52,23 @@ class Menu {
 		// Without this the top-level entry repeats itself as its own first child.
 		add_submenu_page(
 			self::SLUG,
-			__( 'Subscriptions', 'subkit-subscriptions' ),
-			__( 'All subscriptions', 'subkit-subscriptions' ),
+			__( 'SubKit home', 'subkit-subscriptions' ),
+			__( 'Home', 'subkit-subscriptions' ),
 			self::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
 		);
+
+		add_submenu_page(
+			self::SLUG,
+			__( 'All subscriptions', 'subkit-subscriptions' ),
+			__( 'All subscriptions', 'subkit-subscriptions' ),
+			self::CAPABILITY,
+			self::LIST_SLUG,
+			array( $this, 'render_list' )
+		);
+
+		add_action( 'load-toplevel_page_' . self::SLUG, array( $this, 'redirect_legacy_links' ) );
 
 		add_action( 'admin_menu', array( $this, 'add_settings_link' ), 99 );
 	}
@@ -78,7 +86,62 @@ class Menu {
 		);
 	}
 
+	/**
+	 * The list used to live at the top-level address, so bookmarks, emails and other
+	 * plugins still link there with a subscription id or a filter. Those go to where the
+	 * list is now, rather than to a home screen that would ignore what they asked for.
+	 */
+	public function redirect_legacy_links(): void {
+		$carry = array( 'subscription', 'status', 's', 'paged', 'orderby', 'order', 'subkit_changed', 'subkit_asked', 'processed' );
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a redirect carrying read-only view state.
+		$args = array_intersect_key( wp_unslash( $_GET ), array_flip( $carry ) );
+
+		if ( ! $args ) {
+			return;
+		}
+
+		wp_safe_redirect(
+			add_query_arg(
+				array_map( 'sanitize_text_field', (array) $args ) + array( 'page' => self::LIST_SLUG ),
+				admin_url( 'admin.php' )
+			)
+		);
+		exit;
+	}
+
+	/**
+	 * Home: setup until it is done, then how the business is doing.
+	 *
+	 * The server draws the checklist and the figures; the React screen stands beside them
+	 * and hides them once it has its own data.
+	 */
 	public function render(): void {
+		if ( ! current_user_can( self::CAPABILITY ) ) {
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
+		}
+
+		Page_Shell::open( __( 'Home', 'subkit-subscriptions' ), '', array(), '', false );
+
+		// Outside the fallback, which the React screen hides: these must stay visible.
+		$this->render_test_result();
+		$this->render_product_notice();
+
+		echo '<div id="subkit-dashboard-fallback">';
+
+		if ( ! $this->setup->is_complete() ) {
+			$this->render_checklist();
+		}
+
+		if ( $this->setup->has_subscriptions() ) {
+			$this->render_summary();
+		}
+
+		echo '</div>';
+
+		Page_Shell::close();
+	}
+
+	public function render_list(): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
 			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
 		}
@@ -93,32 +156,39 @@ class Menu {
 		$table = new Subscriptions_Table();
 		$table->prepare_items();
 
-		echo '<div class="wrap subkit-page"><h1>' . esc_html__( 'Subscriptions', 'subkit-subscriptions' ) . '</h1>';
-
-		$this->render_test_result();
-
-		// The checklist replaces the empty table until the merchant has a real subscription.
-		if ( ! $this->setup->has_subscriptions() || ! $this->setup->is_complete() ) {
-			$this->render_checklist();
-		}
-
-		if ( ! $this->setup->has_subscriptions() ) {
-			echo '</div>';
-			return;
-		}
-
-		$this->render_summary();
+		Page_Shell::open(
+			__( 'All subscriptions', 'subkit-subscriptions' ),
+			__( 'Everyone who pays you on a schedule.', 'subkit-subscriptions' ),
+			array(),
+			sprintf(
+				'<a class="subkit-btn subkit-btn--primary" href="%s">%s</a>',
+				esc_url( admin_url( 'post-new.php?post_type=product' ) ),
+				esc_html__( 'New subscription product', 'subkit-subscriptions' )
+			)
+		);
 
 		$this->render_bulk_notice();
+
+		if ( ! $this->setup->has_subscriptions() ) {
+			printf(
+				'<div class="subkit-card"><div class="subkit-empty"><p class="subkit-empty__title">%s</p><p>%s</p><p><a class="subkit-btn subkit-btn--primary" href="%s">%s</a></p></div></div>',
+				esc_html__( 'No subscriptions yet', 'subkit-subscriptions' ),
+				esc_html__( 'They will be listed here the moment someone buys a subscription product.', 'subkit-subscriptions' ),
+				esc_url( admin_url( 'admin.php?page=' . self::SLUG ) ),
+				esc_html__( 'Finish setting up', 'subkit-subscriptions' )
+			);
+
+			Page_Shell::close();
+			return;
+		}
 
 		echo '<div id="subkit-subscriptions-fallback">';
 
 		$table->views();
 
 		echo '<form method="get">';
-		printf( '<input type="hidden" name="page" value="%s" />', esc_attr( self::SLUG ) );
+		printf( '<input type="hidden" name="page" value="%s" />', esc_attr( self::LIST_SLUG ) );
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filter.
 		if ( isset( $_GET['status'] ) ) {
 			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filter.
 			printf( '<input type="hidden" name="status" value="%s" />', esc_attr( sanitize_text_field( wp_unslash( $_GET['status'] ) ) ) );
@@ -127,7 +197,9 @@ class Menu {
 		$table->search_box( __( 'Search subscriptions', 'subkit-subscriptions' ), 'subkit-search' );
 		$table->display();
 
-		echo '</form></div></div>';
+		echo '</form></div>';
+
+		Page_Shell::close();
 	}
 
 	private function render_test_result(): void {
@@ -148,7 +220,6 @@ class Menu {
 	}
 
 	private function render_checklist(): void {
-		$this->render_product_notice();
 
 		echo '<div class="subkit-card"><h2>'
 			. esc_html__( 'Get your first subscription running', 'subkit-subscriptions' )
@@ -293,19 +364,36 @@ class Menu {
 		$subscription = wc_get_order( $id );
 
 		if ( ! $subscription instanceof Subscription ) {
-			echo '<div class="wrap"><h1>' . esc_html__( 'Subscription not found', 'subkit-subscriptions' ) . '</h1></div>';
+			Page_Shell::open( __( 'Subscription not found', 'subkit-subscriptions' ) );
+			Page_Shell::close();
 			return;
 		}
 
 		$state = Status_Presenter::for( $subscription );
-		$back  = add_query_arg( array( 'page' => self::SLUG ), admin_url( 'admin.php' ) );
+		$back  = add_query_arg( array( 'page' => self::LIST_SLUG ), admin_url( 'admin.php' ) );
 
 		/* translators: %d: subscription ID */
 		$heading = sprintf( __( 'Subscription #%d', 'subkit-subscriptions' ), $id );
 
-		echo '<div class="wrap subkit-page">';
+		// The React screen draws its own heading row, so the shell's is for screen readers;
+		// the server-rendered copy keeps a visible one inside the part React replaces.
+		Page_Shell::open(
+			$heading,
+			'',
+			array(
+				array(
+					'label' => __( 'All subscriptions', 'subkit-subscriptions' ),
+					'url'   => $back,
+				),
+				array( 'label' => '#' . $id ),
+			),
+			'',
+			false
+		);
+
+		echo '<div id="subkit-subscriptions-fallback">';
 		printf(
-			'<h1>%s <span class="subkit-pill subkit-pill--%s">%s</span></h1><p class="subkit-lede"><a href="%s">&larr; %s</a></p>',
+			'<h2 class="subkit-detail-heading">%s <span class="subkit-pill subkit-pill--%s">%s</span></h2><p class="subkit-lede"><a href="%s">&larr; %s</a></p>',
 			esc_html( $heading ),
 			esc_attr( (string) $subscription->get_status() ),
 			esc_html( $state['label'] ),
@@ -313,7 +401,6 @@ class Menu {
 			esc_html__( 'All subscriptions', 'subkit-subscriptions' )
 		);
 
-		echo '<div id="subkit-subscriptions-fallback">';
 		echo '<table class="widefat striped subkit-table subkit-facts"><tbody>';
 		$this->row( __( 'Customer', 'subkit-subscriptions' ), trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ) ?: (string) $subscription->get_billing_email() );
 		$this->row( __( 'Recurring total', 'subkit-subscriptions' ), wp_strip_all_tags( $subscription->get_formatted_order_total() ) );
@@ -340,7 +427,7 @@ class Menu {
 		 */
 		do_action( 'subkit_admin_subscription_detail', $subscription );
 
-		echo '</div>';
+		Page_Shell::close();
 	}
 
 	/**
@@ -461,7 +548,7 @@ class Menu {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'         => self::SLUG,
+					'page'         => self::LIST_SLUG,
 					'subscription' => $id,
 					'processed'    => 1,
 				),

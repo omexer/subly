@@ -122,3 +122,32 @@
 		return span;
 	}
 }() );
+
+
+// Copy buttons: data-subkit-copy names the field to copy from.
+document.addEventListener( 'click', function ( event ) {
+	var button = event.target.closest( '[data-subkit-copy]' );
+	var field = button && document.getElementById( button.getAttribute( 'data-subkit-copy' ) );
+
+	if ( ! field ) {
+		return;
+	}
+
+	var done = function () {
+		var label = button.textContent;
+		button.textContent = button.getAttribute( 'data-subkit-copied' ) || label;
+		setTimeout( function () {
+			button.textContent = label;
+		}, 1600 );
+	};
+
+	if ( navigator.clipboard && window.isSecureContext ) {
+		navigator.clipboard.writeText( field.value ).then( done );
+		return;
+	}
+
+	// Plain http admin screens have no clipboard API; selecting is the next best thing.
+	field.select();
+	document.execCommand( 'copy' );
+	done();
+} );

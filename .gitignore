@@ -6,3 +6,6 @@ vendor/
 
 # WordPress.org assets live outside the plugin zip
 # (.wordpress-org/ is kept in git but excluded at build time)
+
+# Local admin-screen preview build (tools/preview)
+.preview/

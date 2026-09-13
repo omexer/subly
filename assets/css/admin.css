@@ -6,17 +6,20 @@
  * is what lets the Pro screens match without importing anything.
  */
 
-:root {
+:root,
+.subkit-shell {
 	--subkit-bg: #fff;
-	--subkit-line: #dcdcde;
-	--subkit-line-soft: #f0f0f1;
-	--subkit-ink: #1d2327;
-	--subkit-ink-soft: #646970;
-	--subkit-accent: #2271b1;
+	--subkit-line: #e5e7eb;
+	--subkit-line-soft: #f3f4f6;
+	--subkit-ink: #111827;
+	--subkit-ink-soft: #6b7280;
+	--subkit-accent: #4f46e5;
+	--subkit-accent-dark: #4338ca;
+	--subkit-accent-soft: #eef2ff;
 	--subkit-good: #1a7f37;
 	--subkit-warn: #bd8600;
 	--subkit-bad: #b32d2e;
-	--subkit-radius: 6px;
+	--subkit-radius: 10px;
 	--subkit-gap: 16px;
 }
 
@@ -391,3 +394,101 @@
 
 .subkit-row-result.is-good { color: var(--subkit-good); }
 .subkit-row-result.is-bad { color: var(--subkit-bad); }
+
+
+/* ---------------------------------------------------------------------------
+ * The frame every SubKit screen sits in.
+ * ------------------------------------------------------------------------ */
+
+body.subkit-admin #wpwrap { background: #f6f7fb; }
+body.subkit-admin #wpcontent { padding-left: 0; }
+
+.subkit-shell__bar {
+	position: sticky;
+	top: 32px;
+	z-index: 99;
+	background: #fff;
+	border-bottom: 1px solid var(--subkit-line);
+}
+
+@media screen and (max-width: 782px) {
+	.subkit-shell__bar { top: 46px; }
+}
+
+@media screen and (max-width: 600px) {
+	.subkit-shell__bar { position: static; }
+}
+
+.subkit-shell__inner {
+	max-width: 1240px;
+	min-height: 64px;
+	margin: 0 auto;
+	padding: 0 24px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	box-sizing: border-box;
+}
+
+.subkit-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
+.subkit-crumbs__home { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; color: var(--subkit-ink); text-decoration: none; }
+.subkit-crumbs__home:hover, .subkit-crumbs__home:focus { color: var(--subkit-ink); }
+.subkit-mark { flex: none; color: var(--subkit-accent); }
+.subkit-crumbs__sep { color: #d1d5db; }
+.subkit-crumbs__link { color: var(--subkit-ink-soft); text-decoration: none; }
+.subkit-crumbs__link:hover { color: var(--subkit-accent); }
+.subkit-crumbs__current { overflow: hidden; color: var(--subkit-ink); font-weight: 500; white-space: nowrap; text-overflow: ellipsis; }
+
+.subkit-shell__meta { display: flex; gap: 18px; font-size: 13px; }
+.subkit-shell__meta a { color: var(--subkit-ink-soft); text-decoration: none; }
+.subkit-shell__meta a:hover { color: var(--subkit-accent); }
+
+.subkit-shell__body.wrap { max-width: 1240px; margin: 0 auto; padding: 28px 24px 0; box-sizing: border-box; }
+.subkit-shell .wp-header-end { visibility: hidden; margin: 0; border: 0; }
+
+.subkit-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 0 0 24px; }
+.wrap .subkit-head__title { margin: 0; padding: 0; font-size: 24px; font-weight: 650; line-height: 1.25; color: var(--subkit-ink); }
+.subkit-head__subtitle { margin: 6px 0 0; font-size: 14px; color: var(--subkit-ink-soft); }
+.subkit-head__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.subkit-shell__foot { max-width: 1240px; margin: 48px auto 0; padding: 0 24px 8px; font-size: 13px; text-align: center; color: var(--subkit-ink-soft); box-sizing: border-box; }
+.subkit-shell__foot a { color: var(--subkit-ink-soft); }
+
+/* ---------------------------------------------------------------------------
+ * Components the server-rendered screens share with the React ones.
+ * ------------------------------------------------------------------------ */
+
+.subkit-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid var(--subkit-line); border-radius: 8px; background: #fff; color: var(--subkit-ink); font-size: 13px; font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background .12s, border-color .12s, color .12s; }
+.subkit-btn:hover, .subkit-btn:focus { border-color: #d1d5db; background: #f9fafb; color: var(--subkit-ink); }
+.subkit-btn:focus-visible { outline: 2px solid var(--subkit-accent); outline-offset: 2px; }
+.subkit-btn--primary { border-color: var(--subkit-accent); background: var(--subkit-accent); color: #fff; }
+.subkit-btn--primary:hover, .subkit-btn--primary:focus { border-color: var(--subkit-accent-dark); background: var(--subkit-accent-dark); color: #fff; }
+.subkit-btn--sm { height: 30px; padding: 0 10px; font-size: 12px; }
+.subkit-btn[disabled] { opacity: .55; cursor: default; }
+
+.subkit-section-title { margin: 32px 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--subkit-ink-soft); }
+.subkit-section-title:first-child { margin-top: 0; }
+
+.subkit-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+
+.subkit-tile { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--subkit-line); border-radius: var(--subkit-radius); background: #fff; transition: border-color .15s, box-shadow .15s; }
+.subkit-tile:hover { border-color: #d1d5db; box-shadow: 0 4px 16px rgba(17, 24, 39, .06); }
+.subkit-tile__top { display: flex; align-items: center; gap: 12px; }
+.subkit-tile__icon { display: grid; flex: none; place-items: center; width: 40px; height: 40px; overflow: hidden; border-radius: 10px; background: var(--subkit-accent-soft); color: var(--subkit-accent); font-size: 15px; font-weight: 700; }
+.subkit-tile__icon img { width: 100%; height: 100%; object-fit: cover; }
+.subkit-tile__title { margin: 0; font-size: 14px; font-weight: 600; color: var(--subkit-ink); }
+.subkit-tile__meta { margin: 2px 0 0; font-size: 12px; color: var(--subkit-ink-soft); }
+.subkit-tile__body { flex: 1; margin: 0; font-size: 13px; line-height: 1.55; color: var(--subkit-ink-soft); }
+.subkit-tile__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
+
+.subkit-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: #f3f4f6; color: #4b5563; font-size: 12px; font-weight: 500; line-height: 1.6; white-space: nowrap; }
+.subkit-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.subkit-badge--good { background: #ecfdf5; color: #047857; }
+.subkit-badge--warn { background: #fffbeb; color: #b45309; }
+.subkit-badge--bad { background: #fef2f2; color: #b91c1c; }
+.subkit-badge--brand { background: var(--subkit-accent-soft); color: var(--subkit-accent-dark); }
+
+.subkit-report-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.subkit-report-card__head .subkit-lede { margin: 0; }
+.subkit-tile__action .button { margin: 0; }

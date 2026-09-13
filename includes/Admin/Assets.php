@@ -16,6 +16,21 @@ class Assets {
 
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
+	}
+
+	/**
+	 * Marks SubKit's own screens so the frame can take over the page edge. Not the
+	 * WooCommerce settings tab: that screen is WooCommerce's, and has no frame.
+	 *
+	 * @param string $classes
+	 */
+	public function body_class( $classes ): string {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		return $screen && str_contains( (string) $screen->id, Menu::SLUG )
+			? trim( (string) $classes . ' subkit-admin' )
+			: (string) $classes;
 	}
 
 	/**
@@ -67,7 +82,7 @@ class Assets {
 		wp_localize_script( 'subkit-admin', 'subkitAdmin', $data );
 
 		$this->register_ui();
-		$this->enqueue_overview( (string) $hook );
+		$this->enqueue_screens( (string) $hook );
 	}
 
 	/**
@@ -93,26 +108,28 @@ class Assets {
 	}
 
 	/**
-	 * The React overview, on the landing screen only.
+	 * Home gets the dashboard; the list page gets the list and detail screens.
 	 *
-	 * Skipped entirely when the build is not present - a checkout of the repository
-	 * without a build step should show the server-rendered screen, not a blank panel.
+	 * Hook names come from get_plugin_page_hookname() rather than being spelled out: the
+	 * prefix is the menu title run through sanitize_title(), so a translated title would
+	 * silently change it and nothing would load.
 	 */
-	private function enqueue_overview( string $hook ): void {
-		if ( 'toplevel_page_' . Menu::SLUG !== $hook ) {
-			return;
-		}
-
+	private function enqueue_screens( string $hook ): void {
 		if ( ! wp_script_is( 'subkit-ui', 'registered' ) ) {
 			return;
 		}
 
-		wp_enqueue_style( 'subkit-ui' );
+		$screens = array(
+			get_plugin_page_hookname( Menu::SLUG, '' )             => 'dashboard',
+			get_plugin_page_hookname( Menu::LIST_SLUG, Menu::SLUG ) => 'subscriptions',
+		);
 
-		// The overview draws the figures above the list; the subscriptions bundle draws
-		// the list and the detail screen. Separate because either can fail on its own.
-		$this->enqueue_bundle( 'overview' );
-		$this->enqueue_bundle( 'subscriptions' );
+		if ( ! isset( $screens[ $hook ] ) ) {
+			return;
+		}
+
+		wp_enqueue_style( 'subkit-ui' );
+		$this->enqueue_bundle( $screens[ $hook ] );
 	}
 
 	private function enqueue_bundle( string $bundle ): void {

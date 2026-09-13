@@ -540,7 +540,7 @@ class Subscriptions_Controller {
 			'billable'               => (bool) ( $status && $status->is_billable() ),
 			'parent_order_id'        => $subscription->get_parent_order_id(),
 			'date_created'           => $subscription->get_date_created() ? $subscription->get_date_created()->date( 'c' ) : null,
-			'edit_url'               => admin_url( 'admin.php?page=subkit-subscriptions&subscription=' . $subscription->get_id() ),
+			'edit_url'               => admin_url( 'admin.php?page=' . \SubKit\Admin\Menu::LIST_SLUG . '&subscription=' . $subscription->get_id() ),
 		);
 
 		/**

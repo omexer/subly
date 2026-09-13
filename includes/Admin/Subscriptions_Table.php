@@ -154,7 +154,7 @@ class Subscriptions_Table extends \WP_List_Table {
 	private function row_actions_for( Subscription $item ): string {
 		$view = add_query_arg(
 			array(
-				'page'         => Menu::SLUG,
+				'page'         => Menu::LIST_SLUG,
 				'subscription' => $item->get_id(),
 			),
 			admin_url( 'admin.php' )
@@ -261,7 +261,7 @@ class Subscriptions_Table extends \WP_List_Table {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'           => Menu::SLUG,
+					'page'           => Menu::LIST_SLUG,
 					'subkit_changed' => $changed,
 					'subkit_asked'   => count( $ids ),
 				),
@@ -283,7 +283,7 @@ class Subscriptions_Table extends \WP_List_Table {
 	private function subscription_cell( Subscription $item ): string {
 		$url = add_query_arg(
 			array(
-				'page'         => Menu::SLUG,
+				'page'         => Menu::LIST_SLUG,
 				'subscription' => $item->get_id(),
 			),
 			admin_url( 'admin.php' )
@@ -306,7 +306,7 @@ class Subscriptions_Table extends \WP_List_Table {
 	 */
 	protected function get_views(): array {
 		$current = isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		$base    = add_query_arg( array( 'page' => Menu::SLUG ), admin_url( 'admin.php' ) );
+		$base    = add_query_arg( array( 'page' => Menu::LIST_SLUG ), admin_url( 'admin.php' ) );
 
 		$views = array(
 			'all' => sprintf(

@@ -3,7 +3,7 @@
  * Constants the plugin defines at runtime, so analysis does not read them as undefined.
  */
 
-define( 'SUBKIT_VERSION', '0.12.3' );
+define( 'SUBKIT_VERSION', '0.13.0' );
 define( 'SUBKIT_FILE', __DIR__ . '/../subkit-subscriptions.php' );
 define( 'SUBKIT_PATH', __DIR__ . '/../' );
 define( 'SUBKIT_MIN_WC', '8.0' );

@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.12.3 · SubKit Pro 0.11.0 · development release**
+**SubKit 0.13.0 · SubKit Pro 0.12.0 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -67,7 +67,7 @@ Then go to **SubKit** in the admin menu, just below WooCommerce.
 
 ## Your first subscription in five minutes
 
-On **SubKit → All subscriptions** there is a checklist. It walks you through four things, and
+On **SubKit → Home** there is a checklist. It walks you through four things, and
 the fourth is the one that matters.
 
 **1. Connect a payment method.** Stripe or PayPal — both are included free, and the checklist
@@ -381,10 +381,22 @@ Six emails, all editable under **WooCommerce → Settings → Emails**:
 
 ## Running the shop day to day
 
+### SubKit → Home
+
+Where SubKit opens. Until setup is finished, the checklist comes first. After that:
+
+- **The numbers** — monthly recurring revenue, active subscriptions, how many are on a free
+  trial, and how many are on hold after a failed payment.
+- **Needs your attention** — subscriptions on hold, and ones about to end. Each links
+  straight to that filtered list. With nothing to act on, it says so rather than showing an
+  empty box.
+- **Recent subscriptions** — the latest six, each opening its own screen.
+- **Shortcuts** to Integrations, Settings and Help.
+
 ### SubKit → All subscriptions
 
-Recurring revenue and live count at the top, then the list. You can **search** by name, email
-or id, **sort** by id, next payment or total, and **filter** by status.
+Everyone who pays you on a schedule. You can **search** by name, email or id, **sort** by id,
+next payment or total, and **filter** by status.
 
 Tick rows to **cancel**, **put on hold** or **reactivate** several at once. Each row also
 offers **View**, **Renew now** and **Parent order**.
@@ -481,7 +493,8 @@ All of it lives under `/wp-json/subkit/v1/`.
 | `/subscriptions/<id>/actions` | POST | `cancel`, `expire`, `reactivate`, `change_status` — and `pause` / `resume` with Pro. |
 | `/subscriptions/<id>/activity` | GET | What has happened to it, newest first. |
 | `/subscriptions/statuses` | GET | The statuses and what they are called, so you do not hard-code either. |
-| `/overview` | GET | The figures on the SubKit landing screen. |
+| `/dashboard` | GET | Everything the SubKit Home screen shows: setup steps, the numbers, what needs attention, recent subscriptions. |
+| `/overview` | GET | Recurring revenue, live count and the status breakdown, on their own. |
 | `/reports` | GET | *(Pro)* Every figure on the Reports screen. `days` sets the range. |
 | `/health` | GET | *(Pro)* Subscriptions at risk, why, and what would fix them. |
 | `/health/<id>/actions` | POST | *(Pro)* `retry_now`, `requeue`, `email_customer`, `dismiss`, `restore`. |
