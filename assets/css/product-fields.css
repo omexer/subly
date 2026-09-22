@@ -12,12 +12,11 @@
 	display: none !important;
 }
 
-/* The same width WooCommerce gives a single input, so the pair lines up with the rows around it. */
+/* Width comes from WooCommerce's .short on the same element. */
 .woocommerce_options_panel .subkit-duration__inputs {
 	display: inline-flex;
 	float: left;
 	gap: 8px;
-	width: 80%;
 }
 
 .woocommerce_options_panel .subkit-duration__inputs input.short,

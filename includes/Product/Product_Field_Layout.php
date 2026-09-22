@@ -83,7 +83,8 @@ final class Product_Field_Layout {
 
 		echo '<p class="form-field subkit-duration ' . esc_attr( $args['wrapper_class'] ?? '' ) . '">';
 		printf( '<label for="%1$s">%2$s</label>', esc_attr( $args['number_id'] ), esc_html( $args['label'] ) );
-		echo '<span class="subkit-duration__inputs">';
+		// WooCommerce's "short" sizes the pair like a single field, at every breakpoint it defines.
+		echo '<span class="subkit-duration__inputs short">';
 
 		printf(
 			'<input type="number" class="short" id="%1$s" name="%1$s" value="%2$s" min="%3$d" step="1"%4$s placeholder="%5$s"%6$s />',
