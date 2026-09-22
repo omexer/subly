@@ -17,11 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Subscription_Product {
 
-	public const META_ENABLED    = '_subkit_enabled';
-	public const META_PERIOD     = '_subkit_period';
-	public const META_INTERVAL   = '_subkit_interval';
-	public const META_TRIAL_DAYS = '_subkit_trial_days';
-	public const META_SIGNUP_FEE = '_subkit_signup_fee';
+	public const META_ENABLED  = '_subkit_enabled';
+	public const META_PERIOD   = '_subkit_period';
+	public const META_INTERVAL = '_subkit_interval';
+	// The trial length in META_TRIAL_PERIOD units; named from when trials were days only.
+	public const META_TRIAL_DAYS   = '_subkit_trial_days';
+	public const META_TRIAL_PERIOD = '_subkit_trial_period';
+	public const META_SIGNUP_FEE   = '_subkit_signup_fee';
 
 	public static function is_subscription( $product ): bool {
 		$product = self::resolve( $product );
@@ -37,12 +39,15 @@ class Subscription_Product {
 	}
 
 	public static function schedule( $product ): Billing_Schedule {
-		$product = self::resolve( $product );
+		$product      = self::resolve( $product );
+		$trial_period = (string) self::meta( $product, self::META_TRIAL_PERIOD, 'day' );
 
 		return new Billing_Schedule(
 			self::meta( $product, self::META_PERIOD ) ?: 'month',
 			max( 1, (int) self::meta( $product, self::META_INTERVAL, 1 ) ),
-			max( 0, (int) self::meta( $product, self::META_TRIAL_DAYS, 0 ) )
+			max( 0, (int) self::meta( $product, self::META_TRIAL_DAYS, 0 ) ),
+			null,
+			in_array( $trial_period, Billing_Schedule::PERIODS, true ) ? $trial_period : 'day'
 		);
 	}
 

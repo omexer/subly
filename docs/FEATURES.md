@@ -1,6 +1,6 @@
 # SubKit — Feature Inventory
 
-Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.13.2 and SubKit Pro 0.12.1, not from memory.
+Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.14.0 and SubKit Pro 0.13.0, not from memory.
 
 Verification key:
 
@@ -36,9 +36,11 @@ Verification key:
 | Feature | Verification | Notes |
 |---|---|---|
 | Simple subscription products | Run | |
-| Interval, period, free trial, sign-up fee | Run | |
+| Interval, period, free trial, sign-up fee | Run | Trials in days, weeks, months or years; a one-month trial from Jan 31 ends Feb 28, not Mar 3 |
+| Sectioned product panel (Pricing, Billing, Shipping; rows follow the payment type) | Run | Rendered through WooCommerce's own meta box and clicked through in a browser harness — not a logged-in wp-admin. A hidden row is disabled, so it is never saved |
 | Create the first product from the setup guide | Run | Invalid input refused, not coerced |
 | Disclosure as independent facts, not prose | Run | Survives trial + fee + interval combined |
+| Subscription end date enforced | Run | No renewal on or after it; the paid period runs out. Stored but never enforced before 0.14.0 |
 | Classic checkout | Run | |
 | Block checkout via the Store API | Run | |
 | One subscription per cart | Run | Enforced deliberately |
@@ -132,6 +134,11 @@ Verification key:
 | **Gateway restriction** for subscription purchases | Run | Through Woo's own filter, never the renewal registry |
 | **Split payments** (per-payment price x N) | Run | Totals reconcile exactly; distinct from instalments |
 | **Retained access** after a completed split plan | Run | Lifetime or a dated window, honoured after expiry |
+| **Custom renewal pricing** (a new price from payment N) | Run | Stamped at checkout, so editing the product never reprices an existing customer; applied before recurring coupons. Recurring only |
+| **Fixed expiry date** | Run | Becomes the subscription's end date; the product cannot be bought after it |
+| **Minimum billing period** | Run | The customer's own cancel is held back with a reason until N payments; the store can still cancel |
+| **Renewal shipping charge** | Run | Copies the checkout shipping when the product is the order's only shippable item (run); otherwise quotes the product alone (Wired) |
+| **PayPal withheld** for terms PayPal's plan cannot honour | Wired | Which products qualify is run; the checkout filter itself has not been driven through a cart |
 | **Live QR status page** | Run | Unguessable token; enumeration proven to fail |
 | **QR encoder** (ours, versions 1-10) | Run | Proven by decoding what it draws |
 | LearnDash, TutorLMS, LearnPress | Wired | Host plugins not installed |

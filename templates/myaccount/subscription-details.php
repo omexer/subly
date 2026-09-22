@@ -20,6 +20,13 @@ $can_cancel = ! in_array(
 	array( Subscription_Status::Cancelled, Subscription_Status::Expired, Subscription_Status::Switched, Subscription_Status::PendingCancel ),
 	true
 );
+
+// A term the customer agreed to, such as a minimum number of payments, can hold the button back.
+$cancel_refused = '';
+if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, get_current_user_id() ) ) {
+	$can_cancel     = false;
+	$cancel_refused = \SubKit\Frontend\MyAccount\Account_Endpoint::cancel_refused_message( $subscription );
+}
 ?>
 
 <p class="subkit-back">
@@ -172,5 +179,7 @@ $can_cancel = ! in_array(
 				</a>
 			</div>
 		</form>
+	<?php elseif ( $cancel_refused ) : ?>
+		<p class="subkit-cancel__refused"><?php echo esc_html( $cancel_refused ); ?></p>
 	<?php endif; ?>
 </div>

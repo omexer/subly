@@ -1,0 +1,42 @@
+/* The subscription panel on the product edit screen, in WooCommerce's own panel styles. */
+
+#woocommerce-product-data .subkit-section__title {
+	margin: 0;
+	padding: 12px 12px 2px;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+#woocommerce-product-data .subkit-section--empty,
+#woocommerce-product-data .subkit-type-hidden {
+	display: none !important;
+}
+
+/* The same width WooCommerce gives a single input, so the pair lines up with the rows around it. */
+.woocommerce_options_panel .subkit-duration__inputs {
+	display: inline-flex;
+	float: left;
+	gap: 8px;
+	width: 80%;
+}
+
+.woocommerce_options_panel .subkit-duration__inputs input.short,
+.woocommerce_options_panel .subkit-duration__inputs select {
+	flex: 1 1 0;
+	float: none;
+	min-width: 0;
+	width: auto;
+	margin: 0;
+}
+
+.woocommerce_options_panel .subkit-field-note {
+	display: block;
+	clear: both;
+	margin: 0;
+	padding-top: 4px;
+}
+
+/* WooCommerce floats its text inputs so the help tip sits after them; date inputs miss that rule. */
+.woocommerce_options_panel input[type="date"].short {
+	float: left;
+}

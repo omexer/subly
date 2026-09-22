@@ -79,7 +79,8 @@ class Product_Display {
 			return;
 		}
 
-		echo '<p class="subkit-checkout-consent">' . esc_html( $this->disclosure->sentence( reset( $products ) ) ) . '</p>';
+		// Amounts arrive wrapped in <bdi> so RTL cannot reorder them.
+		echo '<p class="subkit-checkout-consent">' . wp_kses( $this->disclosure->sentence( reset( $products ) ), array( 'bdi' => array() ) ) . '</p>';
 	}
 
 	public function styles(): void {

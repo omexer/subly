@@ -69,7 +69,8 @@ class PayPal_Plans {
 					get_woocommerce_currency(),
 					$schedule->period(),
 					$schedule->interval(),
-					$schedule->trial_days(),
+					$schedule->trial_length(),
+					$schedule->trial_period(),
 					(string) Subscription_Product::signup_fee( $product )->minor(),
 				)
 			)
@@ -131,8 +132,8 @@ class PayPal_Plans {
 				'sequence'       => $sequence++,
 				'total_cycles'   => 1,
 				'frequency'      => array(
-					'interval_unit'  => 'DAY',
-					'interval_count' => $schedule->trial_days(),
+					'interval_unit'  => $this->paypal_unit( $schedule->trial_period() ),
+					'interval_count' => $schedule->trial_length(),
 				),
 				'pricing_scheme' => array(
 					'fixed_price' => array(
@@ -197,7 +198,11 @@ class PayPal_Plans {
 	}
 
 	private function interval_unit( Billing_Schedule $schedule ): string {
-		return match ( $schedule->period() ) {
+		return $this->paypal_unit( $schedule->period() );
+	}
+
+	private function paypal_unit( string $period ): string {
+		return match ( $period ) {
 			'day'   => 'DAY',
 			'week'  => 'WEEK',
 			'year'  => 'YEAR',

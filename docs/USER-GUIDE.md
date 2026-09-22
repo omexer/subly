@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.13.2 · SubKit Pro 0.12.1 · development release**
+**SubKit 0.14.0 · SubKit Pro 0.13.0 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -90,8 +90,8 @@ passes, your billing works. If it fails, it tells you why.
 ## Making subscription products
 
 In **Products → Add New**, the **Product data** dropdown now has two extra entries:
-**Subscription** and **Variable subscription**. Pick one and the **Billing schedule** fields
-appear under General.
+**Subscription** and **Variable subscription**. Pick one and the subscription settings appear
+under General, in sections — see [The subscription panel](#the-subscription-panel).
 
 ### Which type should I choose?
 
@@ -139,43 +139,87 @@ reviews.
 
 **What about physical and digital?** Either type works for both. Tick **Virtual** for
 something not shipped and **Downloadable** for a file, exactly as you would on a normal
-product. Delivery schedules (Pro) apply only to products that are actually shipped.
+product. **Shipping required** in the panel is the same setting as the Virtual box, so you can
+set it from either place. Delivery schedules (Pro) apply only to products that are actually
+shipped.
 
-### The billing schedule fields
+### The subscription panel
+
+The General tab is laid out in sections. The free plugin fills **Pricing**, **Billing
+settings** and **Shipping settings**; Pro adds rows to those, plus **Custom renewal pricing**
+and **More settings**. A section with nothing in it is not shown, and every field has a **?**
+beside it that explains it in one line.
+
+With Pro, the first row of Billing settings is **Payment type**: **Recurring** or
+**Installment**. The rows below change to match — a field that does not apply is hidden, and a
+hidden field is never saved, so what you see is exactly what the product does.
+
+**Pricing**
 
 | Field | What it means |
 |---|---|
-| **Bill every** | Day, Week, Month or Year. |
-| **Interval** | How many of those. `2` + `Month` = every two months. |
-| **Free trial (days)** | Days before the first charge. `0` means charge immediately. A customer on a 14-day trial pays nothing today and is charged in two weeks. |
+| **Regular price** / **Sale price** | WooCommerce's own. The regular price is what recurs. |
 | **Sign-up fee** | A one-off amount charged *today*, on top of the first payment. Leave empty for none. |
 
-The **Regular price** is what recurs. So price `29`, Bill every `1` `Month`, sign-up fee `50`
-means: £79 today, then £29 every month.
+**Billing settings**
 
-### The Pro fields on a product
+| Field | Shown for | What it means |
+|---|---|---|
+| **Payment type** *(Pro)* | Both | **Recurring** bills until the customer cancels. **Installment** charges the price a set number of times, then stops. |
+| **Bill every** | Both | A number and a unit on one row. `1` `Month(s)` is monthly; `2` `Week(s)` is fortnightly. |
+| **Number of payments** *(Pro)* | Installment | How many times the price is charged, counting checkout. |
+| **Fixed expiry date** *(Pro)* | Recurring | No payment is taken on or after this date; the period already paid for runs to its end. The product cannot be bought once the date has passed. A season pass that ends on 31 May. |
+| **Maximum payments** *(Pro)* | Recurring | Ends the subscription after this many charges, counting checkout. Empty bills until cancelled. |
+| **Minimum billing period** *(Pro)* | Both | How many payments, counting checkout, before the customer can cancel from **My Account**. Until then the Cancel button is replaced by a note saying when they can. You can still cancel for them. |
+| **Free trial** | Both | A number and a unit — `14` `Day(s)`, `2` `Week(s)`, `1` `Month(s)`. Nothing is charged until it ends, apart from any sign-up fee. Empty means no trial. |
+| **Subscription limit** *(Pro)* | Both | No limit, one live subscription per customer, one ever, or a maximum number — which shows a **Maximum per customer** box. |
+| **Access limit** *(Pro)* | Installment | What the customer keeps once it is paid off: **Lifetime access after completion**, **Until the last paid period ends**, or **A fixed time from the first payment** — which shows an **Access for** box. |
 
-Pro adds more fields to the same panel. All are optional; leave them alone and the product
-bills as a plain subscription.
+**Custom renewal pricing** *(Pro, Recurring only)*
+
+| Field | What it means |
+|---|---|
+| **Enable custom renewal pricing** | Yes to charge a different price from a later payment on — an introductory rate, say. |
+| **New renewal price** | The price from then on, entered the same way as the regular price. |
+| **Apply after payment number** | Payments counted from checkout. `3` charges the regular price for payments 1–3 and the new price from payment 4. |
+
+The customer sees both prices before buying, and the terms they bought on are kept: changing
+the product later does not reprice anybody who already subscribed. It is not offered for
+Installment, which is sold as a fixed total.
+
+**Shipping settings**
+
+| Field | Shown for | What it means |
+|---|---|---|
+| **Shipping required** | Both | The Virtual box, from the other side: **No** makes the product virtual. |
+| **Ship every** + **Delivery day** *(Pro)* | Recurring | A shipping cadence of its own — pay monthly, ship weekly — optionally pinned to a weekday. Leave **Ship every** empty to ship once per payment. |
+| **Shipping charge** *(Pro)* | Recurring | **Free shipping for renewals** — how SubKit has always billed: shipping is paid at checkout only. **Charge shipping on every renewal** adds the product's shipping to each renewal, by the method the customer chose at checkout. |
+
+**More settings** *(Pro)*
 
 | Field | What it does | Use it for |
 |---|---|---|
-| **Installment plan** + **Number of payments** | Splits one fixed total into N equal charges, then **stops**. £300 as 3 × £100. | Paying off a course or a product over time |
-| **Payment type** + **Number of payments** | A set price charged N times, then stops. Unlike instalments, the price is per payment, not a total divided up. | A 6-month programme at £50 a month |
-| **Access ends** / **Access duration** | Whether access outlives the payments: lifetime, when the payments end, or a custom period after | "Pay for 3 months, keep it forever" |
-| **Purchase limit** + **Maximum per customer** | One active, one ever, or a set number per customer | Stopping somebody buying the same membership twice |
-| **Maximum payments** | Ends the subscription after this many charges, whatever else is set | A 12-month contract that must not auto-renew into year two |
+| **Divide the price** + **Number of parts** | Treats the price as a total and splits it into equal charges, then stops. £300 as 3 × £100. | Paying off a course or a product over time |
+| **Payment methods** | Tick the only methods this product accepts. Tick none to offer them all. | A product you only sell by card |
 | **Automatic renewals only** | Hides payment methods that cannot renew by themselves | Products you refuse to invoice manually |
-| **Delivery schedule** + **Deliver every** / **Deliver on** | A shipping cadence separate from billing | Pay monthly, ship weekly |
 | **Grant role while active** | A WordPress role for this product only, overriding the store-wide setting | A "premium member" role for one tier |
 
 Two of these are easy to confuse:
 
-- **Instalment plan** divides one total. £300 over 3 payments = £100 each.
-- **Payment type / split payments** repeats a price. £100 × 3 payments = £300 total.
+- **Divide the price** divides one total. £300 over 3 parts = £100 each.
+- **Installment** repeats a price. £100 × 3 payments = £300 total.
 
 They do the same arithmetic from opposite ends, and a product cannot use both — SubKit
 refuses to save that.
+
+> **PayPal and these terms.** PayPal bills from a fixed plan of its own, so it cannot honour a
+> custom renewal price, a fixed expiry date or renewal shipping. A product that uses any of
+> them does not offer PayPal at checkout; Stripe, Mollie, Razorpay, Xendit and manual payment
+> are unaffected. A minimum billing period works with PayPal, except that a PayPal customer
+> can always cancel inside PayPal itself.
+
+A refused setting — a price left empty, a date in the past — is not saved, and a red notice at
+the top of the screen says why.
 
 ### What the customer sees
 
@@ -192,7 +236,17 @@ Then $29.00 every month
 Cancel anytime
 ```
 
-The same terms follow the product into the cart and the checkout.
+Pro terms add their own lines, in plain words — for example:
+
+```
+From payment 4: $19.00 every month
+No payments on or after 31 May 2027
+Shipping is charged with every renewal
+Cancel anytime after 3 payments
+```
+
+The same terms follow the product into the cart and the checkout, and the sentence beside
+**Place order** states them too.
 
 The price says how often it recurs everywhere WooCommerce prints one — the shop, category
 pages, related products — not only on the product page. A product on sale keeps its

@@ -74,7 +74,7 @@ class Renewal_Processor {
 		 * @param string|false $reason
 		 * @param Subscription $subscription
 		 */
-		$stop = apply_filters( 'subkit_stop_billing', false, $subscription );
+		$stop = apply_filters( 'subkit_stop_billing', $this->end_date_reached( $subscription ), $subscription );
 
 		if ( is_string( $stop ) && '' !== $stop ) {
 			$this->finish( $subscription, $stop );
@@ -217,6 +217,18 @@ class Renewal_Processor {
 		$this->hold( $subscription, $result->describe() );
 
 		do_action( 'subkit_renewal_failed', $subscription, $order, $result );
+	}
+
+	/**
+	 * No renewal is charged on or after the end date; the period already paid for runs out.
+	 *
+	 * @return string|false
+	 */
+	private function end_date_reached( Subscription $subscription ) {
+		$end = $this->as_date( $subscription->get_end_date() );
+		$due = $this->as_date( $subscription->get_next_payment() );
+
+		return $end && $due && $due >= $end ? 'Subscription reached its end date.' : false;
 	}
 
 	/**

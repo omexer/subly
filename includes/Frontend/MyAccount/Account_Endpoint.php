@@ -156,9 +156,26 @@ class Account_Endpoint {
 		exit;
 	}
 
+	/**
+	 * What the customer is told when subkit_can_cancel says no.
+	 */
+	public static function cancel_refused_message( Subscription $subscription ): string {
+		/**
+		 * Filter the explanation shown when a subscription cannot be cancelled online.
+		 *
+		 * @param string       $message
+		 * @param Subscription $subscription
+		 */
+		return (string) apply_filters(
+			'subkit_cancel_refused_message',
+			__( 'This subscription cannot be cancelled online. Please contact us.', 'subkit-subscriptions' ),
+			$subscription
+		);
+	}
+
 	private function cancel( Subscription $subscription, bool $immediately ): void {
 		if ( ! apply_filters( 'subkit_can_cancel', true, $subscription, get_current_user_id() ) ) {
-			wc_add_notice( __( 'This subscription cannot be cancelled online. Please contact us.', 'subkit-subscriptions' ), 'error' );
+			wc_add_notice( self::cancel_refused_message( $subscription ), 'error' );
 			return;
 		}
 

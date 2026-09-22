@@ -38,8 +38,8 @@ class Disclosure {
 		if ( $schedule->has_trial() ) {
 			$lines[] = array(
 				'key'  => 'trial',
-				/* translators: %d: number of free trial days */
-				'text' => sprintf( _n( '%d day free', '%d days free', $schedule->trial_days(), 'subkit-subscriptions' ), $schedule->trial_days() ),
+				/* translators: %s: trial length such as "14 days" or "1 month" */
+				'text' => sprintf( __( '%s free', 'subkit-subscriptions' ), $schedule->describe_trial() ),
 			);
 		}
 
@@ -152,14 +152,24 @@ class Disclosure {
 	 * be readable in a single glance. This is the sentence that legally matters.
 	 */
 	public function sentence( \WC_Product $product ): string {
+		/**
+		 * Filter the checkout sentence, for terms the default wording would misstate.
+		 *
+		 * @param string      $sentence
+		 * @param \WC_Product $product
+		 */
+		return (string) apply_filters( 'subkit_disclosure_sentence', $this->default_sentence( $product ), $product );
+	}
+
+	private function default_sentence( \WC_Product $product ): string {
 		$schedule = Subscription_Product::schedule( $product );
 		$price    = Subscription_Product::recurring_price( $product );
 
 		if ( $schedule->has_trial() ) {
 			return sprintf(
-				/* translators: 1: trial length in days, 2: amount, 3: billing interval */
-				__( "You're starting a subscription. After a %1\$d-day free trial you'll be charged %2\$s %3\$s until you cancel.", 'subkit-subscriptions' ),
-				$schedule->trial_days(),
+				/* translators: 1: trial length such as "14 days" or "1 month", 2: amount, 3: billing interval */
+				__( "You're starting a subscription. After a free trial of %1\$s you'll be charged %2\$s %3\$s until you cancel.", 'subkit-subscriptions' ),
+				$schedule->describe_trial(),
 				$this->amount( $price ),
 				$schedule->describe()
 			);

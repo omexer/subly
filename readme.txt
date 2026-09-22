@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.13.2
+Stable tag: 0.14.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -19,7 +19,7 @@ SubKit turns WooCommerce products into subscriptions and runs the renewal billin
 = Selling subscriptions =
 
 * A **Subscription** product type in the Product data panel, billed every day, week, month or year, or any multiple of them.
-* Free trials and sign-up fees.
+* Free trials in days, weeks, months or years, and sign-up fees.
 * The price says how often it recurs wherever WooCommerce shows it, and the terms — the trial, the first payment, what follows, cancel anytime — are spelled out on the product page, in the cart and at checkout.
 * Works with both the classic checkout and the block checkout.
 * A guest can buy a subscription and have an account made at checkout, or you can require a login first.
@@ -52,7 +52,7 @@ SubKit turns WooCommerce products into subscriptions and runs the renewal billin
 
 = SubKit Pro =
 
-A separate plugin adds variable subscriptions, instalment and split payment plans, pause and resume, plan switching, recurring coupons, failed-payment recovery, reports, subscription health, delivery schedules, purchase limits, Mollie, Razorpay and Xendit renewals, and integrations with course, email, CRM, automation and licence-key plugins.
+A separate plugin adds variable subscriptions, instalment and split payment plans, introductory renewal prices, fixed expiry dates, minimum terms, shipping on renewals, pause and resume, plan switching, recurring coupons, failed-payment recovery, reports, subscription health, delivery schedules, purchase limits, Mollie, Razorpay and Xendit renewals, and integrations with course, email, CRM, automation and licence-key plugins.
 
 == Installation ==
 
@@ -86,6 +86,15 @@ Yes, from My Account, and that cannot be turned off. A customer who cannot cance
 Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS tables. WooCommerce's older post-based order storage is supported in the code as well, but has not been tested end to end.
 
 == Changelog ==
+
+= 0.14.0 =
+* The subscription settings on the product screen are laid out in sections - Pricing, Billing settings, Shipping settings - with the number and unit of "Bill every" and "Free trial" on one row. The sign-up fee sits with the regular and sale price.
+* Free trials can be set in weeks, months or years as well as days. A one-month trial that starts on 31 January ends on 28 February. Existing trials are unchanged: they are read as days.
+* "Shipping required" in the panel is the same setting as WooCommerce's Virtual box, from the other side.
+* Fixed: a subscription's end date was stored but never enforced, so renewals carried on past it. No renewal is now charged on or after the end date; the period already paid for runs to its end, and the subscription then expires.
+* Fixed: on the classic checkout, the sentence beside Place order showed "<bdi>" tags around the amounts.
+* When a subscription cannot be cancelled online, My Account now says so and why, in place of a Cancel button that only refused once pressed. For developers: the `subkit_cancel_refused_message` and `subkit_disclosure_sentence` filters are new, and the product panel's sections are actions extensions can add rows to.
+* SubKit Pro 0.13.0 needs this version.
 
 = 0.13.2 =
 * The plugin description now says what SubKit does today - the Stripe and PayPal gateways, the block checkout, Home and the rest - and why it is still a development release. It had not been updated since the first release.

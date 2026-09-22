@@ -19,8 +19,9 @@ final class Billing_Schedule {
 	public function __construct(
 		private readonly string $period = 'month',
 		private readonly int $interval = 1,
-		private readonly int $trial_days = 0,
-		private readonly ?int $max_renewals = null
+		private readonly int $trial_length = 0,
+		private readonly ?int $max_renewals = null,
+		private readonly string $trial_period = 'day'
 	) {
 		if ( ! in_array( $period, self::PERIODS, true ) ) {
 			throw new \InvalidArgumentException( esc_html( 'Unsupported billing period: ' . $period ) );
@@ -28,8 +29,11 @@ final class Billing_Schedule {
 		if ( $interval < 1 ) {
 			throw new \InvalidArgumentException( 'Billing interval must be at least 1.' );
 		}
-		if ( $trial_days < 0 ) {
+		if ( $trial_length < 0 ) {
 			throw new \InvalidArgumentException( 'Trial length cannot be negative.' );
+		}
+		if ( ! in_array( $trial_period, self::PERIODS, true ) ) {
+			throw new \InvalidArgumentException( esc_html( 'Unsupported trial period: ' . $trial_period ) );
 		}
 	}
 
@@ -50,8 +54,12 @@ final class Billing_Schedule {
 		return $this->interval;
 	}
 
-	public function trial_days(): int {
-		return $this->trial_days;
+	public function trial_length(): int {
+		return $this->trial_length;
+	}
+
+	public function trial_period(): string {
+		return $this->trial_period;
 	}
 
 	public function max_renewals(): ?int {
@@ -59,11 +67,12 @@ final class Billing_Schedule {
 	}
 
 	public function has_trial(): bool {
-		return $this->trial_days > 0;
+		return $this->trial_length > 0;
 	}
 
 	public function trial_end_from( \DateTimeImmutable $start ): ?\DateTimeImmutable {
-		return $this->has_trial() ? $start->modify( sprintf( '+%d days', $this->trial_days ) ) : null;
+		// Through the billing arithmetic so a one-month trial from Jan 31 ends Feb 28, not Mar 3.
+		return $this->has_trial() ? ( new self( $this->trial_period, $this->trial_length ) )->next_date_from( $start ) : null;
 	}
 
 	/**
@@ -121,6 +130,25 @@ final class Billing_Schedule {
 			(int) $from->format( 'i' ),
 			(int) $from->format( 's' )
 		);
+	}
+
+	/**
+	 * The trial's length, e.g. "14 days" or "1 month".
+	 */
+	public function describe_trial(): string {
+		$n = $this->trial_length;
+
+		return match ( $this->trial_period ) {
+			/* translators: %d: number of days */
+			'day'   => sprintf( _n( '%d day', '%d days', $n, 'subkit-subscriptions' ), $n ),
+			/* translators: %d: number of weeks */
+			'week'  => sprintf( _n( '%d week', '%d weeks', $n, 'subkit-subscriptions' ), $n ),
+			/* translators: %d: number of months */
+			'month' => sprintf( _n( '%d month', '%d months', $n, 'subkit-subscriptions' ), $n ),
+			/* translators: %d: number of years */
+			'year'  => sprintf( _n( '%d year', '%d years', $n, 'subkit-subscriptions' ), $n ),
+			default => throw new \InvalidArgumentException( esc_html( 'Unsupported trial period: ' . $this->trial_period ) ),
+		};
 	}
 
 	/**

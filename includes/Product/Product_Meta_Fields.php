@@ -2,32 +2,58 @@
 
 namespace SubKit\Product;
 
+use SubKit\Domain\Billing_Schedule;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * The "make this a subscription" panel on the product edit screen.
+ * The subscription panel on the product edit screen.
  *
- * Simple products only in R1; variable products land in R2.
+ * Each section is an action, and every field - free's and Pro's - is a callback on one at a
+ * fixed priority, so the order on screen is the order of the PRIORITY_ constants below.
  */
 class Product_Meta_Fields {
+
+	public const ACTION_PRICING  = 'subkit_product_fields_pricing';
+	public const ACTION_RENEWAL  = 'subkit_product_fields_renewal_pricing';
+	public const ACTION_BILLING  = 'subkit_product_fields_billing';
+	public const ACTION_SHIPPING = 'subkit_product_fields_shipping';
+	// The original single hook; it now fills "More settings".
+	public const ACTION_MORE = 'subkit_product_subscription_fields';
+
+	public const PRIORITY_PAYMENT_TYPE = 10;
+	public const PRIORITY_SCHEDULE     = 20;
+	public const PRIORITY_LENGTH       = 30;
+	public const PRIORITY_COMMITMENT   = 40;
+	public const PRIORITY_TRIAL        = 50;
+	public const PRIORITY_LIMIT        = 60;
+	public const PRIORITY_ACCESS       = 70;
+
+	public const PRIORITY_SHIPPING_REQUIRED = 10;
+	public const PRIORITY_DELIVERY          = 20;
+	public const PRIORITY_SHIPPING_CHARGE   = 40;
 
 	public function register(): void {
 		add_action( 'woocommerce_product_options_general_product_data', array( $this, 'render' ) );
 		add_action( 'woocommerce_admin_process_product_object', array( $this, 'save' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
+
+		add_action( self::ACTION_PRICING, array( $this, 'signup_fee_field' ), 20 );
+		add_action( self::ACTION_BILLING, array( $this, 'schedule_field' ), self::PRIORITY_SCHEDULE );
+		add_action( self::ACTION_BILLING, array( $this, 'trial_field' ), self::PRIORITY_TRIAL );
+		add_action( self::ACTION_SHIPPING, array( $this, 'shipping_required_field' ), self::PRIORITY_SHIPPING_REQUIRED );
 	}
 
 	public function render(): void {
 		global $product_object;
 
 		printf(
-			'<div class="options_group subkit-product-options show_if_%s show_if_%s">',
+			'<div class="subkit-product-options show_if_%s show_if_%s">',
 			esc_attr( Product_Types::SIMPLE ),
 			esc_attr( Product_Types::VARIABLE )
 		);
-
-		echo '<p class="form-field"><strong>' . esc_html__( 'Billing schedule', 'subkit-subscriptions' ) . '</strong></p>';
 
 		// A legacy product says yes through this; a new one says yes by being the type.
 		if ( $product_object && 'yes' === $product_object->get_meta( Subscription_Product::META_ENABLED ) && ! Product_Types::is_subscription_type( $product_object ) ) {
@@ -37,72 +63,110 @@ class Product_Meta_Fields {
 			);
 		}
 
-		woocommerce_wp_select(
-			array(
-				'id'          => Subscription_Product::META_PERIOD,
-				'label'       => __( 'Bill every', 'subkit-subscriptions' ),
-				'options'     => array(
-					'day'   => __( 'Day', 'subkit-subscriptions' ),
-					'week'  => __( 'Week', 'subkit-subscriptions' ),
-					'month' => __( 'Month', 'subkit-subscriptions' ),
-					'year'  => __( 'Year', 'subkit-subscriptions' ),
-				),
-				'value'       => $product_object ? ( $product_object->get_meta( Subscription_Product::META_PERIOD ) ?: 'month' ) : 'month',
-				'desc_tip'    => true,
-				'description' => __( 'How often the customer is charged.', 'subkit-subscriptions' ),
-			)
-		);
+		Product_Field_Layout::section( 'pricing', __( 'Pricing', 'subkit-subscriptions' ), self::ACTION_PRICING, $product_object );
+		Product_Field_Layout::section( 'renewal-pricing', __( 'Custom renewal pricing', 'subkit-subscriptions' ), self::ACTION_RENEWAL, $product_object );
+		Product_Field_Layout::section( 'billing', __( 'Billing settings', 'subkit-subscriptions' ), self::ACTION_BILLING, $product_object );
+		Product_Field_Layout::section( 'shipping', __( 'Shipping settings', 'subkit-subscriptions' ), self::ACTION_SHIPPING, $product_object );
+		Product_Field_Layout::section( 'more', __( 'More settings', 'subkit-subscriptions' ), self::ACTION_MORE, $product_object );
 
-		woocommerce_wp_text_input(
-			array(
-				'id'                => Subscription_Product::META_INTERVAL,
-				'label'             => __( 'Interval', 'subkit-subscriptions' ),
-				'type'              => 'number',
-				'custom_attributes' => array(
-					'min'  => '1',
-					'step' => '1',
-				),
-				'value'             => $product_object ? ( $product_object->get_meta( Subscription_Product::META_INTERVAL ) ?: 1 ) : 1,
-				'desc_tip'          => true,
-				'description'       => __( 'Bill every N periods. 2 with "Month" means every two months.', 'subkit-subscriptions' ),
-			)
-		);
+		echo '</div>';
+	}
 
-		woocommerce_wp_text_input(
-			array(
-				'id'                => Subscription_Product::META_TRIAL_DAYS,
-				'label'             => __( 'Free trial (days)', 'subkit-subscriptions' ),
-				'type'              => 'number',
-				'custom_attributes' => array(
-					'min'  => '0',
-					'step' => '1',
-				),
-				'value'             => $product_object ? ( $product_object->get_meta( Subscription_Product::META_TRIAL_DAYS ) ?: 0 ) : 0,
-				'desc_tip'          => true,
-				'description'       => __( 'Days before the first payment is taken. 0 charges immediately.', 'subkit-subscriptions' ),
-			)
-		);
-
+	/**
+	 * @param \WC_Product|null $product
+	 */
+	public function signup_fee_field( $product ): void {
 		woocommerce_wp_text_input(
 			array(
 				'id'          => Subscription_Product::META_SIGNUP_FEE,
 				/* translators: %s: store currency symbol */
 				'label'       => sprintf( __( 'Sign-up fee (%s)', 'subkit-subscriptions' ), get_woocommerce_currency_symbol() ),
 				'data_type'   => 'price',
-				'value'       => $product_object ? ( $product_object->get_meta( Subscription_Product::META_SIGNUP_FEE ) ?: '' ) : '',
+				'value'       => $product ? ( $product->get_meta( Subscription_Product::META_SIGNUP_FEE ) ?: '' ) : '',
 				'desc_tip'    => true,
 				'description' => __( 'A one-off charge taken with the first payment.', 'subkit-subscriptions' ),
 			)
 		);
+	}
 
-		/**
-		 * Fires inside the subscription panel so extensions can add their own fields.
-		 *
-		 * @param \WC_Product|null $product_object
-		 */
-		do_action( 'subkit_product_subscription_fields', $product_object );
+	/**
+	 * @param \WC_Product|null $product
+	 */
+	public function schedule_field( $product ): void {
+		Product_Field_Layout::duration(
+			array(
+				'label'        => __( 'Bill every', 'subkit-subscriptions' ),
+				'number_id'    => Subscription_Product::META_INTERVAL,
+				'number_value' => $product ? ( $product->get_meta( Subscription_Product::META_INTERVAL ) ?: 1 ) : 1,
+				'min'          => 1,
+				'unit_id'      => Subscription_Product::META_PERIOD,
+				'unit_value'   => $product ? ( $product->get_meta( Subscription_Product::META_PERIOD ) ?: 'month' ) : 'month',
+				'tip'          => __( 'How often the customer is charged. 2 with "Month(s)" charges every two months.', 'subkit-subscriptions' ),
+			)
+		);
+	}
 
-		echo '</div>';
+	/**
+	 * @param \WC_Product|null $product
+	 */
+	public function trial_field( $product ): void {
+		Product_Field_Layout::duration(
+			array(
+				'label'        => __( 'Free trial', 'subkit-subscriptions' ),
+				'number_id'    => Subscription_Product::META_TRIAL_DAYS,
+				'number_value' => $product ? ( $product->get_meta( Subscription_Product::META_TRIAL_DAYS ) ?: '' ) : '',
+				'placeholder'  => '0',
+				'unit_id'      => Subscription_Product::META_TRIAL_PERIOD,
+				'unit_value'   => $product ? ( $product->get_meta( Subscription_Product::META_TRIAL_PERIOD ) ?: 'day' ) : 'day',
+				'tip'          => __( 'Nothing is charged until the trial ends, apart from any sign-up fee. Leave empty for no trial.', 'subkit-subscriptions' ),
+				'note'         => __( 'Offer customers a free trial before their first payment.', 'subkit-subscriptions' ),
+			)
+		);
+	}
+
+	/**
+	 * Mirrors WooCommerce's own Virtual checkbox rather than storing anything: two saved
+	 * answers to "does this ship" would sooner or later disagree.
+	 *
+	 * @param \WC_Product|null $product
+	 */
+	public function shipping_required_field( $product ): void {
+		$ships = ! ( $product && $product->is_virtual() );
+
+		printf(
+			'<p class="form-field show_if_%1$s"><label for="subkit_shipping_required">%2$s</label><select id="subkit_shipping_required" class="select short" data-subkit-mirrors="_virtual"><option value="yes"%3$s>%4$s</option><option value="no"%5$s>%6$s</option></select>%7$s</p>',
+			esc_attr( Product_Types::SIMPLE ),
+			esc_html__( 'Shipping required', 'subkit-subscriptions' ),
+			selected( $ships, true, false ),
+			esc_html__( 'Yes', 'subkit-subscriptions' ),
+			selected( $ships, false, false ),
+			esc_html__( 'No', 'subkit-subscriptions' ),
+			wc_help_tip( __( 'The same setting as the Virtual box above: "No" makes the product virtual.', 'subkit-subscriptions' ) ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wc_help_tip escapes.
+		);
+	}
+
+	/**
+	 * @param string $hook
+	 */
+	public function enqueue( $hook ): void {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) || ! $screen || 'product' !== $screen->post_type ) {
+			return;
+		}
+
+		wp_enqueue_style( 'subkit-product-fields', SUBKIT_URL . 'assets/css/product-fields.css', array( 'woocommerce_admin_styles' ), SUBKIT_VERSION );
+		wp_enqueue_script( 'subkit-product-fields', SUBKIT_URL . 'assets/js/product-fields.js', array( 'jquery' ), SUBKIT_VERSION, true );
+		wp_localize_script(
+			'subkit-product-fields',
+			'subkitProductFields',
+			array(
+				'simpleType'       => Product_Types::SIMPLE,
+				'paymentTypeClass' => Product_Field_Layout::PAYMENT_TYPE_CLASS,
+				'defaultType'      => 'recurring',
+				'pricingTitle'     => __( 'Pricing', 'subkit-subscriptions' ),
+			)
+		);
 	}
 
 	public function save( \WC_Product $product ): void {
@@ -118,14 +182,7 @@ class Product_Meta_Fields {
 			return;
 		}
 
-		$period = isset( $_POST[ Subscription_Product::META_PERIOD ] )
-			? sanitize_text_field( wp_unslash( $_POST[ Subscription_Product::META_PERIOD ] ) )
-			: 'month';
-
-		$product->update_meta_data(
-			Subscription_Product::META_PERIOD,
-			in_array( $period, \SubKit\Domain\Billing_Schedule::PERIODS, true ) ? $period : 'month'
-		);
+		$product->update_meta_data( Subscription_Product::META_PERIOD, $this->posted_period( Subscription_Product::META_PERIOD, 'month' ) );
 
 		$product->update_meta_data(
 			Subscription_Product::META_INTERVAL,
@@ -136,17 +193,26 @@ class Product_Meta_Fields {
 			Subscription_Product::META_TRIAL_DAYS,
 			isset( $_POST[ Subscription_Product::META_TRIAL_DAYS ] ) ? absint( wp_unslash( $_POST[ Subscription_Product::META_TRIAL_DAYS ] ) ) : 0
 		);
+		$product->update_meta_data( Subscription_Product::META_TRIAL_PERIOD, $this->posted_period( Subscription_Product::META_TRIAL_PERIOD, 'day' ) );
 
 		$product->update_meta_data(
 			Subscription_Product::META_SIGNUP_FEE,
 			isset( $_POST[ Subscription_Product::META_SIGNUP_FEE ] ) ? wc_format_decimal( sanitize_text_field( wp_unslash( $_POST[ Subscription_Product::META_SIGNUP_FEE ] ) ) ) : ''
 		);
+		// phpcs:enable WordPress.Security.NonceVerification.Missing
+
 		/**
 		 * Fires while saving the subscription panel, for extension fields.
 		 *
 		 * @param \WC_Product $product
 		 */
 		do_action( 'subkit_save_product_subscription_fields', $product );
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
+	}
+
+	private function posted_period( string $key, string $fallback ): string {
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- verified by WooCommerce before save().
+		$period = isset( $_POST[ $key ] ) ? sanitize_text_field( wp_unslash( $_POST[ $key ] ) ) : $fallback;
+
+		return in_array( $period, Billing_Schedule::PERIODS, true ) ? $period : $fallback;
 	}
 }
