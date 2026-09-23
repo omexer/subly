@@ -14,6 +14,8 @@ const buttonVariants = cva(
 					'sk-bg-secondary sk-text-secondary-foreground hover:sk-bg-secondary/80',
 				outline:
 					'sk-border sk-border-input sk-bg-background hover:sk-bg-accent',
+				destructive:
+					'sk-border sk-border-destructive/30 sk-bg-background sk-text-destructive hover:sk-bg-destructive/10',
 				ghost: 'hover:sk-bg-accent hover:sk-text-accent-foreground',
 				link: 'sk-text-primary sk-underline-offset-4 hover:sk-underline',
 			},

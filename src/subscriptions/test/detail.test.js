@@ -84,7 +84,7 @@ describe( 'the subscription detail screen', () => {
 		expect( container.textContent ).toContain( 'Subscription #812' );
 		expect( container.textContent ).toContain( 'Ada Lovelace' );
 		expect( container.textContent ).toContain( '£24.00' );
-		expect( container.textContent ).toContain( 'every 1 month' );
+		expect( container.textContent ).toContain( 'every month' );
 		expect( container.textContent ).toContain( '#811' );
 		expect( container.textContent ).toContain( 'Activated.' );
 	} );
@@ -97,7 +97,7 @@ describe( 'the subscription detail screen', () => {
 		apiFetch.mockClear();
 
 		await act( async () => {
-			byText( 'Process renewal now' ).click();
+			byText( 'Renew now' ).click();
 		} );
 
 		expect( window.confirm ).toHaveBeenCalledWith(
@@ -118,7 +118,7 @@ describe( 'the subscription detail screen', () => {
 		apiFetch.mockClear();
 
 		await act( async () => {
-			byText( 'Process renewal now' ).click();
+			byText( 'Renew now' ).click();
 		} );
 
 		expect( apiFetch ).not.toHaveBeenCalled();
@@ -164,7 +164,7 @@ describe( 'the subscription detail screen', () => {
 		expect( onFail ).toHaveBeenCalled();
 	} );
 
-	it( 'hides Process renewal now on a subscription that cannot be billed', async () => {
+	it( 'hides Renew now on a subscription that cannot be billed', async () => {
 		respond( {
 			...SUBSCRIPTION,
 			billable: false,
@@ -173,7 +173,7 @@ describe( 'the subscription detail screen', () => {
 		} );
 		await render();
 
-		expect( byText( 'Process renewal now' ) ).toBeUndefined();
-		expect( byText( 'Cancel' ) ).toBeTruthy();
+		expect( byText( 'Renew now' ) ).toBeUndefined();
+		expect( byText( 'Cancel subscription' ) ).toBeTruthy();
 	} );
 } );

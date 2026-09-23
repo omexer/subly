@@ -23,6 +23,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@subkit/ui';
+import { describeSchedule, statusVariant, whenDue } from './format';
 
 const PER_PAGE = 20;
 
@@ -41,128 +42,6 @@ const SORTABLE = {
 	next_payment: 'next_payment',
 	total: 'total',
 };
-
-function statusVariant( status ) {
-	if ( 'sk-active' === status || 'sk-trialling' === status ) {
-		return 'success';
-	}
-
-	if ( 'sk-on-hold' === status ) {
-		return 'destructive';
-	}
-
-	return 'secondary';
-}
-
-/**
- * "every month", "every 2 weeks" - the same phrasing the customer is shown.
- *
- * @param {Object} row One subscription, as the REST API presents it.
- * @return {string} The interval in words.
- */
-function describeSchedule( row ) {
-	const count = Number( row.billing_interval ) || 1;
-
-	switch ( row.billing_period ) {
-		case 'day':
-			return 1 === count
-				? __( 'every day', 'subkit-subscriptions' )
-				: sprintf(
-						/* translators: %d: number of days. */
-						_n(
-							'every %d day',
-							'every %d days',
-							count,
-							'subkit-subscriptions'
-						),
-						count
-				  );
-		case 'week':
-			return 1 === count
-				? __( 'every week', 'subkit-subscriptions' )
-				: sprintf(
-						/* translators: %d: number of weeks. */
-						_n(
-							'every %d week',
-							'every %d weeks',
-							count,
-							'subkit-subscriptions'
-						),
-						count
-				  );
-		case 'year':
-			return 1 === count
-				? __( 'every year', 'subkit-subscriptions' )
-				: sprintf(
-						/* translators: %d: number of years. */
-						_n(
-							'every %d year',
-							'every %d years',
-							count,
-							'subkit-subscriptions'
-						),
-						count
-				  );
-		case 'month':
-			return 1 === count
-				? __( 'every month', 'subkit-subscriptions' )
-				: sprintf(
-						/* translators: %d: number of months. */
-						_n(
-							'every %d month',
-							'every %d months',
-							count,
-							'subkit-subscriptions'
-						),
-						count
-				  );
-		default:
-			return '';
-	}
-}
-
-/**
- * How far off the next payment is. The date alone does not say "this one is late".
- *
- * @param {string} stamp The next payment, in UTC.
- * @return {string} How long until it falls due.
- */
-function whenDue( stamp ) {
-	if ( ! stamp ) {
-		return '';
-	}
-
-	const due = new Date( `${ stamp.replace( ' ', 'T' ) }Z` );
-
-	if ( isNaN( due.getTime() ) ) {
-		return '';
-	}
-
-	const days = Math.round( ( due.getTime() - Date.now() ) / 86400000 );
-
-	if ( days < 0 ) {
-		return sprintf(
-			/* translators: %d: number of days. */
-			_n(
-				'%d day overdue',
-				'%d days overdue',
-				Math.abs( days ),
-				'subkit-subscriptions'
-			),
-			Math.abs( days )
-		);
-	}
-
-	if ( 0 === days ) {
-		return __( 'today', 'subkit-subscriptions' );
-	}
-
-	return sprintf(
-		/* translators: %d: number of days. */
-		_n( 'in %d day', 'in %d days', days, 'subkit-subscriptions' ),
-		days
-	);
-}
 
 /**
  * Nothing to show is two different situations, and the way out of each differs.
