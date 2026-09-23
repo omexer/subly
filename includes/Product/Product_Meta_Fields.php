@@ -67,7 +67,7 @@ class Product_Meta_Fields {
 		Product_Field_Layout::section( 'renewal-pricing', __( 'Custom renewal pricing', 'subkit-subscriptions' ), self::ACTION_RENEWAL, $product_object );
 		Product_Field_Layout::section( 'billing', __( 'Billing settings', 'subkit-subscriptions' ), self::ACTION_BILLING, $product_object );
 		Product_Field_Layout::section( 'shipping', __( 'Shipping settings', 'subkit-subscriptions' ), self::ACTION_SHIPPING, $product_object );
-		Product_Field_Layout::section( 'more', __( 'More settings', 'subkit-subscriptions' ), self::ACTION_MORE, $product_object );
+		Product_Field_Layout::section( 'more', __( 'More settings', 'subkit-subscriptions' ), self::ACTION_MORE, $product_object, '', true );
 
 		echo '</div>';
 	}
@@ -155,8 +155,8 @@ class Product_Meta_Fields {
 			return;
 		}
 
-		wp_enqueue_style( 'subkit-product-fields', SUBKIT_URL . 'assets/css/product-fields.css', array( 'woocommerce_admin_styles' ), SUBKIT_VERSION );
-		wp_enqueue_script( 'subkit-product-fields', SUBKIT_URL . 'assets/js/product-fields.js', array( 'jquery' ), SUBKIT_VERSION, true );
+		wp_enqueue_style( 'subkit-product-fields', SUBKIT_URL . 'assets/css/product-fields.css', array( 'woocommerce_admin_styles' ), self::asset_version( 'assets/css/product-fields.css' ) );
+		wp_enqueue_script( 'subkit-product-fields', SUBKIT_URL . 'assets/js/product-fields.js', array( 'jquery' ), self::asset_version( 'assets/js/product-fields.js' ), true );
 		wp_localize_script(
 			'subkit-product-fields',
 			'subkitProductFields',
@@ -167,6 +167,15 @@ class Product_Meta_Fields {
 				'pricingTitle'     => __( 'Pricing', 'subkit-subscriptions' ),
 			)
 		);
+	}
+
+	/**
+	 * The file's own timestamp, so an edited asset is never served from cache between releases.
+	 */
+	private static function asset_version( string $relative ): string {
+		$mtime = @filemtime( SUBKIT_PATH . $relative ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- a missing file just falls back to the version.
+
+		return $mtime ? SUBKIT_VERSION . '.' . $mtime : SUBKIT_VERSION;
 	}
 
 	public function save( \WC_Product $product ): void {

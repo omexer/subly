@@ -7,6 +7,38 @@
 	font-weight: 600;
 }
 
+#woocommerce-product-data .subkit-section__toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0;
+	border: 0;
+	background: none;
+	color: inherit;
+	font: inherit;
+	cursor: pointer;
+}
+
+#woocommerce-product-data .subkit-section__toggle::before {
+	content: "";
+	width: 0;
+	height: 0;
+	border-top: 4px solid transparent;
+	border-bottom: 4px solid transparent;
+	border-left: 5px solid currentColor;
+}
+
+#woocommerce-product-data .subkit-section__toggle[aria-expanded="true"]::before {
+	border-top: 5px solid currentColor;
+	border-right: 4px solid transparent;
+	border-bottom: 0;
+	border-left: 4px solid transparent;
+}
+
+#woocommerce-product-data .subkit-section--collapsed .subkit-section__body {
+	padding-top: 4px;
+}
+
 #woocommerce-product-data .subkit-section--empty,
 #woocommerce-product-data .subkit-type-hidden {
 	display: none !important;

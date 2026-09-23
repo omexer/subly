@@ -20,7 +20,7 @@ final class Product_Field_Layout {
 	 *
 	 * @param \WC_Product|null $product
 	 */
-	public static function section( string $id, string $title, string $action, $product, string $wrapper_class = '' ): void {
+	public static function section( string $id, string $title, string $action, $product, string $wrapper_class = '', bool $collapsed = false ): void {
 		ob_start();
 		do_action( $action, $product );
 		$rows = (string) ob_get_clean();
@@ -29,8 +29,24 @@ final class Product_Field_Layout {
 			return;
 		}
 
+		if ( ! $collapsed ) {
+			printf(
+				'<div class="options_group subkit-section subkit-section--%1$s %2$s"><h4 class="subkit-section__title">%3$s</h4>%4$s</div>',
+				esc_attr( $id ),
+				esc_attr( $wrapper_class ),
+				esc_html( $title ),
+				$rows // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- rows are escaped by the callbacks that printed them.
+			);
+
+			return;
+		}
+
+		// A button, not <details>: WooCommerce's panel styles the summary marker badly and
+		// the fields must stay in the form either way.
 		printf(
-			'<div class="options_group subkit-section subkit-section--%1$s %2$s"><h4 class="subkit-section__title">%3$s</h4>%4$s</div>',
+			'<div class="options_group subkit-section subkit-section--%1$s subkit-section--collapsed %2$s">'
+			. '<h4 class="subkit-section__title"><button type="button" class="subkit-section__toggle" aria-expanded="false" aria-controls="subkit-section-%1$s">%3$s</button></h4>'
+			. '<div class="subkit-section__body" id="subkit-section-%1$s" hidden>%4$s</div></div>',
 			esc_attr( $id ),
 			esc_attr( $wrapper_class ),
 			esc_html( $title ),

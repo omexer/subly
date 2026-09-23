@@ -68,7 +68,7 @@ jQuery( function ( $ ) {
 	function syncSections() {
 		$panel.find( '.subkit-section' ).each( function () {
 			var $section = $( this ),
-				visible = $section.children( '.form-field' ).filter( function () {
+				visible = $section.find( '.form-field' ).filter( function () {
 					return $( this ).css( 'display' ) !== 'none';
 				} );
 
@@ -91,6 +91,14 @@ jQuery( function ( $ ) {
 		syncRows();
 		syncSections();
 	}
+
+	$panel.on( 'click', '.subkit-section__toggle', function () {
+		var $button = $( this ),
+			open = $button.attr( 'aria-expanded' ) !== 'true';
+
+		$button.attr( 'aria-expanded', open ? 'true' : 'false' );
+		$button.closest( '.subkit-section' ).find( '.subkit-section__body' ).prop( 'hidden', ! open );
+	} );
 
 	$panel.on( 'change', '[data-subkit-mirrors]', function () {
 		$( '#' + $( this ).data( 'subkit-mirrors' ) )
