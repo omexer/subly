@@ -99,7 +99,7 @@ class Notices {
 			esc_html(
 				sprintf(
 					/* translators: %d: number of notices from other plugins */
-					_n( '%d notice from elsewhere on this site', '%d notices from elsewhere on this site', $count, 'subkit-subscriptions' ),
+					_n( '%d other notice', '%d other notices', $count, 'subkit-subscriptions' ),
 					$count
 				)
 			),

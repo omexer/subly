@@ -54,6 +54,167 @@ function statusVariant( status ) {
 	return 'secondary';
 }
 
+/**
+ * "every month", "every 2 weeks" - the same phrasing the customer is shown.
+ *
+ * @param {Object} row One subscription, as the REST API presents it.
+ * @return {string} The interval in words.
+ */
+function describeSchedule( row ) {
+	const count = Number( row.billing_interval ) || 1;
+
+	switch ( row.billing_period ) {
+		case 'day':
+			return 1 === count
+				? __( 'every day', 'subkit-subscriptions' )
+				: sprintf(
+						/* translators: %d: number of days. */
+						_n(
+							'every %d day',
+							'every %d days',
+							count,
+							'subkit-subscriptions'
+						),
+						count
+				  );
+		case 'week':
+			return 1 === count
+				? __( 'every week', 'subkit-subscriptions' )
+				: sprintf(
+						/* translators: %d: number of weeks. */
+						_n(
+							'every %d week',
+							'every %d weeks',
+							count,
+							'subkit-subscriptions'
+						),
+						count
+				  );
+		case 'year':
+			return 1 === count
+				? __( 'every year', 'subkit-subscriptions' )
+				: sprintf(
+						/* translators: %d: number of years. */
+						_n(
+							'every %d year',
+							'every %d years',
+							count,
+							'subkit-subscriptions'
+						),
+						count
+				  );
+		case 'month':
+			return 1 === count
+				? __( 'every month', 'subkit-subscriptions' )
+				: sprintf(
+						/* translators: %d: number of months. */
+						_n(
+							'every %d month',
+							'every %d months',
+							count,
+							'subkit-subscriptions'
+						),
+						count
+				  );
+		default:
+			return '';
+	}
+}
+
+/**
+ * How far off the next payment is. The date alone does not say "this one is late".
+ *
+ * @param {string} stamp The next payment, in UTC.
+ * @return {string} How long until it falls due.
+ */
+function whenDue( stamp ) {
+	if ( ! stamp ) {
+		return '';
+	}
+
+	const due = new Date( `${ stamp.replace( ' ', 'T' ) }Z` );
+
+	if ( isNaN( due.getTime() ) ) {
+		return '';
+	}
+
+	const days = Math.round( ( due.getTime() - Date.now() ) / 86400000 );
+
+	if ( days < 0 ) {
+		return sprintf(
+			/* translators: %d: number of days. */
+			_n(
+				'%d day overdue',
+				'%d days overdue',
+				Math.abs( days ),
+				'subkit-subscriptions'
+			),
+			Math.abs( days )
+		);
+	}
+
+	if ( 0 === days ) {
+		return __( 'today', 'subkit-subscriptions' );
+	}
+
+	return sprintf(
+		/* translators: %d: number of days. */
+		_n( 'in %d day', 'in %d days', days, 'subkit-subscriptions' ),
+		days
+	);
+}
+
+/**
+ * Nothing to show is two different situations, and the way out of each differs.
+ * @param {Object}   props          Component props.
+ * @param {boolean}  props.filtered Whether a status or search is narrowing the list.
+ * @param {Function} props.onClear  Clears them.
+ * @return {JSX.Element} The empty state.
+ */
+function Empty( { filtered, onClear } ) {
+	return (
+		<div className="sk-flex sk-flex-col sk-items-center sk-gap-2 sk-p-10 sk-text-center">
+			<p className="sk-m-0 sk-font-medium">
+				{ filtered
+					? __(
+							'No subscriptions match that',
+							'subkit-subscriptions'
+					  )
+					: __( 'No subscriptions yet', 'subkit-subscriptions' ) }
+			</p>
+			<p className="sk-m-0 sk-max-w-md sk-text-sm sk-text-muted-foreground">
+				{ filtered
+					? __(
+							'Try a different status, or clear the search.',
+							'subkit-subscriptions'
+					  )
+					: __(
+							'One appears here the moment somebody buys a subscription product. Nothing is charged until a gateway is connected.',
+							'subkit-subscriptions'
+					  ) }
+			</p>
+			{ filtered ? (
+				<Button variant="outline" size="sm" onClick={ onClear }>
+					{ __( 'Clear filters', 'subkit-subscriptions' ) }
+				</Button>
+			) : (
+				<Button
+					variant="outline"
+					size="sm"
+					onClick={ () => {
+						window.location.href = new URL(
+							'post-new.php?post_type=product',
+							window.location.href
+						).href;
+					} }
+				>
+					{ __( 'New subscription product', 'subkit-subscriptions' ) }
+				</Button>
+			) }
+		</div>
+	);
+}
+
 function SortHeader( { column, label, sort, onSort, className } ) {
 	const active = sort.orderby === SORTABLE[ column ];
 	const next = active && 'ASC' === sort.order ? 'DESC' : 'ASC';
@@ -293,12 +454,32 @@ export function List( { onOpen, onReady, onFail } ) {
 
 	const pages = Math.max( 1, Math.ceil( total / PER_PAGE ) );
 	const allChosen = rows.length > 0 && chosen.length === rows.length;
+	const filtered = '' !== query.status || '' !== query.search;
+
+	const tab = ( key, label, count ) => (
+		<button
+			key={ key || 'all' }
+			type="button"
+			aria-pressed={ query.status === key }
+			onClick={ () => set( { status: key, page: 1 } ) }
+			className={ `sk-rounded-md sk-px-2.5 sk-py-1 sk-text-xs sk-font-medium ${
+				query.status === key
+					? 'sk-bg-primary sk-text-primary-foreground'
+					: 'sk-text-muted-foreground hover:sk-bg-accent hover:sk-text-foreground'
+			}` }
+		>
+			{ label }
+			{ undefined === count ? null : (
+				<span className="sk-ml-1 sk-opacity-70">{ count }</span>
+			) }
+		</button>
+	);
 
 	return (
 		<div className={ busy ? 'sk-opacity-60 sk-transition-opacity' : '' }>
 			{ notice ? (
 				<div
-					className={ `sk-mb-4 sk-rounded-md sk-border sk-p-3 sk-text-sm ${
+					className={ `sk-mb-4 sk-rounded-lg sk-border sk-p-3 sk-text-sm ${
 						notice.ok
 							? 'sk-border-success sk-text-success'
 							: 'sk-border-destructive sk-text-destructive'
@@ -309,91 +490,79 @@ export function List( { onOpen, onReady, onFail } ) {
 				</div>
 			) : null }
 
-			<div className="sk-mb-3 sk-flex sk-flex-wrap sk-items-center sk-gap-2">
-				<button
-					type="button"
-					aria-pressed={ '' === query.status }
-					onClick={ () => set( { status: '', page: 1 } ) }
-					className={ `sk-rounded-md sk-px-2.5 sk-py-1 sk-text-xs sk-font-medium ${
-						'' === query.status
-							? 'sk-bg-primary sk-text-primary-foreground'
-							: 'sk-bg-secondary sk-text-secondary-foreground hover:sk-bg-accent'
-					}` }
-				>
-					{ __( 'All', 'subkit-subscriptions' ) }
-				</button>
-
-				{ statuses
-					.filter( ( status ) => status.count > 0 )
-					.map( ( status ) => (
-						<button
-							key={ status.key }
-							type="button"
-							aria-pressed={ query.status === status.key }
-							onClick={ () =>
-								set( { status: status.key, page: 1 } )
-							}
-							className={ `sk-rounded-md sk-px-2.5 sk-py-1 sk-text-xs sk-font-medium ${
-								query.status === status.key
-									? 'sk-bg-primary sk-text-primary-foreground'
-									: 'sk-bg-secondary sk-text-secondary-foreground hover:sk-bg-accent'
-							}` }
-						>
-							{ status.label } ({ status.count })
-						</button>
-					) ) }
-
-				<Input
-					type="search"
-					value={ query.search }
-					placeholder={ __(
-						'Search name, email or id',
-						'subkit-subscriptions'
-					) }
-					onChange={ ( event ) =>
-						set( { search: event.target.value, page: 1 } )
-					}
-					className="sk-ml-auto sk-w-64"
-				/>
-			</div>
-
-			<div className="sk-mb-3 sk-flex sk-flex-wrap sk-items-center sk-gap-2">
-				<Select
-					value={ bulk }
-					onChange={ ( event ) => setBulk( event.target.value ) }
-					aria-label={ __( 'Bulk action', 'subkit-subscriptions' ) }
-				>
-					{ BULK.map( ( item ) => (
-						<option key={ item.label } value={ item.label }>
-							{ item.label }
-						</option>
-					) ) }
-				</Select>
-				<Button
-					variant="outline"
-					size="sm"
-					disabled={ ! chosen.length || busy }
-					onClick={ runBulk }
-				>
-					{ __( 'Apply', 'subkit-subscriptions' ) }
-				</Button>
-				{ chosen.length ? (
-					<span className="sk-text-sm sk-text-muted-foreground">
-						{ sprintf(
-							/* translators: %d: how many rows are selected. */
-							_n(
-								'%d selected',
-								'%d selected',
-								chosen.length,
-								'subkit-subscriptions'
-							),
-							chosen.length
-						) }
-					</span>
-				) : null }
-			</div>
-
 			<Card>
+				<div className="sk-flex sk-flex-wrap sk-items-center sk-gap-2 sk-border-b sk-p-3">
+					<div className="sk-flex sk-flex-wrap sk-items-center sk-gap-1">
+						{ tab(
+							'',
+							__( 'All', 'subkit-subscriptions' ),
+							total && ! filtered ? total : undefined
+						) }
+						{ statuses
+							.filter( ( status ) => status.count > 0 )
+							.map( ( status ) =>
+								tab( status.key, status.label, status.count )
+							) }
+					</div>
+
+					<Input
+						type="search"
+						value={ query.search }
+						placeholder={ __(
+							'Search name, email or id',
+							'subkit-subscriptions'
+						) }
+						onChange={ ( event ) =>
+							set( { search: event.target.value, page: 1 } )
+						}
+						className="sk-ml-auto sk-w-64"
+					/>
+				</div>
+
+				{ chosen.length ? (
+					<div className="sk-flex sk-flex-wrap sk-items-center sk-gap-2 sk-border-b sk-bg-secondary sk-px-3 sk-py-2">
+						<span className="sk-text-sm sk-font-medium">
+							{ sprintf(
+								/* translators: %d: how many rows are selected. */
+								_n(
+									'%d selected',
+									'%d selected',
+									chosen.length,
+									'subkit-subscriptions'
+								),
+								chosen.length
+							) }
+						</span>
+						<Select
+							value={ bulk }
+							onChange={ ( event ) =>
+								setBulk( event.target.value )
+							}
+							aria-label={ __(
+								'Bulk action',
+								'subkit-subscriptions'
+							) }
+							className="sk-h-8"
+						>
+							{ BULK.map( ( item ) => (
+								<option key={ item.label } value={ item.label }>
+									{ item.label }
+								</option>
+							) ) }
+						</Select>
+						<Button size="sm" disabled={ busy } onClick={ runBulk }>
+							{ __( 'Apply', 'subkit-subscriptions' ) }
+						</Button>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={ () => setChosen( [] ) }
+						>
+							{ __( 'Clear', 'subkit-subscriptions' ) }
+						</Button>
+					</div>
+				) : null }
+
 				<CardContent className="sk-p-0">
 					<Table>
 						<TableHeader>
@@ -416,6 +585,9 @@ export function List( { onOpen, onReady, onFail } ) {
 										}
 									/>
 								</TableHead>
+								<TableHead>
+									{ __( 'Customer', 'subkit-subscriptions' ) }
+								</TableHead>
 								<SortHeader
 									column="id"
 									label={ __(
@@ -425,9 +597,6 @@ export function List( { onOpen, onReady, onFail } ) {
 									sort={ query }
 									onSort={ set }
 								/>
-								<TableHead>
-									{ __( 'Customer', 'subkit-subscriptions' ) }
-								</TableHead>
 								<TableHead>
 									{ __( 'Status', 'subkit-subscriptions' ) }
 								</TableHead>
@@ -448,12 +617,10 @@ export function List( { onOpen, onReady, onFail } ) {
 									) }
 									sort={ query }
 									onSort={ set }
+									className="sk-text-right"
 								/>
-								<TableHead>
-									{ __(
-										'Payment method',
-										'subkit-subscriptions'
-									) }
+								<TableHead className="sk-text-right">
+									{ __( 'Actions', 'subkit-subscriptions' ) }
 								</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -461,7 +628,10 @@ export function List( { onOpen, onReady, onFail } ) {
 						<TableBody>
 							{ rows.length ? (
 								rows.map( ( row ) => (
-									<TableRow key={ row.id }>
+									<TableRow
+										key={ row.id }
+										className="hover:sk-bg-muted/40"
+									>
 										<TableCell>
 											<Checkbox
 												checked={ chosen.includes(
@@ -500,31 +670,29 @@ export function List( { onOpen, onReady, onFail } ) {
 														onOpen( row.id );
 													}
 												} }
-												className="sk-font-medium"
+												className="sk-font-medium sk-text-foreground hover:sk-text-primary"
 											>
-												#{ row.id }
+												{ row.customer_name ||
+													row.customer_email ||
+													__(
+														'Guest',
+														'subkit-subscriptions'
+													) }
 											</a>
-											<div className="sk-mt-1 sk-flex sk-gap-2 sk-text-xs">
-												{ row.billable ? (
-													<button
-														type="button"
-														onClick={ () =>
-															renew( row )
-														}
-														className="sk-text-primary hover:sk-underline"
-													>
-														{ __(
-															'Renew now',
-															'subkit-subscriptions'
-														) }
-													</button>
-												) : null }
-											</div>
+											{ row.customer_name &&
+											row.customer_email ? (
+												<div className="sk-text-xs sk-text-muted-foreground">
+													{ row.customer_email }
+												</div>
+											) : null }
 										</TableCell>
 										<TableCell>
-											{ row.customer_name ||
-												row.customer_email ||
-												'—' }
+											<span className="sk-tabular-nums sk-text-muted-foreground">
+												#{ row.id }
+											</span>
+											<div className="sk-text-xs sk-text-muted-foreground">
+												{ describeSchedule( row ) }
+											</div>
 										</TableCell>
 										<TableCell>
 											<Badge
@@ -536,82 +704,123 @@ export function List( { onOpen, onReady, onFail } ) {
 											</Badge>
 										</TableCell>
 										<TableCell>
-											{ row.next_payment_formatted ||
-												'—' }
+											{ row.next_payment_formatted ? (
+												<>
+													<div>
+														{
+															row.next_payment_formatted
+														}
+													</div>
+													<div className="sk-text-xs sk-text-muted-foreground">
+														{ whenDue(
+															row.next_payment
+														) }
+													</div>
+												</>
+											) : (
+												<span className="sk-text-muted-foreground">
+													—
+												</span>
+											) }
 										</TableCell>
-										<TableCell className="sk-tabular-nums">
+										<TableCell className="sk-text-right sk-font-medium sk-tabular-nums">
 											{ row.total_formatted }
+											<div className="sk-text-xs sk-font-normal sk-text-muted-foreground">
+												{ row.payment_method_title ||
+													row.payment_method ||
+													'—' }
+											</div>
 										</TableCell>
-										<TableCell>
-											{ row.payment_method_title ||
-												row.payment_method ||
-												'—' }
+										<TableCell className="sk-text-right">
+											{ row.billable ? (
+												<Button
+													variant="outline"
+													size="sm"
+													onClick={ () =>
+														renew( row )
+													}
+												>
+													{ __(
+														'Renew now',
+														'subkit-subscriptions'
+													) }
+												</Button>
+											) : null }
 										</TableCell>
 									</TableRow>
 								) )
 							) : (
 								<TableRow>
-									<TableCell
-										colSpan={ 7 }
-										className="sk-p-6 sk-text-center sk-text-muted-foreground"
-									>
-										{ __(
-											'No subscriptions match that.',
-											'subkit-subscriptions'
-										) }
+									<TableCell colSpan={ 7 } className="sk-p-0">
+										<Empty
+											filtered={ filtered }
+											onClear={ () =>
+												set( {
+													status: '',
+													search: '',
+													page: 1,
+												} )
+											}
+										/>
 									</TableCell>
 								</TableRow>
 							) }
 						</TableBody>
 					</Table>
 				</CardContent>
-			</Card>
 
-			<div className="sk-mt-3 sk-flex sk-items-center sk-gap-3 sk-text-sm">
-				<span className="sk-text-muted-foreground">
-					{ sprintf(
-						/* translators: %d: how many subscriptions matched. */
-						_n(
-							'%d subscription',
-							'%d subscriptions',
-							total,
-							'subkit-subscriptions'
-						),
-						total
-					) }
-				</span>
-				{ pages > 1 ? (
-					<>
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={ query.page <= 1 || busy }
-							onClick={ () => set( { page: query.page - 1 } ) }
-						>
-							{ __( 'Previous', 'subkit-subscriptions' ) }
-						</Button>
+				{ rows.length ? (
+					<div className="sk-flex sk-flex-wrap sk-items-center sk-gap-3 sk-border-t sk-p-3 sk-text-sm">
 						<span className="sk-text-muted-foreground">
 							{ sprintf(
-								/* translators: 1: current page, 2: total pages. */
-								__(
-									'Page %1$d of %2$d',
+								/* translators: %d: how many subscriptions matched. */
+								_n(
+									'%d subscription',
+									'%d subscriptions',
+									total,
 									'subkit-subscriptions'
 								),
-								query.page,
-								pages
+								total
 							) }
 						</span>
-						<Button
-							variant="outline"
-							size="sm"
-							disabled={ query.page >= pages || busy }
-							onClick={ () => set( { page: query.page + 1 } ) }
-						>
-							{ __( 'Next', 'subkit-subscriptions' ) }
-						</Button>
-					</>
+						{ pages > 1 ? (
+							<div className="sk-ml-auto sk-flex sk-items-center sk-gap-3">
+								<Button
+									variant="outline"
+									size="sm"
+									disabled={ query.page <= 1 || busy }
+									onClick={ () =>
+										set( { page: query.page - 1 } )
+									}
+								>
+									{ __( 'Previous', 'subkit-subscriptions' ) }
+								</Button>
+								<span className="sk-text-muted-foreground">
+									{ sprintf(
+										/* translators: 1: current page, 2: total pages. */
+										__(
+											'Page %1$d of %2$d',
+											'subkit-subscriptions'
+										),
+										query.page,
+										pages
+									) }
+								</span>
+								<Button
+									variant="outline"
+									size="sm"
+									disabled={ query.page >= pages || busy }
+									onClick={ () =>
+										set( { page: query.page + 1 } )
+									}
+								>
+									{ __( 'Next', 'subkit-subscriptions' ) }
+								</Button>
+							</div>
+						) : null }
+					</div>
 				) : null }
-			</div>
+			</Card>
 		</div>
 	);
 }

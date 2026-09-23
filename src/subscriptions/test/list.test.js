@@ -105,8 +105,9 @@ describe( 'the subscriptions list', () => {
 		expect( container.textContent ).toContain( 'Ada Lovelace' );
 		expect( container.textContent ).toContain( '£24.00' );
 		expect( container.textContent ).toContain( '12 September 2026' );
-		expect( container.textContent ).toContain( 'Active (1)' );
-		expect( container.textContent ).not.toContain( 'Ended (0)' );
+		// The tab shows its count beside the label; a status with nothing in it has no tab.
+		expect( container.textContent ).toContain( 'Active1' );
+		expect( container.textContent ).not.toContain( 'Ended' );
 	} );
 
 	it( 'offers Renew now only on a subscription that can be billed', async () => {

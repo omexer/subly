@@ -44,10 +44,10 @@
    inside :where(), so they carry no specificity and every utility class still wins. */
 
 /* Tailwind's border utilities set a width and nothing else; preflight is what normally
-   supplies the style and colour. Without this every border class draws nothing. */
-.subkit-ui *,
-.subkit-ui *::before,
-.subkit-ui *::after {
+   supplies the style and colour. Without this every border class draws nothing.
+   Zero specificity through :where(), or this reset ties with .sk-border and wins on order,
+   which left every outline button and bordered panel with no border at all. */
+:where(.subkit-ui) :where(*, *::before, *::after) {
 	border-width: 0;
 	border-style: solid;
 	border-color: hsl( var( --sk-border ) );

@@ -115,6 +115,9 @@
 	white-space: nowrap;
 	border-width: 0;
 }
+.sk-m-0 {
+	margin: 0px;
+}
 .sk-my-4 {
 	margin-top: 1rem;
 	margin-bottom: 1rem;
@@ -122,14 +125,14 @@
 .sk-mb-2 {
 	margin-bottom: 0.5rem;
 }
-.sk-mb-3 {
-	margin-bottom: 0.75rem;
-}
 .sk-mb-4 {
 	margin-bottom: 1rem;
 }
 .sk-mb-6 {
 	margin-bottom: 1.5rem;
+}
+.sk-ml-1 {
+	margin-right: 0.25rem;
 }
 .sk-ml-auto {
 	margin-right: auto;
@@ -241,6 +244,9 @@
 }
 .sk-min-w-0 {
 	min-width: 0px;
+}
+.sk-max-w-md {
+	max-width: 28rem;
 }
 .sk-flex-1 {
 	flex: 1 1 0%;
@@ -376,6 +382,9 @@
 .sk-border-b {
 	border-bottom-width: 1px;
 }
+.sk-border-t {
+	border-top-width: 1px;
+}
 .sk-border-border {
 	border-color: hsl(var(--sk-border));
 }
@@ -436,6 +445,9 @@
 }
 .sk-p-0 {
 	padding: 0px;
+}
+.sk-p-10 {
+	padding: 2.5rem;
 }
 .sk-p-2 {
 	padding: 0.5rem;
@@ -549,6 +561,9 @@
 .sk-font-medium {
 	font-weight: 500;
 }
+.sk-font-normal {
+	font-weight: 400;
+}
 .sk-font-semibold {
 	font-weight: 600;
 }
@@ -600,6 +615,9 @@
 }
 .sk-opacity-60 {
 	opacity: 0.6;
+}
+.sk-opacity-70 {
+	opacity: 0.7;
 }
 .sk-shadow-sm {
 	--tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -681,10 +699,10 @@
    inside :where(), so they carry no specificity and every utility class still wins. */
 
 /* Tailwind's border utilities set a width and nothing else; preflight is what normally
-   supplies the style and colour. Without this every border class draws nothing. */
-.subkit-ui *,
-.subkit-ui *::before,
-.subkit-ui *::after {
+   supplies the style and colour. Without this every border class draws nothing.
+   Zero specificity through :where(), or this reset ties with .sk-border and wins on order,
+   which left every outline button and bordered panel with no border at all. */
+:where(.subkit-ui) :where(*, *::before, *::after) {
 	border-width: 0;
 	border-style: solid;
 	border-color: hsl( var( --sk-border ) );
@@ -784,6 +802,10 @@
 	background-color: hsl(var(--sk-accent));
 }
 
+.hover\:sk-bg-muted\/40:hover {
+	background-color: hsl(var(--sk-muted) / 0.4);
+}
+
 .hover\:sk-bg-muted\/50:hover {
 	background-color: hsl(var(--sk-muted) / 0.5);
 }
@@ -806,6 +828,10 @@
 
 .hover\:sk-text-foreground:hover {
 	color: hsl(var(--sk-foreground));
+}
+
+.hover\:sk-text-primary:hover {
+	color: hsl(var(--sk-primary));
 }
 
 .hover\:sk-underline:hover {

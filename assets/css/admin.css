@@ -827,19 +827,28 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 /* ---------------------------------------------------- notices from elsewhere */
 
 .subkit-other-notices {
-	margin: 0 0 var(--subkit-gap);
-	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius);
-	background: var(--subkit-bg);
-	box-shadow: var(--subkit-shadow);
+	max-width: 1240px;
+	margin: 12px auto -4px;
+	padding: 0 24px;
+	box-sizing: border-box;
 }
 
 .subkit-other-notices > summary {
-	padding: 10px 14px;
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 10px;
+	border: 1px solid var(--subkit-line);
+	border-radius: 999px;
+	background: var(--subkit-bg);
 	color: var(--subkit-ink-soft);
 	font-size: 12px;
 	cursor: pointer;
 	list-style: none;
+}
+
+.subkit-other-notices > summary:hover {
+	border-color: #d1d5db;
+	color: var(--subkit-ink);
 }
 
 .subkit-other-notices > summary::-webkit-details-marker {
@@ -866,7 +875,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 }
 
 .subkit-other-notices__body {
-	padding: 0 14px 6px;
+	margin-top: 8px;
 }
 
 .subkit-other-notices__body .notice,
