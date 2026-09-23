@@ -35,7 +35,7 @@ jobs:
         run: ./vendor/bin/phpcs
 
       - name: Static analysis
-        run: ./vendor/bin/phpstan analyse --memory-limit=1G --no-progress
+        run: ./vendor/bin/phpstan analyse --memory-limit=2G --no-progress
 
   syntax:
     name: PHP ${{ matrix.php }} syntax

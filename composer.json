@@ -21,7 +21,7 @@
 		}
 	},
 	"scripts": {
-		"analyse": "phpstan analyse --memory-limit=1G",
+		"analyse": "phpstan analyse --memory-limit=2G",
 		"lint": "phpcs",
 		"lint:fix": "phpcbf",
 		"check": [
