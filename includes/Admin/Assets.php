@@ -14,6 +14,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Assets {
 
+	/**
+	 * The file's own timestamp, so an edited asset is never served from cache between releases.
+	 */
+	public static function version( string $relative ): string {
+		$mtime = @filemtime( SUBKIT_PATH . $relative ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged -- a missing file just falls back to the version.
+
+		return $mtime ? SUBKIT_VERSION . '.' . $mtime : SUBKIT_VERSION;
+	}
+
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
@@ -45,14 +54,14 @@ class Assets {
 			'subkit-admin',
 			SUBKIT_URL . 'assets/css/admin.css',
 			array(),
-			SUBKIT_VERSION
+			self::version( 'assets/css/admin.css' )
 		);
 
 		wp_enqueue_script(
 			'subkit-admin',
 			SUBKIT_URL . 'assets/js/admin.js',
 			array(),
-			SUBKIT_VERSION,
+			self::version( 'assets/js/admin.js' ),
 			true
 		);
 

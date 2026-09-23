@@ -69,21 +69,6 @@ class Menu {
 		);
 
 		add_action( 'load-toplevel_page_' . self::SLUG, array( $this, 'redirect_legacy_links' ) );
-
-		add_action( 'admin_menu', array( $this, 'add_settings_link' ), 99 );
-	}
-
-	/**
-	 * Last, so it sits below whatever Pro has added.
-	 */
-	public function add_settings_link(): void {
-		add_submenu_page(
-			self::SLUG,
-			__( 'Settings', 'subkit-subscriptions' ),
-			__( 'Settings', 'subkit-subscriptions' ),
-			self::CAPABILITY,
-			'admin.php?page=wc-settings&tab=subkit'
-		);
 	}
 
 	/**

@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.14.0 · SubKit Pro 0.13.0 · development release**
+**SubKit 0.15.0 · SubKit Pro 0.13.1 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -271,11 +271,13 @@ somebody picks one there is no single price to state.
 
 ## Every setting, explained
 
-All of these live under **SubKit → Settings**.
+All of these live under **SubKit → Settings**, a screen of sections: pick one on the left,
+change what you need, then **Save changes**. Each section saves on its own.
 
-### General → Health
+### System status
 
-Not settings — a read-out. Three lines telling you whether billing is actually working:
+Not settings — a read-out, in the panel on the right of every section. Three lines telling
+you whether billing is actually working:
 
 | Line | What it means | If it is red |
 |---|---|---|

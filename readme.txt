@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.14.0
+Stable tag: 0.15.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,10 @@ Yes, from My Account, and that cannot be turned off. A customer who cannot cance
 Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS tables. WooCommerce's older post-based order storage is supported in the code as well, but has not been tested end to end.
 
 == Changelog ==
+
+= 0.15.0 =
+* SubKit -> Settings is a screen of its own instead of a jump into the WooCommerce settings tab: sections down the left, the settings in cards, and a panel on the right with quick links and whether renewals can actually run. Everything SubKit and SubKit Pro add appears here, and the old WooCommerce tab still works.
+* Fixed: an edited stylesheet or script could stay cached in the browser until the next release. Admin assets now carry the file's own timestamp.
 
 = 0.14.0 =
 * The subscription settings on the product screen are laid out in sections - Pricing, Billing settings, Shipping settings - with the number and unit of "Bill every" and "Free trial" on one row. The sign-up fee sits with the regular and sale price.

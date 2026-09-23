@@ -255,6 +255,27 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	public function render_status(): void {
+		echo '<tr valign="top"><th scope="row" class="titledesc">' . esc_html__( 'Status', 'subkit-subscriptions' ) . '</th><td class="forminp"><div class="subkit-checks">';
+
+		foreach ( self::status_checks() as $check ) {
+			printf(
+				'<div class="subkit-check subkit-check--%s"><span class="subkit-check__dot"></span><div>'
+					. '<span class="subkit-check__label">%s</span><span class="subkit-check__detail">%s</span></div></div>',
+				$check['ok'] ? 'ok' : 'bad',
+				esc_html( $check['label'] ),
+				esc_html( $check['ok'] ? $check['good'] : $check['bad'] )
+			);
+		}
+
+		echo '</div></td></tr>';
+	}
+
+	/**
+	 * Whether renewals can actually run. Shared with the Settings screen's status card.
+	 *
+	 * @return array<int, array{label: string, ok: bool, good: string, bad: string}>
+	 */
+	public static function status_checks(): array {
 		$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
 		$migrator  = new Migrator();
 		$slots     = \SubKit\Plugin::instance()->get( 'charge_slots' );
@@ -293,18 +314,6 @@ class Settings extends \WC_Settings_Page {
 			),
 		);
 
-		echo '<tr valign="top"><th scope="row" class="titledesc">' . esc_html__( 'Status', 'subkit-subscriptions' ) . '</th><td class="forminp"><div class="subkit-checks">';
-
-		foreach ( $checks as $check ) {
-			printf(
-				'<div class="subkit-check subkit-check--%s"><span class="subkit-check__dot"></span><div>'
-					. '<span class="subkit-check__label">%s</span><span class="subkit-check__detail">%s</span></div></div>',
-				$check['ok'] ? 'ok' : 'bad',
-				esc_html( $check['label'] ),
-				esc_html( $check['ok'] ? $check['good'] : $check['bad'] )
-			);
-		}
-
-		echo '</div></td></tr>';
+		return $checks;
 	}
 }

@@ -492,3 +492,323 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 .subkit-report-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .subkit-report-card__head .subkit-lede { margin: 0; }
 .subkit-tile__action .button { margin: 0; }
+
+/* ------------------------------------------------------------------ settings */
+
+.subkit-settings {
+	display: grid;
+	grid-template-columns: minmax(200px, 250px) minmax(0, 1fr) minmax(220px, 300px);
+	align-items: start;
+	gap: var(--subkit-gap);
+}
+
+.subkit-settings__nav {
+	display: flex;
+	flex-direction: column;
+	background: var(--subkit-bg);
+	border: 1px solid var(--subkit-line);
+	border-radius: var(--subkit-radius);
+	overflow: hidden;
+}
+
+.subkit-settings__tab {
+	display: flex;
+	gap: 10px;
+	padding: 12px 14px;
+	border-bottom: 1px solid var(--subkit-line-soft);
+	color: var(--subkit-ink);
+	text-decoration: none;
+}
+
+.subkit-settings__tab:last-child {
+	border-bottom: 0;
+}
+
+.subkit-settings__tab:hover,
+.subkit-settings__tab:focus {
+	background: var(--subkit-line-soft);
+	color: var(--subkit-ink);
+}
+
+.subkit-settings__tab.is-current {
+	background: var(--subkit-accent-soft);
+	box-shadow: inset 3px 0 0 var(--subkit-accent);
+}
+
+.subkit-settings__tab-text {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.subkit-settings__tab-text strong {
+	font-size: 13px;
+}
+
+.subkit-settings__tab-text em {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	color: var(--subkit-ink-soft);
+	font-size: 12px;
+	font-style: normal;
+	line-height: 1.4;
+}
+
+.subkit-settings__icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 28px;
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	background: var(--subkit-accent-soft);
+	color: var(--subkit-accent);
+}
+
+.subkit-settings__tab.is-current .subkit-settings__icon {
+	background: var(--subkit-accent);
+	color: #fff;
+}
+
+.subkit-settings__main {
+	display: flex;
+	flex-direction: column;
+	gap: var(--subkit-gap);
+	min-width: 0;
+}
+
+.subkit-settings__card-head {
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--subkit-line-soft);
+}
+
+.subkit-settings__card-head h2 {
+	margin: 0;
+	font-size: 14px;
+}
+
+.subkit-settings__card-head p {
+	margin: 4px 0 0;
+	color: var(--subkit-ink-soft);
+	font-size: 12px;
+	max-width: 60ch;
+}
+
+.subkit-settings__rows {
+	display: flex;
+	flex-direction: column;
+}
+
+.subkit-settings__row {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+	align-items: start;
+	gap: var(--subkit-gap);
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--subkit-line-soft);
+}
+
+.subkit-settings__row:last-child {
+	border-bottom: 0;
+}
+
+.subkit-settings__label label {
+	font-weight: 600;
+}
+
+.subkit-settings__help {
+	margin: 4px 0 0;
+	color: var(--subkit-ink-soft);
+	font-size: 12px;
+	max-width: 62ch;
+}
+
+.subkit-settings__control {
+	justify-self: end;
+	width: 100%;
+	max-width: 320px;
+}
+
+.subkit-input {
+	width: 100%;
+	max-width: 320px;
+}
+
+.subkit-settings__woo {
+	margin: 0;
+}
+
+.subkit-settings__woo th {
+	display: none;
+}
+
+/* A checkbox drawn as a switch; the input stays the control that is read and saved. */
+.subkit-switch {
+	position: relative;
+	display: inline-block;
+	width: 40px;
+	height: 22px;
+}
+
+.subkit-switch input {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	opacity: 0;
+	cursor: pointer;
+}
+
+.subkit-switch__track {
+	position: absolute;
+	inset: 0;
+	border-radius: 999px;
+	background: #c7cbd2;
+	transition: background 120ms ease;
+	pointer-events: none;
+}
+
+.subkit-switch__track::after {
+	content: "";
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: #fff;
+	transition: transform 120ms ease;
+}
+
+.subkit-switch input:checked + .subkit-switch__track {
+	background: var(--subkit-accent);
+}
+
+.subkit-switch input:checked + .subkit-switch__track::after {
+	transform: translateX(18px);
+}
+
+.subkit-switch input:focus-visible + .subkit-switch__track {
+	outline: 2px solid var(--subkit-accent);
+	outline-offset: 2px;
+}
+
+.subkit-settings__save {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--subkit-gap);
+	padding: 12px 16px;
+	background: var(--subkit-bg);
+	border: 1px solid var(--subkit-line);
+	border-radius: var(--subkit-radius);
+	position: sticky;
+	bottom: 12px;
+}
+
+.subkit-settings__save-note {
+	color: var(--subkit-ink-soft);
+	font-size: 12px;
+}
+
+.subkit-settings__rail {
+	display: flex;
+	flex-direction: column;
+	gap: var(--subkit-gap);
+}
+
+.subkit-settings__links {
+	display: flex;
+	flex-direction: column;
+}
+
+.subkit-settings__link {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--subkit-line-soft);
+	color: var(--subkit-ink);
+	text-decoration: none;
+}
+
+.subkit-settings__link:last-child {
+	border-bottom: 0;
+}
+
+.subkit-settings__link:hover,
+.subkit-settings__link:focus {
+	background: var(--subkit-line-soft);
+	color: var(--subkit-ink);
+}
+
+.subkit-settings__link span:first-child {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.subkit-settings__link em {
+	color: var(--subkit-ink-soft);
+	font-size: 12px;
+	font-style: normal;
+}
+
+.subkit-settings .subkit-checks {
+	padding: 12px 16px;
+}
+
+.subkit-notice {
+	margin: 0 0 var(--subkit-gap);
+	padding: 10px 14px;
+	border-radius: var(--subkit-radius);
+	border: 1px solid var(--subkit-line);
+	background: var(--subkit-bg);
+}
+
+.subkit-notice--good {
+	border-color: #bbf7d0;
+	background: #f0fdf4;
+	color: var(--subkit-good);
+}
+
+@media screen and (max-width: 1280px) {
+	.subkit-settings {
+		grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
+	}
+
+	.subkit-settings__rail {
+		grid-column: 1 / -1;
+		flex-direction: row;
+		flex-wrap: wrap;
+	}
+
+	.subkit-settings__rail > * {
+		flex: 1 1 280px;
+	}
+}
+
+@media screen and (max-width: 782px) {
+	.subkit-settings {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.subkit-settings__row {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.subkit-settings__control {
+		justify-self: start;
+	}
+}
+
+.subkit-notice--bad {
+	border-color: #fecaca;
+	background: #fef2f2;
+	color: var(--subkit-bad);
+}

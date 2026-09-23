@@ -3,7 +3,7 @@
  * Plugin Name: SubKit – WooCommerce Subscriptions
  * Plugin URI:  https://github.com/pronob1010/subkit-subscriptions
  * Description: Turn any WooCommerce product into a subscription and let it bill itself.
- * Version:     0.14.0
+ * Version:     0.15.0
  * Author:      Pronob Mozumder
  * Text Domain: subkit-subscriptions
  * Domain Path: /languages
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SUBKIT_VERSION', '0.14.0' );
+define( 'SUBKIT_VERSION', '0.15.0' );
 define( 'SUBKIT_FILE', __FILE__ );
 define( 'SUBKIT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SUBKIT_URL', plugin_dir_url( __FILE__ ) );

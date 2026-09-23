@@ -40,6 +40,7 @@ use SubKit\Admin\Gateway_Notice;
 use SubKit\Blocks\Gateway_Support;
 use SubKit\Admin\Menu;
 use SubKit\Admin\Settings;
+use SubKit\Admin\Settings_Page;
 use SubKit\Admin\Setup_Guide;
 use SubKit\Emails\Mailer;
 use SubKit\Privacy\Personal_Data;
@@ -267,6 +268,9 @@ final class Plugin {
 
 		$this->services['help_page'] = new Help_Page();
 		$this->services['help_page']->register();
+
+		$this->services['settings_page'] = new Settings_Page();
+		$this->services['settings_page']->register();
 
 		$this->services['admin_assets'] = new Admin_Assets();
 		$this->services['admin_assets']->register();
