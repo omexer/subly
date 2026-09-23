@@ -356,26 +356,31 @@ class Settings_Page {
 
 		$links = array(
 			array(
-				'label' => __( 'Set up a payment gateway', 'subkit-subscriptions' ),
+				'label' => __( 'Payment gateways', 'subkit-subscriptions' ),
 				'desc'  => __( 'Stripe, PayPal and the rest', 'subkit-subscriptions' ),
 				'url'   => $this->url( 'stripe' ),
+				'icon'  => 'stripe',
 			),
 			array(
 				'label' => __( 'Integrations', 'subkit-subscriptions' ),
-				'desc'  => __( 'Connect the plugins you already run', 'subkit-subscriptions' ),
+				'desc'  => __( 'Plugins you already run', 'subkit-subscriptions' ),
 				'url'   => admin_url( 'admin.php?page=' . Menu::SLUG . '-integrations' ),
+				'icon'  => 'integrations',
 			),
 			array(
-				'label' => __( 'Help and system report', 'subkit-subscriptions' ),
-				'desc'  => __( 'What to check first, and what to send us', 'subkit-subscriptions' ),
+				'label' => __( 'Help and report', 'subkit-subscriptions' ),
+				'desc'  => __( 'What to check first', 'subkit-subscriptions' ),
 				'url'   => admin_url( 'admin.php?page=' . Menu::SLUG . '-help' ),
+				'icon'  => 'help',
 			),
 		);
 
 		foreach ( $links as $link ) {
 			printf(
-				'<a class="subkit-settings__link" href="%s"><span><strong>%s</strong><em>%s</em></span><span aria-hidden="true">&rarr;</span></a>',
+				'<a class="subkit-settings__link" href="%s">%s<span class="subkit-settings__link-text"><strong>%s</strong><em>%s</em></span>'
+					. '<svg class="subkit-settings__chevron" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></a>',
 				esc_url( $link['url'] ),
+				self::icon( $link['icon'] ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 				esc_html( $link['label'] ),
 				esc_html( $link['desc'] )
 			);
@@ -464,22 +469,30 @@ class Settings_Page {
 
 		foreach ( $this->settings_for( $section ) as $field ) {
 			if ( 'title' === ( $field['type'] ?? '' ) && ! empty( $field['desc'] ) ) {
-				return wp_trim_words( wp_strip_all_tags( (string) $field['desc'] ), 10 );
+				return wp_trim_words( wp_strip_all_tags( (string) $field['desc'] ), 7 );
 			}
 		}
 
 		return '';
 	}
 
+	/**
+	 * One stroke-drawn set at one size, so the sections read as a family.
+	 */
 	private static function icon( string $section ): string {
 		$paths = array(
-			''       => '<path d="M10 2.5a1 1 0 0 1 1 1v.6a5.5 5.5 0 0 1 1.5.9l.5-.3a1 1 0 0 1 1.4.4l.5.9a1 1 0 0 1-.4 1.3l-.5.3a5.5 5.5 0 0 1 0 1.7l.5.3a1 1 0 0 1 .4 1.3l-.5.9a1 1 0 0 1-1.4.4l-.5-.3a5.5 5.5 0 0 1-1.5.9v.6a1 1 0 0 1-1 1h-1a1 1 0 0 1-1-1v-.6a5.5 5.5 0 0 1-1.5-.9l-.5.3a1 1 0 0 1-1.4-.4l-.5-.9a1 1 0 0 1 .4-1.3l.5-.3a5.5 5.5 0 0 1 0-1.7l-.5-.3a1 1 0 0 1-.4-1.3l.5-.9a1 1 0 0 1 1.4-.4l.5.3A5.5 5.5 0 0 1 8 4.1v-.6a1 1 0 0 1 1-1z"/><circle cx="9.5" cy="10" r="2.2" fill="#fff"/>',
-			'paypal' => '<path d="M4 4h6.2c2.2 0 3.6 1.2 3.3 3.2-.3 2.1-1.9 3.3-4.1 3.3H7.9L7.3 15H4.6L4 4z"/>',
-			'stripe' => '<path d="M6 6.6c0-.6.6-.9 1.4-.9 1 0 2.2.3 3.2.8V4.1A8 8 0 0 0 7.5 3.5C5 3.5 3.3 4.8 3.3 6.8c0 3.2 4.3 2.7 4.3 4.1 0 .6-.5.9-1.4.9-1 0-2.5-.4-3.5-1v2.5c1 .4 2.2.7 3.4.7 2.6 0 4.4-1.2 4.4-3.3 0-3.4-4.5-2.8-4.5-4.1z"/>',
+			''         => '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>',
+			'paypal'   => '<path d="M6 21l2-13h5.5a3.5 3.5 0 0 1 0 7H9"/><path d="M10 14h4.5a3.5 3.5 0 0 0 0-7H9"/>',
+			'stripe'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+			'license'  => '<circle cx="8" cy="15" r="4"/><path d="M10.8 12.2 20 3m-3 3 2 2m-4 0 2 2"/>',
+			'mollie'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+			'razorpay' => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+			'xendit'   => '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>',
+			'live-qr'  => '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zm7 7h-3v-3"/>',
 		);
 
-		$path = $paths[ $section ] ?? '<rect x="3.5" y="3.5" width="13" height="13" rx="3.5"/>';
+		$path = $paths[ $section ] ?? '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>';
 
-		return '<span class="subkit-settings__icon" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="currentColor">' . $path . '</svg></span>';
+		return '<span class="subkit-tile" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $path . '</svg></span>';
 	}
 }

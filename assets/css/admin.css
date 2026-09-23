@@ -19,8 +19,12 @@
 	--subkit-good: #1a7f37;
 	--subkit-warn: #bd8600;
 	--subkit-bad: #b32d2e;
-	--subkit-radius: 10px;
+	--subkit-radius: 12px;
+	--subkit-radius-sm: 8px;
 	--subkit-gap: 16px;
+	--subkit-gap-lg: 24px;
+	--subkit-shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .04);
+	--subkit-shadow-lg: 0 10px 30px rgba(16, 24, 40, .08);
 }
 
 /* ------------------------------------------------------------------ layout */
@@ -43,7 +47,7 @@
 	padding: 20px 22px;
 	margin: 0 0 var(--subkit-gap);
 	max-width: 46rem;
-	box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
+	box-shadow: var(--subkit-shadow);
 }
 
 .subkit-card--wide {
@@ -497,7 +501,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 
 .subkit-settings {
 	display: grid;
-	grid-template-columns: minmax(200px, 250px) minmax(0, 1fr) minmax(220px, 300px);
+	grid-template-columns: minmax(200px, 232px) minmax(0, 1fr) minmax(252px, 292px);
 	align-items: start;
 	gap: var(--subkit-gap);
 }
@@ -556,19 +560,19 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	line-height: 1.4;
 }
 
-.subkit-settings__icon {
+.subkit-tile {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	flex: 0 0 28px;
-	width: 28px;
-	height: 28px;
-	border-radius: 8px;
+	flex: 0 0 32px;
+	width: 32px;
+	height: 32px;
+	border-radius: var(--subkit-radius-sm);
 	background: var(--subkit-accent-soft);
 	color: var(--subkit-accent);
 }
 
-.subkit-settings__tab.is-current .subkit-settings__icon {
+.subkit-settings__tab.is-current .subkit-tile {
 	background: var(--subkit-accent);
 	color: #fff;
 }
@@ -604,10 +608,10 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 
 .subkit-settings__row {
 	display: grid;
-	grid-template-columns: minmax(0, 1fr) minmax(0, 320px);
+	grid-template-columns: minmax(0, 1.5fr) minmax(170px, 240px);
 	align-items: start;
-	gap: var(--subkit-gap);
-	padding: 14px 16px;
+	gap: var(--subkit-gap-lg);
+	padding: 16px 18px;
 	border-bottom: 1px solid var(--subkit-line-soft);
 }
 
@@ -629,12 +633,12 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 .subkit-settings__control {
 	justify-self: end;
 	width: 100%;
-	max-width: 320px;
+	max-width: 240px;
 }
 
 .subkit-input {
 	width: 100%;
-	max-width: 320px;
+	max-width: 240px;
 }
 
 .subkit-settings__woo {
@@ -706,6 +710,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	background: var(--subkit-bg);
 	border: 1px solid var(--subkit-line);
 	border-radius: var(--subkit-radius);
+	box-shadow: var(--subkit-shadow-lg);
 	position: sticky;
 	bottom: 12px;
 }
@@ -729,8 +734,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 .subkit-settings__link {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
+	gap: 12px;
 	padding: 12px 16px;
 	border-bottom: 1px solid var(--subkit-line-soft);
 	color: var(--subkit-ink);
@@ -747,10 +751,16 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	color: var(--subkit-ink);
 }
 
-.subkit-settings__link span:first-child {
+.subkit-settings__link-text {
 	display: flex;
+	flex: 1;
 	flex-direction: column;
 	gap: 2px;
+}
+
+.subkit-settings__chevron {
+	color: var(--subkit-ink-soft);
+	flex: 0 0 auto;
 }
 
 .subkit-settings__link em {
@@ -811,4 +821,80 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	border-color: #fecaca;
 	background: #fef2f2;
 	color: var(--subkit-bad);
+}
+
+/* ---------------------------------------------------- notices from elsewhere */
+
+.subkit-other-notices {
+	margin: 0 0 var(--subkit-gap);
+	border: 1px solid var(--subkit-line);
+	border-radius: var(--subkit-radius);
+	background: var(--subkit-bg);
+	box-shadow: var(--subkit-shadow);
+}
+
+.subkit-other-notices > summary {
+	padding: 10px 14px;
+	color: var(--subkit-ink-soft);
+	font-size: 12px;
+	cursor: pointer;
+	list-style: none;
+}
+
+.subkit-other-notices > summary::-webkit-details-marker {
+	display: none;
+}
+
+.subkit-other-notices > summary::before {
+	content: "";
+	display: inline-block;
+	width: 0;
+	height: 0;
+	margin-right: 8px;
+	border-top: 4px solid transparent;
+	border-bottom: 4px solid transparent;
+	border-left: 5px solid currentColor;
+	vertical-align: middle;
+}
+
+.subkit-other-notices[open] > summary::before {
+	border-top: 5px solid currentColor;
+	border-right: 4px solid transparent;
+	border-bottom: 0;
+	border-left: 4px solid transparent;
+}
+
+.subkit-other-notices__body {
+	padding: 0 14px 6px;
+}
+
+.subkit-other-notices__body .notice,
+.subkit-other-notices__body .updated,
+.subkit-other-notices__body .error {
+	margin: 8px 0;
+}
+
+/* WordPress's own notices, on our screens only, so they sit with the cards rather than on top of them. */
+
+body.subkit-admin #wpbody-content > .notice,
+body.subkit-admin #wpbody-content > .updated,
+body.subkit-admin #wpbody-content > .error {
+	margin: 0 0 var(--subkit-gap);
+	padding: 12px 14px;
+	border: 1px solid var(--subkit-line);
+	border-left-width: 3px;
+	border-radius: var(--subkit-radius);
+	box-shadow: var(--subkit-shadow);
+	font-size: 13px;
+}
+
+body.subkit-admin #wpbody-content > .notice p,
+body.subkit-admin #wpbody-content > .updated p,
+body.subkit-admin #wpbody-content > .error p {
+	margin: 0;
+	padding: 0;
+}
+
+body.subkit-admin #wpbody-content > .notice + .notice {
+	margin-top: 0;
 }
