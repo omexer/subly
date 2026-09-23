@@ -560,7 +560,8 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	line-height: 1.4;
 }
 
-.subkit-tile {
+/* Not .subkit-tile: that is the card on Integrations and Help. */
+.subkit-icon-tile {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -572,7 +573,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	color: var(--subkit-accent);
 }
 
-.subkit-settings__tab.is-current .subkit-tile {
+.subkit-settings__tab.is-current .subkit-icon-tile {
 	background: var(--subkit-accent);
 	color: #fff;
 }

@@ -77,6 +77,16 @@ class Settings_Page {
 
 		$this->render_notices();
 
+		if ( ! $sections ) {
+			printf(
+				'<div class="subkit-notice subkit-notice--bad">%s</div>',
+				esc_html__( "WooCommerce's settings could not be loaded, so SubKit's settings cannot be shown. Check that WooCommerce is active.", 'subkit-subscriptions' )
+			);
+			Page_Shell::close();
+
+			return;
+		}
+
 		echo '<div class="subkit-settings">';
 
 		$this->render_nav( $sections, $current );
@@ -437,7 +447,16 @@ class Settings_Page {
 
 	private function woo_page(): ?\WC_Settings_Page {
 		if ( ! class_exists( '\WC_Admin_Settings' ) ) {
-			include_once WC_ABSPATH . 'includes/admin/class-wc-admin-settings.php';
+			// WooCommerce loads this on its own settings screen only, so pull it in here.
+			$file = WC_ABSPATH . 'includes/admin/class-wc-admin-settings.php';
+
+			if ( is_readable( $file ) ) {
+				include_once $file;
+			}
+		}
+
+		if ( ! class_exists( '\WC_Admin_Settings' ) ) {
+			return null;
 		}
 
 		foreach ( \WC_Admin_Settings::get_settings_pages() as $page ) {
@@ -493,6 +512,6 @@ class Settings_Page {
 
 		$path = $paths[ $section ] ?? '<path d="M4 6h16M4 12h16M4 18h16"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="8" cy="18" r="2"/>';
 
-		return '<span class="subkit-tile" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $path . '</svg></span>';
+		return '<span class="subkit-icon-tile" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">' . $path . '</svg></span>';
 	}
 }
