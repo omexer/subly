@@ -1,6 +1,6 @@
 # SubKit — Feature Inventory
 
-Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.15.0 and SubKit Pro 0.13.1, not from memory.
+Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.16.0 and SubKit Pro 0.14.0, not from memory.
 
 Verification key:
 
@@ -39,6 +39,7 @@ Verification key:
 | Interval, period, free trial, sign-up fee | Run | Trials in days, weeks, months or years; a one-month trial from Jan 31 ends Feb 28, not Mar 3 |
 | Sectioned product panel (Pricing, Billing, Shipping; rows follow the payment type) | Run | Rendered through WooCommerce's own meta box and clicked through in a browser harness — not a logged-in wp-admin. A hidden row is disabled, so it is never saved |
 | Create the first product from the setup guide | Run | Invalid input refused, not coerced |
+| **Admin screens in one visual language** (list, detail, settings, deliveries) | Run | Tokens shared by the PHP and React screens; clicked through in a logged-in wp-admin after every change |
 | **Settings screen** (SubKit → Settings) | Run | Sections, cards and a status rail. The fields are WooCommerce's own definitions, so Pro's sections appear untouched and Woo's handler saves them; driven in a logged-in wp-admin |
 | Disclosure as independent facts, not prose | Run | Survives trial + fee + interval combined |
 | Subscription end date enforced | Run | No renewal on or after it; the paid period runs out. Stored but never enforced before 0.14.0 |

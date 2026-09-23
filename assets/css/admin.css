@@ -892,3 +892,104 @@ body.subkit-admin #wpbody-content > .error p {
 body.subkit-admin #wpbody-content > .notice + .notice {
 	margin-top: 0;
 }
+
+/* ------------------------------------------------- list screens built in PHP */
+
+.subkit-card--flush {
+	padding: 0;
+	max-width: none;
+}
+
+.subkit-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--subkit-line-soft);
+}
+
+.subkit-toolbar--quiet {
+	background: var(--subkit-line-soft);
+}
+
+.subkit-toolbar__end {
+	margin-left: auto;
+}
+
+.subkit-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px;
+}
+
+.subkit-tab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: 6px;
+	color: var(--subkit-ink-soft);
+	font-size: 12px;
+	font-weight: 500;
+	text-decoration: none;
+}
+
+.subkit-tab:hover,
+.subkit-tab:focus {
+	background: var(--subkit-line-soft);
+	color: var(--subkit-ink);
+}
+
+.subkit-tab.is-current {
+	background: var(--subkit-accent);
+	color: #fff;
+}
+
+.subkit-tab__count {
+	opacity: .7;
+}
+
+.subkit-card--flush .subkit-table {
+	margin: 0;
+	border: 0;
+	box-shadow: none;
+}
+
+.subkit-card--flush .subkit-table th,
+.subkit-card--flush .subkit-table td {
+	padding: 12px 16px;
+}
+
+.subkit-cardfoot {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	padding: 12px 16px;
+	border-top: 1px solid var(--subkit-line-soft);
+	font-size: 13px;
+}
+
+.subkit-empty {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	padding: 48px 24px;
+	text-align: center;
+}
+
+.subkit-empty__title {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.subkit-empty__body {
+	margin: 0;
+	max-width: 46ch;
+	color: var(--subkit-ink-soft);
+	font-size: 13px;
+}

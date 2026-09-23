@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.15.0
+Stable tag: 0.16.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,12 @@ Yes, from My Account, and that cannot be turned off. A customer who cannot cance
 Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS tables. WooCommerce's older post-based order storage is supported in the code as well, but has not been tested end to end.
 
 == Changelog ==
+
+= 0.16.0 =
+* The subscriptions list leads with the customer, says how far off the next payment is ("today", "11 days overdue") rather than only its date, and puts the status tabs, search and bulk actions in one toolbar - the bulk bar appears when you select something instead of sitting there disabled. An empty list now says what will fill it, and a filtered one offers to clear the filters.
+* A subscription's own screen leads with the three figures that answer "what is this and what happens next", keeps the rest as details, and groups the activity log under the day each thing happened. Changing the schedule and ending the subscription are separate sections that say what they do first, and cancelling is no longer a button the same size and weight as Reactivate.
+* Fixed: every outlined button and bordered panel in SubKit's screens was drawing no border, because the stylesheet's own reset outranked the border it was meant to leave alone.
+* Notices from other plugins no longer open every SubKit screen. They are one line in the header bar that opens them; SubKit's own and WooCommerce's stay where they are.
 
 = 0.15.0 =
 * SubKit -> Settings is a screen of its own instead of a jump into the WooCommerce settings tab: sections down the left, the settings in cards, and a panel on the right with quick links and whether renewals can actually run. Everything SubKit and SubKit Pro add appears here, and the old WooCommerce tab still works.
