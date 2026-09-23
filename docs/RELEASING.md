@@ -42,7 +42,7 @@ The version is written in several places — the plugin header, a PHP constant, 
 
 From an up-to-date `main`:
 
-**1. Write the changelog.** For the free plugin, add the entry at the top of `readme.txt`'s changelog, headed `= X.Y.Z =`. Add an Upgrade Notice too if updating changes something a merchant would notice. The release refuses to go ahead without the changelog entry.
+**1. Write the changelog.** For the free plugin, add the entry at the top of `readme.txt`'s changelog, headed `= X.Y.Z =`. For Pro, add it at the top of `CHANGELOG.md`, headed `## X.Y.Z`. Add an Upgrade Notice too if updating changes something a merchant would notice. The release refuses to go ahead without the changelog entry.
 
 **2. Rehearse it.**
 
@@ -113,7 +113,7 @@ Every push to `main` and every pull request also builds the zip in CI, as the **
 |---|---|
 | PHPStan and coding standards | PHPStan level 5 or the WordPress coding standard reports an error |
 | PHP 8.1 / 8.2 / 8.3 / 8.4 syntax | Any shipped PHP file prints anything under that version — a deprecation included |
-| Version consistency | The version disagrees anywhere, or (free) the changelog entry is missing, or (Pro) the `Update URI` header is gone |
+| Version consistency | The version disagrees anywhere, the changelog entry is missing, or (Pro) the `Update URI` header is gone |
 | Plugin zip | The zip cannot be built, contains something it should not, or a PHP file in it fails lint |
 | Lint, test and build | ESLint, a Jest test, or a build whose output differs from the committed `build/` |
 
@@ -121,7 +121,7 @@ Every push to `main` and every pull request also builds the zip in CI, as the **
 
 ## Differences for SubKit Pro
 
-- **Release notes** come from the commits since the previous tag; Pro has no readme changelog.
+- **Release notes** come from `CHANGELOG.md`, since Pro is not on wordpress.org and has no `readme.txt`. Without an entry for the version, they fall back to the commits since the previous tag.
 - **When Pro needs a newer free plugin**, raise its minimum in the same bump: `tools/bump-version.sh X.Y.Z --min-free A.B.C`.
 - **Release the free plugin first** when Pro depends on a free change. Pro's CI analyses against the free plugin's latest `main`, and fails on classes that are not there yet.
 - **Customers get Pro updates from the licence server**, not from GitHub. The GitHub release is the artifact; uploading its zip to the licence server is still a manual step.

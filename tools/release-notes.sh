@@ -14,6 +14,16 @@ if [ -f readme.txt ] && grep -q "^= ${version//./\\.} =$" readme.txt; then
 	exit 0
 fi
 
+# A plugin that is not on wordpress.org keeps its changelog here instead.
+if [ -f CHANGELOG.md ] && grep -q "^## ${version//./\\.}$" CHANGELOG.md; then
+	awk -v head="## $version" '
+		$0 == head { on = 1; next }
+		on && /^## / { exit }
+		on { print }
+	' CHANGELOG.md | sed '/./,$!d'
+	exit 0
+fi
+
 ref="HEAD"
 git rev-parse -q --verify "refs/tags/v$version" >/dev/null && ref="v$version"
 previous="$(git describe --tags --abbrev=0 "$ref^" 2>/dev/null || true)"

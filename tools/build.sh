@@ -49,7 +49,7 @@ while IFS= read -r line || [ -n "$line" ]; do
 done < .distignore
 
 # An allow list as well as a deny list: a new top-level file stops the build instead of shipping by accident.
-allowed=" $main includes assets build templates languages readme.txt index.php uninstall.php LICENSE license.txt "
+allowed=" $main includes assets build templates languages readme.txt CHANGELOG.md index.php uninstall.php LICENSE license.txt "
 for entry in "$pkg"/* "$pkg"/.[!.]*; do
 	[ -e "$entry" ] || continue
 	name="$(basename "$entry")"
