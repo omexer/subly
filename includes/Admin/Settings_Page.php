@@ -446,15 +446,8 @@ class Settings_Page {
 	}
 
 	private function woo_page(): ?\WC_Settings_Page {
-		if ( ! class_exists( '\WC_Admin_Settings' ) ) {
-			// WooCommerce loads this on its own settings screen only, so pull it in here.
-			$file = WC_ABSPATH . 'includes/admin/class-wc-admin-settings.php';
-
-			if ( is_readable( $file ) ) {
-				include_once $file;
-			}
-		}
-
+		// No include: WooCommerce's autoloader maps wc_admin* to includes/admin/, so asking
+		// for the class is what loads it.
 		if ( ! class_exists( '\WC_Admin_Settings' ) ) {
 			return null;
 		}

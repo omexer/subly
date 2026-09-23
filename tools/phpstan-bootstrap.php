@@ -9,5 +9,3 @@ define( 'SUBKIT_PATH', __DIR__ . '/../' );
 define( 'SUBKIT_MIN_WC', '8.0' );
 define( 'SUBKIT_URL', 'https://example.test/wp-content/plugins/subkit-subscriptions/' );
 define( 'SUBKIT_ENABLE_TEST_GATEWAY', true );
-// WooCommerce's own, used when including one of its admin classes on demand.
-define( 'WC_ABSPATH', __DIR__ . '/../../woocommerce/' );
