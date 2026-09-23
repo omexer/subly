@@ -20,8 +20,20 @@ class Notices {
 	 */
 	private array $tucked = array();
 
+	private ?string $html = null;
+
+	private int $count = 0;
+
+	private bool $shown = false;
+
+	private static ?self $current = null;
+
 	public function register(): void {
+		self::$current = $this;
+
 		add_action( 'in_admin_header', array( $this, 'collect' ), 1 );
+		// Last resort: a SubKit screen that draws no shell would otherwise swallow them.
+		add_action( 'admin_footer', array( $this, 'render_panel' ), 99 );
 	}
 
 	public function collect(): void {
@@ -34,10 +46,69 @@ class Notices {
 		foreach ( array( 'admin_notices', 'all_admin_notices', 'user_admin_notices' ) as $hook ) {
 			$this->move( $hook );
 		}
+	}
 
-		if ( $this->tucked ) {
-			add_action( 'admin_notices', array( $this, 'render' ), 999 );
+	/**
+	 * The button that opens them, for the header bar.
+	 */
+	public static function render_toggle(): void {
+		$notices = self::$current;
+
+		if ( ! $notices || ! $notices->pending() ) {
+			return;
 		}
+
+		printf(
+			'<button type="button" class="subkit-shell__notices" aria-expanded="false" aria-controls="subkit-other-notices" data-subkit-notices-toggle>'
+				. '<span class="subkit-shell__notices-dot" aria-hidden="true"></span>%s</button>',
+			esc_html(
+				sprintf(
+					/* translators: %d: number of notices from other plugins */
+					_n( '%d other notice', '%d other notices', $notices->count, 'subkit-subscriptions' ),
+					$notices->count
+				)
+			)
+		);
+	}
+
+	/**
+	 * The notices themselves, closed until the button above is pressed.
+	 */
+	public function render_panel(): void {
+		if ( $this->shown || ! $this->pending() ) {
+			return;
+		}
+
+		$this->shown = true;
+
+		printf(
+			'<div class="subkit-other-notices" id="subkit-other-notices" hidden><div class="subkit-other-notices__inner">%s</div></div>',
+			wp_kses_post( (string) $this->html )
+		);
+	}
+
+	/**
+	 * Runs the callbacks once and keeps what they printed.
+	 */
+	private function pending(): bool {
+		if ( null !== $this->html ) {
+			return '' !== $this->html;
+		}
+
+		$this->html = '';
+
+		foreach ( $this->tucked as $callback ) {
+			ob_start();
+			call_user_func( $callback );
+			$output = (string) ob_get_clean();
+
+			if ( '' !== trim( $output ) ) {
+				$this->html .= $output;
+				++$this->count;
+			}
+		}
+
+		return '' !== $this->html;
 	}
 
 	private function move( string $hook ): void {
@@ -73,37 +144,5 @@ class Notices {
 		}
 
 		return is_string( $callback ) && ( str_starts_with( $callback, 'subkit' ) || str_starts_with( $callback, 'wc_' ) || str_starts_with( $callback, 'woocommerce_' ) );
-	}
-
-	public function render(): void {
-		$html  = '';
-		$count = 0;
-
-		foreach ( $this->tucked as $callback ) {
-			ob_start();
-			call_user_func( $callback );
-			$output = (string) ob_get_clean();
-
-			if ( '' !== trim( $output ) ) {
-				$html .= $output;
-				++$count;
-			}
-		}
-
-		if ( '' === $html ) {
-			return;
-		}
-
-		printf(
-			'<details class="subkit-other-notices"><summary>%s</summary><div class="subkit-other-notices__body">%s</div></details>',
-			esc_html(
-				sprintf(
-					/* translators: %d: number of notices from other plugins */
-					_n( '%d other notice', '%d other notices', $count, 'subkit-subscriptions' ),
-					$count
-				)
-			),
-			wp_kses_post( $html )
-		);
 	}
 }

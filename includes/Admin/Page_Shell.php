@@ -54,15 +54,26 @@ class Page_Shell {
 
 		echo '</nav>';
 
+		echo '<div class="subkit-shell__meta">';
+
+		Notices::render_toggle();
+
 		printf(
-			'<div class="subkit-shell__meta"><a href="%s">%s</a><a href="%s">%s</a></div>',
+			'<a href="%s">%s</a><a href="%s">%s</a>',
 			esc_url( admin_url( 'admin.php?page=' . Menu::SLUG . '-help' ) ),
 			esc_html__( 'Help', 'subkit-subscriptions' ),
-			esc_url( admin_url( 'admin.php?page=wc-settings&tab=subkit' ) ),
+			esc_url( admin_url( 'admin.php?page=' . Settings_Page::SLUG ) ),
 			esc_html__( 'Settings', 'subkit-subscriptions' )
 		);
 
-		echo '</div></header>';
+		echo '</div></div></header>';
+
+		// Below the bar, so opening them pushes the page down rather than covering it.
+		$notices = \SubKit\Plugin::instance()->get( 'admin_notices' );
+
+		if ( $notices instanceof Notices ) {
+			$notices->render_panel();
+		}
 
 		echo '<div class="wrap subkit-shell__body">';
 		echo '<div class="subkit-head' . ( $visible ? '' : ' screen-reader-text' ) . '"><div class="subkit-head__text">';

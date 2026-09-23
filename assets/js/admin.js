@@ -151,3 +151,23 @@ document.addEventListener( 'click', function ( event ) {
 	document.execCommand( 'copy' );
 	done();
 } );
+
+// The header bar's "other notices" button, which opens the panel under the bar.
+document.addEventListener( 'click', function ( event ) {
+	var button = event.target.closest( '[data-subkit-notices-toggle]' );
+
+	if ( ! button ) {
+		return;
+	}
+
+	var panel = document.getElementById( 'subkit-other-notices' );
+
+	if ( ! panel ) {
+		return;
+	}
+
+	var open = 'true' !== button.getAttribute( 'aria-expanded' );
+
+	button.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
+	panel.hidden = ! open;
+} );

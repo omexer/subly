@@ -826,61 +826,45 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 
 /* ---------------------------------------------------- notices from elsewhere */
 
-.subkit-other-notices {
-	max-width: 1240px;
-	margin: 12px auto -4px;
-	padding: 0 24px;
-	box-sizing: border-box;
-}
-
-.subkit-other-notices > summary {
+.subkit-shell__notices {
 	display: inline-flex;
 	align-items: center;
-	padding: 4px 10px;
-	border: 1px solid var(--subkit-line);
-	border-radius: 999px;
-	background: var(--subkit-bg);
+	gap: 6px;
+	padding: 0;
+	border: 0;
+	background: none;
 	color: var(--subkit-ink-soft);
-	font-size: 12px;
+	font: inherit;
+	font-size: 13px;
 	cursor: pointer;
-	list-style: none;
 }
 
-.subkit-other-notices > summary:hover {
-	border-color: #d1d5db;
+.subkit-shell__notices:hover {
 	color: var(--subkit-ink);
 }
 
-.subkit-other-notices > summary::-webkit-details-marker {
-	display: none;
+.subkit-shell__notices-dot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--subkit-warn);
 }
 
-.subkit-other-notices > summary::before {
-	content: "";
-	display: inline-block;
-	width: 0;
-	height: 0;
-	margin-right: 8px;
-	border-top: 4px solid transparent;
-	border-bottom: 4px solid transparent;
-	border-left: 5px solid currentColor;
-	vertical-align: middle;
+.subkit-other-notices {
+	border-bottom: 1px solid var(--subkit-line);
+	background: var(--subkit-line-soft);
 }
 
-.subkit-other-notices[open] > summary::before {
-	border-top: 5px solid currentColor;
-	border-right: 4px solid transparent;
-	border-bottom: 0;
-	border-left: 4px solid transparent;
+.subkit-other-notices__inner {
+	max-width: 1240px;
+	margin: 0 auto;
+	padding: 8px 24px;
+	box-sizing: border-box;
 }
 
-.subkit-other-notices__body {
-	margin-top: 8px;
-}
-
-.subkit-other-notices__body .notice,
-.subkit-other-notices__body .updated,
-.subkit-other-notices__body .error {
+.subkit-other-notices__inner .notice,
+.subkit-other-notices__inner .updated,
+.subkit-other-notices__inner .error {
 	margin: 8px 0;
 }
 
