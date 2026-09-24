@@ -40,7 +40,24 @@ final class Initial_Payment {
 			}
 
 			if ( ! isset( $this->base_prices[ $key ] ) ) {
-				$this->base_prices[ $key ] = (float) $product->get_price( 'edit' );
+				/**
+				 * The price per period for this cart line, before today's adjustments.
+				 *
+				 * The seam for anything that lets one product be bought on more than one
+				 * schedule: the choice lives on the cart item, not on the product.
+				 *
+				 * @param float       $price
+				 * @param \WC_Product $product
+				 * @param array       $item    The cart item.
+				 * @param string      $key     Its cart key.
+				 */
+				$this->base_prices[ $key ] = (float) apply_filters(
+					'subkit_cart_recurring_price',
+					(float) $product->get_price( 'edit' ),
+					$product,
+					$item,
+					$key
+				);
 			}
 
 			// Everything that asks what this product costs per period must keep getting the

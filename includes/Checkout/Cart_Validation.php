@@ -18,15 +18,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Cart_Validation {
 
 	public function register(): void {
-		add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'validate_add_to_cart' ), 10, 2 );
+		add_filter( 'woocommerce_add_to_cart_validation', array( $this, 'validate_add_to_cart' ), 10, 6 );
 	}
 
 	/**
-	 * @param bool $passed
-	 * @param int  $product_id
+	 * @param bool  $passed
+	 * @param int   $product_id
+	 * @param int   $quantity
+	 * @param int   $variation_id
+	 * @param array $variations
+	 * @param array $item_data
 	 */
-	public function validate_add_to_cart( $passed, $product_id ) {
+	public function validate_add_to_cart( $passed, $product_id, $quantity = 1, $variation_id = 0, $variations = array(), $item_data = array() ) {
 		if ( ! $passed || ! Subscription_Product::is_subscription( $product_id ) ) {
+			return $passed;
+		}
+
+		/**
+		 * Whether the line being added is recurring, for a product that can also be
+		 * bought once. The choice is in the request, not on the product.
+		 *
+		 * @param bool  $recurring
+		 * @param int   $product_id
+		 * @param int   $variation_id
+		 * @param array $item_data
+		 */
+		if ( ! apply_filters( 'subkit_adding_subscription', true, $product_id, $variation_id, $item_data ) ) {
 			return $passed;
 		}
 

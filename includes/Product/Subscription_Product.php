@@ -113,8 +113,22 @@ class Subscription_Product {
 			return false;
 		}
 
-		foreach ( WC()->cart->get_cart() as $item ) {
-			if ( self::is_subscription( $item['data'] ?? null ) ) {
+		foreach ( WC()->cart->get_cart() as $key => $item ) {
+			if ( ! self::is_subscription( $item['data'] ?? null ) ) {
+				continue;
+			}
+
+			/**
+			 * Whether this cart line is actually recurring.
+			 *
+			 * A subscription product can be sold as a one-off, and a line bought that way
+			 * is no more recurring than a bag of coffee.
+			 *
+			 * @param bool   $recurring
+			 * @param array  $item
+			 * @param string $key
+			 */
+			if ( apply_filters( 'subkit_cart_item_is_subscription', true, $item, $key ) ) {
 				return true;
 			}
 		}
