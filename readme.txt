@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.17.0
+Stable tag: 0.18.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.18.0 =
+* New filter `subkit_gateway_for_subscription`, so an extension can answer for a subscription whose WooCommerce payment method is not the id of the thing that renews it. SubKit Pro needs this to charge Mollie, Razorpay, Xendit, Square, Authorize.net or Braintree at all.
 
 = 0.17.0 =
 * **Fixed: every renewal was skipping a billing period.** A monthly subscription charged on 20 September was next charged on 20 November. Every store was billing half as often as it sold.

@@ -63,6 +63,20 @@ class Gateway_Registry {
 	public function for_subscription( Subscription $subscription ): Recurring_Gateway {
 		$gateway = $this->get( (string) $subscription->get_payment_method() );
 
-		return $gateway ?? $this->get( Manual_Gateway::ID );
+		/**
+		 * The gateway that renews this subscription.
+		 *
+		 * A subscription carries the WooCommerce payment method it was bought with, which
+		 * is rarely the id of the thing able to charge it again: an extension renewing
+		 * against another plugin's stored mandate is registered under its own id and
+		 * claims the method here.
+		 *
+		 * @param Recurring_Gateway|null $gateway      Null when nothing matched by id.
+		 * @param Subscription           $subscription
+		 * @param Gateway_Registry       $registry
+		 */
+		$gateway = apply_filters( 'subkit_gateway_for_subscription', $gateway, $subscription, $this );
+
+		return $gateway instanceof Recurring_Gateway ? $gateway : $this->get( Manual_Gateway::ID );
 	}
 }

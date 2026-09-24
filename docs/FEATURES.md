@@ -1,6 +1,6 @@
 # SubKit — Feature Inventory
 
-Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.17.0 and SubKit Pro 0.15.0, not from memory.
+Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.18.0 and SubKit Pro 0.15.0, not from memory.
 
 Verification key:
 
