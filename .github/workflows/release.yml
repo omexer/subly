@@ -23,9 +23,12 @@ jobs:
   admin-ui:
     uses: ./.github/workflows/admin-ui.yml
 
+  integration:
+    uses: ./.github/workflows/integration.yml
+
   release:
     name: Build and publish
-    needs: [ static-analysis, admin-ui ]
+    needs: [ static-analysis, admin-ui, integration ]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

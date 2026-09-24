@@ -1,0 +1,51 @@
+name: Integration tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: integration-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  integration:
+    name: PHP ${{ matrix.php }}, latest WordPress and WooCommerce
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # The lowest PHP SubKit supports, and the newest. The syntax job only lints 8.4;
+        # this is where anything actually runs on it.
+        php: [ '8.1', '8.4' ]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+
+      # A disposable site with the plugin activated from WP-CLI and nobody ever opening
+      # wp-admin — how plenty of real stores are set up, and how SubKit once lost its tables.
+      - name: Start WordPress
+        env:
+          WP_ENV_PHP_VERSION: ${{ matrix.php }}
+        run: npx wp-env start
+
+      - name: Run the integration suite
+        run: bash tools/test.sh
+
+      - name: WordPress debug log
+        if: failure()
+        run: npx wp-env run cli sh -c 'cat wp-content/debug.log 2>/dev/null || echo "no debug.log"'
