@@ -25,23 +25,39 @@ class Gateway_Notice {
 			return;
 		}
 
-		$missing = array_merge( $this->stripe(), $this->paypal() );
+		$this->notice(
+			__( 'SubKit is not offering a payment method at checkout.', 'subkit-subscriptions' ),
+			array_merge( $this->stripe(), $this->paypal_credentials() ),
+			$this->stripe() ? 'stripe' : 'paypal'
+		);
 
-		if ( ! $missing ) {
+		// Separate on purpose: this one does not stop a customer paying, so saying it
+		// alongside "not offered at checkout" would send the merchant looking for the
+		// wrong thing entirely.
+		$this->notice(
+			__( 'PayPal renewals will not be recorded.', 'subkit-subscriptions' ),
+			$this->paypal_webhook(),
+			'paypal'
+		);
+	}
+
+	/**
+	 * @param string[] $lines
+	 */
+	private function notice( string $heading, array $lines, string $section ): void {
+		if ( ! $lines ) {
 			return;
 		}
 
-		echo '<div class="notice notice-warning"><p><strong>'
-			. esc_html__( 'SubKit is not offering a payment method at checkout.', 'subkit-subscriptions' )
-			. '</strong></p><ul style="list-style:disc;margin-left:20px">';
+		echo '<div class="notice notice-warning"><p><strong>' . esc_html( $heading ) . '</strong></p><ul style="list-style:disc;margin-left:20px">';
 
-		foreach ( $missing as $line ) {
+		foreach ( $lines as $line ) {
 			echo '<li>' . esc_html( $line ) . '</li>';
 		}
 
 		printf(
 			'</ul><p><a class="button" href="%s">%s</a></p></div>',
-			esc_url( admin_url( 'admin.php?page=wc-settings&tab=subkit' ) ),
+			esc_url( Settings_Page::section_url( $section ) ),
 			esc_html__( 'Finish setting it up', 'subkit-subscriptions' )
 		);
 	}
@@ -71,9 +87,11 @@ class Gateway_Notice {
 	}
 
 	/**
+	 * Credentials decide whether PayPal appears at checkout at all.
+	 *
 	 * @return string[]
 	 */
-	private function paypal(): array {
+	private function paypal_credentials(): array {
 		if ( 'yes' !== get_option( 'subkit_paypal_enabled', 'no' ) ) {
 			return array();
 		}
@@ -81,9 +99,8 @@ class Gateway_Notice {
 		$missing = array();
 
 		foreach ( array(
-			'subkit_paypal_client_id'  => __( 'client ID', 'subkit-subscriptions' ),
-			'subkit_paypal_secret'     => __( 'secret', 'subkit-subscriptions' ),
-			'subkit_paypal_webhook_id' => __( 'webhook ID', 'subkit-subscriptions' ),
+			'subkit_paypal_client_id' => __( 'client ID', 'subkit-subscriptions' ),
+			'subkit_paypal_secret'    => __( 'secret', 'subkit-subscriptions' ),
 		) as $option => $label ) {
 			if ( '' === (string) get_option( $option, '' ) ) {
 				$missing[] = $label;
@@ -98,8 +115,31 @@ class Gateway_Notice {
 			sprintf(
 				/* translators: %s: the PayPal fields that are empty. */
 				__( 'PayPal is switched on but has no %s. Until it does, PayPal is not offered at checkout.', 'subkit-subscriptions' ),
-				implode( ', ', $missing )
+				implode( __( ' and ', 'subkit-subscriptions' ), $missing )
 			),
+		);
+	}
+
+	/**
+	 * The webhook ID does not gate the checkout: PayPal bills on its own schedule and
+	 * tells SubKit by webhook, and an unverifiable webhook is rejected, so every renewal
+	 * goes unrecorded while the customer is charged.
+	 *
+	 * @return string[]
+	 */
+	private function paypal_webhook(): array {
+		if ( 'yes' !== get_option( 'subkit_paypal_enabled', 'no' ) || '' !== (string) get_option( 'subkit_paypal_webhook_id', '' ) ) {
+			return array();
+		}
+
+		// Nobody can pay at all without credentials, so promising charges would contradict
+		// the notice above it.
+		if ( $this->paypal_credentials() ) {
+			return array();
+		}
+
+		return array(
+			__( 'PayPal is switched on but has no webhook ID. Customers can pay, and PayPal will keep charging them, but SubKit cannot verify what PayPal sends back — so renewals are rejected and never show against the subscription.', 'subkit-subscriptions' ),
 		);
 	}
 }

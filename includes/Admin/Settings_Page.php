@@ -461,7 +461,7 @@ class Settings_Page {
 		return null;
 	}
 
-	private function url( string $section ): string {
+	public static function section_url( string $section = '' ): string {
 		$args = array( 'page' => self::SLUG );
 
 		if ( '' !== $section ) {
@@ -469,6 +469,10 @@ class Settings_Page {
 		}
 
 		return add_query_arg( $args, admin_url( 'admin.php' ) );
+	}
+
+	private function url( string $section ): string {
+		return self::section_url( $section );
 	}
 
 	/**
