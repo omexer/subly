@@ -95,7 +95,7 @@ class Renewal_Processor {
 		// the gateway before we ever charge again.
 		$open = $this->slots->latest_unsettled( $subscription_id );
 		if ( $open ) {
-			$this->resume( $subscription, $gateway, $open, $schedule );
+			$this->resume( $subscription, $gateway, $open );
 			return;
 		}
 
@@ -118,13 +118,13 @@ class Renewal_Processor {
 		$order = $this->orders->create( $subscription, $slot );
 		$this->slots->attach_order( (int) $slot->id, $order->get_id() );
 
-		$this->charge( $subscription, $gateway, $order, $slot, $schedule );
+		$this->charge( $subscription, $gateway, $order, $slot );
 	}
 
 	/**
 	 * Settle a slot left behind by an unknown outcome or a decline.
 	 */
-	private function resume( Subscription $subscription, $gateway, object $slot, Billing_Schedule $schedule ): void {
+	private function resume( Subscription $subscription, $gateway, object $slot ): void {
 		$subscription_id = $subscription->get_id();
 		$order           = $slot->renewal_order_id ? wc_get_order( (int) $slot->renewal_order_id ) : null;
 
@@ -138,7 +138,7 @@ class Renewal_Processor {
 
 			if ( $verdict ) {
 				$this->activity->log( $subscription_id, Activity_Repository::TYPE_CHARGE_ATTEMPT, 'Reconciled unknown charge: ' . $verdict->describe() );
-				$this->apply( $subscription, $order, $slot, $verdict, $schedule );
+				$this->apply( $subscription, $order, $slot, $verdict );
 				return;
 			}
 
@@ -151,10 +151,10 @@ class Renewal_Processor {
 			$slot    = $resumed ?? $slot;
 		}
 
-		$this->charge( $subscription, $gateway, $order, $slot, $schedule );
+		$this->charge( $subscription, $gateway, $order, $slot );
 	}
 
-	private function charge( Subscription $subscription, $gateway, \WC_Order $order, object $slot, Billing_Schedule $schedule ): void {
+	private function charge( Subscription $subscription, $gateway, \WC_Order $order, object $slot ): void {
 		// Gateway-managed plans bill themselves; we wait for the webhook.
 		if ( Gateway_Model::GatewayManaged === $gateway->model() ) {
 			$this->activity->log( $subscription->get_id(), Activity_Repository::TYPE_CHARGE_ATTEMPT, sprintf( 'Awaiting %s webhook for period %d.', $gateway->id(), $slot->period_index ) );
@@ -168,10 +168,10 @@ class Renewal_Processor {
 
 		$result = $gateway->charge_renewal( $subscription, $order, $key );
 
-		$this->apply( $subscription, $order, $slot, $result, $schedule );
+		$this->apply( $subscription, $order, $slot, $result );
 	}
 
-	private function apply( Subscription $subscription, \WC_Order $order, object $slot, $result, Billing_Schedule $schedule ): void {
+	private function apply( Subscription $subscription, \WC_Order $order, object $slot, $result ): void {
 		$subscription_id = $subscription->get_id();
 
 		$this->activity->log(
@@ -188,7 +188,7 @@ class Renewal_Processor {
 		if ( $result->is_success() ) {
 			$order->payment_complete( (string) $result->reference );
 			$this->slots->mark_paid( (int) $slot->id, $order->get_id() );
-			$this->advance( $subscription, $schedule, $slot );
+			$this->advance( $subscription, $slot );
 
 			do_action( 'subkit_renewal_succeeded', $subscription, $order );
 			return;
@@ -246,8 +246,10 @@ class Renewal_Processor {
 		do_action( 'subkit_subscription_finished', $subscription, $reason );
 	}
 
-	private function advance( Subscription $subscription, Billing_Schedule $schedule, object $slot ): void {
-		$next = $schedule->next_date_from( new \DateTimeImmutable( $slot->covers_to_gmt, new \DateTimeZone( 'UTC' ) ) );
+	private function advance( Subscription $subscription, object $slot ): void {
+		// The charge just taken covers the period ending at covers_to, which is the moment
+		// the next one falls due. Advancing from it instead skipped a whole period.
+		$next = new \DateTimeImmutable( $slot->covers_to_gmt, new \DateTimeZone( 'UTC' ) );
 
 		$subscription->set_next_payment( $next->format( 'Y-m-d H:i:s' ) );
 		$subscription->set_period_index( (int) $slot->period_index );
