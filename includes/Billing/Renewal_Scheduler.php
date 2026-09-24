@@ -30,6 +30,10 @@ class Renewal_Scheduler {
 	// Due rows already holding a scheduled action are skipped; stop scanning past these.
 	private const SWEEP_SCAN = 1000;
 
+	private const META_UNKNOWN_RETRY = '_subkit_unknown_retry';
+
+	private const MAX_UNKNOWN_RETRIES = 5;
+
 	public function __construct( private readonly Activity_Repository $activity ) {}
 
 	public function register(): void {
@@ -119,11 +123,31 @@ class Renewal_Scheduler {
 	 * Re-enqueue after an unknown outcome, with backoff. Capped so a permanently broken
 	 * gateway cannot loop forever.
 	 */
-	public function schedule_retry( int $subscription_id, int $period_index, int $attempt = 1 ): void {
-		if ( $attempt > 5 ) {
+	public function schedule_retry( int $subscription_id, int $period_index ): void {
+		$subscription = wc_get_order( $subscription_id );
+
+		if ( ! $subscription instanceof Subscription ) {
+			return;
+		}
+
+		// Counted per period, so a later period's timeout starts again from the shortest wait.
+		$last        = (array) $subscription->get_meta( self::META_UNKNOWN_RETRY );
+		$same_period = isset( $last['period'] ) && (int) $last['period'] === $period_index;
+		$attempt     = $same_period ? (int) ( $last['attempt'] ?? 0 ) + 1 : 1;
+
+		if ( $attempt > self::MAX_UNKNOWN_RETRIES ) {
 			$this->activity->log( $subscription_id, Activity_Repository::TYPE_CHARGE_ATTEMPT, 'Gave up re-trying an unknown gateway outcome; needs reconciliation.' );
 			return;
 		}
+
+		$subscription->update_meta_data(
+			self::META_UNKNOWN_RETRY,
+			array(
+				'period'  => $period_index,
+				'attempt' => $attempt,
+			)
+		);
+		$subscription->save();
 
 		$this->schedule_at( $subscription_id, time() + ( ( 2 ** $attempt ) * MINUTE_IN_SECONDS ) );
 	}
@@ -135,11 +159,29 @@ class Renewal_Scheduler {
 
 		$args = array( 'subscription_id' => $subscription_id );
 
-		if ( as_next_scheduled_action( self::ACTION_RENEWAL, $args, self::GROUP ) ) {
+		if ( $this->has_pending( self::ACTION_RENEWAL, $args ) ) {
 			return;
 		}
 
 		as_schedule_single_action( max( $timestamp, time() ), self::ACTION_RENEWAL, $args, self::GROUP );
+	}
+
+	/**
+	 * Pending only: as_next_scheduled_action() also counts the running action, so a renewal could never queue its successor.
+	 */
+	private function has_pending( string $hook, array $args ): bool {
+		$ids = as_get_scheduled_actions(
+			array(
+				'hook'     => $hook,
+				'args'     => $args,
+				'group'    => self::GROUP,
+				'status'   => \ActionScheduler_Store::STATUS_PENDING,
+				'per_page' => 1,
+			),
+			'ids'
+		);
+
+		return ! empty( $ids );
 	}
 
 	public function unschedule( int $subscription_id ): void {
@@ -170,6 +212,7 @@ class Renewal_Scheduler {
 					continue;
 				}
 
+				// A running renewal counts here: it queues its own successor once it has advanced the date.
 				if ( as_next_scheduled_action( self::ACTION_RENEWAL, array( 'subscription_id' => $subscription_id ), self::GROUP ) ) {
 					continue;
 				}

@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.18.6
+Stable tag: 0.18.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,10 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.18.7 =
+* **Fixed: renewals ran up to an hour late, and busy stores fell behind.** After charging a renewal, SubKit failed to queue the next one, so every renewal waited for the hourly check — which queues at most 50 at a time, so a store with more renewals than that each hour slipped further behind. The next renewal is now queued as soon as one is charged.
+* A payment gateway that keeps timing out is now retried with growing waits (2, 4, 8, 16 and 32 minutes) and then left to the hourly check, instead of the intended limit being ignored.
 
 = 0.18.6 =
 * **Fixed: subscriptions could not be read on stores using WooCommerce's legacy order storage.** Loading a subscription through the legacy (posts) order store failed, which broke those stores, stores running HPOS with compatibility sync turned on, and `wp wc hpos sync`. A save after a partial read could also wipe the subscription's next payment date, end date and parent order. Subscriptions now load with every field intact on both storages.
