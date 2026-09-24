@@ -146,17 +146,20 @@ class Renewal_Scheduler {
 		$hpos = class_exists( '\Automattic\WooCommerce\Utilities\OrderUtil' )
 			&& \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
 
-		$status = 'wc-' . Subscription_Status::Active->value;
+		// A trial is billable the day it ends, so it has to be swept up too — otherwise a
+		// missed action leaves the conversion charge unqueued for ever.
+		$active    = 'wc-' . Subscription_Status::Active->value;
+		$trialling = 'wc-' . Subscription_Status::Trialling->value;
 
 		if ( $hpos ) {
 			$orders = $wpdb->prefix . 'wc_orders';
 			$meta   = $wpdb->prefix . 'wc_orders_meta';
 
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names come from $wpdb, values are prepared.
-			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT o.id FROM {$orders} o INNER JOIN {$meta} m ON m.order_id = o.id AND m.meta_key = %s WHERE o.type = %s AND o.status = %s AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, o.id ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $status, $cutoff, $limit, $offset ) );
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT o.id FROM {$orders} o INNER JOIN {$meta} m ON m.order_id = o.id AND m.meta_key = %s WHERE o.type = %s AND o.status IN ( %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, o.id ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $cutoff, $limit, $offset ) );
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API filters orders by meta on legacy storage.
-			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = %s WHERE p.post_type = %s AND p.post_status = %s AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, p.ID ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $status, $cutoff, $limit, $offset ) );
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = %s WHERE p.post_type = %s AND p.post_status IN ( %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, p.ID ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $cutoff, $limit, $offset ) );
 		}
 
 		return array_map( 'intval', (array) $ids );
