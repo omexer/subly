@@ -39,6 +39,12 @@ final class Initial_Payment {
 				continue;
 			}
 
+			// A line bought once is not on a trial and owes no sign-up fee, whatever the
+			// product's own schedule says. Documented on Subscription_Product.
+			if ( ! apply_filters( 'subkit_cart_item_is_subscription', true, $item, $key ) ) {
+				continue;
+			}
+
 			if ( ! isset( $this->base_prices[ $key ] ) ) {
 				/**
 				 * The price per period for this cart line, before today's adjustments.
