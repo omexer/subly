@@ -112,6 +112,8 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 	private function session_args( \WC_Order $order ): array {
 		$common = array(
 			'customer_email'      => $order->get_billing_email(),
+			// Stripe's default creates no customer, and a card without one cannot be charged again.
+			'customer_creation'   => 'always',
 			'client_reference_id' => (string) $order->get_id(),
 			'success_url'         => $this->return_url( $order, 'success' ),
 			'cancel_url'          => $this->return_url( $order, 'cancel' ),

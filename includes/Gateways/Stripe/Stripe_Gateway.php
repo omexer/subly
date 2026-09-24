@@ -61,6 +61,12 @@ class Stripe_Gateway implements Recurring_Gateway {
 		$customer = (string) $initial->get_meta( self::META_CUSTOMER );
 		$method   = (string) $initial->get_meta( self::META_METHOD );
 
+		if ( '' === $customer && '' !== $method ) {
+			$problem = $this->recover_mandate( $subscription );
+
+			return null === $problem ? Charge_Result::success( $method ) : Charge_Result::error( $problem );
+		}
+
 		if ( '' === $customer || '' === $method ) {
 			return Charge_Result::error( 'Stripe did not return a saved payment method for this order.' );
 		}
@@ -83,7 +89,14 @@ class Stripe_Gateway implements Recurring_Gateway {
 		$method   = (string) $subscription->get_meta( self::META_METHOD );
 
 		if ( '' === $customer || '' === $method ) {
-			return Charge_Result::hard_decline( 'no_payment_method', 'No stored Stripe payment method for this subscription.' );
+			$problem = $this->recover_mandate( $subscription );
+
+			if ( null !== $problem ) {
+				return Charge_Result::hard_decline( 'no_payment_method', 'No stored Stripe payment method for this subscription. ' . $problem );
+			}
+
+			$customer = (string) $subscription->get_meta( self::META_CUSTOMER );
+			$method   = (string) $subscription->get_meta( self::META_METHOD );
 		}
 
 		$amount = Money::from_decimal( $renewal->get_total(), $renewal->get_currency() );
@@ -131,6 +144,68 @@ class Stripe_Gateway implements Recurring_Gateway {
 		}
 
 		// No matching successful charge, so nothing landed and the slot is safe to retry.
+		return null;
+	}
+
+	/**
+	 * Before 0.18.3 checkout saved the card with no Stripe customer, so attach it to one now.
+	 *
+	 * @return string|null Why it could not be recovered, or null once the subscription can be charged.
+	 */
+	private function recover_mandate( Subscription $subscription ): ?string {
+		$first = $subscription->get_parent_order_id() ? wc_get_order( $subscription->get_parent_order_id() ) : null;
+
+		if ( ! $first instanceof \WC_Order ) {
+			return 'Its first order is missing, so there is no card to recover.';
+		}
+
+		$method = (string) ( $subscription->get_meta( self::META_METHOD ) ?: $first->get_meta( self::META_METHOD ) );
+
+		if ( '' === $method && str_starts_with( $first->get_transaction_id(), 'pi_' ) ) {
+			$intent = $this->client->get( '/v1/payment_intents/' . rawurlencode( $first->get_transaction_id() ) );
+			$method = $intent['ok'] ? (string) ( $intent['body']['payment_method'] ?? '' ) : '';
+		}
+
+		if ( '' === $method ) {
+			return 'Stripe has no card from its first payment. Ask the customer to add one.';
+		}
+
+		$card = $this->client->get( '/v1/payment_methods/' . rawurlencode( $method ) );
+
+		if ( ! $card['ok'] ) {
+			return 'Stripe could not find the card from its first payment: ' . $card['error'];
+		}
+
+		$customer = (string) ( $card['body']['customer'] ?? '' );
+
+		if ( '' === $customer ) {
+			$created = $this->client->post(
+				'/v1/customers',
+				array(
+					'email'    => $first->get_billing_email(),
+					'name'     => trim( $first->get_formatted_billing_full_name() ),
+					'metadata' => array( 'subkit_subscription' => (string) $subscription->get_id() ),
+				),
+				// Reused by a retry after a failed attach; the site keeps stores sharing an account apart.
+				'subkit_customer_' . substr( md5( (string) get_option( 'siteurl' ) ), 0, 8 ) . '_' . $subscription->get_id()
+			);
+			$customer = $created['ok'] ? (string) ( $created['body']['id'] ?? '' ) : '';
+
+			if ( '' === $customer ) {
+				return 'Stripe could not create a customer for the card: ' . $created['error'];
+			}
+
+			$attached = $this->client->post( '/v1/payment_methods/' . rawurlencode( $method ) . '/attach', array( 'customer' => $customer ) );
+
+			if ( ! $attached['ok'] ) {
+				return 'Stripe would not save the card from its first payment for renewals, so the customer needs to add one: ' . $attached['error'];
+			}
+		}
+
+		$subscription->update_meta_data( self::META_CUSTOMER, $customer );
+		$subscription->update_meta_data( self::META_METHOD, $method );
+		$subscription->save();
+
 		return null;
 	}
 

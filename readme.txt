@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.18.2
+Stable tag: 0.18.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.18.3 =
+* **Fixed: Stripe renewals always failed.** Stripe checkout saved the card without a Stripe customer, and a card with no customer cannot be charged again, so every Stripe subscription went on hold at its first renewal with "No stored Stripe payment method". Checkout now creates the customer. Subscriptions already affected repair themselves: the card from their first payment is attached to a new Stripe customer on the next attempt. Reactivate any that are on hold to charge the renewal they missed.
 
 = 0.18.2 =
 * **Security: "Role while subscribed" could grant Administrator.** A Shop Manager can change that setting, so they could make themselves — or any customer — an administrator by buying a subscription. It now offers, and will only ever apply, roles that cannot run the site or the store. A role saved by an earlier version that no longer qualifies is ignored; check the setting after updating.
