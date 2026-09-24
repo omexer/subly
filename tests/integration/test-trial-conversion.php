@@ -59,7 +59,7 @@ $order->update_status( 'processing' );
 
 $sub = wc_get_order( (int) wc_get_order( $order->get_id() )->get_meta( '_subkit_subscription_id' ) );
 $check( 'subscription created', $sub instanceof Subscription );
-if ( ! $sub instanceof Subscription ) { exit( "stop\n" ); }
+if ( ! $sub instanceof Subscription ) { subkit_test_abort( 'cannot continue without it' ); }
 
 $check( 'status is trialling', str_contains( $sub->get_status(), 'trialling' ), $sub->get_status() );
 $check( 'recurring amount is the real price, not the trial total', '20.00' === wc_format_decimal( $sub->get_total(), 2 ), $sub->get_total() );

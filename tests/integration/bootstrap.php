@@ -39,6 +39,17 @@ if ( ! function_exists( 'subkit_test_done' ) ) {
 	}
 }
 
+if ( ! function_exists( 'subkit_test_abort' ) ) {
+	/**
+	 * Stop a test that cannot go on. A bare exit() reports success, which is how a test
+	 * whose own setup failed once let the whole run pass.
+	 */
+	function subkit_test_abort( string $why ): void {
+		echo "ABORT {$why}\n";
+		WP_CLI::halt( 1 );
+	}
+}
+
 if ( ! function_exists( 'subkit_test_product' ) ) {
 	/**
 	 * A plain monthly subscription product, found or made.
@@ -58,18 +69,26 @@ if ( ! function_exists( 'subkit_test_product' ) ) {
 		);
 
 		if ( $found ) {
-			return wc_get_product( (int) $found[0] );
+			$product = wc_get_product( (int) $found[0] );
+
+			// A same-named product from somewhere else would make every test here lie.
+			if ( ! \SubKit\Product\Subscription_Product::is_subscription( $product ) ) {
+				subkit_test_abort( "the product called '{$name}' (#{$found[0]}) is not a subscription product; delete it and run again" );
+			}
+
+			return $product;
 		}
 
-		$product = new WC_Product_Simple();
+		// The subscription class itself, so WooCommerce records the product type. Setting
+		// the type term on a simple product afterwards leaves WooCommerce still loading it
+		// as simple.
+		$product = new \SubKit\Product\Simple_Subscription();
 		$product->set_name( $name );
 		$product->set_status( 'publish' );
 		$product->set_regular_price( $price );
 		$product->update_meta_data( \SubKit\Product\Subscription_Product::META_PERIOD, 'month' );
 		$product->update_meta_data( \SubKit\Product\Subscription_Product::META_INTERVAL, 1 );
 		$id = $product->save();
-
-		wp_set_object_terms( $id, \SubKit\Product\Product_Types::SIMPLE, 'product_type' );
 
 		return wc_get_product( $id );
 	}
