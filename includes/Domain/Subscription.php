@@ -86,11 +86,30 @@ class Subscription extends \WC_Order {
 	 * The write vanished silently.
 	 */
 	protected function set_prop( $prop, $value ) {
+		if ( isset( self::META_MAP[ $prop ] ) && $this->is_being_read() ) {
+			return;
+		}
+
 		if ( ! $this->extra_hydrated && isset( self::META_MAP[ $prop ] ) ) {
 			$this->hydrate_extra_data();
 		}
 
 		parent::set_prop( $prop, $value );
+	}
+
+	/**
+	 * The legacy store sets extra data from `_{prop}` meta during a read; ours lives in META_MAP and is hydrated.
+	 */
+	private function is_being_read(): bool {
+		return ! $this->object_read;
+	}
+
+	/**
+	 * A re-read resets $data to defaults, so the hydrated values must be read again too.
+	 */
+	public function set_defaults() {
+		parent::set_defaults();
+		$this->extra_hydrated = false;
 	}
 
 	public function get_type() {
@@ -171,6 +190,10 @@ class Subscription extends \WC_Order {
 	}
 
 	public function set_billing_period( $value ) {
+		if ( $this->is_being_read() ) {
+			return;
+		}
+
 		$allowed = array( 'day', 'week', 'month', 'year' );
 		if ( ! in_array( $value, $allowed, true ) ) {
 			$this->error( 'subkit_invalid_billing_period', 'Billing period must be one of: ' . implode( ', ', $allowed ) );
@@ -183,6 +206,10 @@ class Subscription extends \WC_Order {
 	}
 
 	public function set_billing_interval( $value ) {
+		if ( $this->is_being_read() ) {
+			return;
+		}
+
 		$value = absint( $value );
 		if ( $value < 1 ) {
 			$this->error( 'subkit_invalid_billing_interval', 'Billing interval must be 1 or more.' );

@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.18.5
+Stable tag: 0.18.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.18.6 =
+* **Fixed: subscriptions could not be read on stores using WooCommerce's legacy order storage.** Loading a subscription through the legacy (posts) order store failed, which broke those stores, stores running HPOS with compatibility sync turned on, and `wp wc hpos sync`. A save after a partial read could also wipe the subscription's next payment date, end date and parent order. Subscriptions now load with every field intact on both storages.
 
 = 0.18.5 =
 * **Fixed: subscriptions cancelled "at the end of the period" never ended.** They stayed in Cancelling for ever, so the customer kept their downloads, role and access, and nothing that reacts to a cancellation ever ran. They now end when the paid period runs out: access stops, a PayPal agreement is told to stop billing, and nothing is charged. Subscriptions already stuck in Cancelling are ended by the next hourly check.
