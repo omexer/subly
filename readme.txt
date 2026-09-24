@@ -88,9 +88,9 @@ Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS table
 == Changelog ==
 
 = 0.17.0 =
+* **Fixed: every renewal was skipping a billing period.** A monthly subscription charged on 20 September was next charged on 20 November. Every store was billing half as often as it sold.
 * **Free trials work.** A trial product used to charge its full price at checkout and then sit in "trialling" for ever, never converting. The trial is now free, the sign-up fee the product page promised is actually taken, and the first payment falls on the day the trial ends — which is what the customer was told all along.
 * **Trial signups now capture a card.** A trial that costs nothing makes WooCommerce skip the payment step entirely, so no payment method was stored and the first renewal had nothing to charge. The payment step is kept for trial checkouts, on the classic checkout and on blocks. Switch it off under WooCommerce → Settings → Subscriptions if you would rather chase customers for a card later.
-* **Fixed: every renewal was skipping a billing period.** A monthly subscription charged on 20 September was next charged on 20 November. Every store was billing half as often as it sold.
 * **Upcoming renewal email.** Sent to the customer a configurable number of days before their card is charged — three by default, 0 to switch it off. A subscription still on trial is told its trial is ending rather than that it is renewing.
 * **The store is told when a subscription is cancelled or ends**, with the reason the customer gave. Cancelling from the admin screen now tells the customer too; only the My Account route ever did.
 * **Customers can pay a period early.** Off by default. The renewal date does not move — paying early settles the payment that was already coming. The admin's "Renew now" also charges now, instead of quietly doing nothing unless the subscription was already overdue.
