@@ -278,16 +278,12 @@ class Settings extends \WC_Settings_Page {
 	 * A plain readout of whether renewals can actually run.
 	 */
 	/**
+	 * WooCommerce refuses a saved value outside these options, so this list is also the save-time guard.
+	 *
 	 * @return array<string, string>
 	 */
 	private static function role_options(): array {
-		$options = array( '' => __( 'Leave the role alone', 'subkit-subscriptions' ) );
-
-		foreach ( wp_roles()->get_names() as $slug => $label ) {
-			$options[ $slug ] = translate_user_role( $label );
-		}
-
-		return $options;
+		return array( '' => __( 'Leave the role alone', 'subkit-subscriptions' ) ) + \SubKit\Lifecycle\Role_Management::grantable_roles();
 	}
 
 	public function render_status(): void {

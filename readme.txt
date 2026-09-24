@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.18.1
+Stable tag: 0.18.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,10 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.18.2 =
+* **Security: "Role while subscribed" could grant Administrator.** A Shop Manager can change that setting, so they could make themselves — or any customer — an administrator by buying a subscription. It now offers, and will only ever apply, roles that cannot run the site or the store. A role saved by an earlier version that no longer qualifies is ignored; check the setting after updating.
+* **Fixed: a Shop Manager who bought a subscription lost the store.** The role change replaced every role a user had. Staff are now left as they are.
 
 = 0.18.1 =
 * **Fixed: renewals silently failed until an administrator opened wp-admin.** SubKit created its tables only on an admin page view, so a store activated from WP-CLI, deployed by a host, or updated in the background had none — and every renewal until someone logged in failed against a table that did not exist. They are now created on the first request of any kind.

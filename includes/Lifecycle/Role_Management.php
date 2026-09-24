@@ -21,6 +21,31 @@ class Role_Management {
 	private const OPTION_ACTIVE   = 'subkit_active_role';
 	private const OPTION_INACTIVE = 'subkit_inactive_role';
 
+	/** Capabilities that mean a role can run the site or the store; no subscription grants them. */
+	public const ADMINISTRATIVE = array(
+		'manage_options',
+		'promote_users',
+		'create_users',
+		'edit_users',
+		'delete_users',
+		'remove_users',
+		'install_plugins',
+		'activate_plugins',
+		'edit_plugins',
+		'update_plugins',
+		'delete_plugins',
+		'install_themes',
+		'edit_themes',
+		'switch_themes',
+		'update_themes',
+		'delete_themes',
+		'edit_theme_options',
+		'update_core',
+		'unfiltered_html',
+		'unfiltered_upload',
+		'manage_woocommerce',
+	);
+
 	public function register(): void {
 		add_action( 'subkit_subscription_status_changed', array( $this, 'on_status_change' ), 10, 3 );
 	}
@@ -54,11 +79,46 @@ class Role_Management {
 		}
 	}
 
+	public static function is_grantable( string $role ): bool {
+		$object = '' === $role ? null : get_role( $role );
+
+		if ( ! $object ) {
+			return false;
+		}
+
+		foreach ( self::ADMINISTRATIVE as $capability ) {
+			if ( $object->has_cap( $capability ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/** @return array<string, string> Role slug => translated name. */
+	public static function grantable_roles(): array {
+		$roles = array();
+
+		foreach ( wp_roles()->get_names() as $slug => $label ) {
+			if ( self::is_grantable( $slug ) ) {
+				$roles[ $slug ] = translate_user_role( $label );
+			}
+		}
+
+		return $roles;
+	}
+
 	private function apply( \WP_User $user, string $role ): void {
-		// An administrator who buys a subscription must not be demoted out of their own
-		// site. Nothing here is worth that failure mode.
-		if ( '' === $role || ! get_role( $role ) || user_can( $user, 'manage_options' ) ) {
+		// A role saved by an older version never went through the dropdown.
+		if ( ! self::is_grantable( $role ) ) {
 			return;
+		}
+
+		// set_role() replaces every role, so staff would lose theirs by subscribing.
+		foreach ( self::ADMINISTRATIVE as $capability ) {
+			if ( user_can( $user, $capability ) ) {
+				return;
+			}
 		}
 
 		if ( in_array( $role, (array) $user->roles, true ) ) {
