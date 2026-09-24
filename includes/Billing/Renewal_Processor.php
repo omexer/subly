@@ -111,7 +111,7 @@ class Renewal_Processor {
 		}
 
 		$covers_from = $due_at ?? new \DateTimeImmutable( 'now', new \DateTimeZone( 'UTC' ) );
-		$covers_to   = $schedule->next_date_from( $covers_from );
+		$covers_to   = $this->covers_to( $schedule, $covers_from );
 
 		// 2c. Claim the slot. Losing this insert means another worker already has it.
 		$slot = $this->slots->claim_next( $subscription_id, $covers_from, $covers_from, $covers_to );
@@ -282,6 +282,31 @@ class Renewal_Processor {
 				/* translators: %s: payment gateway name */
 				: sprintf( __( '%s could not be told to stop billing and may keep charging this customer. Cancel the agreement in your gateway account.', 'subkit-subscriptions' ), $gateway->title() )
 		);
+	}
+
+	/**
+	 * The end of the period this charge pays for.
+	 *
+	 * Under the default catch-up policy a subscription that missed several renewals — a site
+	 * whose scheduler stopped — is charged once, and that one charge covers the gap up to its
+	 * next date in the future. Charging each missed period instead bills the customer several
+	 * times at once for an outage they did not cause.
+	 */
+	private function covers_to( Billing_Schedule $schedule, \DateTimeImmutable $from ): \DateTimeImmutable {
+		$to = $schedule->next_date_from( $from );
+
+		if ( 'charge_all' === get_option( 'subkit_catch_up_policy', 'rebase' ) ) {
+			return $to;
+		}
+
+		$now = new \DateTimeImmutable( 'now', new \DateTimeZone( 'UTC' ) );
+
+		// Bounded, so a subscription dark for decades cannot spin here.
+		for ( $step = 0; $to <= $now && $step < 1000; $step++ ) {
+			$to = $schedule->next_date_from( $to );
+		}
+
+		return $to;
 	}
 
 	private function advance( Subscription $subscription, object $slot ): void {
