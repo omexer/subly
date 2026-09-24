@@ -21,8 +21,8 @@ class Renewal_Scheduler {
 
 	public const ACTION_RENEWAL  = 'subkit_scheduled_renewal';
 	public const ACTION_REMINDER = 'subkit_renewal_reminder';
-	public const ACTION_SWEEP   = 'subkit_sweep_overdue';
-	public const GROUP          = 'subkit';
+	public const ACTION_SWEEP    = 'subkit_sweep_overdue';
+	public const GROUP           = 'subkit';
 
 	/** Cap per sweep so a site dark for a month does not fire thousands of charges at once. */
 	private const SWEEP_BATCH = 50;

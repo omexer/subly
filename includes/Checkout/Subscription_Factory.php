@@ -56,10 +56,10 @@ class Subscription_Factory {
 			 * A subscription product can be sold as a one-off — buy it once, or subscribe
 			 * and save — and that choice is made on the line, not on the product.
 			 *
-			 * @param bool                   $create
-			 * @param \WC_Order_Item_Product $item
-			 * @param \WC_Product            $product
-			 * @param \WC_Order              $order
+			 * @param bool            $create
+			 * @param \WC_Order_Item  $item
+			 * @param \WC_Product     $product
+			 * @param \WC_Order       $order
 			 */
 			if ( ! apply_filters( 'subkit_create_subscription_for_item', true, $item, $product, $order ) ) {
 				continue;

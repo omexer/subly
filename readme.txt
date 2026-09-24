@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.16.0
+Stable tag: 0.17.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,18 @@ Yes, from My Account, and that cannot be turned off. A customer who cannot cance
 Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS tables. WooCommerce's older post-based order storage is supported in the code as well, but has not been tested end to end.
 
 == Changelog ==
+
+= 0.17.0 =
+* **Free trials work.** A trial product used to charge its full price at checkout and then sit in "trialling" for ever, never converting. The trial is now free, the sign-up fee the product page promised is actually taken, and the first payment falls on the day the trial ends — which is what the customer was told all along.
+* **Trial signups now capture a card.** A trial that costs nothing makes WooCommerce skip the payment step entirely, so no payment method was stored and the first renewal had nothing to charge. The payment step is kept for trial checkouts, on the classic checkout and on blocks. Switch it off under WooCommerce → Settings → Subscriptions if you would rather chase customers for a card later.
+* **Fixed: every renewal was skipping a billing period.** A monthly subscription charged on 20 September was next charged on 20 November. Every store was billing half as often as it sold.
+* **Upcoming renewal email.** Sent to the customer a configurable number of days before their card is charged — three by default, 0 to switch it off. A subscription still on trial is told its trial is ending rather than that it is renewing.
+* **The store is told when a subscription is cancelled or ends**, with the reason the customer gave. Cancelling from the admin screen now tells the customer too; only the My Account route ever did.
+* **Customers can pay a period early.** Off by default. The renewal date does not move — paying early settles the payment that was already coming. The admin's "Renew now" also charges now, instead of quietly doing nothing unless the subscription was already overdue.
+* PayPal's setup notice no longer claims a missing webhook ID stops PayPal being offered at checkout. It does something different and worse: every webhook is rejected, so renewals are never recorded. Both notices now link to the section of Settings that fixes them.
+* Overdue trials are picked up by the hourly sweeper, which only looked at active subscriptions.
+* A subscription's recurring amount comes from the product rather than from the first order, so a one-off checkout coupon no longer discounts every renewal for ever.
+* New filters let an extension sell one product on more than one plan — see SubKit Pro's new Plans.
 
 = 0.16.0 =
 * The subscriptions list leads with the customer, says how far off the next payment is ("today", "11 days overdue") rather than only its date, and puts the status tabs, search and bulk actions in one toolbar - the bulk bar appears when you select something instead of sitting there disabled. An empty list now says what will fill it, and a filtered one offers to clear the filters.
