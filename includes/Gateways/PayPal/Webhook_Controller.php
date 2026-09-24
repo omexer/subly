@@ -190,8 +190,9 @@ class Webhook_Controller {
 
 		$order->update_meta_data( self::META_TXN_ID, $txn_id );
 		$order->save();
-		$order->payment_complete( $txn_id );
+		// Before payment_complete(), whose hooks would otherwise settle this slot a second time.
 		$this->slots->mark_paid( (int) $slot->id, $order->get_id() );
+		$order->payment_complete( $txn_id );
 
 		$status = $subscription->get_status_enum();
 

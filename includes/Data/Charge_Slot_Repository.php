@@ -131,6 +131,25 @@ class Charge_Slot_Repository {
 	}
 
 	/**
+	 * Mark paid a slot whose order was paid outside the renewal run. Only one caller can win it.
+	 */
+	public function settle_unpaid( int $slot_id, int $renewal_order_id ): bool {
+		global $wpdb;
+
+		return 1 === (int) $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}subkit_charge_slot SET state = %s, renewal_order_id = %d WHERE id = %d AND state IN ( %s, %s, %s )",
+				self::STATE_PAID,
+				$renewal_order_id,
+				$slot_id,
+				self::STATE_CLAIMED,
+				self::STATE_CHARGING,
+				self::STATE_FAILED
+			)
+		);
+	}
+
+	/**
 	 * A definitive decline. Bumps attempt_group so the next attempt gets a fresh
 	 * idempotency key; a timeout must NOT come through here.
 	 */

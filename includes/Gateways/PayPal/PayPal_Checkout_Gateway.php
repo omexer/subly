@@ -89,7 +89,13 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 	 * @param int $order_id
 	 */
 	public function process_payment( $order_id ): array {
-		$order   = wc_get_order( $order_id );
+		$order = wc_get_order( $order_id );
+
+		// A second agreement would bill alongside this one; the Store API pays orders without the pay page's gateway list.
+		if ( $order instanceof \WC_Order && 'subkit_renewal' === $order->get_created_via() ) {
+			return $this->abort( $order, __( 'A renewal cannot be paid with PayPal.', 'subkit-subscriptions' ) );
+		}
+
 		$product = $this->subscription_product_in( $order );
 
 		if ( ! $product ) {

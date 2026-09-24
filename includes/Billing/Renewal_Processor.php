@@ -22,6 +22,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Renewal_Processor {
 
+	public const ACTION_SETTLE = 'subkit_settle_paid_renewal';
+
 	public function __construct(
 		private readonly Charge_Slot_Repository $slots,
 		private readonly Activity_Repository $activity,
@@ -33,6 +35,11 @@ class Renewal_Processor {
 
 	public function register(): void {
 		add_action( Renewal_Scheduler::ACTION_RENEWAL, array( $this, 'process' ), 10, 1 );
+
+		// BACS and cheque are marked paid by hand, which changes the status but never calls payment_complete().
+		foreach ( array( 'woocommerce_payment_complete', 'woocommerce_order_status_processing', 'woocommerce_order_status_completed', self::ACTION_SETTLE ) as $hook ) {
+			add_action( $hook, array( $this, 'settle_paid_order' ), 10, 1 );
+		}
 	}
 
 	/**
@@ -138,6 +145,12 @@ class Renewal_Processor {
 			$this->slots->attach_order( (int) $slot->id, $order->get_id() );
 		}
 
+		// Paid through its payment link while this waited; charging it too bills the period twice.
+		if ( $order->is_paid() ) {
+			$this->settle( $subscription, $order, $slot );
+			return;
+		}
+
 		if ( Charge_Slot_Repository::STATE_CHARGING === $slot->state ) {
 			$verdict = $gateway->reconcile( $subscription, $this->slots->idempotency_key( $slot ) );
 
@@ -152,11 +165,140 @@ class Renewal_Processor {
 		}
 
 		if ( Charge_Slot_Repository::STATE_FAILED === $slot->state ) {
-			$resumed = $this->slots->begin_retry( $subscription_id, (int) $slot->period_index );
-			$slot    = $resumed ?? $slot;
+			$slot = $this->slots->begin_retry( $subscription_id, (int) $slot->period_index );
+
+			// No longer failed since it was read, so something else has settled it.
+			if ( ! $slot ) {
+				return;
+			}
 		}
 
 		$this->charge( $subscription, $gateway, $order, $slot );
+	}
+
+	/**
+	 * A renewal paid outside the renewal run: through its payment link, or marked paid by the store.
+	 *
+	 * @param int|string $order_id
+	 */
+	public function settle_paid_order( $order_id ): void {
+		$order = wc_get_order( (int) $order_id );
+		$slot  = $order instanceof \WC_Order && $order->is_paid() ? $this->unpaid_slot( $order ) : null;
+
+		if ( ! $slot ) {
+			return;
+		}
+
+		$subscription_id = (int) $slot->subscription_id;
+
+		if ( ! $this->lock->acquire( $subscription_id ) ) {
+			// A renewal run holds it; settling alongside could let that run bill the next period early.
+			if ( function_exists( 'as_schedule_single_action' ) ) {
+				as_schedule_single_action( time() + MINUTE_IN_SECONDS, self::ACTION_SETTLE, array( 'order_id' => $order->get_id() ), Renewal_Scheduler::GROUP );
+			}
+			return;
+		}
+
+		try {
+			$subscription = wc_get_order( $subscription_id );
+
+			if ( $subscription instanceof Subscription ) {
+				$this->settle( $subscription, $order, $slot );
+			}
+		} finally {
+			$this->lock->release( $subscription_id );
+		}
+	}
+
+	/**
+	 * The charge slot this renewal order was raised for, while it is still unpaid.
+	 */
+	private function unpaid_slot( \WC_Order $order ): ?object {
+		$slot_id = (int) $order->get_meta( '_subkit_charge_slot_id' );
+
+		if ( 'subkit_renewal' !== $order->get_created_via() || ! $slot_id ) {
+			return null;
+		}
+
+		$slot = $this->slots->find( (int) $order->get_meta( '_subkit_subscription_id' ), (int) $order->get_meta( '_subkit_period_index' ) );
+
+		if ( ! $slot || (int) $slot->id !== $slot_id ) {
+			return null;
+		}
+
+		return in_array( $slot->state, array( Charge_Slot_Repository::STATE_PAID, Charge_Slot_Repository::STATE_ABANDONED ), true ) ? null : $slot;
+	}
+
+	private function settle( Subscription $subscription, \WC_Order $order, object $slot ): void {
+		if ( ! $this->slots->settle_unpaid( (int) $slot->id, $order->get_id() ) ) {
+			return;
+		}
+
+		$this->activity->log(
+			$subscription->get_id(),
+			Activity_Repository::TYPE_CHARGE_ATTEMPT,
+			sprintf( 'Renewal order #%s for period %d was paid outside the renewal run.', $order->get_order_number(), $slot->period_index ),
+			array(
+				'reference'    => $order->get_transaction_id(),
+				'period_index' => (int) $slot->period_index,
+			)
+		);
+
+		$this->adopt_payment_method( $subscription, $order );
+
+		$subscription = wc_get_order( $subscription->get_id() );
+		$status       = $subscription instanceof Subscription ? $subscription->get_status_enum() : null;
+
+		// Still ending, but not before the end of the period just paid for.
+		if ( $subscription instanceof Subscription && Subscription_Status::PendingCancel === $status ) {
+			$subscription->set_next_payment( ( new \DateTimeImmutable( $slot->covers_to_gmt, new \DateTimeZone( 'UTC' ) ) )->format( 'Y-m-d H:i:s' ) );
+			$subscription->set_period_index( (int) $slot->period_index );
+			$subscription->save();
+
+			do_action( 'subkit_renewal_succeeded', $subscription, $order );
+			return;
+		}
+
+		if ( ! $subscription instanceof Subscription || ! $status || ! ( Subscription_Status::OnHold === $status || $status->is_billable() ) ) {
+			$this->activity->log( (int) $slot->subscription_id, Activity_Repository::TYPE_NOTE, 'The subscription is no longer renewing, so this payment did not restart it. Refund it, or reactivate the subscription by hand.' );
+			return;
+		}
+
+		$this->advance( $subscription, $slot );
+
+		do_action( 'subkit_renewal_succeeded', $subscription, $order );
+	}
+
+	/**
+	 * Keep the card the customer just paid with; a fresh copy, so a gateway that cannot leaves the old mandate intact.
+	 */
+	private function adopt_payment_method( Subscription $subscription, \WC_Order $order ): void {
+		// No transaction means no gateway took it: the store marked it paid.
+		if ( '' === (string) $order->get_transaction_id() || $order->get_payment_method() !== $subscription->get_payment_method() ) {
+			return;
+		}
+
+		$gateway   = $this->gateways->for_subscription( $subscription );
+		$candidate = wc_get_order( $subscription->get_id() );
+
+		if ( Gateway_Model::Tokenized !== $gateway->model() || ! $candidate instanceof Subscription ) {
+			return;
+		}
+
+		try {
+			$result = $gateway->create_mandate( $candidate, $order );
+		} catch ( \Throwable $e ) {
+			$result = null;
+		}
+
+		if ( ! $result || ! $result->is_success() ) {
+			$this->activity->log( $subscription->get_id(), Activity_Repository::TYPE_NOTE, sprintf( '%s did not keep the payment method from order #%s, so renewals stay on the previous one.', $gateway->title(), $order->get_order_number() ) );
+			return;
+		}
+
+		$candidate->save();
+
+		$this->activity->log( $subscription->get_id(), Activity_Repository::TYPE_NOTE, sprintf( 'Renewals will now be charged to the payment method used for order #%s.', $order->get_order_number() ) );
 	}
 
 	private function charge( Subscription $subscription, $gateway, \WC_Order $order, object $slot ): void {
@@ -191,8 +333,9 @@ class Renewal_Processor {
 		);
 
 		if ( $result->is_success() ) {
-			$order->payment_complete( (string) $result->reference );
+			// Before payment_complete(), whose hooks would otherwise settle this slot a second time.
 			$this->slots->mark_paid( (int) $slot->id, $order->get_id() );
+			$order->payment_complete( (string) $result->reference );
 			$this->advance( $subscription, $slot );
 
 			do_action( 'subkit_renewal_succeeded', $subscription, $order );

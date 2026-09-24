@@ -119,7 +119,7 @@ class Stripe_Gateway implements Recurring_Gateway {
 			$idempotency_key
 		);
 
-		return $this->interpret( $response );
+		return $this->interpret( $response, $renewal );
 	}
 
 	/**
@@ -229,7 +229,7 @@ class Stripe_Gateway implements Recurring_Gateway {
 	/**
 	 * Map a Stripe response onto the four outcomes the pipeline distinguishes.
 	 */
-	private function interpret( array $response ): Charge_Result {
+	private function interpret( array $response, \WC_Order $renewal ): Charge_Result {
 		if ( $response['ok'] ) {
 			$intent = $response['body'];
 
@@ -237,7 +237,7 @@ class Stripe_Gateway implements Recurring_Gateway {
 				'succeeded'              => Charge_Result::success( (string) ( $intent['id'] ?? '' ) ),
 				'requires_action',
 				'requires_confirmation'  => Charge_Result::requires_action(
-					$this->authenticate_url( $intent ),
+					$renewal->get_checkout_payment_url(),
 					(string) ( $intent['id'] ?? '' )
 				),
 				default                  => Charge_Result::soft_decline( (string) ( $intent['status'] ?? 'unknown' ), 'Stripe did not complete the payment.' ),
@@ -251,10 +251,10 @@ class Stripe_Gateway implements Recurring_Gateway {
 
 		$code = $response['code'];
 
-		// The bank wants the customer present, which is not a failure.
+		// Not a failure: Stripe Checkout on the order's pay page authenticates them, so no client secret leaves Stripe.
 		if ( 'authentication_required' === $code ) {
 			return Charge_Result::requires_action(
-				$this->authenticate_url( $response['body']['error']['payment_intent'] ?? array() ),
+				$renewal->get_checkout_payment_url(),
 				(string) ( $response['body']['error']['payment_intent']['id'] ?? '' )
 			);
 		}
@@ -262,15 +262,6 @@ class Stripe_Gateway implements Recurring_Gateway {
 		return in_array( $code, self::HARD_DECLINES, true )
 			? Charge_Result::hard_decline( $code, $response['error'] )
 			: Charge_Result::soft_decline( $code ?: 'card_declined', $response['error'] );
-	}
-
-	private function authenticate_url( array $intent ): string {
-		$secret = (string) ( $intent['client_secret'] ?? '' );
-
-		return '' === $secret ? '' : add_query_arg(
-			array( 'subkit_stripe_intent' => rawurlencode( $secret ) ),
-			wc_get_account_endpoint_url( 'subscriptions' )
-		);
 	}
 
 	/**

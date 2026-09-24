@@ -24,6 +24,7 @@ use SubKit\Checkout\Guest_Checkout;
 use SubKit\Checkout\Store_Api;
 use SubKit\Checkout\Subscription_Factory;
 use SubKit\Checkout\Initial_Payment;
+use SubKit\Checkout\Renewal_Order_Pay;
 use SubKit\Checkout\Trial_Payment;
 use SubKit\Frontend\Disclosure;
 use SubKit\Frontend\Product_Display;
@@ -158,6 +159,9 @@ final class Plugin {
 			$this->services['scheduler']
 		);
 		$this->services['subscription_factory']->register();
+
+		$this->services['renewal_order_pay'] = new Renewal_Order_Pay( $this->services['gateways'] );
+		$this->services['renewal_order_pay']->register();
 
 		$this->services['account'] = new Account_Endpoint( $this->services['activity'] );
 		$this->services['account']->register();

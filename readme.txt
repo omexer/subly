@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.18.3
+Stable tag: 0.18.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,12 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.18.4 =
+* **Fixed: paying a declined renewal could charge the customer twice.** Paying a failed renewal from its payment link (or marking a bank transfer paid) left the renewal unsettled, so the next automatic retry charged the card again — or, once retries ran out, cancelled a customer who had paid. A paid renewal now restarts the subscription exactly once, keeps the card it was paid with for future renewals, and is never charged again.
+* **Fixed: renewals waiting on the customer could not be paid.** Bank-transfer renewals and renewals needing 3-D Secure authentication sat on hold with no way to pay them. They can now be paid from their payment link, and the 3-D Secure link opens Stripe's own page instead of a link that did nothing.
+* **Security:** the 3-D Secure link no longer carries a Stripe client secret, which ended up in emails and server logs.
+* A renewal's payment page now offers only the subscription's own payment method, and never PayPal, which would have started a second PayPal billing agreement.
 
 = 0.18.3 =
 * **Fixed: Stripe renewals always failed.** Stripe checkout saved the card without a Stripe customer, and a card with no customer cannot be charged again, so every Stripe subscription went on hold at its first renewal with "No stored Stripe payment method". Checkout now creates the customer. Subscriptions already affected repair themselves: the card from their first payment is attached to a new Stripe customer on the next attempt. Reactivate any that are on hold to charge the renewal they missed.

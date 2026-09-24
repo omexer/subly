@@ -63,6 +63,11 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			return false;
 		}
 
+		// Paying an existing order, such as a declined renewal, has nothing to do with what is in the cart.
+		if ( is_wc_endpoint_url( 'order-pay' ) ) {
+			return parent::is_available();
+		}
+
 		// Deliberately the cart, not is_checkout(): the block checkout asks over the Store
 		// API, where is_checkout() is false, and the answer there has to be the same one
 		// the classic checkout gets or the gateway appears for carts it cannot serve.
@@ -167,6 +172,12 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			exit;
 		}
 
+		if ( 'success' !== $result && 'subkit_renewal' === $order->get_created_via() ) {
+			wc_add_notice( __( 'The card payment was cancelled, so this renewal is still unpaid.', 'subkit-subscriptions' ), 'notice' );
+			wp_safe_redirect( $order->get_checkout_payment_url() );
+			exit;
+		}
+
 		if ( 'success' !== $result ) {
 			wc_add_notice( __( 'The card payment was cancelled, so no subscription was started.', 'subkit-subscriptions' ), 'notice' );
 			wp_safe_redirect( wc_get_cart_url() );
@@ -208,7 +219,34 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 
 		$this->attach_mandate( $order );
 
+		// A retry charged it off-session while the customer was at Stripe, so this is a second capture.
+		if ( $order->is_paid() ) {
+			$this->flag_second_capture( $order, (string) ( $intent['id'] ?? $session_id ) );
+			return;
+		}
+
 		$order->payment_complete( (string) ( $intent['id'] ?? $session_id ) );
+	}
+
+	private function flag_second_capture( \WC_Order $order, string $reference ): void {
+		$message = sprintf( 'Stripe took a second payment (%1$s) for order #%2$s, which was already paid. Refund it in Stripe.', $reference, $order->get_order_number() );
+
+		$order->add_order_note( $message );
+
+		$activity     = \SubKit\Plugin::instance()->get( 'activity' );
+		$subscription = (int) $order->get_meta( '_subkit_subscription_id' );
+
+		if ( $subscription && $activity instanceof \SubKit\Data\Activity_Repository ) {
+			$activity->log(
+				$subscription,
+				\SubKit\Data\Activity_Repository::TYPE_CHARGE_ATTEMPT,
+				$message,
+				array(
+					'reference' => $reference,
+					'refund'    => true,
+				)
+			);
+		}
 	}
 
 	/**
