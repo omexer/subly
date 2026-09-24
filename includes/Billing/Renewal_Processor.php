@@ -74,6 +74,12 @@ class Renewal_Processor {
 		}
 
 		$status = $subscription->get_status_enum();
+
+		if ( Subscription_Status::PendingCancel === $status ) {
+			$this->end_cancelled_period( $subscription );
+			return;
+		}
+
 		if ( ! $status || ! $status->is_billable() ) {
 			return;
 		}
@@ -383,16 +389,92 @@ class Renewal_Processor {
 	 * End a subscription that has reached its natural conclusion rather than renewing it.
 	 */
 	private function finish( Subscription $subscription, string $reason ): void {
+		$this->close( $subscription, Subscription_Status::Expired, $reason );
+
+		do_action( 'subkit_subscription_finished', $subscription, $reason );
+	}
+
+	/**
+	 * Carry out a cancellation the customer timed for the end of the period they paid for.
+	 */
+	private function end_cancelled_period( Subscription $subscription ): void {
+		$paid_to = $this->as_date( $subscription->get_next_payment() );
+
+		if ( $paid_to && $paid_to > new \DateTimeImmutable( 'now', new \DateTimeZone( 'UTC' ) ) ) {
+			return;
+		}
+
+		// Releasing the mandate from a staging clone would stop the live site's agreement.
+		if ( ! $this->is_billing_site( $subscription ) ) {
+			return;
+		}
+
+		$open = $this->slots->latest_unsettled( $subscription->get_id() );
+
+		if ( $open && Charge_Slot_Repository::STATE_CHARGING === $open->state && ! $this->settle_before_ending( $subscription, $open ) ) {
+			return;
+		}
+
+		// Not subkit_subscription_finished: that means the plan ran its course, not that the customer left.
+		$this->close( $subscription, Subscription_Status::Cancelled, __( 'Cancelled at the end of the paid period.', 'subkit-subscriptions' ) );
+	}
+
+	/**
+	 * Resolve a charge of unknown outcome before ending: if it landed, the customer paid for another period.
+	 *
+	 * @return bool Whether the subscription can end now.
+	 */
+	private function settle_before_ending( Subscription $subscription, object $slot ): bool {
+		$subscription_id = $subscription->get_id();
+		$verdict         = $this->gateways->for_subscription( $subscription )->reconcile( $subscription, $this->slots->idempotency_key( $slot ) );
+		$order           = $slot->renewal_order_id ? wc_get_order( (int) $slot->renewal_order_id ) : null;
+
+		if ( $verdict && $verdict->is_transient() ) {
+			$this->activity->log( $subscription_id, Activity_Repository::TYPE_CHARGE_ATTEMPT, sprintf( 'Could not confirm the outcome of period %d before ending; will check again.', $slot->period_index ) );
+			return false;
+		}
+
+		if ( $verdict && $verdict->is_success() ) {
+			if ( ! $order instanceof \WC_Order ) {
+				$order = $this->orders->create( $subscription, $slot );
+				$this->slots->attach_order( (int) $slot->id, $order->get_id() );
+			}
+
+			$this->activity->log( $subscription_id, Activity_Repository::TYPE_CHARGE_ATTEMPT, 'Reconciled unknown charge before ending: ' . $verdict->describe() );
+
+			// Paid before payment_complete, so a listener settling paid renewal orders finds nothing left to do.
+			$this->slots->mark_paid( (int) $slot->id, $order->get_id() );
+			$order->payment_complete( (string) $verdict->reference );
+
+			$subscription->set_next_payment( $slot->covers_to_gmt );
+			$subscription->set_period_index( (int) $slot->period_index );
+			$subscription->save();
+
+			$this->scheduler->schedule_at( $subscription_id, (int) strtotime( $slot->covers_to_gmt . ' UTC' ) );
+
+			do_action( 'subkit_renewal_succeeded', $subscription, $order );
+			return false;
+		}
+
+		$this->activity->log( $subscription_id, Activity_Repository::TYPE_CHARGE_ATTEMPT, sprintf( 'Unknown charge for period %d never landed; abandoned before ending.', $slot->period_index ) );
+		$this->slots->mark_abandoned( (int) $slot->id );
+
+		if ( $order instanceof \WC_Order && ! $order->is_paid() ) {
+			$order->update_status( 'cancelled', __( 'The subscription ended before this renewal was paid.', 'subkit-subscriptions' ) );
+		}
+
+		return true;
+	}
+
+	private function close( Subscription $subscription, Subscription_Status $to, string $reason ): void {
 		$this->activity->log( $subscription->get_id(), Activity_Repository::TYPE_STATUS_CHANGE, $reason );
 
 		$subscription->set_next_payment( null );
-		$subscription->transition_to( Subscription_Status::Expired, $reason );
+		$subscription->transition_to( $to, $reason );
 		$subscription->save();
 
 		$this->scheduler->unschedule( $subscription->get_id() );
 		$this->release_mandate( $subscription );
-
-		do_action( 'subkit_subscription_finished', $subscription, $reason );
 	}
 
 	/**

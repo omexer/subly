@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.18.4
+Stable tag: 0.18.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,10 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.18.5 =
+* **Fixed: subscriptions cancelled "at the end of the period" never ended.** They stayed in Cancelling for ever, so the customer kept their downloads, role and access, and nothing that reacts to a cancellation ever ran. They now end when the paid period runs out: access stops, a PayPal agreement is told to stop billing, and nothing is charged. Subscriptions already stuck in Cancelling are ended by the next hourly check.
+* A renewal whose outcome was unknown when the customer cancelled is checked with the payment gateway before the subscription ends, so a payment that did go through is honoured rather than lost.
 
 = 0.18.4 =
 * **Fixed: paying a declined renewal could charge the customer twice.** Paying a failed renewal from its payment link (or marking a bank transfer paid) left the renewal unsettled, so the next automatic retry charged the card again — or, once retries ran out, cancelled a customer who had paid. A paid renewal now restarts the subscription exactly once, keeps the card it was paid with for future renewals, and is never charged again.
