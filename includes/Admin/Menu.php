@@ -174,10 +174,11 @@ class Menu {
 		echo '<form method="get">';
 		printf( '<input type="hidden" name="page" value="%s" />', esc_attr( self::LIST_SLUG ) );
 
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- a read-only list filter; nothing is changed.
 		if ( isset( $_GET['status'] ) ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only list filter.
 			printf( '<input type="hidden" name="status" value="%s" />', esc_attr( sanitize_text_field( wp_unslash( $_GET['status'] ) ) ) );
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		$table->search_box( __( 'Search subscriptions', 'subkit-subscriptions' ), 'subkit-search' );
 		$table->display();

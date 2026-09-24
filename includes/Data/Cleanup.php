@@ -72,10 +72,8 @@ class Cleanup {
 		$removed = 0;
 
 		foreach ( array( 'subkit_charge_slot', 'subkit_activity' ) as $table ) {
-			$name = $wpdb->prefix . $table;
-
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- our own table, named from the fixed list above; no value is interpolated.
-			$ids = (array) $wpdb->get_col( "SELECT DISTINCT subscription_id FROM {$name}" );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a one-off sweep of our own table.
+			$ids = (array) $wpdb->get_col( $wpdb->prepare( 'SELECT DISTINCT subscription_id FROM %i', $wpdb->prefix . $table ) );
 
 			foreach ( $ids as $id ) {
 				if ( wc_get_order( (int) $id ) ) {

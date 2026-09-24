@@ -19,8 +19,8 @@ if ( 'yes' !== get_option( 'subkit_delete_data_on_uninstall', 'no' ) ) {
 global $wpdb;
 
 foreach ( array( 'subkit_schedule', 'subkit_activity', 'subkit_charge_slot' ) as $subkit_table ) {
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- the name is a literal from the list above, and DROP TABLE takes no placeholders.
-	$wpdb->query( "DROP TABLE IF EXISTS `{$wpdb->prefix}{$subkit_table}`" );
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.DirectDatabaseQuery.SchemaChange -- removing our own tables is what uninstall is for.
+	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . $subkit_table ) );
 }
 
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API deletes options by prefix.

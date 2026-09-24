@@ -2,6 +2,10 @@
 
 namespace SubKit;
 
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 use SubKit\Billing\Lock;
 use SubKit\Billing\Renewal_Order_Factory;
 use SubKit\Billing\Renewal_Processor;
@@ -53,10 +57,6 @@ use SubKit\Lifecycle\Role_Management;
 use SubKit\Frontend\Downloadable_Access;
 use SubKit\Frontend\MyAccount\Account_Endpoint;
 use SubKit\Frontend\MyAccount\Assets as Account_Assets;
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
 
 /**
  * Service registration. Deliberately a plain registry rather than a DI container —

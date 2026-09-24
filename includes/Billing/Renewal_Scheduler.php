@@ -209,11 +209,8 @@ class Renewal_Scheduler {
 		$trialling = 'wc-' . Subscription_Status::Trialling->value;
 
 		if ( $hpos ) {
-			$orders = $wpdb->prefix . 'wc_orders';
-			$meta   = $wpdb->prefix . 'wc_orders_meta';
-
-			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- table names come from $wpdb, values are prepared.
-			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT o.id FROM {$orders} o INNER JOIN {$meta} m ON m.order_id = o.id AND m.meta_key = %s WHERE o.type = %s AND o.status IN ( %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, o.id ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $cutoff, $limit, $offset ) );
+			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API filters orders by meta and status together.
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT o.id FROM %i o INNER JOIN %i m ON m.order_id = o.id AND m.meta_key = %s WHERE o.type = %s AND o.status IN ( %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, o.id ASC LIMIT %d OFFSET %d", $wpdb->prefix . 'wc_orders', $wpdb->prefix . 'wc_orders_meta', '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $cutoff, $limit, $offset ) );
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API filters orders by meta on legacy storage.
 			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = %s WHERE p.post_type = %s AND p.post_status IN ( %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ORDER BY m.meta_value ASC, p.ID ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $cutoff, $limit, $offset ) );

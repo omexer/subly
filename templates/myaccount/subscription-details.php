@@ -14,18 +14,18 @@ defined( 'ABSPATH' ) || exit;
 use SubKit\Domain\Subscription_Status;
 use SubKit\Frontend\MyAccount\Status_Presenter;
 
-$state      = Status_Presenter::for( $subscription );
-$can_cancel = ! in_array(
+$subkit_state      = Status_Presenter::for( $subscription );
+$subkit_can_cancel = ! in_array(
 	$subscription->get_status_enum(),
 	array( Subscription_Status::Cancelled, Subscription_Status::Expired, Subscription_Status::Switched, Subscription_Status::PendingCancel ),
 	true
 );
 
 // A term the customer agreed to, such as a minimum number of payments, can hold the button back.
-$cancel_refused = '';
-if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, get_current_user_id() ) ) {
-	$can_cancel     = false;
-	$cancel_refused = \SubKit\Frontend\MyAccount\Account_Endpoint::cancel_refused_message( $subscription );
+$subkit_cancel_refused = '';
+if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, get_current_user_id() ) ) {
+	$subkit_can_cancel     = false;
+	$subkit_cancel_refused = \SubKit\Frontend\MyAccount\Account_Endpoint::cancel_refused_message( $subscription );
 }
 ?>
 
@@ -38,13 +38,13 @@ if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, g
 <div class="subkit-detail">
 	<div class="subkit-card__head">
 		<h2><?php echo esc_html( Status_Presenter::title( $subscription ) ); ?></h2>
-		<span class="subkit-badge subkit-badge--<?php echo esc_attr( $state['tone'] ); ?>">
-			<?php echo esc_html( $state['label'] ); ?>
+		<span class="subkit-badge subkit-badge--<?php echo esc_attr( $subkit_state['tone'] ); ?>">
+			<?php echo esc_html( $subkit_state['label'] ); ?>
 		</span>
 	</div>
 
-	<?php if ( $state['detail'] ) : ?>
-		<p class="subkit-detail__state"><?php echo esc_html( $state['detail'] ); ?></p>
+	<?php if ( $subkit_state['detail'] ) : ?>
+		<p class="subkit-detail__state"><?php echo esc_html( $subkit_state['detail'] ); ?></p>
 	<?php endif; ?>
 
 	<?php $subkit_action = \SubKit\Frontend\MyAccount\Status_Presenter::primary_action( $subscription ); ?>
@@ -58,11 +58,11 @@ if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, g
 
 	<h3><?php esc_html_e( "What's included", 'subkit-subscriptions' ); ?></h3>
 	<ul class="subkit-items">
-		<?php foreach ( $subscription->get_items() as $item ) : ?>
+		<?php foreach ( $subscription->get_items() as $subkit_item ) : ?>
 			<li>
-				<?php echo esc_html( $item->get_name() ); ?>
-				<?php if ( $item->get_quantity() > 1 ) : ?>
-					<span class="subkit-qty">&times; <?php echo esc_html( (string) $item->get_quantity() ); ?></span>
+				<?php echo esc_html( $subkit_item->get_name() ); ?>
+				<?php if ( $subkit_item->get_quantity() > 1 ) : ?>
+					<span class="subkit-qty">&times; <?php echo esc_html( (string) $subkit_item->get_quantity() ); ?></span>
 				<?php endif; ?>
 			</li>
 		<?php endforeach; ?>
@@ -128,7 +128,7 @@ if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, g
 	<?php endif; ?>
 
 	<?php
-	$subkit_auto_offered = \SubKit\Lifecycle\Auto_Renewal::is_offered() && $can_cancel;
+	$subkit_auto_offered = \SubKit\Lifecycle\Auto_Renewal::is_offered() && $subkit_can_cancel;
 	$subkit_auto_on      = \SubKit\Lifecycle\Auto_Renewal::is_on( $subscription );
 	?>
 	<?php if ( $subkit_auto_offered ) : ?>
@@ -158,7 +158,7 @@ if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, g
 		</form>
 	<?php endif; ?>
 
-	<?php if ( $can_cancel ) : ?>
+	<?php if ( $subkit_can_cancel ) : ?>
 		<h3><?php esc_html_e( 'Cancel this subscription', 'subkit-subscriptions' ); ?></h3>
 
 		<form method="post" class="subkit-cancel">
@@ -201,7 +201,7 @@ if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, g
 				</a>
 			</div>
 		</form>
-	<?php elseif ( $cancel_refused ) : ?>
-		<p class="subkit-cancel__refused"><?php echo esc_html( $cancel_refused ); ?></p>
+	<?php elseif ( $subkit_cancel_refused ) : ?>
+		<p class="subkit-cancel__refused"><?php echo esc_html( $subkit_cancel_refused ); ?></p>
 	<?php endif; ?>
 </div>
