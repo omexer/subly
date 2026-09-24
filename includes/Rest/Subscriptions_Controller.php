@@ -503,6 +503,12 @@ class Subscriptions_Controller {
 		$subscription->transition_to( $to, $reason );
 		$subscription->save();
 
+		// Only the My Account route announced a cancellation, so a store cancelling for a
+		// customer sent them nothing at all.
+		if ( Subscription_Status::Cancelled === $to || Subscription_Status::PendingCancel === $to ) {
+			do_action( 'subkit_subscription_cancelled', $subscription, 'store' );
+		}
+
 		return true;
 	}
 
