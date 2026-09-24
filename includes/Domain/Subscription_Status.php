@@ -40,10 +40,11 @@ enum Subscription_Status: string {
 	}
 
 	/**
-	 * Only an active subscription may claim a charge slot.
+	 * A trial counts: its first charge falls due the moment it ends, and the due date is
+	 * what keeps a trial still running from being billed early.
 	 */
 	public function is_billable(): bool {
-		return self::Active === $this;
+		return self::Active === $this || self::Trialling === $this;
 	}
 
 	/**

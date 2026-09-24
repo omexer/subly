@@ -82,10 +82,27 @@ class Subscription_Product {
 		return '' === $value || null === $value ? $default : $value;
 	}
 
+	/** @var array<int, float> Set when the cart reprices a product for its first payment. */
+	private static array $recurring_prices = array();
+
+	public static function remember_recurring_price( \WC_Product $product, float $price ): void {
+		self::$recurring_prices[ $product->get_id() ] = $price;
+	}
+
+	/**
+	 * The price per billing period.
+	 *
+	 * The cart lowers a trial product's price to what is due today, so the product object
+	 * alone stops being a reliable answer once a checkout is underway.
+	 */
 	public static function recurring_price( $product ): Money {
 		$product = self::resolve( $product );
 
-		return Money::from_decimal( $product ? (float) $product->get_price() : 0.0 );
+		if ( ! $product instanceof \WC_Product ) {
+			return Money::from_decimal( 0.0 );
+		}
+
+		return Money::from_decimal( self::$recurring_prices[ $product->get_id() ] ?? (float) $product->get_price() );
 	}
 
 	/**

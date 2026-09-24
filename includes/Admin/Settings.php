@@ -79,6 +79,14 @@ class Settings extends \WC_Settings_Page {
 				'desc_tip' => true,
 			),
 			array(
+				'title'    => __( 'Free trials', 'subkit-subscriptions' ),
+				'desc'     => __( 'Ask for a payment method even when the first payment is nothing', 'subkit-subscriptions' ),
+				'id'       => \SubKit\Checkout\Trial_Payment::OPTION,
+				'type'     => 'checkbox',
+				'default'  => 'yes',
+				'desc_tip' => __( 'A trial with no sign-up fee makes the first order zero, and WooCommerce skips the payment step for a zero-total order — so nothing is stored to charge when the trial ends. Switch this off only if you would rather chase customers for a card later.', 'subkit-subscriptions' ),
+			),
+			array(
 				'type' => 'sectionend',
 				'id'   => 'subkit_renewals_title',
 			),

@@ -85,37 +85,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			return array( 'result' => 'failure' );
 		}
 
-		$amount = Money::from_decimal( $order->get_total(), $order->get_currency() );
-
-		$response = $this->client->post(
-			'/v1/checkout/sessions',
-			array(
-				'mode'                => 'payment',
-				'customer_email'      => $order->get_billing_email(),
-				'client_reference_id' => (string) $order->get_id(),
-				'success_url'         => $this->return_url( $order, 'success' ),
-				'cancel_url'          => $this->return_url( $order, 'cancel' ),
-				// Keep the card on file so renewals can be charged off-session later.
-				'payment_intent_data' => array( 'setup_future_usage' => 'off_session' ),
-				'line_items'          => array(
-					array(
-						'quantity'   => 1,
-						'price_data' => array(
-							'currency'     => strtolower( $order->get_currency() ),
-							'unit_amount'  => $amount->minor(),
-							'product_data' => array(
-								'name' => sprintf(
-									/* translators: %s: order number */
-									__( 'Order %s', 'subkit-subscriptions' ),
-									$order->get_order_number()
-								),
-							),
-						),
-					),
-				),
-				'metadata'            => array( 'subkit_order' => (string) $order->get_id() ),
-			)
-		);
+		$response = $this->client->post( '/v1/checkout/sessions', $this->session_args( $order ) );
 
 		if ( ! $response['ok'] || empty( $response['body']['url'] ) ) {
 			$order->add_order_note( sprintf( 'Stripe: %s', $response['error'] ) );
@@ -130,6 +100,54 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 		return array(
 			'result'   => 'success',
 			'redirect' => (string) $response['body']['url'],
+		);
+	}
+
+	/**
+	 * A trial with no sign-up fee costs nothing today, and Stripe rejects a zero-amount
+	 * payment. Setup mode stores the card without charging it, which is what a trial needs.
+	 *
+	 * @return array<string, mixed>
+	 */
+	private function session_args( \WC_Order $order ): array {
+		$common = array(
+			'customer_email'      => $order->get_billing_email(),
+			'client_reference_id' => (string) $order->get_id(),
+			'success_url'         => $this->return_url( $order, 'success' ),
+			'cancel_url'          => $this->return_url( $order, 'cancel' ),
+			'metadata'            => array( 'subkit_order' => (string) $order->get_id() ),
+		);
+
+		$amount = Money::from_decimal( $order->get_total(), $order->get_currency() );
+
+		if ( $amount->minor() <= 0 ) {
+			return $common + array(
+				'mode'              => 'setup',
+				'currency'          => strtolower( $order->get_currency() ),
+				'setup_intent_data' => array( 'metadata' => array( 'subkit_order' => (string) $order->get_id() ) ),
+			);
+		}
+
+		return $common + array(
+			'mode'                => 'payment',
+			// Keep the card on file so renewals can be charged off-session later.
+			'payment_intent_data' => array( 'setup_future_usage' => 'off_session' ),
+			'line_items'          => array(
+				array(
+					'quantity'   => 1,
+					'price_data' => array(
+						'currency'     => strtolower( $order->get_currency() ),
+						'unit_amount'  => $amount->minor(),
+						'product_data' => array(
+							'name' => sprintf(
+								/* translators: %s: order number */
+								__( 'Order %s', 'subkit-subscriptions' ),
+								$order->get_order_number()
+							),
+						),
+					),
+				),
+			),
 		);
 	}
 
@@ -169,14 +187,15 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			return;
 		}
 
-		$session = $this->client->get( '/v1/checkout/sessions/' . rawurlencode( $session_id ) . '?expand[]=payment_intent' );
+		$session = $this->client->get( '/v1/checkout/sessions/' . rawurlencode( $session_id ) . '?expand[]=payment_intent&expand[]=setup_intent' );
 
-		if ( ! $session['ok'] || 'paid' !== ( $session['body']['payment_status'] ?? '' ) ) {
+		if ( ! $session['ok'] || ! $this->session_is_settled( $session['body'] ?? array() ) ) {
 			$order->update_status( 'on-hold', __( 'Waiting for Stripe to confirm the payment.', 'subkit-subscriptions' ) );
 			return;
 		}
 
-		$intent   = $session['body']['payment_intent'] ?? array();
+		// Setup mode has no payment intent; the card lives on the setup intent instead.
+		$intent   = $session['body']['payment_intent'] ?? $session['body']['setup_intent'] ?? array();
 		$customer = (string) ( $session['body']['customer'] ?? '' );
 		$method   = (string) ( $intent['payment_method'] ?? '' );
 
@@ -188,6 +207,17 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 		$this->attach_mandate( $order );
 
 		$order->payment_complete( (string) ( $intent['id'] ?? $session_id ) );
+	}
+
+	/**
+	 * @param array<string, mixed> $body
+	 */
+	private function session_is_settled( array $body ): bool {
+		if ( 'setup' === ( $body['mode'] ?? '' ) ) {
+			return 'complete' === ( $body['status'] ?? '' );
+		}
+
+		return 'paid' === ( $body['payment_status'] ?? '' );
 	}
 
 	private function attach_mandate( \WC_Order $order ): void {

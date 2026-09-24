@@ -87,13 +87,19 @@ class Subscription_Factory {
 			$subscription->set_trial_end( $trial_end->format( 'Y-m-d H:i:s' ) );
 		}
 
-		// The first renewal falls after the trial when there is one, otherwise one full
-		// period from today. The initial payment is the parent order, not a renewal.
-		$first_renewal = $schedule->next_date_from( $trial_end ?? $now );
+		// A trial is charged the day it ends, which is what the customer was told; without
+		// a trial the first renewal is one full period from today, the initial payment
+		// having been the parent order.
+		$first_renewal = $trial_end ?? $schedule->next_date_from( $now );
 		$subscription->set_next_payment( $first_renewal->format( 'Y-m-d H:i:s' ) );
 
 		// Pin the origin site so a cloned staging copy refuses to bill real customers.
 		$subscription->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
+
+		// The recurring amount, not what the first order came to: a trial makes that zero
+		// and a one-off coupon would otherwise discount every renewal for ever.
+		$quantity  = max( 1, (int) $item->get_quantity() );
+		$recurring = Subscription_Product::recurring_price( $product )->multiply( $quantity )->decimal();
 
 		$copy = new \WC_Order_Item_Product();
 		$copy->set_props(
@@ -101,9 +107,9 @@ class Subscription_Factory {
 				'name'         => $item->get_name(),
 				'product_id'   => $item->get_product_id(),
 				'variation_id' => $item->get_variation_id(),
-				'quantity'     => $item->get_quantity(),
-				'subtotal'     => $item->get_subtotal(),
-				'total'        => $item->get_total(),
+				'quantity'     => $quantity,
+				'subtotal'     => $recurring,
+				'total'        => $recurring,
 			)
 		);
 		$subscription->add_item( $copy );

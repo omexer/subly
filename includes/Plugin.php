@@ -19,6 +19,8 @@ use SubKit\Checkout\Cart_Validation;
 use SubKit\Checkout\Guest_Checkout;
 use SubKit\Checkout\Store_Api;
 use SubKit\Checkout\Subscription_Factory;
+use SubKit\Checkout\Initial_Payment;
+use SubKit\Checkout\Trial_Payment;
 use SubKit\Frontend\Disclosure;
 use SubKit\Frontend\Product_Display;
 use SubKit\Gateways\Gateway_Registry;
@@ -137,6 +139,12 @@ final class Plugin {
 
 		$this->services['cart_rules'] = new Cart_Validation();
 		$this->services['cart_rules']->register();
+
+		$this->services['initial_payment'] = new Initial_Payment();
+		$this->services['initial_payment']->register();
+
+		$this->services['trial_payment'] = new Trial_Payment();
+		$this->services['trial_payment']->register();
 
 		$this->services['store_api'] = new Store_Api( $this->services['disclosure'] );
 		$this->services['store_api']->register();
