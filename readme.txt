@@ -159,6 +159,8 @@ included in the plugin.
 * Overdue trials are picked up by the hourly sweeper, which only looked at active subscriptions.
 * A subscription's recurring amount comes from the product rather than from the first order, so a one-off checkout coupon no longer discounts every renewal for ever.
 * New filters let an extension sell one product on more than one plan — see SubKit Pro's new Plans.
+* The plugin is now called SubKit – Subscriptions for WooCommerce. Only the name changes: same plugin, same settings, updated in place.
+* Deleting the plugin can now remove its data with it, if you ask it to under WooCommerce → Settings → Subscriptions. Off by default, and subscriptions and their orders are never deleted either way.
 
 = 0.16.0 =
 * The subscriptions list leads with the customer, says how far off the next payment is ("today", "11 days overdue") rather than only its date, and puts the status tabs, search and bulk actions in one toolbar - the bulk bar appears when you select something instead of sitting there disabled. An empty list now says what will fill it, and a filtered one offers to clear the filters.
