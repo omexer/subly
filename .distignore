@@ -12,4 +12,6 @@
 /package-lock.json
 /phpcs.xml.dist
 /phpstan.neon.dist
+/tests
+/.wp-env.json
 /tools

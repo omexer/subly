@@ -1,0 +1,16 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/wp-env.json",
+	"core": null,
+	"phpVersion": "8.1",
+	"plugins": [
+		"https://downloads.wordpress.org/plugin/woocommerce.latest-stable.zip",
+		"."
+	],
+	"config": {
+		"WP_DEBUG": true,
+		"WP_DEBUG_DISPLAY": true
+	},
+	"lifecycleScripts": {
+		"afterStart": "npx wp-env run cli wp option update woocommerce_custom_orders_table_enabled yes"
+	}
+}

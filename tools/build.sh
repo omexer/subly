@@ -48,6 +48,10 @@ while IFS= read -r line || [ -n "$line" ]; do
 	rm -rf "${pkg:?}/${line#/}"
 done < .distignore
 
+# Tests live beside the source they cover, so they are removed by shape, not by path.
+find "$pkg" -type d \( -name test -o -name tests -o -name __tests__ \) -prune -exec rm -rf {} +
+find "$pkg" -type f \( -name '*.test.js' -o -name '*.spec.js' -o -name '*.test.jsx' -o -name '*.spec.jsx' \) -delete
+
 # An allow list as well as a deny list: a new top-level file stops the build instead of shipping by accident.
 allowed=" $main includes assets build src templates languages readme.txt CHANGELOG.md index.php uninstall.php LICENSE license.txt package.json webpack.config.js tailwind.config.js postcss.config.js "
 for entry in "$pkg"/* "$pkg"/.[!.]*; do
@@ -60,7 +64,7 @@ for entry in "$pkg"/* "$pkg"/.[!.]*; do
 done
 
 # src/ ships on purpose: wordpress.org wants the readable source of the bundles in build/.
-forbidden="$(find "$pkg" \( -name node_modules -o -name .git -o -name .github -o -name docs -o -name .DS_Store -o -name '*.map' -o -name '.env*' \) -print | sed -n '1,5p')"
+forbidden="$(find "$pkg" \( -name node_modules -o -name .git -o -name .github -o -name docs -o -name .DS_Store -o -name '*.map' -o -name '.env*' -o -name '.wp-env*' -o -name test -o -name tests -o -name __tests__ -o -name '*.test.js' -o -name '*.spec.js' -o -name 'phpunit*' \) -print | sed -n '1,5p')"
 [ -z "$forbidden" ] || fail "forbidden paths inside the zip: ${forbidden//$stage\//}"
 
 for required in "$main" includes/autoload.php build; do
