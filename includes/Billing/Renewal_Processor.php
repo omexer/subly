@@ -247,8 +247,41 @@ class Renewal_Processor {
 		$subscription->save();
 
 		$this->scheduler->unschedule( $subscription->get_id() );
+		$this->release_mandate( $subscription );
 
 		do_action( 'subkit_subscription_finished', $subscription, $reason );
+	}
+
+	/**
+	 * Tell a gateway that bills on a plan of its own that we are done.
+	 *
+	 * Unscheduling stops SubKit asking for money; it does nothing to PayPal, which bills
+	 * from its own plan and would go on charging a customer whose subscription has ended.
+	 * A tokenized gateway only moves money when we ask it to, so it has nothing to undo.
+	 */
+	private function release_mandate( Subscription $subscription ): void {
+		$gateway = $this->gateways->for_subscription( $subscription );
+
+		if ( Gateway_Model::GatewayManaged !== $gateway->model() ) {
+			return;
+		}
+
+		try {
+			$released = $gateway->cancel_mandate( $subscription );
+		} catch ( \Throwable $e ) {
+			// The message can carry a gateway payload, so only the fact is recorded.
+			$released = false;
+		}
+
+		$this->activity->log(
+			$subscription->get_id(),
+			Activity_Repository::TYPE_NOTE,
+			$released
+				/* translators: %s: payment gateway name */
+				? sprintf( __( '%s was told to stop billing.', 'subkit-subscriptions' ), $gateway->title() )
+				/* translators: %s: payment gateway name */
+				: sprintf( __( '%s could not be told to stop billing and may keep charging this customer. Cancel the agreement in your gateway account.', 'subkit-subscriptions' ), $gateway->title() )
+		);
 	}
 
 	private function advance( Subscription $subscription, object $slot ): void {

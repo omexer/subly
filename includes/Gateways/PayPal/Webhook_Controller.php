@@ -193,7 +193,20 @@ class Webhook_Controller {
 		$order->payment_complete( $txn_id );
 		$this->slots->mark_paid( (int) $slot->id, $order->get_id() );
 
-		$subscription->set_next_payment( $covers_to->format( 'Y-m-d H:i:s' ) );
+		$status = $subscription->get_status_enum();
+
+		if ( $status && $status->is_terminal() ) {
+			// The money moved, so the order stands — but dating a next payment on a
+			// subscription that has ended would hide that PayPal is still charging.
+			$this->activity->log(
+				$subscription->get_id(),
+				Activity_Repository::TYPE_CHARGE_ATTEMPT,
+				__( 'PayPal charged for a subscription that has already ended. Cancel the agreement in your PayPal account, and refund this payment if it was not due.', 'subkit-subscriptions' )
+			);
+		} else {
+			$subscription->set_next_payment( $covers_to->format( 'Y-m-d H:i:s' ) );
+		}
+
 		$subscription->set_period_index( (int) $slot->period_index );
 		$this->set_status( $subscription, Subscription_Status::Active );
 

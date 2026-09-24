@@ -144,11 +144,22 @@ class PayPal_Plans {
 			);
 		}
 
+		/**
+		 * How many payments PayPal should take before it stops on its own.
+		 *
+		 * PayPal owns this schedule, so a limit SubKit knows about — a payment cap, an
+		 * instalment plan — has to be built into the plan or PayPal bills past the end.
+		 *
+		 * @param int          $total_cycles 0 bills forever.
+		 * @param \WC_Product  $product
+		 */
+		$total_cycles = max( 0, (int) apply_filters( 'subkit_paypal_total_cycles', 0, $product ) );
+
 		$cycles[] = array(
 			'tenure_type'    => 'REGULAR',
 			'sequence'       => $sequence,
 			// 0 means bill forever, which is what an open-ended subscription is.
-			'total_cycles'   => 0,
+			'total_cycles'   => $total_cycles,
 			'frequency'      => array(
 				'interval_unit'  => $this->interval_unit( $schedule ),
 				'interval_count' => $schedule->interval(),
