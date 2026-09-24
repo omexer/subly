@@ -149,6 +149,7 @@ included in the plugin.
 == Changelog ==
 
 = 0.18.1 =
+* **Fixed: renewals silently failed until an administrator opened wp-admin.** SubKit created its tables only on an admin page view, so a store activated from WP-CLI, deployed by a host, or updated in the background had none — and every renewal until someone logged in failed against a table that did not exist. They are now created on the first request of any kind.
 * **Fixed: the "Missed renewals" setting did nothing.** Its default — charge once and move the schedule forward — was saved and shown but never applied, so a subscription whose site had stopped running its scheduler was charged once for every missed period when it came back: three months down meant three charges within three hours. It now takes one charge covering the whole gap and resumes on the original day of the month. Choosing "Charge for every missed period" keeps the old behaviour.
 
 = 0.18.0 =

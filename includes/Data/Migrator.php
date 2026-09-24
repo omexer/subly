@@ -10,7 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Schema installer. Migrations are additive only and safe to re-run.
  *
  * Never runs from an activation hook: a store with 100k subscriptions would time out.
- * It runs on admin_init behind a version option, and Action Scheduler takes over for
+ * It runs on init behind a version option — not admin_init, which a store activated from
+ * WP-CLI or updated in the background may not reach for days, while every renewal in
+ * between fails against tables that do not exist. Action Scheduler takes over for
  * anything that has to touch existing rows.
  */
 class Migrator {
@@ -20,7 +22,8 @@ class Migrator {
 	private const OPTION = 'subkit_db_version';
 
 	public function register(): void {
-		add_action( 'admin_init', array( $this, 'maybe_migrate' ) );
+		// Early in init, before anything else there reads the tables.
+		add_action( 'init', array( $this, 'maybe_migrate' ), 5 );
 	}
 
 	public function maybe_migrate(): void {
@@ -30,7 +33,8 @@ class Migrator {
 
 		$this->install();
 
-		update_option( self::OPTION, self::DB_VERSION, false );
+		// Autoloaded, since it is now read on every request.
+		update_option( self::OPTION, self::DB_VERSION, true );
 	}
 
 	/**
