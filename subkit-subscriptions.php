@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: SubKit – WooCommerce Subscriptions
+ * Plugin Name: SubKit – Subscriptions for WooCommerce
  * Plugin URI:  https://github.com/pronob1010/subkit-subscriptions
  * Description: Turn any WooCommerce product into a subscription and let it bill itself.
  * Version:     0.17.0

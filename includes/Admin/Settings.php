@@ -152,6 +152,14 @@ class Settings extends \WC_Settings_Page {
 				'options'  => self::role_options(),
 			),
 			array(
+				'title'    => __( 'Delete data when the plugin is deleted', 'subkit-subscriptions' ),
+				'desc'     => __( 'Remove SubKit\'s settings and its own database tables on uninstall', 'subkit-subscriptions' ),
+				'type'     => 'checkbox',
+				'id'       => 'subkit_delete_data_on_uninstall',
+				'default'  => 'no',
+				'desc_tip' => __( 'Off by default, so deactivating or deleting the plugin to try something else loses nothing. Subscriptions and their orders are never deleted either way — they are WooCommerce orders and part of your financial record.', 'subkit-subscriptions' ),
+			),
+			array(
 				'type' => 'sectionend',
 				'id'   => 'subkit_access_title',
 			),

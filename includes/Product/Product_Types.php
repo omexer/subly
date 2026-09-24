@@ -128,7 +128,7 @@ class Product_Types {
 			return;
 		}
 
-		echo '<div class="notice notice-error"><p>' . esc_html__(
+		echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__(
 			'This is a variable subscription, but SubKit Pro is not active, so nothing gives its variations a billing schedule. A customer buying one is charged once and never again. Activate SubKit Pro, or change the product type to Subscription.',
 			'subkit-subscriptions'
 		) . '</p></div>';

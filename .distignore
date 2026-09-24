@@ -10,11 +10,6 @@
 /docs
 /jest.config.js
 /package-lock.json
-/package.json
 /phpcs.xml.dist
 /phpstan.neon.dist
-/postcss.config.js
-/src
-/tailwind.config.js
 /tools
-/webpack.config.js

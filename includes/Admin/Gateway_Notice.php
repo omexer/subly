@@ -49,7 +49,7 @@ class Gateway_Notice {
 			return;
 		}
 
-		echo '<div class="notice notice-warning"><p><strong>' . esc_html( $heading ) . '</strong></p><ul style="list-style:disc;margin-left:20px">';
+		echo '<div class="notice notice-warning is-dismissible"><p><strong>' . esc_html( $heading ) . '</strong></p><ul style="list-style:disc;margin-left:20px">';
 
 		foreach ( $lines as $line ) {
 			echo '<li>' . esc_html( $line ) . '</li>';

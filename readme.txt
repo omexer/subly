@@ -1,4 +1,4 @@
-=== SubKit – WooCommerce Subscriptions ===
+=== SubKit – Subscriptions for WooCommerce ===
 Contributors: pronob1010
 Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
@@ -85,6 +85,67 @@ Yes, from My Account, and that cannot be turned off. A customer who cannot cance
 
 Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS tables. WooCommerce's older post-based order storage is supported in the code as well, but has not been tested end to end.
 
+== External services ==
+
+SubKit talks to a payment provider only when you have switched that provider on and entered
+its credentials. Nothing is sent anywhere by default, and SubKit sends nothing to its own
+author or to any analytics service.
+
+= Stripe =
+
+Used to take the first payment at checkout and to charge renewals against the saved card,
+when Stripe is enabled under **WooCommerce → Settings → Subscriptions → Stripe**.
+
+Requests go to `https://api.stripe.com`. They are made when a customer places an order
+paying by card, when they return from Stripe's hosted checkout, and each time a renewal
+falls due. What is sent: the order's total and currency, the order number, the customer's
+billing email, the two addresses on this site that Stripe returns the customer to, and —
+for renewals — the Stripe customer and payment-method identifiers Stripe itself issued at
+checkout, plus the subscription and order numbers as metadata.
+
+Stripe's terms: https://stripe.com/legal/ssa — Stripe's privacy policy: https://stripe.com/privacy
+
+= PayPal =
+
+Used to create and run the billing plan, when PayPal is enabled under
+**WooCommerce → Settings → Subscriptions → PayPal**.
+
+Requests go to `https://api-m.paypal.com`, or to `https://api-m.sandbox.paypal.com` when the
+environment is set to Sandbox. They are made when a subscription product is bought, and
+whenever PayPal notifies the site of a payment so SubKit can verify that the notification is
+genuine. What is sent: the product name, the price, currency and billing cycle of the plan
+including any free trial or sign-up fee, the order number, the customer's first name, last
+name and billing email, this site's name and the addresses PayPal returns the customer to,
+and — for verification — the notification PayPal sent back together with the signature
+headers that came with it.
+
+PayPal's terms: https://www.paypal.com/legalhub/useragreement-full — PayPal's privacy
+statement: https://www.paypal.com/legalhub/privacy-full
+
+= WordPress.org =
+
+The Integrations screen can install a companion plugin for you. Doing so asks
+`https://api.wordpress.org` for that plugin's download, exactly as **Plugins → Add New**
+does. It happens only when you click Install, and sends only the plugin's slug.
+
+== Source code ==
+
+The JavaScript for SubKit's admin screens is bundled, and its unbundled source ships in this
+plugin's `src/` directory alongside the build configuration. To rebuild it:
+
+`npm install`
+`npm run build`
+
+The build uses @wordpress/scripts with the webpack, Tailwind and PostCSS configuration files
+included in the plugin.
+
+== Screenshots ==
+
+1. The subscriptions list: who is subscribed, what they pay, and how far off the next payment is.
+2. One subscription in full — status, next payment, schedule, and the activity log grouped by day.
+3. The Subscription panel on a product: billing cycle, free trial, sign-up fee and shipping.
+4. The subscription terms as a customer sees them on the product page.
+
 == Changelog ==
 
 = 0.17.0 =
@@ -160,7 +221,7 @@ Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS table
 * New for developers: a read-only /subkit/v1/overview endpoint, and the shared admin components SubKit Pro's screens will be rebuilt on.
 
 = 0.9.2 =
-* The plugin is now called SubKit – WooCommerce Subscriptions. Nothing else changes; the same plugin, updated in place.
+* The plugin is now called SubKit – Subscriptions for WooCommerce. Nothing else changes; the same plugin, updated in place.
 * Variable subscription is only offered as a product type when SubKit Pro can actually bill it. Free registered the type but could not give a variation a schedule, so a customer buying one was charged once and never again. A product that is already a variable subscription keeps its type and says so on the edit screen.
 * SubKit Pro now refuses to activate without SubKit, and is deactivated along with it, instead of sitting in the plugin list doing nothing.
 * New guide: worked setups for twelve kinds of subscription business, with the field values to type and the integrations each one needs. See docs/BUSINESS-EXAMPLES.md.

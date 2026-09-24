@@ -196,7 +196,7 @@ class Menu {
 		}
 
 		printf(
-			'<div class="notice notice-%s"><p>%s</p></div>',
+			'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
 			'pass' === $result ? 'success' : 'error',
 			'pass' === $result
 				? esc_html__( 'Test renewal succeeded. A subscription was created, renewed and cleaned up — automatic billing works on this site.', 'subkit-subscriptions' )
@@ -255,7 +255,7 @@ class Menu {
 		$held  = $asked - $changed;
 
 		printf(
-			'<div class="notice notice-%s"><p>%s%s</p></div>',
+			'<div class="notice notice-%s is-dismissible"><p>%s%s</p></div>',
 			$changed ? 'success' : 'warning',
 			esc_html(
 				sprintf(
@@ -293,7 +293,7 @@ class Menu {
 
 		if ( '' !== $message ) {
 			printf(
-				'<div class="notice notice-%s"><p>%s</p></div>',
+				'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
 				'created' === $result ? 'success' : 'error',
 				esc_html( $message )
 			);

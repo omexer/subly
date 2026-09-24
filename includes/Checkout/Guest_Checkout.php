@@ -100,7 +100,7 @@ class Guest_Checkout {
 			return;
 		}
 
-		echo '<div class="notice notice-warning"><p>' . esc_html__(
+		echo '<div class="notice notice-warning is-dismissible"><p>' . esc_html__(
 			'SubKit requires customers to log in before buying a subscription, but WooCommerce is not offering a login or sign-up on the checkout page. Customers will be turned away with no way forward.',
 			'subkit-subscriptions'
 		) . '</p></div>';
