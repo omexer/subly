@@ -79,6 +79,18 @@ class Settings extends \WC_Settings_Page {
 				'desc_tip' => true,
 			),
 			array(
+				'title'             => __( 'Remind before charging', 'subkit-subscriptions' ),
+				'desc'              => __( 'days ahead', 'subkit-subscriptions' ),
+				'id'                => 'subkit_renewal_reminder_days',
+				'type'              => 'number',
+				'default'           => 3,
+				'custom_attributes' => array(
+					'min'  => '0',
+					'step' => '1',
+				),
+				'desc_tip'          => __( 'Emails the customer before their card is charged, which is what stops an unexpected charge becoming a chargeback. 0 turns the reminder off. A renewal falling due sooner than this is not warned about, since the email would arrive after the charge.', 'subkit-subscriptions' ),
+			),
+			array(
 				'title'    => __( 'Free trials', 'subkit-subscriptions' ),
 				'desc'     => __( 'Ask for a payment method even when the first payment is nothing', 'subkit-subscriptions' ),
 				'id'       => \SubKit\Checkout\Trial_Payment::OPTION,

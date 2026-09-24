@@ -23,7 +23,10 @@ class Mailer {
 		'Payment_Failed'            => Payment_Failed::class,
 		'Confirm_Payment'           => Confirm_Payment::class,
 		'Subscription_Cancelled'    => Subscription_Cancelled::class,
+		'Renewal_Reminder'          => Renewal_Reminder::class,
 		'Merchant_New_Subscription' => Merchant_New_Subscription::class,
+		'Merchant_Cancelled'        => Merchant_Subscription_Cancelled::class,
+		'Merchant_Ended'            => Merchant_Subscription_Ended::class,
 	);
 
 	/**
@@ -55,6 +58,8 @@ class Mailer {
 		add_action( 'subkit_renewal_failed', array( $this, 'on_renewal_failed' ), 10, 3 );
 		add_action( 'subkit_renewal_requires_action', array( $this, 'on_requires_action' ), 10, 3 );
 		add_action( 'subkit_subscription_cancelled', array( $this, 'on_cancelled' ), 10, 1 );
+		add_action( 'subkit_renewal_due_soon', array( $this, 'on_due_soon' ), 10, 1 );
+		add_action( 'subkit_subscription_finished', array( $this, 'on_finished' ), 10, 2 );
 	}
 
 	/**
@@ -99,6 +104,15 @@ class Mailer {
 
 	public function on_cancelled( Subscription $subscription ): void {
 		$this->dispatch( 'Subscription_Cancelled', array( $subscription ) );
+		$this->dispatch( 'Merchant_Cancelled', array( $subscription ) );
+	}
+
+	public function on_due_soon( Subscription $subscription ): void {
+		$this->dispatch( 'Renewal_Reminder', array( $subscription ) );
+	}
+
+	public function on_finished( Subscription $subscription, string $reason = '' ): void {
+		$this->dispatch( 'Merchant_Ended', array( $subscription, $reason ) );
 	}
 
 	/**

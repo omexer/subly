@@ -19,7 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Renewal_Scheduler {
 
-	public const ACTION_RENEWAL = 'subkit_scheduled_renewal';
+	public const ACTION_RENEWAL  = 'subkit_scheduled_renewal';
+	public const ACTION_REMINDER = 'subkit_renewal_reminder';
 	public const ACTION_SWEEP   = 'subkit_sweep_overdue';
 	public const GROUP          = 'subkit';
 
@@ -34,6 +35,7 @@ class Renewal_Scheduler {
 	public function register(): void {
 		add_action( 'init', array( $this, 'ensure_sweeper' ), 30 );
 		add_action( self::ACTION_SWEEP, array( $this, 'sweep' ) );
+		add_action( self::ACTION_REMINDER, array( $this, 'remind' ) );
 	}
 
 	/**
@@ -56,7 +58,61 @@ class Renewal_Scheduler {
 			return;
 		}
 
-		$this->schedule_at( $subscription->get_id(), strtotime( $next . ' UTC' ) );
+		$due = strtotime( $next . ' UTC' );
+
+		$this->schedule_at( $subscription->get_id(), $due );
+		$this->schedule_reminder( $subscription->get_id(), $due );
+	}
+
+	/**
+	 * Warn the customer before the card is charged. Skipped when the payment is already
+	 * closer than the warning period — a reminder that arrives after the charge is worse
+	 * than none at all.
+	 */
+	private function schedule_reminder( int $subscription_id, int $due ): void {
+		if ( ! function_exists( 'as_schedule_single_action' ) ) {
+			return;
+		}
+
+		$days = (int) get_option( 'subkit_renewal_reminder_days', 3 );
+		$args = array( 'subscription_id' => $subscription_id );
+
+		as_unschedule_all_actions( self::ACTION_REMINDER, $args, self::GROUP );
+
+		$at = $due - ( $days * DAY_IN_SECONDS );
+
+		if ( $days < 1 || $at <= time() ) {
+			return;
+		}
+
+		as_schedule_single_action( $at, self::ACTION_REMINDER, $args, self::GROUP );
+	}
+
+	/**
+	 * @param int|string $subscription_id
+	 */
+	public function remind( $subscription_id ): void {
+		$subscription = wc_get_order( (int) $subscription_id );
+		$status       = $subscription instanceof Subscription ? $subscription->get_status_enum() : null;
+
+		if ( ! $subscription instanceof Subscription || ! $status || ! $status->is_billable() ) {
+			return;
+		}
+
+		$next = $subscription->get_next_payment();
+
+		// The date can have moved since this was queued — a payment taken early, a plan
+		// switched — and warning about a charge that is no longer coming is a support call.
+		if ( empty( $next ) || strtotime( $next . ' UTC' ) <= time() ) {
+			return;
+		}
+
+		/**
+		 * Fires a few days before a subscription is charged.
+		 *
+		 * @param Subscription $subscription
+		 */
+		do_action( 'subkit_renewal_due_soon', $subscription );
 	}
 
 	/**
@@ -89,6 +145,7 @@ class Renewal_Scheduler {
 	public function unschedule( int $subscription_id ): void {
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( self::ACTION_RENEWAL, array( 'subscription_id' => $subscription_id ), self::GROUP );
+			as_unschedule_all_actions( self::ACTION_REMINDER, array( 'subscription_id' => $subscription_id ), self::GROUP );
 		}
 	}
 
