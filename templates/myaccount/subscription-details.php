@@ -105,6 +105,28 @@ if ( $can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, g
 		</p>
 	<?php endif; ?>
 
+	<?php if ( \SubKit\Lifecycle\Early_Renewal::is_available_for( $subscription ) ) : ?>
+		<h3><?php esc_html_e( 'Pay early', 'subkit-subscriptions' ); ?></h3>
+
+		<p>
+			<?php
+			printf(
+				/* translators: 1: amount, 2: the date it would otherwise be taken */
+				esc_html__( 'You can pay your next %1$s now instead of on %2$s. Your renewal date stays the same.', 'subkit-subscriptions' ),
+				wp_kses_post( $subscription->get_formatted_order_total() ),
+				esc_html( date_i18n( (string) get_option( 'date_format' ), strtotime( $subscription->get_next_payment() . ' UTC' ) ) )
+			);
+			?>
+		</p>
+
+		<form method="post" class="subkit-renew-early">
+			<?php wp_nonce_field( 'subkit_renew_early_' . $subscription->get_id() ); ?>
+			<input type="hidden" name="subkit_action" value="renew_early" />
+			<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( (string) $subscription->get_id() ); ?>" />
+			<button type="submit" class="button subkit-btn"><?php esc_html_e( 'Pay now', 'subkit-subscriptions' ); ?></button>
+		</form>
+	<?php endif; ?>
+
 	<?php
 	$subkit_auto_offered = \SubKit\Lifecycle\Auto_Renewal::is_offered() && $can_cancel;
 	$subkit_auto_on      = \SubKit\Lifecycle\Auto_Renewal::is_on( $subscription );

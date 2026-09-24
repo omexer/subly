@@ -38,7 +38,11 @@ class Renewal_Processor {
 	/**
 	 * @param int $subscription_id
 	 */
-	public function process( $subscription_id ): void {
+	/**
+	 * @param int|string $subscription_id
+	 * @param bool       $even_if_not_due Charge a period that is not due yet — paying early.
+	 */
+	public function process( $subscription_id, bool $even_if_not_due = false ): void {
 		$subscription_id = (int) $subscription_id;
 
 		if ( ! $this->lock->acquire( $subscription_id ) ) {
@@ -46,7 +50,7 @@ class Renewal_Processor {
 		}
 
 		try {
-			$this->run( $subscription_id );
+			$this->run( $subscription_id, $even_if_not_due );
 		} catch ( \Throwable $e ) {
 			$this->activity->log( $subscription_id, Activity_Repository::TYPE_CHARGE_ATTEMPT, 'Renewal aborted: ' . $e->getMessage() );
 		} finally {
@@ -55,7 +59,7 @@ class Renewal_Processor {
 		}
 	}
 
-	private function run( int $subscription_id ): void {
+	private function run( int $subscription_id, bool $even_if_not_due = false ): void {
 		$subscription = wc_get_order( $subscription_id );
 
 		if ( ! $subscription instanceof Subscription ) {
@@ -99,9 +103,10 @@ class Renewal_Processor {
 			return;
 		}
 
-		// 2b. Only bill a period that is actually due.
+		// 2b. Only bill a period that is actually due, unless somebody asked for it now.
+		// Paying early still covers the period that was coming, so the date does not shift.
 		$due_at = $this->as_date( $subscription->get_next_payment() );
-		if ( $due_at && $due_at > new \DateTimeImmutable( 'now', new \DateTimeZone( 'UTC' ) ) ) {
+		if ( ! $even_if_not_due && $due_at && $due_at > new \DateTimeImmutable( 'now', new \DateTimeZone( 'UTC' ) ) ) {
 			return;
 		}
 

@@ -428,7 +428,8 @@ class Subscriptions_Controller {
 			);
 		}
 
-		$this->processor->process( $subscription->get_id() );
+		// Asked for deliberately, so a date still in the future must not silently stop it.
+		$this->processor->process( $subscription->get_id(), true );
 
 		return true;
 	}

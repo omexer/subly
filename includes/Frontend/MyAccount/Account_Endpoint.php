@@ -126,6 +126,14 @@ class Account_Endpoint {
 			return;
 		}
 
+		if ( 'renew_early' === $action ) {
+			$result = \SubKit\Lifecycle\Early_Renewal::charge( $subscription );
+
+			wc_add_notice( $result['message'], $result['ok'] ? 'success' : 'error' );
+			wp_safe_redirect( wc_get_account_endpoint_url( self::ENDPOINT . '/' . $subscription->get_id() ) );
+			exit;
+		}
+
 		if ( 'cancel' === $action ) {
 			$when = isset( $_POST['subkit_when'] ) ? sanitize_key( wp_unslash( $_POST['subkit_when'] ) ) : 'period_end';
 

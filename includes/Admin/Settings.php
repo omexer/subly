@@ -121,6 +121,14 @@ class Settings extends \WC_Settings_Page {
 				),
 			),
 			array(
+				'title'    => __( 'Let customers pay early', 'subkit-subscriptions' ),
+				'desc'     => __( 'Show a button in My Account that charges the next period now', 'subkit-subscriptions' ),
+				'type'     => 'checkbox',
+				'id'       => \SubKit\Lifecycle\Early_Renewal::OPTION,
+				'default'  => 'no',
+				'desc_tip' => __( 'The renewal date does not move: paying early settles the payment that was already coming. Only offered for cards SubKit charges itself, never for PayPal, which bills from a plan of its own.', 'subkit-subscriptions' ),
+			),
+			array(
 				'title'   => __( 'Let customers turn off renewal', 'subkit-subscriptions' ),
 				'desc'    => __( 'Show a switch in My Account that ends the subscription at the end of the paid period instead of cancelling it outright.', 'subkit-subscriptions' ),
 				'type'    => 'checkbox',
