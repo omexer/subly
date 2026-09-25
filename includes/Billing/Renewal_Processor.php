@@ -167,8 +167,9 @@ class Renewal_Processor {
 			return;
 		}
 
-		// A payment started on its pay page (a bank transfer, a Direct Debit) is still clearing.
+		// A payment started on its pay page (a bank transfer, a Direct Debit) is still clearing; a retry must not leave it active and unpaid.
 		if ( Charge_Slot_Repository::STATE_FAILED === $slot->state && $order->has_status( 'on-hold' ) ) {
+			$this->hold( $subscription, __( 'Waiting for the payment made on the renewal\'s pay page to clear.', 'subkit-subscriptions' ) );
 			return;
 		}
 
@@ -327,6 +328,9 @@ class Renewal_Processor {
 
 		// The slot is already paid, so the payment_complete hooks find nothing left to settle.
 		$order->payment_complete( (string) $result->reference );
+
+		// A run queued while this waited would otherwise stop the next renewal being queued at its date.
+		$this->scheduler->unschedule( $subscription->get_id() );
 
 		$this->credit( $subscription->get_id(), $order, $slot );
 

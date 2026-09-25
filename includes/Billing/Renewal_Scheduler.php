@@ -3,6 +3,7 @@
 namespace SubKit\Billing;
 
 use SubKit\Data\Activity_Repository;
+use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
 
@@ -253,12 +254,16 @@ class Renewal_Scheduler {
 		// A cancelled period ends on its next payment date; with no date there is nothing left to wait for.
 		$ending = 'wc-' . Subscription_Status::PendingCancel->value;
 
+		// A renewal awaiting its gateway's answer cannot move until that answer comes; queuing it only uses up the batch.
+		$pending = Charge_Slot_Repository::STATE_PENDING;
+		$slots   = $wpdb->prefix . 'subkit_charge_slot';
+
 		if ( $hpos ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API filters orders by meta and status together.
-			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT o.id FROM %i o LEFT JOIN %i m ON m.order_id = o.id AND m.meta_key = %s WHERE o.type = %s AND ( ( o.status IN ( %s, %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ) OR ( o.status = %s AND COALESCE( m.meta_value, '' ) = '' ) ) ORDER BY m.meta_value ASC, o.id ASC LIMIT %d OFFSET %d", $wpdb->prefix . 'wc_orders', $wpdb->prefix . 'wc_orders_meta', '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $ending, $cutoff, $ending, $limit, $offset ) );
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT o.id FROM %i o LEFT JOIN %i m ON m.order_id = o.id AND m.meta_key = %s WHERE o.type = %s AND ( ( o.status IN ( %s, %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ) OR ( o.status = %s AND COALESCE( m.meta_value, '' ) = '' ) ) AND NOT EXISTS ( SELECT 1 FROM %i s WHERE s.subscription_id = o.id AND s.state = %s ) ORDER BY m.meta_value ASC, o.id ASC LIMIT %d OFFSET %d", $wpdb->prefix . 'wc_orders', $wpdb->prefix . 'wc_orders_meta', '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $ending, $cutoff, $ending, $slots, $pending, $limit, $offset ) );
 		} else {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API filters orders by meta on legacy storage.
-			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = %s WHERE p.post_type = %s AND ( ( p.post_status IN ( %s, %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ) OR ( p.post_status = %s AND COALESCE( m.meta_value, '' ) = '' ) ) ORDER BY m.meta_value ASC, p.ID ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $ending, $cutoff, $ending, $limit, $offset ) );
+			$ids = $wpdb->get_col( $wpdb->prepare( "SELECT p.ID FROM {$wpdb->posts} p LEFT JOIN {$wpdb->postmeta} m ON m.post_id = p.ID AND m.meta_key = %s WHERE p.post_type = %s AND ( ( p.post_status IN ( %s, %s, %s ) AND m.meta_value <> '' AND m.meta_value <= %s ) OR ( p.post_status = %s AND COALESCE( m.meta_value, '' ) = '' ) ) AND NOT EXISTS ( SELECT 1 FROM %i s WHERE s.subscription_id = p.ID AND s.state = %s ) ORDER BY m.meta_value ASC, p.ID ASC LIMIT %d OFFSET %d", '_subkit_next_payment', Subscription::TYPE, $active, $trialling, $ending, $cutoff, $ending, $slots, $pending, $limit, $offset ) );
 		}
 
 		return array_map( 'intval', (array) $ids );

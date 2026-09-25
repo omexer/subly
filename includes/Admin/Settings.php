@@ -316,6 +316,9 @@ class Settings extends \WC_Settings_Page {
 		// stuck, and a warning that clears itself teaches merchants to ignore it.
 		$stuck = $slots instanceof Charge_Slot_Repository ? $slots->stuck_charging( 60 ) : array();
 
+		// Direct Debit takes days, not this long.
+		$stale = $slots instanceof Charge_Slot_Repository ? $slots->stale_pending( 10 ) : array();
+
 		$checks = array(
 			array(
 				'label' => __( 'Renewal queue', 'subkit-subscriptions' ),
@@ -336,6 +339,21 @@ class Settings extends \WC_Settings_Page {
 						'subkit-subscriptions'
 					),
 					count( $stuck )
+				),
+			),
+			array(
+				'label' => __( 'Payments awaiting confirmation', 'subkit-subscriptions' ),
+				'ok'    => empty( $stale ),
+				'good'  => __( 'None overdue', 'subkit-subscriptions' ),
+				'bad'   => sprintf(
+					/* translators: %d: number of renewals */
+					_n(
+						'%d renewal has waited more than 10 days for its payment provider to confirm it. Check that the provider\'s webhook reaches this site, and the payment in its dashboard.',
+						'%d renewals have waited more than 10 days for their payment provider to confirm them. Check that the provider\'s webhook reaches this site, and the payments in its dashboard.',
+						count( $stale ),
+						'subkit-subscriptions'
+					),
+					count( $stale )
 				),
 			),
 			array(

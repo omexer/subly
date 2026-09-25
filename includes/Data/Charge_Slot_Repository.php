@@ -277,6 +277,23 @@ class Charge_Slot_Repository {
 	}
 
 	/**
+	 * Slots whose gateway still has not confirmed or failed them, most likely because its webhook never arrived.
+	 *
+	 * @return object[]
+	 */
+	public function stale_pending( int $older_than_days = 10 ): array {
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}subkit_charge_slot WHERE state = %s AND created_gmt < %s",
+				self::STATE_PENDING,
+				gmdate( 'Y-m-d H:i:s', time() - ( $older_than_days * DAY_IN_SECONDS ) )
+			)
+		);
+	}
+
+	/**
 	 * Deterministic key derived from (site, subscription, period, attempt_group).
 	 */
 	public function idempotency_key( object $slot ): string {

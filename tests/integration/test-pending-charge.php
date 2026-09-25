@@ -17,6 +17,8 @@ use SubKit\Lifecycle\Early_Renewal;
 
 require __DIR__ . '/bootstrap.php';
 
+global $wpdb;
+
 $harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
 	public string $next       = 'pending';
 	public int $charges       = 0;
@@ -133,9 +135,21 @@ $check( 'the next payment date does not move until the money is confirmed', $due
 $check( 'subkit_renewal_pending fired once, and nothing else did', 1 === $count( 'subkit_renewal_pending', $s1->get_id() ) && 0 === $count( 'subkit_renewal_succeeded', $s1->get_id() ) && 0 === $count( 'subkit_renewal_failed', $s1->get_id() ), $fired );
 $check( 'no unknown-outcome retry is queued', ! $renewal_queued( $s1->get_id() ) && '' === $s1->get_meta( '_subkit_unknown_retry' ), $s1->get_meta( '_subkit_unknown_retry' ) );
 $check( 'the customer cannot pay the order a second time', ! $order1->needs_payment() );
+$wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
+$check( 'a day later it is not reported as a charge of unknown outcome', ! in_array( (int) $slot1->id, array_map( 'intval', wp_list_pluck( $slots->stuck_charging( 60 ), 'id' ) ), true ) );
+$check( 'nor yet as waiting too long for its confirmation', ! in_array( (int) $slot1->id, array_map( 'intval', wp_list_pluck( $slots->stale_pending( 10 ), 'id' ) ), true ) );
+$wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - 11 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
+if ( ! class_exists( 'WC_Settings_Page' ) ) {
+	include_once WC_ABSPATH . 'includes/admin/settings/class-wc-settings-page.php';
+}
+$card = array_values( array_filter( \SubKit\Admin\Settings::status_checks(), static fn( $c ) => 'Payments awaiting confirmation' === $c['label'] ) )[0] ?? null;
+$check( 'eleven days on, the status card flags it', $card && ! $card['ok'] && str_contains( $card['bad'], 'more than 10 days' ), $card );
 
+$overdue = $make( 'pending-overdue@example.test' );
 $free->get( 'scheduler' )->sweep();
-$check( 'the overdue sweep queues it again', $renewal_queued( $s1->get_id() ) );
+$check( 'the overdue sweep leaves it alone, since nothing can move it', ! $renewal_queued( $s1->get_id() ) );
+$check( 'while it still queues an ordinary overdue renewal', $renewal_queued( $overdue->get_id() ) );
+$free->get( 'scheduler' )->unschedule( $overdue->get_id() );
 $processor->process( $s1->get_id() );
 $processor->process( $s1->get_id() );
 $check( 'but running it again neither charges nor reconciles', 1 === $harness->charges && 0 === $harness->reconciles, array( $harness->charges, $harness->reconciles ) );
@@ -145,6 +159,8 @@ $free->get( 'scheduler' )->unschedule( $s1->get_id() );
 echo "\n2. Confirmed, it settles once\n";
 $check( 'a result that is not final settles nothing', ! $processor->resolve_pending( $order1, Charge_Result::pending( 'dd_1' ) ) && ! $processor->resolve_pending( $order1, Charge_Result::error( 'n/a' ) ) && Charge_Slot_Repository::STATE_PENDING === $slots->find( $s1->get_id(), (int) $slot1->period_index )->state );
 
+// A run queued while it waited, as the sweep used to.
+$free->get( 'scheduler' )->schedule_at( $s1->get_id(), time() + HOUR_IN_SECONDS );
 $receipts = array();
 $check( 'the confirmation settles it', $processor->resolve_pending( wc_get_order( $order1->get_id() ), Charge_Result::success( 'dd_1' ) ) );
 $s1      = wc_get_order( $s1->get_id() );
@@ -153,7 +169,7 @@ $check( 'the slot is paid', Charge_Slot_Repository::STATE_PAID === $settled->sta
 $check( 'the order is paid', wc_get_order( $order1->get_id() )->is_paid(), wc_get_order( $order1->get_id() )->get_status() );
 $check( 'the next payment is the end of the period just paid for', strtotime( (string) $s1->get_next_payment() . ' UTC' ) === strtotime( $slot1->covers_to_gmt . ' UTC' ), array( $s1->get_next_payment(), $slot1->covers_to_gmt ) );
 $check( 'subkit_renewal_succeeded fired once, with one receipt', 1 === $count( 'subkit_renewal_succeeded', $s1->get_id() ) && array( 'pending-1@example.test' ) === $receipts, array( $fired, $receipts ) );
-$check( 'the next renewal is queued', $renewal_queued( $s1->get_id() ) );
+$check( 'the next renewal is queued at the new date, not left to the sweep', strtotime( $slot1->covers_to_gmt . ' UTC' ) === as_next_scheduled_action( Renewal_Scheduler::ACTION_RENEWAL, array( 'subscription_id' => $s1->get_id() ), Renewal_Scheduler::GROUP ), array( as_next_scheduled_action( Renewal_Scheduler::ACTION_RENEWAL, array( 'subscription_id' => $s1->get_id() ), Renewal_Scheduler::GROUP ), $slot1->covers_to_gmt ) );
 
 $check( 'a repeated confirmation changes nothing', ! $processor->resolve_pending( wc_get_order( $order1->get_id() ), Charge_Result::success( 'dd_1' ) ) );
 $check( 'nor does a late failure for the same payment', ! $processor->resolve_pending( wc_get_order( $order1->get_id() ), Charge_Result::hard_decline( 'payment_cancelled' ) ) );
@@ -277,7 +293,11 @@ $s9->transition_to( Subscription_Status::Active, 'Retrying, as the harness.' );
 $s9->save();
 $processor->process( $s9->get_id() );
 $check( 'a retry does not charge a renewal whose payment is clearing', $charges_before === $harness->charges, array( $charges_before, $harness->charges ) );
+$check( 'and puts the subscription back on hold rather than leave it active and unpaid', Subscription_Status::OnHold === wc_get_order( $s9->get_id() )->get_status_enum(), wc_get_order( $s9->get_id() )->get_status() );
 wc_get_order( $order9->get_id() )->update_status( 'failed', 'The pay-page payment failed.' );
+$s9 = wc_get_order( $s9->get_id() );
+$s9->transition_to( Subscription_Status::Active, 'Retrying, as the harness.' );
+$s9->save();
 $processor->process( $s9->get_id() );
 $check( 'once that payment fails, the retry charges', $charges_before + 1 === $harness->charges, $harness->charges );
 

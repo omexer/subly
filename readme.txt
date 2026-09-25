@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.19.0
+Stable tag: 0.19.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,12 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.19.1 =
+* The hourly renewal check no longer spends its batch on payments that are still clearing, so a store with many Direct Debits pending cannot starve renewals that genuinely need picking up.
+* A retry that finds a renewal still clearing from its payment page now keeps the subscription on hold instead of leaving it active and unpaid.
+* New status check: renewals awaiting payment confirmation for more than 10 days are flagged, in case the payment provider's confirmation never arrived.
+* Once a pending payment is confirmed, the next renewal is scheduled for its date straight away rather than waiting for the hourly check.
 
 = 0.19.0 =
 * **New for payment gateways: payments confirmed days later.** A gateway can now report a renewal as pending — Direct Debit and bank payments that clear over several days. While it is pending the customer keeps their access, the renewal order waits on hold so it cannot be paid twice, and SubKit never retries or re-charges it; the gateway settles it once the money is confirmed or refused. Used by SubKit Pro's GoCardless, Razorpay and other gateways.
