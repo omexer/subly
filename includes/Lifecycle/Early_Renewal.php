@@ -73,13 +73,13 @@ final class Early_Renewal {
 			}
 		};
 
-		foreach ( array( 'subkit_renewal_succeeded', 'subkit_renewal_failed', 'subkit_renewal_requires_action' ) as $hook ) {
+		foreach ( array( 'subkit_renewal_succeeded', 'subkit_renewal_pending', 'subkit_renewal_failed', 'subkit_renewal_requires_action' ) as $hook ) {
 			add_action( $hook, $watch, 1, 1 );
 		}
 
 		$processor->process( $id, true );
 
-		foreach ( array( 'subkit_renewal_succeeded', 'subkit_renewal_failed', 'subkit_renewal_requires_action' ) as $hook ) {
+		foreach ( array( 'subkit_renewal_succeeded', 'subkit_renewal_pending', 'subkit_renewal_failed', 'subkit_renewal_requires_action' ) as $hook ) {
 			remove_action( $hook, $watch, 1 );
 		}
 
@@ -94,6 +94,10 @@ final class Early_Renewal {
 			'subkit_renewal_succeeded'       => array(
 				'ok'      => true,
 				'message' => __( 'Thank you — your next period is paid. Your renewal date has not changed.', 'subkit-subscriptions' ),
+			),
+			'subkit_renewal_pending'         => array(
+				'ok'      => true,
+				'message' => __( 'Thank you — your payment is on its way. It can take a few working days to clear, and your renewal date has not changed.', 'subkit-subscriptions' ),
 			),
 			'subkit_renewal_requires_action' => array(
 				'ok'      => false,

@@ -18,6 +18,7 @@ enum Charge_Outcome: string {
 	case SoftDecline    = 'soft_decline';
 	case HardDecline    = 'hard_decline';
 	case GatewayError   = 'gateway_error';
+	case Pending        = 'pending';
 }
 
 /**
@@ -59,6 +60,13 @@ final class Charge_Result {
 	}
 
 	/**
+	 * Submitted, but only confirmed days later (Direct Debit); never retried, the gateway settles it via Renewal_Processor::resolve_pending().
+	 */
+	public static function pending( string $reference, string $message = '' ): self {
+		return new self( Charge_Outcome::Pending, $reference, null, $message );
+	}
+
+	/**
 	 * We never got a definitive answer — timeout, 5xx, transport failure.
 	 *
 	 * The charge may well have succeeded, so this must never bump attempt_group.
@@ -81,6 +89,10 @@ final class Charge_Result {
 	 */
 	public function is_definitive_decline(): bool {
 		return in_array( $this->outcome, array( Charge_Outcome::SoftDecline, Charge_Outcome::HardDecline ), true );
+	}
+
+	public function is_pending(): bool {
+		return Charge_Outcome::Pending === $this->outcome;
 	}
 
 	/**

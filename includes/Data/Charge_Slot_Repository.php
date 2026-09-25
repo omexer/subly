@@ -22,6 +22,7 @@ class Charge_Slot_Repository {
 
 	public const STATE_CLAIMED   = 'claimed';
 	public const STATE_CHARGING  = 'charging';
+	public const STATE_PENDING   = 'pending';
 	public const STATE_PAID      = 'paid';
 	public const STATE_FAILED    = 'failed';
 	public const STATE_ABANDONED = 'abandoned';
@@ -115,6 +116,31 @@ class Charge_Slot_Repository {
 		$this->set_state( $slot_id, self::STATE_CHARGING );
 	}
 
+	public function mark_pending( int $slot_id ): void {
+		$this->set_state( $slot_id, self::STATE_PENDING );
+	}
+
+	/**
+	 * Close a pending slot as paid or failed. Only one caller can win it, so a repeated webhook changes nothing.
+	 */
+	public function leave_pending( int $slot_id, string $state ): bool {
+		global $wpdb;
+
+		if ( ! in_array( $state, array( self::STATE_PAID, self::STATE_FAILED ), true ) ) {
+			return false;
+		}
+
+		return 1 === (int) $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}subkit_charge_slot SET state = %s, attempt_group = attempt_group + %d WHERE id = %d AND state = %s",
+				$state,
+				self::STATE_FAILED === $state ? 1 : 0,
+				$slot_id,
+				self::STATE_PENDING
+			)
+		);
+	}
+
 	public function mark_paid( int $slot_id, int $renewal_order_id ): void {
 		global $wpdb;
 
@@ -138,12 +164,13 @@ class Charge_Slot_Repository {
 
 		return 1 === (int) $wpdb->query(
 			$wpdb->prepare(
-				"UPDATE {$wpdb->prefix}subkit_charge_slot SET state = %s, renewal_order_id = %d WHERE id = %d AND state IN ( %s, %s, %s )",
+				"UPDATE {$wpdb->prefix}subkit_charge_slot SET state = %s, renewal_order_id = %d WHERE id = %d AND state IN ( %s, %s, %s, %s )",
 				self::STATE_PAID,
 				$renewal_order_id,
 				$slot_id,
 				self::STATE_CLAIMED,
 				self::STATE_CHARGING,
+				self::STATE_PENDING,
 				self::STATE_FAILED
 			)
 		);
@@ -205,11 +232,12 @@ class Charge_Slot_Repository {
 		return $wpdb->get_row(
 			$wpdb->prepare(
 				"SELECT * FROM {$wpdb->prefix}subkit_charge_slot
-				 WHERE subscription_id = %d AND state IN ( %s, %s, %s )
+				 WHERE subscription_id = %d AND state IN ( %s, %s, %s, %s )
 				 ORDER BY period_index DESC LIMIT 1",
 				$subscription_id,
 				self::STATE_CLAIMED,
 				self::STATE_CHARGING,
+				self::STATE_PENDING,
 				self::STATE_FAILED
 			)
 		) ?: null;

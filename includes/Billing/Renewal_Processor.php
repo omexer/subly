@@ -7,6 +7,7 @@ use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Domain\Billing_Schedule;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
+use SubKit\Gateways\Charge_Result;
 use SubKit\Gateways\Gateway_Model;
 use SubKit\Gateways\Gateway_Registry;
 
@@ -24,6 +25,8 @@ class Renewal_Processor {
 
 	public const ACTION_SETTLE = 'subkit_settle_paid_renewal';
 
+	public const ACTION_RESOLVE = 'subkit_resolve_pending_renewal';
+
 	public function __construct(
 		private readonly Charge_Slot_Repository $slots,
 		private readonly Activity_Repository $activity,
@@ -40,6 +43,8 @@ class Renewal_Processor {
 		foreach ( array( 'woocommerce_payment_complete', 'woocommerce_order_status_processing', 'woocommerce_order_status_completed', self::ACTION_SETTLE ) as $hook ) {
 			add_action( $hook, array( $this, 'settle_paid_order' ), 10, 1 );
 		}
+
+		add_action( self::ACTION_RESOLVE, array( $this, 'resolve_queued' ), 10, 5 );
 	}
 
 	/**
@@ -157,6 +162,16 @@ class Renewal_Processor {
 			return;
 		}
 
+		// Submitted and awaiting the gateway's answer; charging again would collect it twice.
+		if ( Charge_Slot_Repository::STATE_PENDING === $slot->state ) {
+			return;
+		}
+
+		// A payment started on its pay page (a bank transfer, a Direct Debit) is still clearing.
+		if ( Charge_Slot_Repository::STATE_FAILED === $slot->state && $order->has_status( 'on-hold' ) ) {
+			return;
+		}
+
 		if ( Charge_Slot_Repository::STATE_CHARGING === $slot->state ) {
 			$verdict = $gateway->reconcile( $subscription, $this->slots->idempotency_key( $slot ) );
 
@@ -220,6 +235,12 @@ class Renewal_Processor {
 	 * The charge slot this renewal order was raised for, while it is still unpaid.
 	 */
 	private function unpaid_slot( \WC_Order $order ): ?object {
+		$slot = $this->slot_for( $order );
+
+		return ! $slot || in_array( $slot->state, array( Charge_Slot_Repository::STATE_PAID, Charge_Slot_Repository::STATE_ABANDONED ), true ) ? null : $slot;
+	}
+
+	private function slot_for( \WC_Order $order ): ?object {
 		$slot_id = (int) $order->get_meta( '_subkit_charge_slot_id' );
 
 		if ( 'subkit_renewal' !== $order->get_created_via() || ! $slot_id ) {
@@ -228,11 +249,125 @@ class Renewal_Processor {
 
 		$slot = $this->slots->find( (int) $order->get_meta( '_subkit_subscription_id' ), (int) $order->get_meta( '_subkit_period_index' ) );
 
-		if ( ! $slot || (int) $slot->id !== $slot_id ) {
-			return null;
+		return $slot && (int) $slot->id === $slot_id ? $slot : null;
+	}
+
+	/**
+	 * Settle a renewal the gateway accepted as pending, with its final answer (a webhook, days later).
+	 *
+	 * @return bool Whether this call settled it. False when it was not pending, the answer is not final, or it was queued behind a running renewal.
+	 */
+	public function resolve_pending( \WC_Order $order, Charge_Result $result ): bool {
+		$slot = $this->slot_for( $order );
+
+		if ( ! $slot || Charge_Slot_Repository::STATE_PENDING !== $slot->state || ! ( $result->is_success() || $result->is_definitive_decline() ) ) {
+			return false;
 		}
 
-		return in_array( $slot->state, array( Charge_Slot_Repository::STATE_PAID, Charge_Slot_Repository::STATE_ABANDONED ), true ) ? null : $slot;
+		$subscription_id = (int) $slot->subscription_id;
+
+		if ( ! $this->lock->acquire( $subscription_id ) ) {
+			if ( function_exists( 'as_schedule_single_action' ) ) {
+				as_schedule_single_action(
+					time() + MINUTE_IN_SECONDS,
+					self::ACTION_RESOLVE,
+					array(
+						'order_id'  => $order->get_id(),
+						'outcome'   => $result->outcome->value,
+						'reference' => (string) $result->reference,
+						'code'      => (string) $result->code,
+						'message'   => (string) $result->message,
+					),
+					Renewal_Scheduler::GROUP
+				);
+			}
+			return false;
+		}
+
+		try {
+			$subscription = wc_get_order( $subscription_id );
+
+			if ( ! $subscription instanceof Subscription ) {
+				return false;
+			}
+
+			return $result->is_success() ? $this->confirm( $subscription, $order, $slot, $result ) : $this->reject( $subscription, $order, $slot, $result );
+		} finally {
+			$this->lock->release( $subscription_id );
+		}
+	}
+
+	/**
+	 * @param int|string $order_id
+	 * @param string     $outcome
+	 * @param string     $reference
+	 * @param string     $code
+	 * @param string     $message
+	 */
+	public function resolve_queued( $order_id, $outcome, $reference = '', $code = '', $message = '' ): void {
+		$order  = wc_get_order( (int) $order_id );
+		$result = match ( (string) $outcome ) {
+			'success'      => Charge_Result::success( (string) $reference ),
+			'soft_decline' => Charge_Result::soft_decline( (string) $code, (string) $message ),
+			'hard_decline' => Charge_Result::hard_decline( (string) $code, (string) $message ),
+			default        => null,
+		};
+
+		if ( $order instanceof \WC_Order && $result ) {
+			$this->resolve_pending( $order, $result );
+		}
+	}
+
+	private function confirm( Subscription $subscription, \WC_Order $order, object $slot, Charge_Result $result ): bool {
+		if ( ! $this->slots->leave_pending( (int) $slot->id, Charge_Slot_Repository::STATE_PAID ) ) {
+			return false;
+		}
+
+		$this->log_resolved( $subscription, $slot, $result );
+
+		// The slot is already paid, so the payment_complete hooks find nothing left to settle.
+		$order->payment_complete( (string) $result->reference );
+
+		$this->credit( $subscription->get_id(), $order, $slot );
+
+		return true;
+	}
+
+	private function reject( Subscription $subscription, \WC_Order $order, object $slot, Charge_Result $result ): bool {
+		if ( ! $this->slots->leave_pending( (int) $slot->id, Charge_Slot_Repository::STATE_FAILED ) ) {
+			return false;
+		}
+
+		$this->log_resolved( $subscription, $slot, $result );
+
+		$status = $subscription->get_status_enum();
+
+		if ( $status && ( Subscription_Status::OnHold === $status || $status->is_billable() ) ) {
+			$this->decline( $subscription, $order, $result );
+			return true;
+		}
+
+		$order->update_status( 'failed', $result->describe() );
+
+		// Ending anyway: the period-end run closes it rather than chasing the payment.
+		if ( Subscription_Status::PendingCancel === $status ) {
+			$this->scheduler->schedule_at( $subscription->get_id(), time() );
+		}
+
+		return true;
+	}
+
+	private function log_resolved( Subscription $subscription, object $slot, Charge_Result $result ): void {
+		$this->activity->log(
+			$subscription->get_id(),
+			Activity_Repository::TYPE_CHARGE_ATTEMPT,
+			sprintf( 'Pending charge for period %d settled: %s', $slot->period_index, $result->describe() ),
+			array(
+				'reference'    => $result->reference,
+				'code'         => $result->code,
+				'period_index' => (int) $slot->period_index,
+			)
+		);
 	}
 
 	private function settle( Subscription $subscription, \WC_Order $order, object $slot ): void {
@@ -252,7 +387,14 @@ class Renewal_Processor {
 
 		$this->adopt_payment_method( $subscription, $order );
 
-		$subscription = wc_get_order( $subscription->get_id() );
+		$this->credit( $subscription->get_id(), $order, $slot );
+	}
+
+	/**
+	 * Move a subscription on for a renewal paid after its run, as far as its status still allows.
+	 */
+	private function credit( int $subscription_id, \WC_Order $order, object $slot ): void {
+		$subscription = wc_get_order( $subscription_id );
 		$status       = $subscription instanceof Subscription ? $subscription->get_status_enum() : null;
 
 		// Still ending, but not before the end of the period just paid for.
@@ -359,6 +501,16 @@ class Renewal_Processor {
 			return;
 		}
 
+		if ( $result->is_pending() ) {
+			// Not money yet, so the date waits; the subscription keeps its status, and its access, meanwhile.
+			$this->slots->mark_pending( (int) $slot->id );
+			$order->set_transaction_id( (string) $result->reference );
+			$order->update_status( 'on-hold', __( 'Payment submitted; awaiting confirmation from the payment provider.', 'subkit-subscriptions' ) );
+
+			do_action( 'subkit_renewal_pending', $subscription, $order, $result );
+			return;
+		}
+
 		if ( $result->is_transient() ) {
 			// Outcome unknown. Leave the slot charging, keep the key, and try again later.
 			$this->scheduler->schedule_retry( $subscription_id, (int) $slot->period_index );
@@ -367,6 +519,10 @@ class Renewal_Processor {
 
 		// Definitive decline: bump attempt_group so the next attempt uses a fresh key.
 		$this->slots->mark_failed( (int) $slot->id );
+		$this->decline( $subscription, $order, $result );
+	}
+
+	private function decline( Subscription $subscription, \WC_Order $order, Charge_Result $result ): void {
 		$order->update_status( 'failed', $result->describe() );
 		$this->hold( $subscription, $result->describe() );
 
@@ -411,6 +567,11 @@ class Renewal_Processor {
 
 		$open = $this->slots->latest_unsettled( $subscription->get_id() );
 
+		// The gateway's answer on a submitted renewal decides whether another period was paid for.
+		if ( $open && Charge_Slot_Repository::STATE_PENDING === $open->state ) {
+			return;
+		}
+
 		if ( $open && Charge_Slot_Repository::STATE_CHARGING === $open->state && ! $this->settle_before_ending( $subscription, $open ) ) {
 			return;
 		}
@@ -431,6 +592,16 @@ class Renewal_Processor {
 
 		if ( $verdict && $verdict->is_transient() ) {
 			$this->activity->log( $subscription_id, Activity_Repository::TYPE_CHARGE_ATTEMPT, sprintf( 'Could not confirm the outcome of period %d before ending; will check again.', $slot->period_index ) );
+			return false;
+		}
+
+		if ( $verdict && $verdict->is_pending() ) {
+			if ( ! $order instanceof \WC_Order ) {
+				$order = $this->orders->create( $subscription, $slot );
+				$this->slots->attach_order( (int) $slot->id, $order->get_id() );
+			}
+
+			$this->apply( $subscription, $order, $slot, $verdict );
 			return false;
 		}
 
