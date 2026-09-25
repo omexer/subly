@@ -1,6 +1,64 @@
 # Testing SubKit
 
-Four kinds of check. **Static analysis** runs anywhere and catches type and standards problems before the code runs. **JavaScript tests** cover the React admin screens. **Screenshots** of those screens catch what tests cannot see. **Sandbox tests** talk to a real payment gateway and are the only way to prove the parts that matter most.
+Five kinds of check. **Static analysis** runs anywhere and catches type and standards problems before the code runs. **Integration tests** run the PHP against a real WordPress and WooCommerce. **JavaScript tests** cover the React admin screens. **Screenshots** of those screens catch what tests cannot see. **Sandbox tests** talk to a real payment gateway and are the only way to prove the parts that matter most.
+
+---
+
+## Integration tests
+
+Both plugins have a suite in `tests/integration/`: one PHP file per behaviour (22 in free, 47 in
+Pro as of 0.19.4 / 0.39.1), each run through `wp eval-file` inside a WordPress with WooCommerce
+and the plugin active. Every file requires `tests/integration/bootstrap.php`, prints `PASS` /
+`FAIL` per check and ends with `subkit_test_done( $fail )`.
+
+```bash
+tools/test.sh              # every file
+tools/test.sh renewal      # only files whose name contains "renewal"
+```
+
+`SUBKIT_WP` is the command that runs WP-CLI in the target site. It defaults to wp-env
+(`npx wp-env run cli wp`, configured by `.wp-env.json`); point it at your own stack instead:
+
+```bash
+SUBKIT_WP="docker compose -f ~/wp-docker/docker-compose.yml exec -T wordpress wp --allow-root" tools/test.sh
+```
+
+Pro's suite needs the free plugin active beside it.
+
+`.github/workflows/integration.yml` runs the suite on every push to `main` and every pull
+request, on PHP 8.1 and 8.4 against the latest WordPress and WooCommerce, on a wp-env site
+where the plugin was activated from WP-CLI and nobody ever opened wp-admin. The release
+workflow calls it, so a failing suite blocks a tag.
+
+Rules the suite depends on:
+
+- **A file only passes if it says so.** `wp eval-file` can exit 0 having run nothing — a test
+  file holding one very long string literal once did exactly that and counted as a pass with
+  zero checks. `tools/test.sh` now fails any file that exits 0 without printing the
+  bootstrap's `all checks passed` line. A test that cannot continue calls
+  `subkit_test_abort()`, never a bare `exit`, which would report success.
+- **Pin the site settings a test depends on, and restore them.** A test that asserts a
+  formatted amount, a role or a tax figure must set the option it relies on first and put the
+  site's value back at the end: `woocommerce_currency_pos` (Pro's WhatsApp test pins `left`),
+  free's **Role while subscribed** / **Role once it ends** (Pro's variable-integrations test),
+  and `woocommerce_calc_taxes`, `woocommerce_prices_include_tax` and the tax rates the
+  renewal-tax tests insert and delete. The bootstrap already pins the currency to USD. Two Pro tests failed on
+  a site configured differently before they did this.
+- **Gateways are tested with `pre_http_request` fakes.** No test contacts a real gateway: each
+  gateway test answers the provider's API from a fake that matches requests by host (a site
+  with WooCommerce usage tracking on can send other requests carrying the same query string).
+  Braintree is faked at its SDK. A passing gateway test proves SubKit handles the answers the
+  provider documents — not that the provider answers that way. See Pro's `docs/GATEWAYS.md`
+  for the sandbox steps that close that gap.
+- **Stand-ins for premium plugins must be checked against licensed copies before release.**
+  AffiliateWP and AutomateWoo cannot be installed in CI, so Pro's tests run against stand-ins
+  (`tests/integration/automatewoo-stand-in.php`, built from AutomateWoo 6.9.0's GPL source; the
+  AffiliateWP stand-in inside `test-affiliatewp.php`, built from its documentation). A stand-in
+  only proves SubKit calls what it expects to call. Run both integrations once against a
+  licensed AffiliateWP and AutomateWoo on staging before each release that touches them.
+  BuddyPress was run against BuddyPress 14.5.2 during development; where it is not active,
+  as in CI, `tests/integration/stand-ins/buddypress.php` stands in for the functions SubKit
+  calls.
 
 ---
 
@@ -162,15 +220,10 @@ On a fast connection the read can finish inside the second, and you will see an 
 
 ### The other gateways
 
-Not written yet, and each needs its own sandbox account:
-
-| Gateway | Testable the same way? |
-|---|---|
-| Stripe | Yes — the harness above |
-| Mollie | Yes, with a Mollie test API key |
-| Razorpay | Yes, with test key id and secret |
-| Xendit | Yes, with a test secret key |
-| PayPal | **No.** PayPal owns the billing schedule, so there is no charge of ours to interrupt. It needs a different test: create a sandbox subscription and confirm the webhook mirrors it. |
+No harness like this exists for any other gateway yet. The manual sandbox steps for every
+gateway — free's Stripe and PayPal and all of Pro's — are in SubKit Pro's `docs/GATEWAYS.md`.
+PayPal and Paddle own their billing schedules, so there is no charge of ours to interrupt:
+they need a sandbox subscription and a check that the webhook mirrors it, exactly once.
 
 ---
 
@@ -209,8 +262,9 @@ Be clear-eyed about this list. It is short and it is the important part.
 
 | | |
 |---|---|
-| **Automated PHP test suite** | There is none. No PHPUnit, no integration tests. PHP is verified by static analysis, by harnesses like the ones above, and by hand. The admin screens' JavaScript does have tests — 30, across both plugins. |
+| ~~Automated PHP test suite~~ | **Done** as an integration suite (above). There are still no unit tests. |
 | ~~Concurrency~~ | **Tested.** See below. |
 | **Unattended renewals** | Scheduled renewals fire correctly when run directly. No renewal has been watched happening on its own overnight. |
 | **Browser** | The admin screens are screenshotted through `tools/preview`, which renders them without WordPress's own sidebar and admin bar. No test drives a real wp-admin, and no test drives the storefront or checkout through a browser at all. |
-| **Real gateway calls** | Until you run the harness above, every payment path in this plugin has only ever met a simulated response. |
+| **Real gateway calls** | Until you run the harness above, every payment path in both plugins has only ever met a simulated response. |
+| **Premium-plugin integrations** | AffiliateWP and AutomateWoo have only met stand-ins. |

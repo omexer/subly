@@ -1,6 +1,6 @@
 # SubKit — User Guide
 
-**SubKit 0.18.1 · SubKit Pro 0.14.0 · development release**
+**SubKit 0.19.4 · SubKit Pro 0.39.1 · development release**
 
 This guide explains everything SubKit does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -203,6 +203,13 @@ Installment, which is sold as a fixed total.
 | **Payment methods** | Tick the only methods this product accepts. Tick none to offer them all. | A product you only sell by card |
 | **Automatic renewals only** | Hides payment methods that cannot renew by themselves | Products you refuse to invoice manually |
 | **Grant role while active** | A WordPress role for this product only, overriding the store-wide setting | A "premium member" role for one tier |
+| **Suggest upgrades to** + **Upgrade pitch** | Plans shown as "Upgrade your plan" on an active subscription in My Account, with your one-line pitch | Monthly → yearly, basic → premium |
+| **Instead of cancelling, offer** | Plans offered after a customer cancels, while they still have access. Switching to one withdraws the cancellation | A cheaper plan for someone leaving on price |
+| **Community groups** + **Member type** *(BuddyPress/BuddyBoss)* | Groups joined, and a member (profile) type set, while the subscription is active or trialling | A members' community |
+
+Integrations add their own fields here too — courses, lists, tags — see
+[INTEGRATIONS.md](INTEGRATIONS.md). On a variable product, set them on the parent: variations
+use the parent's role, integrations, instalment plan and delivery schedule.
 
 Two of these are easy to confuse:
 
@@ -210,12 +217,19 @@ Two of these are easy to confuse:
 - **Installment** repeats a price. £100 × 3 payments = £300 total.
 
 They do the same arithmetic from opposite ends, and a product cannot use both — SubKit
-refuses to save that.
+refuses to save that. An instalment plan charges the part, not the total, at checkout and on
+every renewal; with an uneven total the first payment takes the odd cents. A product cannot
+have both a choice of plans and an instalment plan.
 
-> **PayPal and these terms.** PayPal bills from a fixed plan of its own, so it cannot honour a
-> custom renewal price, a fixed expiry date or renewal shipping. A product that uses any of
-> them does not offer PayPal at checkout; Stripe, Mollie, Razorpay, Xendit and manual payment
-> are unaffected. A minimum billing period works with PayPal, except that a PayPal customer
+With a free trial, instalment and split plans, **Maximum payments**, **Minimum billing period**
+and **Apply after payment number** count paid payments, not the free checkout: the first
+instalment is charged when the trial ends.
+
+> **PayPal, Paddle and these terms.** PayPal bills from a fixed plan of its own, so it cannot
+> honour a custom renewal price, a fixed expiry date or renewal shipping. A product that uses
+> any of them does not offer PayPal at checkout. Neither PayPal nor Paddle is offered for an
+> instalment product, or when any coupon discounts a subscription in the cart, because both
+> bill their own plan price. Gateways SubKit charges itself are unaffected. A minimum billing period works with PayPal, except that a PayPal customer
 > can always cancel inside PayPal itself.
 
 A refused setting — a price left empty, a date in the past — is not saved, and a red notice at
@@ -276,14 +290,24 @@ change what you need, then **Save changes**. Each section saves on its own.
 
 ### System status
 
-Not settings — a read-out, in the panel on the right of every section. Three lines telling
-you whether billing is actually working:
+Not settings — a read-out, in the panel on the right of every section and under **General →
+Health**. Five lines telling you whether billing is actually working:
 
 | Line | What it means | If it is red |
 |---|---|---|
 | **Renewal queue** | WordPress's background task system is running | Renewals are not happening. On a quiet site, ask your host to set up a real server cron. |
 | **Unresolved charges** | A charge whose outcome nobody ever learned | That subscription has **stopped billing** on purpose, because charging again might charge twice. Open it and check your payment provider. |
+| **Payments awaiting confirmation** | Renewals submitted to a payment provider that confirms days later (Direct Debit, bank payments) | One has waited more than 10 days. Check that the provider's webhook reaches your site, and look the payment up in its dashboard. |
 | **Double-charge protection** | The database safeguard is in place | Deactivate and reactivate SubKit. |
+| **Renewal tax** | No subscription renews with tax added twice | See below. |
+
+**Subscriptions renewing with tax added twice.** Before 0.19.4, a store that enters prices
+*including* tax stored the subscription's price as if it excluded tax, so every renewal added
+tax on top: 12.00 including 20% renewed at 14.40. New subscriptions renew at exactly what the
+checkout charged. Existing ones are never changed silently: **General → Health** lists them,
+each with a **Repair** button that stores the price without tax. Customers already charged
+extra may be owed a refund — check their past renewal orders. Stores that enter prices
+without tax were never affected.
 
 ### General → Renewals
 
@@ -299,8 +323,22 @@ Only use the second if you physically ship goods for every period regardless. Ot
 are billing a customer several times over for an outage that was not their fault.
 
 **Grace period (days)** — default `7`. After a payment fails, how long to keep trying before
-giving up. **The customer keeps their access during this window.** Set it to `0` to give up
-immediately; `14` gives someone a fortnight to notice their card expired.
+giving up. Set it to `0` to give up immediately; `14` gives someone a fortnight to notice their
+card expired. The setting's help text says access continues during this window, but a
+subscription goes **on hold** when a payment fails, and on hold removes the subscriber role,
+downloads and integration access until a payment succeeds. Which of the two is intended is an
+open product decision; plan around the code's behaviour for now.
+
+**Remind before charging** — default `3` days. Emails the customer before a renewal is
+charged. `0` turns it off. A renewal falling due sooner than this is not warned about.
+
+**Free first payments** — on by default. When nothing is due today — a free trial with no
+sign-up fee, or a coupon worth the whole first payment — WooCommerce normally skips the payment
+step, so no card is saved and the first renewal fails. With this on, checkout still asks for a
+payment method whenever a later payment will actually charge something. Plans that renew for
+nothing, and (with Pro) coupons that make every renewal free, are not asked. Offline methods —
+bank transfer, cheque, cash on delivery — store no card, so choosing one still leaves nothing
+to charge later.
 
 ### General → Access
 
@@ -317,6 +355,10 @@ to log in. It will not attach the subscription to an account they have not prove
 
 > If you choose **Require them to log in** but WooCommerce is not showing a login on the
 > checkout page, SubKit warns you — otherwise every subscription customer hits a dead end.
+
+**Let customers pay early** — off by default. Shows a button in My Account that charges the next
+period now. The renewal date does not move: paying early settles the payment that was already
+coming. Offered only for methods SubKit charges itself, never PayPal.
 
 **Let customers turn off renewal** — off by default. Turn it on to show a switch in My
 Account.
@@ -335,6 +377,9 @@ Two safeguards: an **administrator is never changed** (you cannot demote yoursel
 your own product), and a customer is only dropped when **no other live subscription** of
 theirs still grants the role.
 
+**Delete data when the plugin is deleted** — off by default. Removes SubKit's settings and own
+tables on uninstall. Subscriptions and their orders are never deleted either way.
+
 **Health digest** *(Pro)* — how often to email you a summary of subscriptions needing
 attention: Daily, Weekly *(default)*, Monthly or Never.
 
@@ -345,11 +390,33 @@ attention: Daily, Weekly *(default)*, Monthly or Never.
 SubKit adds its own payment methods under **SubKit → Settings**. All are off until you enter
 credentials.
 
-| Gateway | Who keeps the schedule | Tier |
+| Gateway | How renewals are paid | Tier |
 |---|---|---|
-| **Stripe** | SubKit. Stripe stores the card; we charge it when a payment falls due. | Free |
-| **PayPal** | PayPal. It bills on its own schedule and tells us by webhook. | Free |
-| **Mollie**, **Razorpay**, **Xendit** | SubKit, using the mandate those plugins already stored | Pro |
+| **Stripe** | SubKit charges the saved card when a payment falls due. | Free |
+| **PayPal** | PayPal bills on its own schedule and tells us by webhook. | Free |
+| **Square**, **Braintree**, **Authorize.net**, **Mollie**, **Xendit**, **WooPayments** | SubKit charges the payment method that gateway's own WooCommerce plugin saved at checkout | Pro |
+| **Razorpay** (UPI Autopay), **GoCardless** (Direct Debit), **Adyen** | SubKit's own checkout sets up the mandate; SubKit charges renewals | Pro |
+| **Paddle** | Paddle bills on its own schedule and collects the tax, as merchant of record | Pro |
+| **bKash**, **SSLCommerz** | They cannot charge a customer again, so each renewal is emailed as a payment link | Pro |
+
+Each Pro gateway — what it rides on, where its settings are, its webhook address, its limits
+and how to check it in the provider's sandbox — is described in SubKit Pro's
+`docs/GATEWAYS.md`. None of them has yet been run against a real sandbox.
+
+**Payments confirmed days later.** Direct Debit (GoCardless), UPI Autopay (Razorpay), and some
+Adyen and WooPayments payments (SEPA, ACH) are submitted on the renewal date and confirmed
+days later. Meanwhile the renewal is *pending*: the customer keeps access, the renewal order
+waits **On hold** with the provider's reference, the next payment date does not move, and
+SubKit never retries or re-charges it. When the provider confirms, the renewal is marked paid
+and the next one scheduled; if it fails, the normal failed-payment path runs once. A
+subscription cancelled at the end of its period waits for a pending renewal before it ends.
+
+**Paying a renewal by link.** A renewal that failed, or is waiting on the customer (a bank
+transfer, a 3-D Secure confirmation, a bKash or SSLCommerz link), can be paid from its payment
+link. The payment page offers only the subscription's own payment method — never PayPal,
+which would start a second agreement. Paying it restarts the subscription exactly once, keeps
+the card it was paid with for later renewals, and is never charged again. Marking a renewal
+order paid yourself does the same.
 
 Every gateway has an **Environment** setting: **Test/Sandbox** or **Live**. Always start in
 test.
@@ -358,6 +425,9 @@ test.
 
 Enter your **Test secret key** and **Live secret key** from your Stripe dashboard (they start
 `sk_test_` and `sk_live_`). Switch Environment to Live when you are ready.
+
+A renewal that needs 3-D Secure goes on hold and emails the customer a link that opens
+Stripe's own confirmation page.
 
 ### PayPal
 
@@ -372,30 +442,43 @@ PayPal needs four things, and one of them catches everybody:
 message really came from PayPal — and no renewal is ever recorded. If PayPal is taking money
 and your subscriptions are not updating, this is why.
 
-### Mollie, Razorpay and Xendit (Pro)
+**Known issue — tax.** In a store that enters prices without tax, PayPal bills its plan price
+with no tax added, so the order total SubKit records and the money PayPal actually takes can
+differ. Not fixed yet.
 
-These three renew against a payment mandate that the merchant's **existing** plugin captured
-at checkout. Keep Mollie Payments for WooCommerce, WooCommerce Razorpay or the Xendit plugin
-installed and configured for the first payment. SubKit only handles the renewals.
+### Square, Braintree, Authorize.net, Mollie and Xendit (Pro)
+
+These renew against the payment method that the store's **existing** plugin saved at
+checkout. Keep that plugin installed and configured for the first payment, and make sure it
+saves the card. SubKit only handles the renewals.
 
 **If a Xendit renewal's answer never arrives** — a timeout, a dropped connection — SubKit asks
 Xendit again for the same charge, which cannot bill the customer twice. It can only do that for
 24 hours. After that it stops and marks the charge as unresolved, so you can check your Xendit
 dashboard and settle it by hand, rather than risk charging again.
 
+### Razorpay (Pro)
+
+Subscriptions bought through the Razorpay for WooCommerce plugin cannot renew — it never sets
+up a mandate — so they renew as emailed invoices. For automatic renewals, enable SubKit Pro's
+own **Razorpay Subscriptions (SubKit)** payment method (shown to customers as "UPI Autopay (Razorpay)"): INR only, UPI only (card mandates are not built yet),
+with a **mandate limit** per renewal (₹15,000 by default). The bank notifies the customer
+before each debit and debits about a day and a half later; the renewal is pending meanwhile.
+
 ### Every gateway field
 
 | Field | Appears on | What to put in it |
 |---|---|---|
 | **Enable PayPal** / **Enable Stripe** | Free gateways | Tick to offer it at checkout. Off until you do. |
-| **Enable Mollie renewals**, **Enable Razorpay renewals**, **Enable Xendit renewals** | Pro gateways | Tick to let SubKit renew against that gateway's stored mandate. |
+| **Enable … renewals** | Pro gateways that ride another plugin | Tick to let SubKit renew against that gateway's stored payment method. |
 | **Environment** | All | **Test**/**Sandbox** while you are setting up, **Live** when real money should move. |
 | **Test secret key** / **Live secret key** | Stripe | From Stripe → Developers → API keys. `sk_test_…` and `sk_live_…`. |
 | **Client ID** / **Secret** | PayPal | From your PayPal app. |
 | **Webhook URL** | PayPal | SubKit shows it — copy it into PayPal. |
 | **Webhook ID** | PayPal | PayPal gives you this after you add the URL. Paste it back. |
 | **Test API key** / **Live API key** | Mollie, Xendit | From that gateway's dashboard. |
-| **Key ID** / **Key secret** | Razorpay | From the Razorpay dashboard. |
+
+Pro's other gateways have their own fields; see Pro's `docs/GATEWAYS.md`.
 
 SubKit's gateways work on both checkouts — the classic one and the newer block checkout —
 and on either they are offered only when the cart actually contains a subscription.
@@ -422,21 +505,38 @@ Under **My account → Subscriptions** they get a list and a detail page, where 
 - **Cancel** — either at the end of the period they have paid for, or immediately. You cannot
   switch this off; being unable to cancel is what causes chargebacks.
 - **Turn off automatic renewal**, if you enabled it
-- **Pay** a renewal that failed
+- **Pay** a renewal that failed, or one waiting on them, from its payment link
+- **Pay early**, if you enabled it
 - **Pause**, **Resume** and **Switch plan** (Pro, where the gateway supports it)
+- **Update card** (Pro, SubKit Stripe subscriptions) — saves a new card on Stripe's own page;
+  a renewal waiting on a declined card is retried on it straight away
+- **Upgrade your plan** (Pro) — the upgrades you chose on the product, with a confirmation
+  page stating the new price and the date it starts. Nothing is charged at the switch; the
+  new price starts when the current period ends
+- After cancelling, a retention discount and **Rather switch than go?** alternatives (Pro,
+  where you set them up)
+- **WhatsApp updates** (Pro) — an opt-in at checkout and in My Account
 
 ### Emails
 
-Six emails, all editable under **WooCommerce → Settings → Emails**:
+Nine emails in the free plugin, all editable under **WooCommerce → Settings → Emails**:
 
 | Email | When |
 |---|---|
 | Subscription started | The first payment succeeds |
+| Upcoming renewal | **Remind before charging** days before a renewal; a trial is told it is ending |
 | Renewal receipt | A renewal is paid |
 | Payment failed | A charge is declined — includes a link to pay |
 | Confirm your payment | The bank wants the customer to authenticate |
-| Subscription cancelled | It ends |
+| Subscription cancelled | It is cancelled |
 | New subscription *(to you)* | Somebody subscribes |
+| Subscription cancelled *(to you)* | A subscription is cancelled, with the reason given |
+| Subscription ended *(to you)* | A subscription ends |
+
+Pro adds: Payment retry scheduled, Subscription ended after failed payment, Update your payment
+details, Card expiring, Win-back follow-up, Subscription anniversary, the bKash and SSLCommerz
+payment-link and upcoming-renewal emails (which replace the free ones for those
+subscriptions), and the health digest to you.
 
 ---
 
@@ -482,8 +582,8 @@ with the reason. When a customer asks "why was I charged?", the answer is here.
 |---|---|
 | **Pending** | Created, not started |
 | **Trialling** | In a free trial, not yet charged |
-| **Active** | Billing normally |
-| **On hold** | A payment failed, or it was paused. Not billing. |
+| **Active** | Billing normally. A renewal still clearing (pending) leaves it Active |
+| **On hold** | A payment failed, it was paused, or a bKash/SSLCommerz renewal is waiting for its link to be paid. Not billing, and no access. |
 | **Pending cancel** | Cancelled, running out the paid period |
 | **Cancelled** | Ended |
 | **Expired** | Ran its course |
@@ -498,9 +598,17 @@ with the reason. When a customer asks "why was I charged?", the answer is here.
 | **Instalment plans** | A fixed total over N payments, then it stops. £300 as 3 × £100. |
 | **Split payments** | A set price × N payments, with access that can outlive the plan |
 | **Pause and resume** | Remaining time is preserved |
-| **Plan switching** | Upgrade or downgrade, crediting unused time |
+| **Plan switching** | Upgrade or downgrade. Nothing is charged at the switch; the new price starts on the date the old plan was paid up to |
+| **Upgrade suggestions** | "Upgrade your plan" in My Account and, optionally, in the renewal reminder; alternatives offered after a cancellation |
 | **Recurring coupons** | Discounts that apply to renewals, not only the first order |
-| **Failed payment recovery** | Retries, dunning emails, and the grace period |
+| **Sign-up fee coupons** | "Sign-up fee percentage discount" and "Sign-up fee fixed discount" coupon types, which take money off the sign-up fee only |
+| **Payment retries** | How many times a soft-declined renewal is retried (1–5), the wait before each, and whether the subscription is cancelled or expired when they run out; one email per attempt; recovery figures in Reports |
+| **Card updates** | "Update card" in My Account, an "Update your payment details" email on permanent declines, and an expiring-card warning |
+| **Win-back** | Up to three emails to customers whose subscription ended, each with an optional single-use discount and a "Come back" button |
+| **Anniversaries** | A thank-you email on 12-month (or chosen) milestones, with an optional renewal discount or store coupon |
+| **Members-only content** | Lock posts, pages or part of a post (`[subkit_restricted]`) to subscribers of chosen products |
+| **Webhooks** | Subscription events through WooCommerce's own webhooks (topics `subkit_subscription.*`) |
+| **WhatsApp** | Renewal, payment and cancellation messages through the Meta WhatsApp Cloud API, to customers who opt in |
 | **Subscription limits** | One active, one ever, or N per customer; and a cap on total payments |
 | **Delivery schedules** | Ship on a different cadence from billing, with a printable manifest |
 | **Subscription health** | Everything at risk, why, and one-click fixes |
@@ -508,7 +616,24 @@ with the reason. When a customer asks "why was I charged?", the answer is here.
 | **Content access** | Roles and downloadable files follow the subscription |
 | **Live QR** | A code for the packing slip linking to a private status page |
 | **REST API** | Pause and resume over the API, plus reports and health. The subscriptions API itself is free — see [the REST API](#the-rest-api). |
-| **Nine integrations** | See [INTEGRATIONS.md](INTEGRATIONS.md), and [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md) for which to connect for what |
+| **Thirteen integrations** | See [INTEGRATIONS.md](INTEGRATIONS.md), and [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md) for which to connect for what |
+| **More gateways** | See [Taking payment](#taking-payment) |
+
+Pro's settings are sections of **SubKit → Settings** (the same sections appear under
+**WooCommerce → Settings → Subscriptions**):
+
+| Section | What is in it |
+|---|---|
+| **Payment retries** | **Retry attempts**, **Wait before retry N** (hours), **When retries run out**, **Retry emails** |
+| **Payment methods** | **Warn before a card expires** (days ahead, 14 by default) |
+| **Win-back** | **Enable win-back**, then per email: **Send after**, **Subject**, **Heading**, **Message**, **Discount**, **Discount amount**, **Valid for** |
+| **Anniversaries** | **Enable anniversary emails**, **When**, **Milestones**, **Thank-you gift**, **Discount type**, **Discount amount**, **Coupon valid for**, and the email's wording |
+| **Upgrades** | **Renewal reminder** — suggest the first upgrade in the upcoming renewal email. The upgrades themselves are set per product |
+| **Members-only content** | **Message for non-members**, **Before the message**, **Teaser length** |
+| **WhatsApp** | **Enable WhatsApp**, **Phone number ID**, **Access token**, **App secret**, **Webhook verify token**, a template per event, and **Recent messages** |
+| **AffiliateWP** | **Commission on renewals**, **Renewal rate (%)**, **Renewals that earn** |
+| **Live QR**, **Licence** | Below |
+| One section per Pro gateway | See Pro's `docs/GATEWAYS.md` |
 
 ### Live QR settings
 
@@ -586,6 +711,14 @@ first, however many subscriptions the store has.
 that same panel. If a charge's outcome was never learned, SubKit stops rather than risk
 charging twice. Look the payment up at your provider, then act on the subscription.
 
+**A renewal has been "awaiting confirmation" for days.** Direct Debit and UPI Autopay
+renewals take days, but after 10 the **Payments awaiting confirmation** line turns red. The
+provider's webhook probably is not reaching your site: check its address in the provider's
+dashboard, and look the payment up there.
+
+**Renewal tax is red.** Some subscriptions renew with tax added twice. Open **General →
+Health**, repair each one, and check whether its customer is owed a refund.
+
 **PayPal is charging but subscriptions are not updating.** The Webhook ID is missing or
 wrong. See the PayPal section above.
 
@@ -603,11 +736,11 @@ This is a development release. Please read this before taking real money.
 
 | | |
 |---|---|
-| **No payment gateway has been tested against a real account** | Every Stripe, PayPal, Mollie, Razorpay and Xendit code path has been checked only against simulated responses. **No real card has ever been charged by this plugin.** This is the single biggest reason not to run it on a live store yet. |
-| **There is no automated test suite** | Everything has been verified by hand. |
+| **No payment gateway has been tested against a real account** | Every gateway in both plugins has been checked only against simulated responses. **No real card has ever been charged by this plugin.** This is the single biggest reason not to run it on a live store yet. |
+| Automated tests | Both plugins have an integration suite that runs against a real WordPress and WooCommerce on every push, with payment gateways faked. |
 | **Unattended renewals have not been watched** | Renewals work when triggered, but no renewal has been observed happening on its own overnight. |
 | ~~Concurrency~~ | **Tested.** Eight processes released together on one subscription produce exactly one charge. |
-| Integrations | None of the nine plugins they connect to is installed on the development machine. See [INTEGRATIONS.md](INTEGRATIONS.md). |
+| Integrations | Most host plugins are not installed on the development machine; AffiliateWP and AutomateWoo were tested against stand-ins, BuddyPress against a real copy. See [INTEGRATIONS.md](INTEGRATIONS.md). |
 | Browser testing | Very little has been checked visually. |
 
 If it involves money — a wrong amount, a charge that should not have happened, a renewal that

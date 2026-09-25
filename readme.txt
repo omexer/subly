@@ -14,7 +14,7 @@ Sell subscriptions in WooCommerce: recurring billing, free trials, Stripe and Pa
 
 SubKit turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
 
-**This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real Stripe or PayPal account, and no renewal has yet been watched happening on its own over time.
+**This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real Stripe or PayPal account (or any other gateway's sandbox), and no renewal has yet been watched happening on its own over time.
 
 = Selling subscriptions =
 
@@ -23,36 +23,51 @@ SubKit turns WooCommerce products into subscriptions and runs the renewal billin
 * The price says how often it recurs wherever WooCommerce shows it, and the terms — the trial, the first payment, what follows, cancel anytime — are spelled out on the product page, in the cart and at checkout.
 * Works with both the classic checkout and the block checkout.
 * A guest can buy a subscription and have an account made at checkout, or you can require a login first.
+* A checkout that costs nothing today — a free trial, or a coupon worth the whole first payment — still asks for a payment method whenever a later renewal will charge something, so the first renewal has a card to charge. Plans that renew for nothing are not asked.
 
 = Taking payment =
 
-* **Stripe** saves the card at checkout and renewals are charged automatically.
+* **Stripe** saves the card at checkout and renewals are charged automatically. A renewal that needs 3-D Secure sends the customer to Stripe's own page to confirm it.
 * **PayPal** runs the schedule itself, and SubKit keeps in step through PayPal's webhooks.
 * With no gateway at all, renewals become invoices the customer pays by hand.
+* Payments that are confirmed days later — Direct Debit and bank payments — wait as pending: the customer keeps access, the renewal order waits on hold so it cannot be paid twice, and SubKit never retries or re-charges it. The gateway settles it once the money is confirmed or refused.
+* A failed or waiting renewal can be paid from its payment link. Paying it restarts the subscription exactly once, keeps the card it was paid with for later renewals, and is never charged again.
 * A safeguard in the database means a renewal can never be charged twice, even when two processes try at the same moment.
 * A charge whose result never arrived is checked with the gateway, not simply tried again.
-* Renewals missed while the site's scheduler was not running are picked up by an hourly check.
+* The next renewal is queued as soon as one is charged. Renewals missed while the site's scheduler was not running are picked up by an hourly check, which by default charges once for the gap rather than once per missed period.
+* In stores that enter prices including tax, renewals charge exactly what the checkout charged. VAT-exempt customers stay exempt on every renewal.
 * A copy of the site on staging refuses to bill anyone.
 
 = For your customers =
 
 * My Account lists their subscriptions, what they pay and when the next payment is.
-* They can cancel at the end of the period they paid for, or straight away. You cannot switch cancelling off.
+* They can cancel at the end of the period they paid for, or straight away. You cannot switch cancelling off. A subscription cancelled at the end of the period ends when that period runs out: access stops and nothing more is charged.
 * They can turn off automatic renewal and keep what they paid for until the period ends.
-* They can pay a renewal that failed.
+* They can pay a renewal that failed, or one waiting on them, from its payment link.
+* If you allow it, they can pay the next period early without moving their renewal date.
 
 = Running your store =
 
-* **Home** walks you through setting up — connect a payment method, create a product, run a test renewal that charges nobody — then shows recurring revenue, what needs your attention and your latest subscriptions.
+* **Home** walks you through setting up — connect a payment method, create a product, run a test renewal that charges nobody — then shows recurring revenue (net of tax), what needs your attention and your latest subscriptions.
 * **All subscriptions** lets you search, filter, sort and change subscriptions in bulk, and open any one to see its history, charge it now or move its dates.
-* Six emails for the moments that matter, each to the right person.
+* **Health** checks, under Settings: whether the renewal queue is running, charges whose outcome is still unknown, renewals waiting more than 10 days for their payment provider to confirm them, whether the double-charge safeguard is in place, and subscriptions whose renewals add tax twice — listed with a Repair action, since subscriptions sold before 0.19.4 in tax-inclusive stores are never changed silently.
+* Nine emails for the moments that matter — six to the customer (including a reminder before each renewal) and three to you.
 * Customer roles and downloadable files that follow the subscription.
 * Integrations and Help screens, with a system report that never contains your keys.
 * A REST API for subscriptions, authenticated with WooCommerce's own API keys.
 
 = SubKit Pro =
 
-A separate plugin adds variable subscriptions, instalment and split payment plans, introductory renewal prices, fixed expiry dates, minimum terms, shipping on renewals, pause and resume, plan switching, recurring coupons, failed-payment recovery, reports, subscription health, delivery schedules, purchase limits, Mollie, Razorpay and Xendit renewals, and integrations with course, email, CRM, automation and licence-key plugins.
+A separate plugin adds:
+
+* **Plans and pricing:** variable subscriptions, several plans per product, instalment and split payment plans, introductory renewal prices, fixed expiry dates, minimum terms, payment caps, purchase limits, shipping on renewals and delivery schedules.
+* **Keeping customers:** pause and resume, plan switching, upgrade suggestions and "switch instead of cancelling", a retention offer on cancellation, a win-back email campaign, anniversary thank-yous with an optional gift, and members-only content.
+* **Getting paid:** configurable payment retries with a recovery report, card updates from My Account with expiring-card and "update your payment details" emails, recurring coupons and sign-up fee coupons, subscription webhooks, and WhatsApp notifications.
+* **More gateways:** Square, Braintree, Authorize.net, Mollie, Xendit, Razorpay (UPI Autopay), GoCardless Direct Debit, Adyen, WooPayments, Paddle, and bKash and SSLCommerz by payment link.
+* **Integrations:** LearnDash, Tutor LMS, LearnPress, MailPoet, FluentCRM, WP Fusion, AutomatorWP, AutomateWoo, AffiliateWP recurring referrals, BuddyBoss and BuddyPress groups, License Manager for WooCommerce and WP Software License.
+* Reports, subscription health with a digest email, and a live QR status page.
+
+None of Pro's gateways has been run against a real sandbox yet either.
 
 == Installation ==
 
@@ -71,7 +86,11 @@ Not yet. The renewal engine is built and tested against a running WordPress, and
 
 = Which payment methods can renew automatically? =
 
-Stripe and PayPal, both included. SubKit Pro adds renewals through Mollie, Razorpay and Xendit, using the payment details those plugins already saved at checkout. Without any of them, each renewal is an invoice the customer pays.
+Stripe and PayPal, both included. SubKit Pro adds Square, Braintree, Authorize.net, Mollie, Xendit and WooPayments renewals against the payment method those plugins saved at checkout, and its own checkouts for Razorpay (UPI Autopay), GoCardless Direct Debit and Adyen; Paddle bills its own schedule, as PayPal does. bKash and SSLCommerz cannot charge a customer again automatically, so Pro emails each renewal as a payment link. Without any of them, each renewal is an invoice the customer pays.
+
+= What happens to a Direct Debit renewal while it clears? =
+
+The renewal is pending: the customer keeps access, the renewal order waits on hold, and nothing is charged again or retried. When the payment provider confirms the payment the renewal is marked paid and the next one is scheduled; if the payment fails, it follows the normal failed-payment path, once.
 
 = Can a customer be charged twice for the same renewal? =
 
