@@ -17,6 +17,8 @@ filter="${1:-}"
 
 passed=0
 failed=()
+log="$(mktemp)"
+trap 'rm -f "$log"' EXIT
 
 for test in tests/integration/test-*.php; do
 	name="$(basename "$test" .php)"
@@ -27,8 +29,15 @@ for test in tests/integration/test-*.php; do
 	# Environment noise that is not about the test: a mailer with no sendmail, compose's
 	# own warnings. The exit status is still the test's.
 	"${wp[@]}" eval-file "wp-content/plugins/$slug/$test" 2>&1 \
-		| grep -vE 'sendmail: not found|attribute `version` is obsolete'
+		| grep -vE 'sendmail: not found|attribute `version` is obsolete' \
+		| tee "$log"
 	status="${PIPESTATUS[0]}"
+
+	# eval-file can exit 0 having run nothing, so a pass must also say so.
+	if [ "$status" = 0 ] && ! grep -qx 'all checks passed' "$log"; then
+		echo "── $name exited 0 without reporting 'all checks passed'; counting it as failed"
+		status=1
+	fi
 
 	if [ "$status" = 0 ]; then
 		passed=$((passed + 1))
