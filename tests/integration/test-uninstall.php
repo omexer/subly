@@ -31,11 +31,27 @@ $delivery_rows = $exists( 'subkit_delivery' ) ? (int) $wpdb->get_var( "SELECT CO
 
 $run = function () { define( 'WP_UNINSTALL_PLUGIN', 'subkit-subscriptions/subkit-subscriptions.php' ); include SUBKIT_PATH . 'uninstall.php'; };
 
+// Every action free queues, including the ones that settle a pending renewal; none may fire into a deleted plugin.
+$queued_actions = array(
+	\SubKit\Billing\Renewal_Scheduler::ACTION_RENEWAL,
+	\SubKit\Billing\Renewal_Scheduler::ACTION_REMINDER,
+	\SubKit\Billing\Renewal_Scheduler::ACTION_SWEEP,
+	\SubKit\Billing\Renewal_Processor::ACTION_SETTLE,
+	\SubKit\Billing\Renewal_Processor::ACTION_RESOLVE,
+	\SubKit\Data\Stats::ACTION_SNAPSHOT,
+	\SubKit\Gateways\PayPal\Webhook_Controller::ACTION_PROCESS,
+);
+foreach ( $queued_actions as $hook ) {
+	as_schedule_single_action( time() + DAY_IN_SECONDS, $hook, array( 'order_id' => 999999001 ), \SubKit\Billing\Renewal_Scheduler::GROUP );
+}
+$still_queued = static fn(): array => array_values( array_filter( $queued_actions, static fn( string $hook ): bool => (bool) as_next_scheduled_action( $hook, null, \SubKit\Billing\Renewal_Scheduler::GROUP ) ) );
+
 // --- 1. the guard --------------------------------------------------------------------
 update_option( 'subkit_delete_data_on_uninstall', 'no' );
 $run();
 $check( 'leaves everything alone when the store did not ask', $exists( 'subkit_schedule' ) && $exists( 'subkit_activity' ) && $exists( 'subkit_charge_slot' ) );
 $check( 'and keeps the settings', (bool) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE 'subkit\_%'" ) );
+$check( 'and the queued work', $queued_actions === $still_queued(), $still_queued() );
 
 // --- 2. the real thing ---------------------------------------------------------------
 update_option( 'subkit_delete_data_on_uninstall', 'yes' );
@@ -48,6 +64,7 @@ foreach ( $tables as $t ) {
 $check( 'removes every setting', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE 'subkit\_%'" ) );
 $check( "leaves Pro's delivery table alone", $delivery_rows === ( $exists( 'subkit_delivery' ) ? (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}subkit_delivery" ) : -1 ) );
 $check( 'leaves subscriptions alone', wc_get_order( $planted->get_id() ) instanceof \SubKit\Domain\Subscription );
+$check( 'unschedules everything it queued, pending-renewal settlement included', array() === $still_queued(), $still_queued() );
 
 // --- 3. put it back ------------------------------------------------------------------
 delete_option( 'subkit_db_version' );
@@ -70,4 +87,7 @@ foreach ( $backup as $t => $rows ) {
 $check( 'restored the settings', count( $options ) === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE 'subkit\_%'" ) );
 
 $planted->delete( true );
+foreach ( $queued_actions as $hook ) {
+	as_unschedule_all_actions( $hook, array( 'order_id' => 999999001 ), \SubKit\Billing\Renewal_Scheduler::GROUP );
+}
 subkit_test_done( $fail );

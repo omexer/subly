@@ -1,0 +1,38 @@
+<?php
+/**
+ * The grace period is only offered where something reads it: SubKit Pro's payment retries.
+ *
+ * @package SubKit
+ */
+
+require __DIR__ . '/bootstrap.php';
+
+global $wp_actions;
+
+$page = null;
+foreach ( WC_Admin_Settings::get_settings_pages() as $candidate ) {
+	if ( $candidate instanceof WC_Settings_Page && 'subkit' === $candidate->get_id() ) {
+		$page = $candidate;
+	}
+}
+if ( ! $page ) {
+	subkit_test_abort( 'the Subscriptions settings tab is not registered' );
+}
+
+$ids     = static fn(): array => array_column( (array) $page->get_settings_for_section( '' ), 'id' );
+$was_pro = $wp_actions['subkit_pro_loaded'] ?? null;
+
+unset( $wp_actions['subkit_pro_loaded'] );
+$check( 'without SubKit Pro the grace period is not offered', ! in_array( 'subkit_grace_period_days', $ids(), true ), $ids() );
+$check( 'while the settings around it still are', in_array( 'subkit_catch_up_policy', $ids(), true ) && in_array( 'subkit_renewal_reminder_days', $ids(), true ) );
+
+$wp_actions['subkit_pro_loaded'] = 1;
+$check( 'with SubKit Pro it is', in_array( 'subkit_grace_period_days', $ids(), true ) );
+
+if ( null === $was_pro ) {
+	unset( $wp_actions['subkit_pro_loaded'] );
+} else {
+	$wp_actions['subkit_pro_loaded'] = $was_pro;
+}
+
+subkit_test_done( $fail );

@@ -31,9 +31,9 @@ class Integrations_Page {
 	}
 
 	/**
-	 * Each entry is title, the plugin it needs, and whether that plugin is here.
+	 * Each entry is title, the plugin it needs, whether that plugin is here, and where it is set up.
 	 *
-	 * @return array<int, array{title: string, requires: string, active: bool, url: string}>
+	 * @return array<int, array{title: string, requires: string, active: bool, url: string, configure_url?: string, configure_label?: string, hint?: string}>
 	 */
 	public function integrations(): array {
 		/**
@@ -125,12 +125,19 @@ class Integrations_Page {
 			echo '<p class="subkit-tile__body">' . esc_html( $description ) . '</p>';
 		}
 
+		$hint = (string) ( $integration['hint'] ?? '' );
+
+		if ( '' !== $hint ) {
+			echo '<p class="subkit-tile__meta">' . esc_html( $hint ) . '</p>';
+		}
+
 		printf(
 			'<div class="subkit-tile__foot"><span class="subkit-badge %s">%s</span><span class="subkit-tile__action">',
 			$active ? 'subkit-badge--good' : '',
 			esc_html( $active ? __( 'Connected', 'subkit-subscriptions' ) : __( 'Not active', 'subkit-subscriptions' ) )
 		);
 
+		$this->render_configure( $integration );
 		$this->render_action( $integration, $active );
 
 		echo '</span></div></div>';
@@ -189,6 +196,25 @@ class Integrations_Page {
 			'<a class="subkit-btn subkit-btn--sm" href="%s" target="_blank" rel="noopener noreferrer">%s <span aria-hidden="true">&#8599;</span></a>',
 			esc_url( $url ),
 			esc_html__( 'Get it', 'subkit-subscriptions' )
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $integration
+	 */
+	private function render_configure( array $integration ): void {
+		$url = (string) ( $integration['configure_url'] ?? '' );
+
+		if ( '' === $url ) {
+			return;
+		}
+
+		$label = (string) ( $integration['configure_label'] ?? '' );
+
+		printf(
+			'<a class="subkit-btn subkit-btn--sm" href="%s">%s</a>',
+			esc_url( $url ),
+			esc_html( '' !== $label ? $label : __( 'Settings', 'subkit-subscriptions' ) )
 		);
 	}
 }

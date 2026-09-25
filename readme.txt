@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.21.0
+Stable tag: 0.21.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,11 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.21.1 =
+* **Fixed: deleting SubKit left its scheduled renewals and reminders behind.** Uninstalling with data removal now clears every scheduled SubKit job.
+* Integration tiles link to where each integration is set up, or say it is set per product.
+* The grace-period setting is shown only when SubKit Pro, which uses it, is active.
 
 = 0.21.0 =
 * **Stores are told when subscriptions renew with tax added twice.** An admin notice gives the count and links to the list, where each can be repaired; it can be dismissed and comes back if more appear. Repair now returns you to the screen you started from, and says so when a subscription changed since the list was made.

@@ -42,7 +42,7 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	public function get_settings_for_default_section(): array {
-		return array(
+		$settings = array(
 			array(
 				'title' => __( 'Health', 'subkit-subscriptions' ),
 				'type'  => 'title',
@@ -167,6 +167,13 @@ class Settings extends \WC_Settings_Page {
 				'id'   => 'subkit_access_title',
 			),
 		);
+
+		// Only Pro's payment retries read it; without Pro a failed renewal goes on hold at once.
+		if ( ! did_action( 'subkit_pro_loaded' ) ) {
+			$settings = array_values( array_filter( $settings, static fn( array $setting ): bool => 'subkit_grace_period_days' !== ( $setting['id'] ?? '' ) ) );
+		}
+
+		return $settings;
 	}
 
 	public function get_settings_for_paypal_section(): array {
