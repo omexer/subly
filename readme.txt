@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.19.4
+Stable tag: 0.19.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.19.5 =
+* **Fixed: a renewal waiting for its payment to clear could be paid a second time.** When a renewal first asked the customer to confirm their payment and later went to "awaiting confirmation" from the payment provider, the order stayed payable from the customer's account. The confirmation link is now cleared once the payment is submitted.
 
 = 0.19.4 =
 * **Fixed: stores that enter prices including tax charged tax twice on every renewal.** A subscription sold for 12.00 including 20% tax renewed at 14.40. New subscriptions now renew at exactly what the checkout charged, in both tax modes and every rounding setting. Existing subscriptions are not changed silently: WooCommerce → Settings → Subscriptions → Health lists the ones renewing with tax added twice, each with a Repair action — and customers may be owed a refund for renewals already taken.

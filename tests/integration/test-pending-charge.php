@@ -34,6 +34,10 @@ $harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
 	public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): Charge_Result {
 		++$this->charges;
 		$this->keys[] = $k;
+		if ( 'stale-link' === $this->next ) {
+			$r->update_meta_data( '_subkit_action_url', 'https://bank.example.test/confirm' );
+			$r->save();
+		}
 		return match ( $this->next ) {
 			'success' => Charge_Result::success( 'ch_' . $this->charges ),
 			'unknown' => Charge_Result::error( 'Timed out, as the harness.' ),
@@ -309,6 +313,16 @@ $harness->next  = 'pending';
 $outcome        = Early_Renewal::charge( $s10 );
 $check( 'the customer is told the payment is on its way, not that it failed', $outcome['ok'] && str_contains( $outcome['message'], 'on its way' ), $outcome );
 null === $early_was ? delete_option( Early_Renewal::OPTION ) : update_option( Early_Renewal::OPTION, $early_was );
+
+echo "\n9. A renewal that once asked the customer to confirm, then went pending\n";
+$s11           = $make( 'pending-11@example.test' );
+$harness->next = 'stale-link';
+$processor->process( $s11->get_id() );
+$slot11  = $slots->latest_unsettled( $s11->get_id() );
+$order11 = $slot11 ? wc_get_order( (int) $slot11->renewal_order_id ) : null;
+$check( 'the slot is pending', $slot11 && Charge_Slot_Repository::STATE_PENDING === $slot11->state, $slot11 );
+$check( 'the old confirmation link is cleared', $order11 && '' === (string) $order11->get_meta( '_subkit_action_url' ), $order11 ? $order11->get_meta( '_subkit_action_url' ) : null );
+$check( 'so the order cannot be paid while the provider collects', $order11 && ! $order11->needs_payment() );
 
 // ---- clean up -----------------------------------------------------------------------
 global $wpdb;

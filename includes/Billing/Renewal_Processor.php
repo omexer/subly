@@ -509,6 +509,8 @@ class Renewal_Processor {
 			// Not money yet, so the date waits; the subscription keeps its status, and its access, meanwhile.
 			$this->slots->mark_pending( (int) $slot->id );
 			$order->set_transaction_id( (string) $result->reference );
+			// A link left from an earlier confirmation step would make the order payable again.
+			$order->delete_meta_data( '_subkit_action_url' );
 			$order->update_status( 'on-hold', __( 'Payment submitted; awaiting confirmation from the payment provider.', 'subkit-subscriptions' ) );
 
 			do_action( 'subkit_renewal_pending', $subscription, $order, $result );
