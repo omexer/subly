@@ -7,7 +7,7 @@ Five kinds of check. **Static analysis** runs anywhere and catches type and stan
 ## Integration tests
 
 Both plugins have a suite in `tests/integration/`: one PHP file per behaviour (22 in free, 47 in
-Pro as of 0.19.5 / 0.39.2), each run through `wp eval-file` inside a WordPress with WooCommerce
+Pro as of 0.21.1 / 0.41.1), each run through `wp eval-file` inside a WordPress with WooCommerce
 and the plugin active. Every file requires `tests/integration/bootstrap.php`, prints `PASS` /
 `FAIL` per check and ends with `subkit_test_done( $fail )`.
 
