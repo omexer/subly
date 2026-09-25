@@ -170,3 +170,29 @@ export function formatTime( stamp ) {
 		  } )
 		: '';
 }
+
+/**
+ * How long ago something happened, in whole days.
+ *
+ * @param {string} stamp A date in UTC.
+ * @return {string} "today", "3 days ago", or an empty string.
+ */
+export function daysAgo( stamp ) {
+	const date = toDate( stamp );
+
+	if ( ! date ) {
+		return '';
+	}
+
+	const days = Math.floor( ( Date.now() - date.getTime() ) / 86400000 );
+
+	if ( days < 1 ) {
+		return __( 'today', 'subkit-subscriptions' );
+	}
+
+	return sprintf(
+		/* translators: %d: number of days. */
+		_n( '%d day ago', '%d days ago', days, 'subkit-subscriptions' ),
+		days
+	);
+}

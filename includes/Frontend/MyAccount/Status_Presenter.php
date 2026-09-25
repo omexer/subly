@@ -2,8 +2,12 @@
 
 namespace SubKit\Frontend\MyAccount;
 
+use SubKit\Billing\Renewal_Processor;
+use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
+use SubKit\Gateways\Gateway_Model;
+use SubKit\Gateways\Gateway_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -21,6 +25,46 @@ class Status_Presenter {
 	 * @return array{label: string, tone: string, detail: string}
 	 */
 	public static function for( Subscription $subscription ): array {
+		$status = $subscription->get_status_enum();
+		$state  = self::for_status( $subscription );
+
+		if ( Subscription_Status::OnHold === $status && self::pays_by_link( $subscription ) ) {
+			$order = self::payable_order( $subscription );
+
+			if ( $order ) {
+				return array(
+					'label'  => __( 'Renewal due', 'subkit-subscriptions' ),
+					'tone'   => 'warning',
+					/* translators: %s: amount of the renewal */
+					'detail' => sprintf( __( 'Your renewal of %s is ready to pay.', 'subkit-subscriptions' ), self::amount( $order ) ),
+				);
+			}
+		}
+
+		// Its next-payment date stays where it was until the provider answers, so showing it would read as overdue.
+		$pending = $status && ( $status->is_billable() || Subscription_Status::PendingCancel === $status ) ? self::pending_charge( $subscription ) : null;
+
+		if ( $pending ) {
+			return array(
+				/* translators: %s: subscription status, such as Active */
+				'label'  => sprintf( __( '%s · Payment processing', 'subkit-subscriptions' ), $state['label'] ),
+				'tone'   => 'neutral',
+				'detail' => sprintf(
+					/* translators: 1: amount of the renewal, 2: date the payment was submitted */
+					__( 'Your renewal payment of %1$s was submitted on %2$s and is waiting for your bank or payment provider to confirm it. There is nothing you need to do.', 'subkit-subscriptions' ),
+					self::amount( $pending['order'] ),
+					wp_date( (string) get_option( 'date_format' ), $pending['since'] )
+				),
+			);
+		}
+
+		return $state;
+	}
+
+	/**
+	 * @return array{label: string, tone: string, detail: string}
+	 */
+	private static function for_status( Subscription $subscription ): array {
 		$status = $subscription->get_status_enum();
 		$next   = $subscription->get_next_payment();
 		$when   = $next ? date_i18n( (string) get_option( 'date_format' ), strtotime( $next . ' UTC' ) ) : '';
@@ -90,6 +134,13 @@ class Status_Presenter {
 			return null;
 		}
 
+		if ( self::pays_by_link( $subscription ) ) {
+			return array(
+				'label' => __( 'Pay renewal', 'subkit-subscriptions' ),
+				'url'   => $order->get_checkout_payment_url(),
+			);
+		}
+
 		// A 3DS challenge is not a failure, so it gets its own wording and its own link.
 		$authenticate = (string) $order->get_meta( '_subkit_action_url' );
 
@@ -122,6 +173,42 @@ class Status_Presenter {
 		$order = $orders[0] ?? null;
 
 		return $order instanceof \WC_Order && ! $order->is_paid() ? $order : null;
+	}
+
+	/**
+	 * The renewal submitted to the payment provider and still awaiting its answer.
+	 *
+	 * @return array{order: \WC_Order, since: int}|null
+	 */
+	public static function pending_charge( Subscription $subscription ): ?array {
+		$slots = \SubKit\Plugin::instance()->get( 'charge_slots' );
+		$slot  = $slots instanceof Charge_Slot_Repository ? $slots->latest_unsettled( $subscription->get_id() ) : null;
+		$order = $slot && Charge_Slot_Repository::STATE_PENDING === $slot->state && $slot->renewal_order_id ? wc_get_order( (int) $slot->renewal_order_id ) : null;
+
+		if ( ! $order instanceof \WC_Order ) {
+			return null;
+		}
+
+		// An order without the stamp falls back to when its period was claimed.
+		$since = (int) $order->get_meta( Renewal_Processor::META_PENDING_SINCE );
+
+		return array(
+			'order' => $order,
+			'since' => $since ? $since : (int) strtotime( $slot->created_gmt . ' UTC' ),
+		);
+	}
+
+	/**
+	 * Nothing charges these renewals: the customer pays each one from a link.
+	 */
+	public static function pays_by_link( Subscription $subscription ): bool {
+		$registry = \SubKit\Plugin::instance()->get( 'gateways' );
+
+		return $registry instanceof Gateway_Registry && Gateway_Model::Manual === $registry->for_subscription( $subscription )->model();
+	}
+
+	private static function amount( \WC_Order $order ): string {
+		return html_entity_decode( wp_strip_all_tags( wc_price( (float) $order->get_total(), array( 'currency' => $order->get_currency() ) ) ), ENT_QUOTES, get_bloginfo( 'charset' ) );
 	}
 
 	/**

@@ -3,6 +3,7 @@
 namespace SubKit\Lifecycle;
 
 use SubKit\Billing\Renewal_Processor;
+use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Domain\Subscription;
 use SubKit\Gateways\Gateway_Model;
 use SubKit\Gateways\Gateway_Registry;
@@ -42,11 +43,15 @@ final class Early_Renewal {
 
 		$registry = \SubKit\Plugin::instance()->get( 'gateways' );
 
-		if ( ! $registry instanceof Gateway_Registry ) {
+		if ( ! $registry instanceof Gateway_Registry || Gateway_Model::Tokenized !== $registry->for_subscription( $subscription )->model() ) {
 			return false;
 		}
 
-		return Gateway_Model::Tokenized === $registry->for_subscription( $subscription )->model();
+		$slots = \SubKit\Plugin::instance()->get( 'charge_slots' );
+		$open  = $slots instanceof Charge_Slot_Repository ? $slots->latest_unsettled( $subscription->get_id() ) : null;
+
+		// The pipeline resumes a submitted renewal rather than charging another, so an early payment would only fail.
+		return ! $open || Charge_Slot_Repository::STATE_PENDING !== $open->state;
 	}
 
 	/**

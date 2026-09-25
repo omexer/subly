@@ -392,6 +392,7 @@ class Menu {
 		$this->row( __( 'Recurring total', 'subkit-subscriptions' ), wp_strip_all_tags( $subscription->get_formatted_order_total() ) );
 		$this->row( __( 'Billing', 'subkit-subscriptions' ), sprintf( '%d / %s', $subscription->get_billing_interval(), $subscription->get_billing_period() ) );
 		$this->row( __( 'Next payment', 'subkit-subscriptions' ), (string) $subscription->get_next_payment() ?: '-' );
+		$this->pending_row( $subscription );
 		$this->row( __( 'Trial ends', 'subkit-subscriptions' ), (string) $subscription->get_trial_end() ?: '-' );
 		$this->row( __( 'Payment method', 'subkit-subscriptions' ), $subscription->get_payment_method_title() ?: (string) $subscription->get_payment_method() );
 		$this->row( __( 'Parent order', 'subkit-subscriptions' ), $subscription->get_parent_order_id() ? '#' . $subscription->get_parent_order_id() : '-' );
@@ -421,6 +422,11 @@ class Menu {
 	 * charges a real customer, so it names the amount and asks first.
 	 */
 	private function render_process_button( Subscription $subscription ): void {
+		// Processing would only resume the charge already waiting on the payment provider.
+		if ( Status_Presenter::pending_charge( $subscription ) ) {
+			return;
+		}
+
 		$url = wp_nonce_url(
 			add_query_arg(
 				array(
@@ -542,6 +548,25 @@ class Menu {
 			)
 		);
 		exit;
+	}
+
+	private function pending_row( Subscription $subscription ): void {
+		$pending = Status_Presenter::pending_charge( $subscription );
+
+		if ( ! $pending ) {
+			return;
+		}
+
+		printf(
+			'<tr><th scope="row">%s</th><td>%s</td></tr>',
+			esc_html__( 'Payment processing', 'subkit-subscriptions' ),
+			sprintf(
+				/* translators: 1: renewal order number, linked, 2: how long ago it was submitted, such as "3 days" */
+				esc_html__( 'Renewal order %1$s was submitted %2$s ago and is waiting for the payment provider to confirm it.', 'subkit-subscriptions' ),
+				sprintf( '<a href="%s">#%s</a>', esc_url( $pending['order']->get_edit_order_url() ), esc_html( $pending['order']->get_order_number() ) ),
+				esc_html( human_time_diff( $pending['since'] ) )
+			)
+		);
 	}
 
 	private function row( string $label, string $value ): void {

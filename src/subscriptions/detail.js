@@ -16,6 +16,7 @@ import {
 	Stat,
 } from '@subkit/ui';
 import {
+	daysAgo,
 	describeSchedule,
 	formatDay,
 	formatTime,
@@ -227,6 +228,15 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 		return <Skeleton className="sk-my-4 sk-h-64" />;
 	}
 
+	let nextMeta = __( 'Nothing scheduled', 'subkit-subscriptions' );
+
+	// The date only moves once the provider confirms, so "overdue" would mislead.
+	if ( data.payment_pending ) {
+		nextMeta = __( 'Waiting for the payment', 'subkit-subscriptions' );
+	} else if ( data.next_payment ) {
+		nextMeta = whenDue( data.next_payment );
+	}
+
 	return (
 		<div className={ busy ? 'sk-opacity-60 sk-transition-opacity' : '' }>
 			<div className="sk-mb-4 sk-flex sk-flex-wrap sk-items-start sk-gap-3">
@@ -279,6 +289,29 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 				</div>
 			) : null }
 
+			{ data.payment_pending ? (
+				<div
+					className="sk-mb-4 sk-rounded-lg sk-border sk-p-3 sk-text-sm"
+					role="status"
+				>
+					<strong>
+						{ __( 'Payment processing', 'subkit-subscriptions' ) }
+					</strong>{ ' ' }
+					{ sprintf(
+						/* translators: 1: renewal order number, 2: how long ago, such as "3 days ago". */
+						__(
+							'Renewal order #%1$s was submitted %2$s and is waiting for the payment provider to confirm it.',
+							'subkit-subscriptions'
+						),
+						data.payment_pending_order.number,
+						daysAgo( data.payment_pending_since )
+					) }{ ' ' }
+					<a href={ data.payment_pending_order.url }>
+						{ __( 'View order', 'subkit-subscriptions' ) }
+					</a>
+				</div>
+			) : null }
+
 			<div className="sk-mb-4 sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 				<Stat
 					label={ __( 'Recurring total', 'subkit-subscriptions' ) }
@@ -288,11 +321,7 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 				<Stat
 					label={ __( 'Next payment', 'subkit-subscriptions' ) }
 					value={ data.next_payment_formatted || '—' }
-					meta={
-						data.next_payment
-							? whenDue( data.next_payment )
-							: __( 'Nothing scheduled', 'subkit-subscriptions' )
-					}
+					meta={ nextMeta }
 				/>
 				<Stat
 					label={ __( 'Payments made', 'subkit-subscriptions' ) }
@@ -368,7 +397,7 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 					</CardHeader>
 					<CardContent className="sk-flex sk-flex-col sk-gap-5">
 						<div className="sk-flex sk-flex-wrap sk-items-center sk-gap-2">
-							{ data.billable ? (
+							{ data.billable && ! data.payment_pending ? (
 								<Button
 									disabled={ busy }
 									onClick={ () =>
@@ -400,7 +429,7 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 							</Button>
 						</div>
 
-						{ data.billable ? (
+						{ data.billable && ! data.payment_pending ? (
 							<p className="sk-m-0 sk-text-xs sk-text-muted-foreground">
 								{ __(
 									'Charging now takes the next payment immediately and moves the schedule on. It does not skip the queue for a failed one - the activity log below says what happened last.',

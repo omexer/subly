@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.19.5
+Stable tag: 0.20.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,11 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.20.0 =
+* **A renewal waiting for the bank to confirm it now says so.** Customers see "Active · Payment processing" with the date the payment was submitted, instead of a next-payment date in the past, and "Pay early" is not offered until it settles. The subscription list and screen show the same state to the store, and "Renew now" is hidden while it waits.
+* **Pay-by-link renewals no longer read as failed payments.** For subscriptions paid by invoice or payment link, the account page says "Renewal due — your renewal is ready to pay" with a "Pay renewal" button, and never claims the subscription renews automatically.
+* If a store marks a waiting renewal paid by hand and the payment provider later reports that payment failed, the order and the subscription's activity now say so once, so the store can collect or cancel. Nothing is changed automatically.
 
 = 0.19.5 =
 * **Fixed: a renewal waiting for its payment to clear could be paid a second time.** When a renewal first asked the customer to confirm their payment and later went to "awaiting confirmation" from the payment provider, the order stayed payable from the customer's account. The confirmation link is now cleared once the payment is submitted.

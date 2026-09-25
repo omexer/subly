@@ -187,6 +187,40 @@ describe( 'the subscriptions list', () => {
 		expect( last ).toContain( 'order=ASC' );
 	} );
 
+	it( 'says a renewal is waiting on the payment provider, and does not offer to charge it again', async () => {
+		const since = new Date( Date.now() - 3 * 86400000 )
+			.toISOString()
+			.slice( 0, 19 )
+			.replace( 'T', ' ' );
+
+		respond( {
+			rows: [
+				{
+					...ROWS[ 0 ],
+					next_payment: '2026-09-01 09:00:00',
+					payment_pending: true,
+					payment_pending_since: since,
+					payment_pending_order: {
+						id: 900,
+						number: '900',
+						url: 'http://example.test/order/900',
+					},
+				},
+			],
+		} );
+		await render();
+
+		expect( container.textContent ).toContain(
+			'Payment processing · order #900 · submitted 3 days ago'
+		);
+		expect(
+			container.querySelector( 'a[href="http://example.test/order/900"]' )
+		).toBeTruthy();
+		expect( container.textContent ).toContain( 'waiting for the payment' );
+		expect( container.textContent ).not.toContain( 'overdue' );
+		expect( byText( 'Renew now' ) ).toBeUndefined();
+	} );
+
 	it( 'tears itself down when the first load fails, leaving the server-rendered list', async () => {
 		apiFetch.mockRejectedValue( new Error( 'nope' ) );
 		const onFail = jest.fn();

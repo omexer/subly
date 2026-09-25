@@ -27,6 +27,10 @@ class Renewal_Processor {
 
 	public const ACTION_RESOLVE = 'subkit_resolve_pending_renewal';
 
+	public const META_PENDING_SINCE = '_subkit_pending_since';
+
+	private const META_PAID_WHILE_PENDING = '_subkit_paid_while_pending';
+
 	public function __construct(
 		private readonly Charge_Slot_Repository $slots,
 		private readonly Activity_Repository $activity,
@@ -261,7 +265,13 @@ class Renewal_Processor {
 	public function resolve_pending( \WC_Order $order, Charge_Result $result ): bool {
 		$slot = $this->slot_for( $order );
 
-		if ( ! $slot || Charge_Slot_Repository::STATE_PENDING !== $slot->state || ! ( $result->is_success() || $result->is_definitive_decline() ) ) {
+		if ( ! $slot || ! ( $result->is_success() || $result->is_definitive_decline() ) ) {
+			return false;
+		}
+
+		$late = Charge_Slot_Repository::STATE_PAID === $slot->state && $result->is_definitive_decline();
+
+		if ( ! $late && Charge_Slot_Repository::STATE_PENDING !== $slot->state ) {
 			return false;
 		}
 
@@ -286,6 +296,11 @@ class Renewal_Processor {
 		}
 
 		try {
+			if ( $late ) {
+				$this->report_late_failure( $order->get_id(), $slot, $result );
+				return false;
+			}
+
 			$subscription = wc_get_order( $subscription_id );
 
 			if ( ! $subscription instanceof Subscription ) {
@@ -361,6 +376,45 @@ class Renewal_Processor {
 		return true;
 	}
 
+	/**
+	 * The provider failed a renewal the store had already marked paid; only the merchant can decide whether to chase it.
+	 */
+	private function report_late_failure( int $order_id, object $slot, Charge_Result $result ): void {
+		$order = wc_get_order( $order_id );
+
+		if ( ! $order instanceof \WC_Order || 'yes' !== $order->get_meta( self::META_PAID_WHILE_PENDING ) ) {
+			return;
+		}
+
+		$order->update_meta_data( self::META_PAID_WHILE_PENDING, 'failed' );
+		$order->save_meta_data();
+
+		$reason  = '' !== (string) $result->message ? (string) $result->message : (string) $result->code;
+		$message = sprintf(
+			/* translators: %s: renewal order number */
+			__( 'The payment provider reported that the payment for renewal order #%s failed after the order was marked paid. Nothing was changed automatically: collect the payment from the customer, or cancel the subscription.', 'subkit-subscriptions' ),
+			$order->get_order_number()
+		);
+
+		if ( '' !== $reason ) {
+			/* translators: %s: the reason the payment provider gave */
+			$message .= ' ' . sprintf( __( 'Reason given: %s', 'subkit-subscriptions' ), $reason );
+		}
+
+		$order->add_order_note( $message );
+
+		$this->activity->log(
+			(int) $slot->subscription_id,
+			Activity_Repository::TYPE_CHARGE_ATTEMPT,
+			$message,
+			array(
+				'reference'    => $result->reference,
+				'code'         => $result->code,
+				'period_index' => (int) $slot->period_index,
+			)
+		);
+	}
+
 	private function log_resolved( Subscription $subscription, object $slot, Charge_Result $result ): void {
 		$this->activity->log(
 			$subscription->get_id(),
@@ -377,6 +431,12 @@ class Renewal_Processor {
 	private function settle( Subscription $subscription, \WC_Order $order, object $slot ): void {
 		if ( ! $this->slots->settle_unpaid( (int) $slot->id, $order->get_id() ) ) {
 			return;
+		}
+
+		// The provider may still fail it, and resolve_pending must then tell the merchant rather than ignore it.
+		if ( Charge_Slot_Repository::STATE_PENDING === $slot->state ) {
+			$order->update_meta_data( self::META_PAID_WHILE_PENDING, 'yes' );
+			$order->save_meta_data();
 		}
 
 		$this->activity->log(
@@ -509,6 +569,7 @@ class Renewal_Processor {
 			// Not money yet, so the date waits; the subscription keeps its status, and its access, meanwhile.
 			$this->slots->mark_pending( (int) $slot->id );
 			$order->set_transaction_id( (string) $result->reference );
+			$order->update_meta_data( self::META_PENDING_SINCE, time() );
 			// A link left from an earlier confirmation step would make the order payable again.
 			$order->delete_meta_data( '_subkit_action_url' );
 			$order->update_status( 'on-hold', __( 'Payment submitted; awaiting confirmation from the payment provider.', 'subkit-subscriptions' ) );

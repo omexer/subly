@@ -7,6 +7,7 @@ use SubKit\Billing\Renewal_Processor;
 use SubKit\Data\Subscription_Query;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
+use SubKit\Frontend\MyAccount\Status_Presenter;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -521,7 +522,8 @@ class Subscriptions_Controller {
 			return array();
 		}
 
-		$status = $subscription->get_status_enum();
+		$status  = $subscription->get_status_enum();
+		$pending = Status_Presenter::pending_charge( $subscription );
 
 		$data = array(
 			'id'                     => $subscription->get_id(),
@@ -545,6 +547,15 @@ class Subscriptions_Controller {
 			'payment_method'         => $subscription->get_payment_method(),
 			'payment_method_title'   => $subscription->get_payment_method_title(),
 			'billable'               => (bool) ( $status && $status->is_billable() ),
+			'payment_pending'        => null !== $pending,
+			'payment_pending_since'  => $pending ? gmdate( 'Y-m-d H:i:s', $pending['since'] ) : null,
+			'payment_pending_order'  => $pending
+				? array(
+					'id'     => $pending['order']->get_id(),
+					'number' => $pending['order']->get_order_number(),
+					'url'    => $pending['order']->get_edit_order_url(),
+				)
+				: null,
 			'parent_order_id'        => $subscription->get_parent_order_id(),
 			'date_created'           => $subscription->get_date_created() ? $subscription->get_date_created()->date( 'c' ) : null,
 			'edit_url'               => admin_url( 'admin.php?page=' . \SubKit\Admin\Menu::LIST_SLUG . '&subscription=' . $subscription->get_id() ),

@@ -15,6 +15,8 @@ use SubKit\Domain\Subscription_Status;
 use SubKit\Frontend\MyAccount\Status_Presenter;
 
 $subkit_state      = Status_Presenter::for( $subscription );
+$subkit_pending    = Status_Presenter::pending_charge( $subscription );
+$subkit_by_link    = Status_Presenter::pays_by_link( $subscription );
 $subkit_can_cancel = ! in_array(
 	$subscription->get_status_enum(),
 	array( Subscription_Status::Cancelled, Subscription_Status::Expired, Subscription_Status::Switched, Subscription_Status::PendingCancel ),
@@ -132,13 +134,19 @@ if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscrip
 	$subkit_auto_on      = \SubKit\Lifecycle\Auto_Renewal::is_on( $subscription );
 	?>
 	<?php if ( $subkit_auto_offered ) : ?>
-		<h3><?php esc_html_e( 'Automatic renewal', 'subkit-subscriptions' ); ?></h3>
+		<h3><?php echo $subkit_by_link ? esc_html__( 'Renewal', 'subkit-subscriptions' ) : esc_html__( 'Automatic renewal', 'subkit-subscriptions' ); ?></h3>
 
 		<p class="subkit-auto-renew__state">
 			<?php
-			echo $subkit_auto_on
-				? esc_html__( 'This subscription renews automatically.', 'subkit-subscriptions' )
-				: esc_html__( 'Automatic renewal is off. You keep access until the end of the period you have paid for, and you will not be charged again.', 'subkit-subscriptions' );
+			if ( $subkit_by_link ) {
+				echo $subkit_auto_on
+					? esc_html__( 'At the end of each period we send you a renewal to pay.', 'subkit-subscriptions' )
+					: esc_html__( 'Renewal is off. You keep access until the end of the period you have paid for, and you will not be asked to pay again.', 'subkit-subscriptions' );
+			} else {
+				echo $subkit_auto_on
+					? esc_html__( 'This subscription renews automatically.', 'subkit-subscriptions' )
+					: esc_html__( 'Automatic renewal is off. You keep access until the end of the period you have paid for, and you will not be charged again.', 'subkit-subscriptions' );
+			}
 			?>
 		</p>
 
@@ -150,9 +158,15 @@ if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscrip
 
 			<button type="submit" class="button subkit-btn">
 				<?php
-				echo $subkit_auto_on
-					? esc_html__( 'Turn off automatic renewal', 'subkit-subscriptions' )
-					: esc_html__( 'Turn automatic renewal back on', 'subkit-subscriptions' );
+				if ( $subkit_by_link ) {
+					echo $subkit_auto_on
+						? esc_html__( 'Stop renewing', 'subkit-subscriptions' )
+						: esc_html__( 'Turn renewal back on', 'subkit-subscriptions' );
+				} else {
+					echo $subkit_auto_on
+						? esc_html__( 'Turn off automatic renewal', 'subkit-subscriptions' )
+						: esc_html__( 'Turn automatic renewal back on', 'subkit-subscriptions' );
+				}
 				?>
 			</button>
 		</form>
@@ -166,7 +180,7 @@ if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscrip
 			<input type="hidden" name="subkit_action" value="cancel" />
 			<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( (string) $subscription->get_id() ); ?>" />
 
-			<?php if ( $subscription->get_next_payment() ) : ?>
+			<?php if ( $subscription->get_next_payment() && ! $subkit_pending ) : ?>
 				<p class="subkit-cancel__paid-through">
 					<?php
 					printf(

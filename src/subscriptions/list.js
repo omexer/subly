@@ -23,7 +23,7 @@ import {
 	TableHeader,
 	TableRow,
 } from '@subkit/ui';
-import { describeSchedule, statusVariant, whenDue } from './format';
+import { daysAgo, describeSchedule, statusVariant, whenDue } from './format';
 
 const PER_PAGE = 20;
 
@@ -581,6 +581,44 @@ export function List( { onOpen, onReady, onFail } ) {
 											>
 												{ row.status_label }
 											</Badge>
+											{ row.payment_pending ? (
+												<div className="sk-mt-1 sk-text-xs sk-text-muted-foreground">
+													{ __(
+														'Payment processing',
+														'subkit-subscriptions'
+													) }
+													{ ' · ' }
+													<a
+														href={
+															row
+																.payment_pending_order
+																.url
+														}
+													>
+														{ sprintf(
+															/* translators: %s: renewal order number. */
+															__(
+																'order #%s',
+																'subkit-subscriptions'
+															),
+															row
+																.payment_pending_order
+																.number
+														) }
+													</a>
+													{ ' · ' }
+													{ sprintf(
+														/* translators: %s: how long ago, such as "3 days ago". */
+														__(
+															'submitted %s',
+															'subkit-subscriptions'
+														),
+														daysAgo(
+															row.payment_pending_since
+														)
+													) }
+												</div>
+											) : null }
 										</TableCell>
 										<TableCell>
 											{ row.next_payment_formatted ? (
@@ -591,9 +629,14 @@ export function List( { onOpen, onReady, onFail } ) {
 														}
 													</div>
 													<div className="sk-text-xs sk-text-muted-foreground">
-														{ whenDue(
-															row.next_payment
-														) }
+														{ row.payment_pending
+															? __(
+																	'waiting for the payment',
+																	'subkit-subscriptions'
+															  )
+															: whenDue(
+																	row.next_payment
+															  ) }
 													</div>
 												</>
 											) : (
@@ -611,7 +654,8 @@ export function List( { onOpen, onReady, onFail } ) {
 											</div>
 										</TableCell>
 										<TableCell className="sk-text-right">
-											{ row.billable ? (
+											{ row.billable &&
+											! row.payment_pending ? (
 												<Button
 													variant="outline"
 													size="sm"

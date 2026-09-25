@@ -154,11 +154,19 @@ class Account_Endpoint {
 
 		$auto->set( $subscription, $on );
 
-		wc_add_notice(
-			$on
-				? __( 'Automatic renewal is back on. Your subscription will keep renewing.', 'subkit-subscriptions' )
-				: __( 'Automatic renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be charged again.', 'subkit-subscriptions' )
-		);
+		if ( Status_Presenter::pays_by_link( $subscription ) ) {
+			wc_add_notice(
+				$on
+					? __( 'Renewal is back on. At the end of each period we will send you a renewal to pay.', 'subkit-subscriptions' )
+					: __( 'Renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be asked to pay again.', 'subkit-subscriptions' )
+			);
+		} else {
+			wc_add_notice(
+				$on
+					? __( 'Automatic renewal is back on. Your subscription will keep renewing.', 'subkit-subscriptions' )
+					: __( 'Automatic renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be charged again.', 'subkit-subscriptions' )
+			);
+		}
 
 		wp_safe_redirect( wc_get_account_endpoint_url( self::ENDPOINT . '/' . $subscription->get_id() ) );
 		exit;

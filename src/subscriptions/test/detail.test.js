@@ -164,6 +164,31 @@ describe( 'the subscription detail screen', () => {
 		expect( onFail ).toHaveBeenCalled();
 	} );
 
+	it( 'says a renewal is waiting on the payment provider, and does not offer to charge it again', async () => {
+		respond( {
+			...SUBSCRIPTION,
+			next_payment: '2026-09-01 09:00:00',
+			payment_pending: true,
+			payment_pending_since: new Date().toISOString().slice( 0, 19 ),
+			payment_pending_order: {
+				id: 900,
+				number: '900',
+				url: 'http://example.test/order/900',
+			},
+		} );
+		await render();
+
+		expect( container.textContent ).toContain(
+			'Renewal order #900 was submitted today and is waiting for the payment provider to confirm it.'
+		);
+		expect(
+			container.querySelector( 'a[href="http://example.test/order/900"]' )
+		).toBeTruthy();
+		expect( container.textContent ).toContain( 'Waiting for the payment' );
+		expect( container.textContent ).not.toContain( 'overdue' );
+		expect( byText( 'Renew now' ) ).toBeUndefined();
+	} );
+
 	it( 'hides Renew now on a subscription that cannot be billed', async () => {
 		respond( {
 			...SUBSCRIPTION,

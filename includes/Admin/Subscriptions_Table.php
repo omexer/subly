@@ -138,9 +138,10 @@ class Subscriptions_Table extends \WP_List_Table {
 			// The pill carries colour, but the label is always readable text inside it:
 			// a merchant scanning for problems must not have to decode a swatch.
 			'status'       => sprintf(
-				'<span class="subkit-pill subkit-pill--%s">%s</span>',
+				'<span class="subkit-pill subkit-pill--%s">%s</span>%s',
 				esc_attr( (string) $item->get_status() ),
-				esc_html( Status_Presenter::for( $item )['label'] )
+				esc_html( Status_Presenter::for( $item )['label'] ),
+				$this->pending_line( $item )
 			),
 			'next_payment' => $item->get_next_payment()
 				? esc_html( date_i18n( (string) get_option( 'date_format' ), strtotime( $item->get_next_payment() . ' UTC' ) ) )
@@ -166,7 +167,8 @@ class Subscriptions_Table extends \WP_List_Table {
 
 		$status = $item->get_status_enum();
 
-		if ( $status && $status->is_billable() ) {
+		// Renewing would only resume the charge already waiting on the payment provider.
+		if ( $status && $status->is_billable() && ! Status_Presenter::pending_charge( $item ) ) {
 			$actions['renew'] = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url(
@@ -194,6 +196,24 @@ class Subscriptions_Table extends \WP_List_Table {
 		}
 
 		return $this->row_actions( $actions );
+	}
+
+	private function pending_line( Subscription $item ): string {
+		$pending = Status_Presenter::pending_charge( $item );
+
+		if ( ! $pending ) {
+			return '';
+		}
+
+		return sprintf(
+			'<br><span class="description">%s</span>',
+			sprintf(
+				/* translators: 1: renewal order number, linked, 2: how long ago it was submitted, such as "3 days" */
+				esc_html__( 'Renewal order %1$s submitted %2$s ago', 'subkit-subscriptions' ),
+				sprintf( '<a href="%s">#%s</a>', esc_url( $pending['order']->get_edit_order_url() ), esc_html( $pending['order']->get_order_number() ) ),
+				esc_html( human_time_diff( $pending['since'] ) )
+			)
+		);
 	}
 
 	/**
