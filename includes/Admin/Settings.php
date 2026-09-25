@@ -91,12 +91,12 @@ class Settings extends \WC_Settings_Page {
 				'desc_tip'          => __( 'Emails the customer before their card is charged, which is what stops an unexpected charge becoming a chargeback. 0 turns the reminder off. A renewal falling due sooner than this is not warned about, since the email would arrive after the charge.', 'subkit-subscriptions' ),
 			),
 			array(
-				'title'    => __( 'Free trials', 'subkit-subscriptions' ),
+				'title'    => __( 'Free first payments', 'subkit-subscriptions' ),
 				'desc'     => __( 'Ask for a payment method even when the first payment is nothing', 'subkit-subscriptions' ),
 				'id'       => \SubKit\Checkout\Trial_Payment::OPTION,
 				'type'     => 'checkbox',
 				'default'  => 'yes',
-				'desc_tip' => __( 'A trial with no sign-up fee makes the first order zero, and WooCommerce skips the payment step for a zero-total order — so nothing is stored to charge when the trial ends. Switch this off only if you would rather chase customers for a card later.', 'subkit-subscriptions' ),
+				'desc_tip' => __( 'A trial with no sign-up fee, or a coupon worth more than the first payment, makes the first order zero, and WooCommerce skips the payment step for a zero-total order — so nothing is stored to charge the next payment. A plan that renews for nothing is not asked. Offline methods (bank transfer, cheque, cash on delivery) store no card, so choosing one still leaves nothing to charge later. Switch this off only if you would rather chase customers for a card later.', 'subkit-subscriptions' ),
 			),
 			array(
 				'type' => 'sectionend',

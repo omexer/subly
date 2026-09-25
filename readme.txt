@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.19.2
+Stable tag: 0.19.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,10 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.19.3 =
+* **Fixed: a coupon that made the first payment free left the subscription unable to renew.** Only free trials asked for a card when nothing was due today, so a checkout brought to zero by a coupon saved no payment method and every renewal then failed. A checkout that costs nothing today now asks for a card whenever a later payment will actually charge something. Free-forever plans, and coupons that make every renewal free, are still not asked.
+* The "collect payment on free trials" setting is now called "Free first payments", since it also covers coupons.
 
 = 0.19.2 =
 * **Fixed: two background workers could both believe they held a subscription's lock.** On current WordPress the lock that keeps renewal runs and follow-up emails from overlapping was not truly exclusive, so a rare race could send a win-back or anniversary email (and its coupon) twice. Payments were never at risk. The lock now has exactly one holder, and a worker whose lock expired can no longer release someone else's.

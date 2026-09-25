@@ -11,9 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Keeps the payment step on a checkout that costs nothing today.
  *
- * A trial with no sign-up fee totals zero, and WooCommerce skips payment entirely for a
- * zero-total order: no gateway runs, so no card is stored, and the first renewal after the
- * trial has nothing to charge. Forcing the payment step collects the mandate up front.
+ * A trial with no sign-up fee totals zero, and so does a coupon worth more than the first
+ * payment. WooCommerce skips payment entirely for a zero-total order: no gateway runs, so
+ * no card is stored, and the first renewal has nothing to charge. Forcing the payment step
+ * whenever a line will renew for money collects the mandate up front; a free-forever plan
+ * has nothing coming to charge, so it is left alone.
  */
 final class Trial_Payment {
 
@@ -39,8 +41,10 @@ final class Trial_Payment {
 			return $needs_payment;
 		}
 
-		foreach ( $cart->get_cart() as $item ) {
-			if ( self::starts_a_trial( $item['data'] ?? null ) ) {
+		foreach ( $cart->get_cart() as $key => $item ) {
+			$product = $item['data'] ?? null;
+
+			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'subkit_cart_item_is_subscription', true, $item, $key ) && self::renews_for_money( $product, $cart->get_applied_coupons() ) ) {
 				return true;
 			}
 		}
@@ -69,7 +73,9 @@ final class Trial_Payment {
 		}
 
 		foreach ( $order->get_items() as $item ) {
-			if ( $item instanceof \WC_Order_Item_Product && self::starts_a_trial( $item->get_product() ) ) {
+			$product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
+
+			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'subkit_create_subscription_for_item', true, $item, $product, $order ) && self::renews_for_money( $product, $order->get_coupon_codes() ) ) {
 				return true;
 			}
 		}
@@ -78,10 +84,18 @@ final class Trial_Payment {
 	}
 
 	/**
-	 * @param \WC_Product|mixed $product
+	 * @param string[] $coupon_codes The checkout's coupons, some of which may carry forward.
 	 */
-	private static function starts_a_trial( $product ): bool {
-		return Subscription_Product::is_subscription( $product )
-			&& Subscription_Product::schedule( $product )->has_trial();
+	private static function renews_for_money( \WC_Product $product, array $coupon_codes ): bool {
+		/**
+		 * What each renewal of this product will charge, once anything carried forward from checkout applies.
+		 *
+		 * @param float       $amount       The recurring price the checkout priced it at.
+		 * @param \WC_Product $product
+		 * @param string[]    $coupon_codes
+		 */
+		$amount = (float) apply_filters( 'subkit_checkout_renewal_amount', (float) Subscription_Product::recurring_price( $product )->decimal(), $product, $coupon_codes );
+
+		return $amount > 0;
 	}
 }

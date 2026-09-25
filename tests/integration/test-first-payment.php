@@ -1,6 +1,6 @@
 <?php
 /**
- * What a subscription costs today: trials, sign-up fees, and the payment step a zero total would skip.
+ * What a subscription costs today: trials, sign-up fees, coupons, and the payment step a zero total would skip.
  *
  * @package SubKit
  */
@@ -68,6 +68,50 @@ $p = wc_get_product( $d ); $p->set_regular_price( '20' ); $p->set_price( '20' );
 list( $total, $needs ) = $cart_total( $d );
 $equals( 'charged today', $total, '20.00' );
 
+echo "\n7. No trial, but a coupon worth more than the first payment (zero total again)\n";
+$e      = $make( 20, 0, 0 );
+$coupon = new WC_Coupon();
+$coupon->set_code( 'sk-zero-' . strtolower( wp_generate_password( 6, false, false ) ) );
+$coupon->set_discount_type( 'fixed_cart' );
+$coupon->set_amount( 25 );
+$coupon->save();
+$with_coupon = function ( int $id ) use ( $coupon ) {
+	WC()->cart->empty_cart();
+	WC()->cart->add_to_cart( $id );
+	WC()->cart->apply_coupon( $coupon->get_code() );
+	WC()->cart->calculate_totals();
+	return array( wc_format_decimal( WC()->cart->get_total( 'edit' ), 2 ), WC()->cart->needs_payment() );
+};
+list( $total, $needs ) = $with_coupon( $e );
+$equals( 'charged today', $total, '0.00' );
+$equals( 'payment step still shown, so the renewal has a card', $needs, true );
+list( $total, $needs ) = $with_coupon( $d );
+$equals( 'a plain product made free by the same coupon skips it', $needs, false );
+update_option( \SubKit\Checkout\Trial_Payment::OPTION, 'no' );
+list( $total, $needs ) = $with_coupon( $e );
+$equals( 'and so does the subscription with the setting off', $needs, false );
+delete_option( \SubKit\Checkout\Trial_Payment::OPTION );
+
+$order = wc_create_order( array( 'customer_id' => 1 ) );
+$order->add_product( wc_get_product( $e ), 1 );
+$order->set_total( 0 );
+$order->save();
+$equals( 'a zero-total order for it asks for payment too (block checkout)', $order->needs_payment(), true );
+$order->delete( true );
+$coupon->delete( true );
+
+echo "\n8. A free-forever plan: nothing today and nothing to come\n";
+$f = $make( 0, 0, 0 );
+list( $total, $needs ) = $cart_total( $f );
+$equals( 'charged today', $total, '0.00' );
+$equals( 'no payment step, since there is nothing to charge later either', $needs, false );
+$order = wc_create_order( array( 'customer_id' => 1 ) );
+$order->add_product( wc_get_product( $f ), 1 );
+$order->set_total( 0 );
+$order->save();
+$equals( 'nor for a zero-total order for it', $order->needs_payment(), false );
+$order->delete( true );
+
 WC()->cart->empty_cart();
-foreach ( array( $a, $b, $c, $d ) as $id ) { wp_delete_post( $id, true ); }
+foreach ( array( $a, $b, $c, $d, $e, $f ) as $id ) { wp_delete_post( $id, true ); }
 subkit_test_done( $fail );
