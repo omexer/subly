@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.19.1
+Stable tag: 0.19.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.19.2 =
+* **Fixed: two background workers could both believe they held a subscription's lock.** On current WordPress the lock that keeps renewal runs and follow-up emails from overlapping was not truly exclusive, so a rare race could send a win-back or anniversary email (and its coupon) twice. Payments were never at risk. The lock now has exactly one holder, and a worker whose lock expired can no longer release someone else's.
 
 = 0.19.1 =
 * The hourly renewal check no longer spends its batch on payments that are still clearing, so a store with many Direct Debits pending cannot starve renewals that genuinely need picking up.
