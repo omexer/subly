@@ -10,6 +10,7 @@ use SubKit\Billing\Lock;
 use SubKit\Billing\Renewal_Order_Factory;
 use SubKit\Billing\Renewal_Processor;
 use SubKit\Billing\Renewal_Scheduler;
+use SubKit\Billing\Renewal_Tax_Repair;
 use SubKit\Data\Activity_Repository;
 use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Data\Cleanup;
@@ -107,6 +108,9 @@ final class Plugin {
 
 		$this->services['scheduler'] = new Renewal_Scheduler( $this->services['activity'] );
 		$this->services['scheduler']->register();
+
+		$this->services['tax_repair'] = new Renewal_Tax_Repair( $this->services['activity'] );
+		$this->services['tax_repair']->register();
 
 		$this->services['processor'] = new Renewal_Processor(
 			$this->services['charge_slots'],

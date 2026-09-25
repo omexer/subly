@@ -3,6 +3,7 @@
 namespace SubKit\Admin;
 
 use SubKit\Billing\Renewal_Scheduler;
+use SubKit\Billing\Renewal_Tax_Repair;
 use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Data\Migrator;
 
@@ -25,6 +26,7 @@ class Settings extends \WC_Settings_Page {
 		parent::__construct();
 
 		add_action( 'woocommerce_admin_field_subkit_status', array( $this, 'render_status' ) );
+		add_action( 'woocommerce_admin_field_subkit_tax_repair', array( $this, 'render_tax_repair' ) );
 	}
 
 	public function get_sections(): array {
@@ -48,6 +50,7 @@ class Settings extends \WC_Settings_Page {
 				'id'    => 'subkit_health_title',
 			),
 			array( 'type' => 'subkit_status' ),
+			array( 'type' => 'subkit_tax_repair' ),
 			array(
 				'type' => 'sectionend',
 				'id'   => 'subkit_health_title',
@@ -302,6 +305,66 @@ class Settings extends \WC_Settings_Page {
 		echo '</div></td></tr>';
 	}
 
+	public function render_tax_repair(): void {
+		$repair = \SubKit\Plugin::instance()->get( 'tax_repair' );
+		$ids    = $repair instanceof Renewal_Tax_Repair ? $repair->affected_ids() : array();
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only; the repair itself was verified.
+		$done = absint( $_GET['subkit_tax_repaired'] ?? 0 );
+
+		if ( ! $ids && ! $done ) {
+			return;
+		}
+
+		echo '<tr valign="top"><th scope="row" class="titledesc">' . esc_html__( 'Subscriptions renewing with tax added twice', 'subkit-subscriptions' ) . '</th><td class="forminp">';
+
+		if ( $done ) {
+			/* translators: %d: subscription number */
+			echo '<p>' . esc_html( sprintf( __( 'Subscription #%d repaired. Its renewals now charge the price without adding tax again.', 'subkit-subscriptions' ), $done ) ) . '</p>';
+		}
+
+		if ( $ids ) {
+			echo '<p class="description">' . esc_html__( 'These subscriptions were created before SubKit stored prices without tax. Because this store enters prices with tax, each renewal adds tax on top of a price that already includes it. Repair stores the price without tax, so renewals charge what the customer paid at checkout. Customers already charged extra may be owed a refund: check their past renewal orders.', 'subkit-subscriptions' ) . '</p>';
+
+			printf(
+				'<table class="widefat striped"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th></th></tr></thead><tbody>',
+				esc_html__( 'Subscription', 'subkit-subscriptions' ),
+				esc_html__( 'Customer', 'subkit-subscriptions' ),
+				esc_html__( 'Recurring price', 'subkit-subscriptions' )
+			);
+
+			foreach ( $ids as $id ) {
+				$subscription = wc_get_order( $id );
+
+				if ( ! $subscription instanceof \SubKit\Domain\Subscription ) {
+					continue;
+				}
+
+				$detail = add_query_arg(
+					array(
+						'page'         => Menu::LIST_SLUG,
+						'subscription' => $id,
+					),
+					admin_url( 'admin.php' )
+				);
+
+				printf(
+					'<tr><td><a href="%s">#%d</a></td><td>%s</td><td>%s</td><td><a class="button" href="%s" onclick="return confirm(%s)">%s</a></td></tr>',
+					esc_url( $detail ),
+					(int) $id,
+					esc_html( (string) $subscription->get_billing_email() ),
+					wp_kses_post( $subscription->get_formatted_order_total() ),
+					esc_url( Renewal_Tax_Repair::repair_url( $id ) ),
+					esc_attr( (string) wp_json_encode( __( 'Store this subscription\'s price without tax, so its renewals stop adding tax twice?', 'subkit-subscriptions' ) ) ),
+					esc_html__( 'Repair', 'subkit-subscriptions' )
+				);
+			}
+
+			echo '</tbody></table>';
+		}
+
+		echo '</td></tr>';
+	}
+
 	/**
 	 * Whether renewals can actually run. Shared with the Settings screen's status card.
 	 *
@@ -318,6 +381,9 @@ class Settings extends \WC_Settings_Page {
 
 		// Direct Debit takes days, not this long.
 		$stale = $slots instanceof Charge_Slot_Repository ? $slots->stale_pending( 10 ) : array();
+
+		$repair = \SubKit\Plugin::instance()->get( 'tax_repair' );
+		$twice  = $repair instanceof Renewal_Tax_Repair ? count( $repair->affected_ids() ) : 0;
 
 		$checks = array(
 			array(
@@ -361,6 +427,21 @@ class Settings extends \WC_Settings_Page {
 				'ok'    => $migrator->charge_slot_guard_intact(),
 				'good'  => __( 'Active', 'subkit-subscriptions' ),
 				'bad'   => __( 'The unique index on the charge ledger is missing. Deactivate and reactivate SubKit.', 'subkit-subscriptions' ),
+			),
+			array(
+				'label' => __( 'Renewal tax', 'subkit-subscriptions' ),
+				'ok'    => 0 === $twice,
+				'good'  => __( 'Charged once', 'subkit-subscriptions' ),
+				'bad'   => sprintf(
+					/* translators: %d: number of subscriptions */
+					_n(
+						'%d subscription renews with tax added twice. Repair it under WooCommerce → Settings → Subscriptions.',
+						'%d subscriptions renew with tax added twice. Repair them under WooCommerce → Settings → Subscriptions.',
+						$twice,
+						'subkit-subscriptions'
+					),
+					$twice
+				),
 			),
 		);
 

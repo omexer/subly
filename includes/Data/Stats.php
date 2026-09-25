@@ -102,7 +102,9 @@ class Stats {
 	 * can be added together at all.
 	 */
 	public function monthly_value( Subscription $subscription ): Money {
-		$total = Money::from_decimal( $subscription->get_total(), $subscription->get_currency() );
+		// Revenue is reported without tax, so the figure is the same whichever way the store enters prices.
+		$total = Money::from_decimal( $subscription->get_total(), $subscription->get_currency() )
+			->subtract( Money::from_decimal( $subscription->get_total_tax(), $subscription->get_currency() ) );
 
 		if ( $total->is_zero() ) {
 			return $total;

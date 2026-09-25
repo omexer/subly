@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.19.3
+Stable tag: 0.19.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -147,6 +147,11 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.19.4 =
+* **Fixed: stores that enter prices including tax charged tax twice on every renewal.** A subscription sold for 12.00 including 20% tax renewed at 14.40. New subscriptions now renew at exactly what the checkout charged, in both tax modes and every rounding setting. Existing subscriptions are not changed silently: WooCommerce → Settings → Subscriptions → Health lists the ones renewing with tax added twice, each with a Repair action — and customers may be owed a refund for renewals already taken.
+* **Fixed: VAT-exempt customers were taxed on renewals.** The exemption now carries from the checkout to the subscription and every renewal, including for existing subscriptions.
+* A subscription's shown total now includes its tax, so it matches what each renewal charges, and the dashboard's revenue figures exclude tax.
 
 = 0.19.3 =
 * **Fixed: a coupon that made the first payment free left the subscription unable to renew.** Only free trials asked for a card when nothing was due today, so a checkout brought to zero by a coupon saved no payment method and every renewal then failed. A checkout that costs nothing today now asks for a card whenever a later payment will actually charge something. Free-forever plans, and coupons that make every renewal free, are still not asked.

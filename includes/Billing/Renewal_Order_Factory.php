@@ -66,6 +66,7 @@ class Renewal_Order_Factory {
 		$order->update_meta_data( '_subkit_charge_slot_id', (int) $slot->id );
 		$order->update_meta_data( '_subkit_covers_from', $slot->covers_from_gmt );
 		$order->update_meta_data( '_subkit_covers_to', $slot->covers_to_gmt );
+		$order->update_meta_data( 'is_vat_exempt', $this->is_vat_exempt( $subscription ) ? 'yes' : 'no' );
 
 		$order->calculate_taxes();
 		$order->calculate_totals( false );
@@ -82,5 +83,19 @@ class Renewal_Order_Factory {
 		do_action( 'subkit_renewal_order_created', $order, $subscription, $slot );
 
 		return $order;
+	}
+
+	/**
+	 * Subscriptions created before the flag was copied fall back to what checkout recorded; that can only remove tax.
+	 */
+	private function is_vat_exempt( Subscription $subscription ): bool {
+		$flag = (string) $subscription->get_meta( 'is_vat_exempt' );
+
+		if ( '' === $flag ) {
+			$parent = $subscription->get_parent_order_id() ? wc_get_order( $subscription->get_parent_order_id() ) : null;
+			$flag   = $parent instanceof \WC_Order ? (string) $parent->get_meta( 'is_vat_exempt' ) : '';
+		}
+
+		return 'yes' === $flag;
 	}
 }

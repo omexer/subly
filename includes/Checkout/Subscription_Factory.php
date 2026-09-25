@@ -114,7 +114,7 @@ class Subscription_Factory {
 		// The recurring amount, not what the first order came to: a trial makes that zero
 		// and a one-off coupon would otherwise discount every renewal for ever.
 		$quantity  = max( 1, (int) $item->get_quantity() );
-		$recurring = Subscription_Product::recurring_price( $product )->multiply( $quantity )->decimal();
+		$recurring = $this->line_total_excluding_tax( $order, $product, $quantity );
 
 		$copy = new \WC_Order_Item_Product();
 		$copy->set_props(
@@ -132,7 +132,11 @@ class Subscription_Factory {
 		$subscription->transition_to(
 			$schedule->has_trial() ? Subscription_Status::Trialling : Subscription_Status::Pending
 		);
-		$subscription->calculate_totals( false );
+		// WooCommerce's own flag, which calculate_taxes() reads; checkout set it for an exempt customer.
+		$subscription->update_meta_data( 'is_vat_exempt', 'yes' === $order->get_meta( 'is_vat_exempt' ) ? 'yes' : 'no' );
+
+		// Renewals recalculate tax the same way, so the subscription shows what they will charge.
+		$subscription->calculate_totals( true );
 		$subscription->save();
 
 		// Slot 0 is the initial checkout payment, so the first renewal is index 1.
@@ -175,6 +179,24 @@ class Subscription_Factory {
 		do_action( 'subkit_subscription_created', $subscription, $order );
 
 		return $subscription;
+	}
+
+	/**
+	 * Line totals are stored without tax, as WooCommerce's cart stored the checkout's; renewals add tax back for the customer's address.
+	 */
+	private function line_total_excluding_tax( \WC_Order $order, \WC_Product $product, int $quantity ): string {
+		$unit = Subscription_Product::recurring_price( $product )->decimal();
+
+		return wc_format_decimal(
+			wc_get_price_excluding_tax(
+				$product,
+				array(
+					'qty'   => $quantity,
+					'price' => $unit,
+					'order' => $order,
+				)
+			)
+		);
 	}
 
 	/**
