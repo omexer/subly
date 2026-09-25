@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Migrator {
 
-	public const DB_VERSION = 1;
+	public const DB_VERSION = 2;
 
 	private const OPTION = 'subkit_db_version';
 
@@ -95,6 +95,7 @@ class Migrator {
 				covers_to_gmt DATETIME NOT NULL,
 				renewal_order_id BIGINT UNSIGNED NULL DEFAULT NULL,
 				created_gmt DATETIME NOT NULL,
+				pending_gmt DATETIME NULL DEFAULT NULL,
 				PRIMARY KEY (id),
 				UNIQUE KEY uq_slot (subscription_id, period_index),
 				KEY idx_state (state, scheduled_for_gmt)

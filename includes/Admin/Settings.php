@@ -293,33 +293,66 @@ class Settings extends \WC_Settings_Page {
 		echo '<tr valign="top"><th scope="row" class="titledesc">' . esc_html__( 'Status', 'subkit-subscriptions' ) . '</th><td class="forminp"><div class="subkit-checks">';
 
 		foreach ( self::status_checks() as $check ) {
-			printf(
-				'<div class="subkit-check subkit-check--%s"><span class="subkit-check__dot"></span><div>'
-					. '<span class="subkit-check__label">%s</span><span class="subkit-check__detail">%s</span></div></div>',
-				$check['ok'] ? 'ok' : 'bad',
-				esc_html( $check['label'] ),
-				esc_html( $check['ok'] ? $check['good'] : $check['bad'] )
-			);
+			self::render_check( $check );
 		}
 
 		echo '</div></td></tr>';
 	}
 
+	/**
+	 * One status line, with the rows behind it when it has any.
+	 *
+	 * @param array{label: string, ok: bool, good: string, bad: string, items?: string[]} $check Items are HTML, escaped where they were built.
+	 */
+	public static function render_check( array $check ): void {
+		printf(
+			'<div class="subkit-check subkit-check--%s"><span class="subkit-check__dot"></span><div>'
+				. '<span class="subkit-check__label">%s</span><span class="subkit-check__detail">%s</span>',
+			$check['ok'] ? 'ok' : 'bad',
+			esc_html( $check['label'] ),
+			esc_html( $check['ok'] ? $check['good'] : $check['bad'] )
+		);
+
+		if ( ! $check['ok'] && ! empty( $check['items'] ) ) {
+			echo '<ul class="subkit-check__items">';
+
+			foreach ( $check['items'] as $item ) {
+				echo '<li>' . wp_kses( $item, array( 'a' => array( 'href' => true ) ) ) . '</li>';
+			}
+
+			echo '</ul>';
+		}
+
+		echo '</div></div>';
+	}
+
 	public function render_tax_repair(): void {
 		$repair = \SubKit\Plugin::instance()->get( 'tax_repair' );
 		$ids    = $repair instanceof Renewal_Tax_Repair ? $repair->affected_ids() : array();
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only; the repair itself was verified.
-		$done = absint( $_GET['subkit_tax_repaired'] ?? 0 );
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- display only; the repair itself was verified.
+		$done   = absint( $_GET['subkit_tax_repaired'] ?? 0 );
+		$failed = absint( $_GET['subkit_tax_repair_failed'] ?? 0 );
+		$from   = Settings_Page::SLUG === sanitize_key( wp_unslash( $_GET['page'] ?? '' ) ) ? Renewal_Tax_Repair::FROM_SUBKIT : '';
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		if ( ! $ids && ! $done ) {
+		if ( ! $ids && ! $done && ! $failed ) {
 			return;
 		}
 
-		echo '<tr valign="top"><th scope="row" class="titledesc">' . esc_html__( 'Subscriptions renewing with tax added twice', 'subkit-subscriptions' ) . '</th><td class="forminp">';
+		printf(
+			'<tr valign="top" id="%s"><th scope="row" class="titledesc">%s</th><td class="forminp">',
+			esc_attr( Renewal_Tax_Repair::NOTICE ),
+			esc_html__( 'Subscriptions renewing with tax added twice', 'subkit-subscriptions' )
+		);
 
 		if ( $done ) {
 			/* translators: %d: subscription number */
 			echo '<p>' . esc_html( sprintf( __( 'Subscription #%d repaired. Its renewals now charge the price without adding tax again.', 'subkit-subscriptions' ), $done ) ) . '</p>';
+		}
+
+		if ( $failed ) {
+			/* translators: %d: subscription number */
+			echo '<p><strong>' . esc_html( sprintf( __( 'Subscription #%d was not repaired: it has changed since this list was made. The list has been refreshed.', 'subkit-subscriptions' ), $failed ) ) . '</strong></p>';
 		}
 
 		if ( $ids ) {
@@ -353,7 +386,7 @@ class Settings extends \WC_Settings_Page {
 					(int) $id,
 					esc_html( (string) $subscription->get_billing_email() ),
 					wp_kses_post( $subscription->get_formatted_order_total() ),
-					esc_url( Renewal_Tax_Repair::repair_url( $id ) ),
+					esc_url( Renewal_Tax_Repair::repair_url( $id, $from ) ),
 					esc_attr( (string) wp_json_encode( __( 'Store this subscription\'s price without tax, so its renewals stop adding tax twice?', 'subkit-subscriptions' ) ) ),
 					esc_html__( 'Repair', 'subkit-subscriptions' )
 				);
@@ -368,7 +401,7 @@ class Settings extends \WC_Settings_Page {
 	/**
 	 * Whether renewals can actually run. Shared with the Settings screen's status card.
 	 *
-	 * @return array<int, array{label: string, ok: bool, good: string, bad: string}>
+	 * @return array<int, array{label: string, ok: bool, good: string, bad: string, items?: string[]}>
 	 */
 	public static function status_checks(): array {
 		$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
@@ -421,6 +454,7 @@ class Settings extends \WC_Settings_Page {
 					),
 					count( $stale )
 				),
+				'items' => array_map( array( self::class, 'awaiting_item' ), $stale ),
 			),
 			array(
 				'label' => __( 'Double-charge protection', 'subkit-subscriptions' ),
@@ -446,5 +480,33 @@ class Settings extends \WC_Settings_Page {
 		);
 
 		return $checks;
+	}
+
+	/**
+	 * A renewal waiting on its payment provider, as HTML: the subscription, the amount, how long, and the renewal order.
+	 */
+	private static function awaiting_item( object $slot ): string {
+		$subscription_id = (int) $slot->subscription_id;
+		$order           = $slot->renewal_order_id ? wc_get_order( (int) $slot->renewal_order_id ) : null;
+		$days            = (int) floor( ( time() - (int) strtotime( Charge_Slot_Repository::pending_since( $slot ) . ' UTC' ) ) / DAY_IN_SECONDS );
+		$subscription    = sprintf(
+			'<a href="%s">#%d</a>',
+			esc_url( admin_url( 'admin.php?page=' . Menu::LIST_SLUG . '&subscription=' . $subscription_id ) ),
+			$subscription_id
+		);
+
+		if ( ! $order instanceof \WC_Order ) {
+			/* translators: 1: subscription number, 2: number of days */
+			return sprintf( esc_html( _n( 'Subscription %1$s, waiting %2$d day', 'Subscription %1$s, waiting %2$d days', $days, 'subkit-subscriptions' ) ), $subscription, $days );
+		}
+
+		return sprintf(
+			/* translators: 1: subscription number, 2: amount, 3: number of days, 4: renewal order number */
+			esc_html( _n( 'Subscription %1$s, %2$s, waiting %3$d day, renewal order %4$s', 'Subscription %1$s, %2$s, waiting %3$d days, renewal order %4$s', $days, 'subkit-subscriptions' ) ),
+			$subscription,
+			wp_strip_all_tags( wc_price( (float) $order->get_total(), array( 'currency' => $order->get_currency() ) ) ),
+			$days,
+			sprintf( '<a href="%s">#%s</a>', esc_url( $order->get_edit_order_url() ), esc_html( $order->get_order_number() ) )
+		);
 	}
 }

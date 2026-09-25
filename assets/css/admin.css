@@ -227,6 +227,13 @@
 
 .subkit-check--bad .subkit-check__detail { color: var(--subkit-bad); }
 
+.subkit-check__items {
+	margin: 4px 0 0;
+	font-size: 13px;
+}
+
+.subkit-check__items li { margin: 2px 0; }
+
 /* ---------------------------------------------------------------- tables */
 
 .subkit-table { border-radius: var(--subkit-radius); overflow: hidden; }

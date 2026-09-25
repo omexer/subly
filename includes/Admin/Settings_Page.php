@@ -405,13 +405,7 @@ class Settings_Page {
 		);
 
 		foreach ( Settings::status_checks() as $check ) {
-			printf(
-				'<div class="subkit-check subkit-check--%s"><span class="subkit-check__dot"></span><div>'
-					. '<span class="subkit-check__label">%s</span><span class="subkit-check__detail">%s</span></div></div>',
-				$check['ok'] ? 'ok' : 'bad',
-				esc_html( $check['label'] ),
-				esc_html( $check['ok'] ? $check['good'] : $check['bad'] )
-			);
+			Settings::render_check( $check );
 		}
 
 		echo '</div></section></aside>';

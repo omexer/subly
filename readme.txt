@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.20.0
+Stable tag: 0.21.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,11 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.21.0 =
+* **Stores are told when subscriptions renew with tax added twice.** An admin notice gives the count and links to the list, where each can be repaired; it can be dismissed and comes back if more appear. Repair now returns you to the screen you started from, and says so when a subscription changed since the list was made.
+* "Payments awaiting confirmation" now lists each renewal waiting more than 10 days — subscription, amount, days waiting and renewal order — and counts the wait from when the payment was submitted, not from when the period began.
+* Database: the charge ledger records when a payment was submitted (upgraded automatically).
 
 = 0.20.0 =
 * **A renewal waiting for the bank to confirm it now says so.** Customers see "Active · Payment processing" with the date the payment was submitted, instead of a next-payment date in the past, and "Pay early" is not offered until it settles. The subscription list and screen show the same state to the store, and "Renew now" is hidden while it waits.

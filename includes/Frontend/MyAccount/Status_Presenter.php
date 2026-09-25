@@ -2,7 +2,6 @@
 
 namespace SubKit\Frontend\MyAccount;
 
-use SubKit\Billing\Renewal_Processor;
 use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
@@ -189,12 +188,9 @@ class Status_Presenter {
 			return null;
 		}
 
-		// An order without the stamp falls back to when its period was claimed.
-		$since = (int) $order->get_meta( Renewal_Processor::META_PENDING_SINCE );
-
 		return array(
 			'order' => $order,
-			'since' => $since ? $since : (int) strtotime( $slot->created_gmt . ' UTC' ),
+			'since' => (int) strtotime( Charge_Slot_Repository::pending_since( $slot ) . ' UTC' ),
 		);
 	}
 

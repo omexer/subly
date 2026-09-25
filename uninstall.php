@@ -29,6 +29,8 @@ $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LI
 $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( '_transient_timeout_subkit_' ) . '%' ) );
 // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
+delete_metadata( 'user', 0, 'subkit_dismissed_notices', '', true );
+
 if ( function_exists( 'as_unschedule_all_actions' ) ) {
 	foreach ( array( 'subkit_scheduled_renewal', 'subkit_renewal_reminder', 'subkit_sweep_overdue' ) as $subkit_action ) {
 		as_unschedule_all_actions( $subkit_action, array(), 'subkit' );

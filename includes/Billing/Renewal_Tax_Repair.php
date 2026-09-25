@@ -3,6 +3,8 @@
 namespace SubKit\Billing;
 
 use SubKit\Admin\Menu;
+use SubKit\Admin\Notice_Dismissals;
+use SubKit\Admin\Settings_Page;
 use SubKit\Data\Activity_Repository;
 use SubKit\Data\Subscription_Query;
 use SubKit\Domain\Money;
@@ -25,11 +27,16 @@ class Renewal_Tax_Repair {
 
 	public const CACHE = 'subkit_tax_added_twice';
 
+	public const NOTICE = 'subkit-tax-added-twice';
+
+	public const FROM_SUBKIT = 'subkit';
+
 	public function __construct( private readonly Activity_Repository $activity ) {}
 
 	public function register(): void {
 		add_action( 'init', array( $this, 'mark_cut_over' ) );
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handle' ) );
+		add_action( 'admin_notices', array( $this, 'notice' ) );
 	}
 
 	/**
@@ -160,29 +167,81 @@ class Renewal_Tax_Repair {
 		$subscription = wc_get_order( $id );
 		$repaired     = $subscription instanceof Subscription && $this->repair( $subscription );
 
+		// The cached list still has this row; left alone it would stay for up to an hour.
+		if ( ! $repaired ) {
+			delete_transient( self::CACHE );
+		}
+
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'page'                => 'wc-settings',
-					'tab'                 => 'subkit',
-					'subkit_tax_repaired' => $repaired ? $id : 0,
+					'subkit_tax_repaired'      => $repaired ? $id : 0,
+					'subkit_tax_repair_failed' => $repaired ? 0 : $id,
 				),
-				admin_url( 'admin.php' )
+				self::list_url( sanitize_key( wp_unslash( $_GET['from'] ?? '' ) ) )
 			)
 		);
 		exit;
 	}
 
-	public static function repair_url( int $subscription_id ): string {
+	public static function repair_url( int $subscription_id, string $from = '' ): string {
 		return wp_nonce_url(
 			add_query_arg(
 				array(
 					'action'       => self::ACTION,
 					'subscription' => $subscription_id,
+					'from'         => self::FROM_SUBKIT === $from ? self::FROM_SUBKIT : 'woocommerce',
 				),
 				admin_url( 'admin-post.php' )
 			),
 			self::ACTION . '_' . $subscription_id
+		);
+	}
+
+	/**
+	 * The list lives on both settings screens; each one's repair comes back to it.
+	 */
+	public static function list_url( string $from = self::FROM_SUBKIT ): string {
+		return self::FROM_SUBKIT === $from
+			? Settings_Page::section_url()
+			: add_query_arg(
+				array(
+					'page' => 'wc-settings',
+					'tab'  => 'subkit',
+				),
+				admin_url( 'admin.php' )
+			);
+	}
+
+	public function notice(): void {
+		if ( ! current_user_can( Menu::CAPABILITY ) ) {
+			return;
+		}
+
+		$count = count( $this->affected_ids() );
+
+		if ( ! Notice_Dismissals::shows( self::NOTICE, $count ) ) {
+			return;
+		}
+
+		printf(
+			'<div class="notice notice-warning"><p>%s</p><p><a class="button button-primary" href="%s">%s</a> <a class="button" href="%s">%s</a></p></div>',
+			esc_html(
+				sprintf(
+					/* translators: %d: number of subscriptions */
+					_n(
+						'SubKit: %d subscription renews with tax added twice, so its customer pays more than at checkout and may be owed a refund.',
+						'SubKit: %d subscriptions renew with tax added twice, so their customers pay more than at checkout and may be owed refunds.',
+						$count,
+						'subkit-subscriptions'
+					),
+					$count
+				)
+			),
+			esc_url( self::list_url() . '#' . self::NOTICE ),
+			esc_html__( 'Review and repair', 'subkit-subscriptions' ),
+			esc_url( Notice_Dismissals::url( self::NOTICE, $count ) ),
+			esc_html__( 'Dismiss', 'subkit-subscriptions' )
 		);
 	}
 

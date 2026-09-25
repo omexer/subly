@@ -117,7 +117,18 @@ class Charge_Slot_Repository {
 	}
 
 	public function mark_pending( int $slot_id ): void {
+		global $wpdb;
+
+		// The state first and on its own: it must hold even if the timestamp cannot be written.
 		$this->set_state( $slot_id, self::STATE_PENDING );
+		$wpdb->update( $this->table(), array( 'pending_gmt' => gmdate( 'Y-m-d H:i:s' ) ), array( 'id' => $slot_id ), array( '%s' ), array( '%d' ) );
+	}
+
+	/**
+	 * When the slot last went pending; slots from before that was recorded fall back to when they were claimed.
+	 */
+	public static function pending_since( object $slot ): string {
+		return (string) ( $slot->pending_gmt ?? '' ) ?: (string) $slot->created_gmt;
 	}
 
 	/**
@@ -277,7 +288,7 @@ class Charge_Slot_Repository {
 	}
 
 	/**
-	 * Slots whose gateway still has not confirmed or failed them, most likely because its webhook never arrived.
+	 * Slots whose gateway still has not confirmed or failed them, most likely because its webhook never arrived, oldest first.
 	 *
 	 * @return object[]
 	 */
@@ -286,7 +297,7 @@ class Charge_Slot_Repository {
 
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}subkit_charge_slot WHERE state = %s AND created_gmt < %s",
+				"SELECT * FROM {$wpdb->prefix}subkit_charge_slot WHERE state = %s AND COALESCE( pending_gmt, created_gmt ) < %s ORDER BY COALESCE( pending_gmt, created_gmt ) ASC",
 				self::STATE_PENDING,
 				gmdate( 'Y-m-d H:i:s', time() - ( $older_than_days * DAY_IN_SECONDS ) )
 			)

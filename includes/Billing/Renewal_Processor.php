@@ -27,8 +27,6 @@ class Renewal_Processor {
 
 	public const ACTION_RESOLVE = 'subkit_resolve_pending_renewal';
 
-	public const META_PENDING_SINCE = '_subkit_pending_since';
-
 	private const META_PAID_WHILE_PENDING = '_subkit_paid_while_pending';
 
 	public function __construct(
@@ -569,7 +567,6 @@ class Renewal_Processor {
 			// Not money yet, so the date waits; the subscription keeps its status, and its access, meanwhile.
 			$this->slots->mark_pending( (int) $slot->id );
 			$order->set_transaction_id( (string) $result->reference );
-			$order->update_meta_data( self::META_PENDING_SINCE, time() );
 			// A link left from an earlier confirmation step would make the order payable again.
 			$order->delete_meta_data( '_subkit_action_url' );
 			$order->update_status( 'on-hold', __( 'Payment submitted; awaiting confirmation from the payment provider.', 'subkit-subscriptions' ) );

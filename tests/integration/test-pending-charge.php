@@ -142,7 +142,7 @@ $check( 'the customer cannot pay the order a second time', ! $order1->needs_paym
 $wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
 $check( 'a day later it is not reported as a charge of unknown outcome', ! in_array( (int) $slot1->id, array_map( 'intval', wp_list_pluck( $slots->stuck_charging( 60 ), 'id' ) ), true ) );
 $check( 'nor yet as waiting too long for its confirmation', ! in_array( (int) $slot1->id, array_map( 'intval', wp_list_pluck( $slots->stale_pending( 10 ), 'id' ) ), true ) );
-$wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - 11 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
+$wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'pending_gmt' => gmdate( 'Y-m-d H:i:s', time() - 11 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
 if ( ! class_exists( 'WC_Settings_Page' ) ) {
 	include_once WC_ABSPATH . 'includes/admin/settings/class-wc-settings-page.php';
 }

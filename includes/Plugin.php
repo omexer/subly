@@ -47,6 +47,7 @@ use SubKit\Admin\Integrations_Page;
 use SubKit\Admin\Gateway_Notice;
 use SubKit\Blocks\Gateway_Support;
 use SubKit\Admin\Menu;
+use SubKit\Admin\Notice_Dismissals;
 use SubKit\Admin\Notices;
 use SubKit\Admin\Settings;
 use SubKit\Admin\Settings_Page;
@@ -260,6 +261,9 @@ final class Plugin {
 
 		$this->services['gateway_notice'] = new Gateway_Notice();
 		$this->services['gateway_notice']->register();
+
+		$this->services['notice_dismissals'] = new Notice_Dismissals();
+		$this->services['notice_dismissals']->register();
 
 		add_action(
 			'woocommerce_blocks_payment_method_type_registration',
