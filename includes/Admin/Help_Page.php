@@ -21,6 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Help_Page {
 
+	public const SLUG = Menu::SLUG . '-help';
+
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_page' ), 90 );
 	}
@@ -31,7 +33,7 @@ class Help_Page {
 			__( 'Help', 'subkit-subscriptions' ),
 			__( 'Help', 'subkit-subscriptions' ),
 			Menu::CAPABILITY,
-			Menu::SLUG . '-help',
+			self::SLUG,
 			array( $this, 'render' )
 		);
 	}
@@ -92,29 +94,13 @@ class Help_Page {
 		return (array) apply_filters( 'subkit_support_report', $rows );
 	}
 
-	public function render(): void {
-		if ( ! current_user_can( Menu::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
-		}
-
-		$report = $this->report();
-		$text   = '';
-
-		foreach ( $report as $label => $value ) {
-			$text .= $label . ': ' . $value . "\n";
-		}
-
-		Page_Shell::open(
-			__( 'Help', 'subkit-subscriptions' ),
-			__( 'Where to look first, and the report to send if you still need a hand.', 'subkit-subscriptions' )
-		);
-
-		echo '<h2 class="subkit-section-title">' . esc_html__( 'Check these first', 'subkit-subscriptions' ) . '</h2>';
-		echo '<div class="subkit-grid">';
-
-		// Every tile lands somewhere inside this site. Documentation links would be the
-		// obvious addition, and would 404 for every merchant until the docs are public.
-		$tiles = array(
+	/**
+	 * Every tile lands somewhere inside this site: documentation links would 404 until the docs are public.
+	 *
+	 * @return array<int, array{icon: string, title: string, body: string, label: string, url: string}>
+	 */
+	public function tiles(): array {
+		return array(
 			array(
 				'icon'  => '1',
 				'title' => __( 'Run the setup checks', 'subkit-subscriptions' ),
@@ -137,8 +123,46 @@ class Help_Page {
 				'url'   => admin_url( 'admin.php?page=wc-settings&tab=subkit' ),
 			),
 		);
+	}
 
-		foreach ( $tiles as $tile ) {
+	/**
+	 * The report as the text a merchant pastes.
+	 *
+	 * @param array<string, string> $report
+	 */
+	public static function report_text( array $report ): string {
+		$text = '';
+
+		foreach ( $report as $label => $value ) {
+			$text .= $label . ': ' . $value . "\n";
+		}
+
+		return $text;
+	}
+
+	public function render(): void {
+		if ( ! current_user_can( Menu::CAPABILITY ) ) {
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
+		}
+
+		App_Host::start( self::SLUG );
+		$this->render_screen();
+		App_Host::end();
+	}
+
+	private function render_screen(): void {
+		$report = $this->report();
+		$text   = self::report_text( $report );
+
+		Page_Shell::open(
+			__( 'Help', 'subkit-subscriptions' ),
+			__( 'Where to look first, and the report to send if you still need a hand.', 'subkit-subscriptions' )
+		);
+
+		echo '<h2 class="subkit-section-title">' . esc_html__( 'Check these first', 'subkit-subscriptions' ) . '</h2>';
+		echo '<div class="subkit-grid">';
+
+		foreach ( $this->tiles() as $tile ) {
 			printf(
 				'<div class="subkit-tile"><div class="subkit-tile__top"><span class="subkit-tile__icon" aria-hidden="true">%s</span><h3 class="subkit-tile__title">%s</h3></div><p class="subkit-tile__body">%s</p><div class="subkit-tile__foot"><a class="subkit-btn subkit-btn--sm" href="%s">%s</a></div></div>',
 				esc_html( $tile['icon'] ),

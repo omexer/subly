@@ -18,6 +18,8 @@ use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
 use SubKit\Data\Stats;
 use SubKit\Rest\Dashboard_Controller;
+use SubKit\Rest\Help_Controller;
+use SubKit\Rest\Integrations_Controller;
 use SubKit\Rest\Overview_Controller;
 use SubKit\Rest\Subscriptions_Controller;
 use SubKit\Checkout\Cart_Validation;
@@ -40,6 +42,7 @@ use SubKit\Gateways\Stripe\Stripe_Client;
 use SubKit\Gateways\Stripe\Stripe_Gateway;
 use SubKit\Product\Product_Meta_Fields;
 use SubKit\Product\Product_Types;
+use SubKit\Admin\App_Host;
 use SubKit\Admin\Assets as Admin_Assets;
 use SubKit\Admin\Help_Page;
 use SubKit\Admin\Integration_Installer;
@@ -298,6 +301,15 @@ final class Plugin {
 
 		$this->services['admin_assets'] = new Admin_Assets();
 		$this->services['admin_assets']->register();
+
+		$this->services['app_host'] = new App_Host();
+		$this->services['app_host']->register();
+
+		$this->services['integrations_api'] = new Integrations_Controller( $this->services['integrations_page'] );
+		$this->services['integrations_api']->register();
+
+		$this->services['help_api'] = new Help_Controller( $this->services['help_page'] );
+		$this->services['help_api']->register();
 
 		$this->services['integration_installer'] = new Integration_Installer();
 		$this->services['integration_installer']->register();

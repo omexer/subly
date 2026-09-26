@@ -1,0 +1,26 @@
+.subkit-app__slot {
+	display: contents;
+}
+
+/* Left edge colour stays WordPress's, which is what says success or error. */
+.subkit-app__notices > .notice,
+.subkit-app__notices > .updated,
+.subkit-app__notices > .error {
+	margin: 0 0 var(--subkit-gap);
+	padding: 12px 14px;
+	border-width: 1px 1px 1px 3px;
+	border-style: solid;
+	border-top-color: var(--subkit-line);
+	border-right-color: var(--subkit-line);
+	border-bottom-color: var(--subkit-line);
+	border-radius: var(--subkit-radius);
+	box-shadow: var(--subkit-shadow);
+	font-size: 13px;
+}
+
+.subkit-app__notices > .notice p,
+.subkit-app__notices > .updated p,
+.subkit-app__notices > .error p {
+	margin: 0;
+	padding: 0;
+}

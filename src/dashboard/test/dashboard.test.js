@@ -5,7 +5,7 @@
 import { act } from 'react';
 import { createRoot } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
-import { Dashboard, mount } from '../index';
+import { Dashboard } from '../index';
 
 jest.mock( '@wordpress/api-fetch' );
 
@@ -68,9 +68,7 @@ async function render( payload ) {
 	document.body.appendChild( container );
 
 	await act( async () => {
-		createRoot( container ).render(
-			<Dashboard onReady={ () => {} } onFail={ () => {} } />
-		);
+		createRoot( container ).render( <Dashboard onFail={ () => {} } /> );
 	} );
 }
 
@@ -160,16 +158,16 @@ describe( 'the home screen', () => {
 		expect( row.textContent ).toContain( '£40.00' );
 	} );
 
-	it( 'keeps the server-rendered home when the request fails', async () => {
+	it( 'tells the shell when the request fails, so it can put the server-rendered home back', async () => {
 		apiFetch.mockRejectedValue( new Error( 'nope' ) );
-		document.body.innerHTML = '<div id="fallback">server rendered</div>';
-		const fallback = document.getElementById( 'fallback' );
+		const onFail = jest.fn();
+		container = document.createElement( 'div' );
+		document.body.appendChild( container );
 
 		await act( async () => {
-			mount( fallback );
+			createRoot( container ).render( <Dashboard onFail={ onFail } /> );
 		} );
 
-		expect( fallback.hidden ).toBe( false );
-		expect( document.querySelectorAll( '.subkit-ui' ) ).toHaveLength( 0 );
+		expect( onFail ).toHaveBeenCalledTimes( 1 );
 	} );
 } );

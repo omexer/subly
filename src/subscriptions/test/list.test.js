@@ -72,7 +72,7 @@ async function render( props = {} ) {
 
 	await act( async () => {
 		createRoot( container ).render(
-			<List onReady={ () => {} } onFail={ () => {} } { ...props } />
+			<List onFail={ () => {} } { ...props } />
 		);
 	} );
 

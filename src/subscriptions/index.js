@@ -1,83 +1,40 @@
 /**
- * The subscriptions screen: the list, or one subscription.
- *
- * Which one is decided by the same query argument the server reads, and moving between
- * them pushes history, so the browser's back button still works.
+ * The subscriptions route: the list, or one subscription when the address names one.
  */
-import { createRoot, useEffect, useState } from '@wordpress/element';
+import { __ } from '@wordpress/i18n';
+import { registerRoute } from '@subkit/shell';
 import { List } from './list';
 import { Detail } from './detail';
 
-function currentId() {
-	return (
-		Number(
-			new URLSearchParams( window.location.search ).get( 'subscription' )
-		) || 0
-	);
-}
+export function Screen( { params, setParams, fail } ) {
+	const id = Number( params.get( 'subscription' ) ) || 0;
 
-export function Screen( { onReady, onFail } ) {
-	const [ id, setId ] = useState( currentId );
-
-	useEffect( () => {
-		const onPop = () => setId( currentId() );
-
-		window.addEventListener( 'popstate', onPop );
-
-		return () => window.removeEventListener( 'popstate', onPop );
-	}, [] );
-
-	const go = ( next ) => {
-		const url = new URL( window.location.href );
+	const open = ( next ) => {
+		const query = new URLSearchParams( params );
 
 		if ( next ) {
-			url.searchParams.set( 'subscription', String( next ) );
+			query.set( 'subscription', String( next ) );
 		} else {
-			url.searchParams.delete( 'subscription' );
+			query.delete( 'subscription' );
 		}
 
-		window.history.pushState( {}, '', url );
-		setId( next );
+		setParams( query );
 	};
 
 	return id ? (
-		<Detail
-			id={ id }
-			onBack={ () => go( 0 ) }
-			onReady={ onReady }
-			onFail={ onFail }
-		/>
+		<Detail id={ id } onBack={ () => open( 0 ) } onFail={ fail } />
 	) : (
-		<List onOpen={ go } onReady={ onReady } onFail={ onFail } />
-	);
-}
-
-export function mount( fallback ) {
-	if ( ! fallback ) {
-		return null;
-	}
-
-	const host = document.createElement( 'div' );
-	host.className = 'subkit-ui';
-	fallback.parentNode.insertBefore( host, fallback );
-
-	const root = createRoot( host );
-
-	root.render(
-		<Screen
-			onReady={ () => {
-				fallback.hidden = true;
-			} }
-			onFail={ () => {
-				root.unmount();
-				host.remove();
-			} }
+		<List
+			initialStatus={ params.get( 'status' ) || '' }
+			initialSearch={ params.get( 's' ) || '' }
+			onOpen={ open }
+			onFail={ fail }
 		/>
 	);
-
-	return host;
 }
 
-document.addEventListener( 'DOMContentLoaded', () => {
-	mount( document.getElementById( 'subkit-subscriptions-fallback' ) );
+registerRoute( {
+	page: 'subkit-subscriptions-list',
+	title: __( 'All subscriptions', 'subkit-subscriptions' ),
+	render: ( ctx ) => <Screen { ...ctx } />,
 } );

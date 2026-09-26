@@ -4,7 +4,7 @@
  * What a merchant needs on arrival, in the order they need it: finish setting up, see
  * how the business is doing, see what needs them, and get to everything else.
  */
-import { createRoot, useEffect, useState } from '@wordpress/element';
+import { useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import {
@@ -19,6 +19,7 @@ import {
 	Skeleton,
 	Stat,
 } from '@subkit/ui';
+import { registerRoute } from '@subkit/shell';
 
 const TONE = {
 	bad: 'sk-bg-destructive',
@@ -245,7 +246,7 @@ function Setup( { setup, create } ) {
 	);
 }
 
-export function Dashboard( { onReady, onFail } ) {
+export function Dashboard( { onFail } ) {
 	const [ data, setData ] = useState( null );
 
 	useEffect( () => {
@@ -255,7 +256,6 @@ export function Dashboard( { onReady, onFail } ) {
 			.then( ( result ) => {
 				if ( live ) {
 					setData( result );
-					onReady();
 				}
 			} )
 			.catch( () => live && onFail() );
@@ -532,32 +532,8 @@ export function Dashboard( { onReady, onFail } ) {
 	);
 }
 
-export function mount( fallback ) {
-	if ( ! fallback ) {
-		return null;
-	}
-
-	const host = document.createElement( 'div' );
-	host.className = 'subkit-ui';
-	fallback.parentNode.insertBefore( host, fallback );
-
-	const root = createRoot( host );
-
-	root.render(
-		<Dashboard
-			onReady={ () => {
-				fallback.hidden = true;
-			} }
-			onFail={ () => {
-				root.unmount();
-				host.remove();
-			} }
-		/>
-	);
-
-	return host;
-}
-
-document.addEventListener( 'DOMContentLoaded', () => {
-	mount( document.getElementById( 'subkit-dashboard-fallback' ) );
+registerRoute( {
+	page: 'subkit-subscriptions',
+	title: __( 'Home', 'subkit-subscriptions' ),
+	render: ( ctx ) => <Dashboard onFail={ ctx.fail } />,
 } );

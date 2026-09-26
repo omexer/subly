@@ -26,6 +26,7 @@ class Assets {
 	public function register(): void {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
+		add_action( 'subkit_app_enqueue', array( $this, 'enqueue_routes' ) );
 	}
 
 	/**
@@ -91,7 +92,6 @@ class Assets {
 		wp_localize_script( 'subkit-admin', 'subkitAdmin', $data );
 
 		$this->register_ui();
-		$this->enqueue_screens( (string) $hook );
 	}
 
 	/**
@@ -117,28 +117,12 @@ class Assets {
 	}
 
 	/**
-	 * Home gets the dashboard; the list page gets the list and detail screens.
-	 *
-	 * Hook names come from get_plugin_page_hookname() rather than being spelled out: the
-	 * prefix is the menu title run through sanitize_title(), so a translated title would
-	 * silently change it and nothing would load.
+	 * Every free route on every app page, so moving between them needs no page load.
 	 */
-	private function enqueue_screens( string $hook ): void {
-		if ( ! wp_script_is( 'subkit-ui', 'registered' ) ) {
-			return;
+	public function enqueue_routes(): void {
+		foreach ( array( 'dashboard', 'subscriptions', 'integrations', 'help' ) as $bundle ) {
+			$this->enqueue_bundle( $bundle );
 		}
-
-		$screens = array(
-			get_plugin_page_hookname( Menu::SLUG, '' )             => 'dashboard',
-			get_plugin_page_hookname( Menu::LIST_SLUG, Menu::SLUG ) => 'subscriptions',
-		);
-
-		if ( ! isset( $screens[ $hook ] ) ) {
-			return;
-		}
-
-		wp_enqueue_style( 'subkit-ui' );
-		$this->enqueue_bundle( $screens[ $hook ] );
 	}
 
 	private function enqueue_bundle( string $bundle ): void {
@@ -154,7 +138,7 @@ class Assets {
 		wp_enqueue_script(
 			$handle,
 			SUBKIT_URL . 'build/' . $bundle . '.js',
-			array_merge( $asset['dependencies'], array( 'subkit-ui' ) ),
+			array_merge( $asset['dependencies'], array( 'subkit-ui', App_Host::HANDLE ) ),
 			$asset['version'],
 			true
 		);

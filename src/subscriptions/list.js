@@ -124,13 +124,18 @@ function SortHeader( { column, label, sort, onSort, className } ) {
 	);
 }
 
-export function List( { onOpen, onReady, onFail } ) {
+export function List( {
+	initialStatus = '',
+	initialSearch = '',
+	onOpen,
+	onFail,
+} ) {
 	const [ rows, setRows ] = useState( null );
 	const [ statuses, setStatuses ] = useState( [] );
 	const [ total, setTotal ] = useState( 0 );
 	const [ query, setQuery ] = useState( {
-		status: '',
-		search: '',
+		status: initialStatus,
+		search: initialSearch,
 		page: 1,
 		orderby: 'date',
 		order: 'DESC',
@@ -171,14 +176,12 @@ export function List( { onOpen, onReady, onFail } ) {
 						)
 					);
 					setBusy( false );
-					onReady();
 				} )
 			)
 			.catch( () => {
 				setBusy( false );
 
-				// Only the first load may tear this down: after that the server-rendered
-				// list is already hidden, and removing ours would leave nothing at all.
+				// Only the first load fails the screen: after that there are rows worth keeping.
 				setRows( ( current ) => {
 					if ( ! current ) {
 						onFail();

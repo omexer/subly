@@ -76,9 +76,10 @@ function byDay( entries ) {
 	return days;
 }
 
-export function Detail( { id, onBack, onReady, onFail } ) {
+export function Detail( { id, onBack, onFail } ) {
 	const [ data, setData ] = useState( null );
 	const [ activity, setActivity ] = useState( [] );
+	const [ panels, setPanels ] = useState( '' );
 	const [ dates, setDates ] = useState( { next_payment: '', end_date: '' } );
 	const [ busy, setBusy ] = useState( false );
 	const [ notice, setNotice ] = useState( null );
@@ -92,10 +93,14 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 			apiFetch( {
 				path: `/subkit/v1/subscriptions/${ id }/activity`,
 			} ).catch( () => [] ),
+			apiFetch( {
+				path: `/subkit/v1/subscriptions/${ id }/panels`,
+			} ).catch( () => ( {} ) ),
 		] )
-			.then( ( [ subscription, entries ] ) => {
+			.then( ( [ subscription, entries, extra ] ) => {
 				setData( subscription );
 				setActivity( entries );
+				setPanels( extra?.html || '' );
 				setDates( {
 					next_payment: ( subscription.next_payment || '' )
 						.replace( ' ', 'T' )
@@ -105,9 +110,8 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 						.slice( 0, 16 ),
 				} );
 				setBusy( false );
-				onReady();
 			} )
-			.catch( () => {
+			.catch( ( error ) => {
 				setBusy( false );
 
 				setData( ( current ) => {
@@ -120,8 +124,9 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 								'subkit-subscriptions'
 							),
 						} );
-					} else {
+					} else if ( 'subkit_not_found' === error?.code ) {
 						setMissing( true );
+					} else {
 						onFail();
 					}
 
@@ -598,6 +603,14 @@ export function Detail( { id, onBack, onReady, onFail } ) {
 					) }
 				</CardContent>
 			</Card>
+
+			{ panels ? (
+				<div
+					className="sk-mt-4"
+					// Drawn by other plugins' PHP on subkit_admin_subscription_detail, as the server screen draws it.
+					dangerouslySetInnerHTML={ { __html: panels } }
+				/>
+			) : null }
 		</div>
 	);
 }

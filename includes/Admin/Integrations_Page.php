@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Integrations_Page {
 
+	public const SLUG = Menu::SLUG . '-integrations';
+
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_page' ), 30 );
 	}
@@ -25,7 +27,7 @@ class Integrations_Page {
 			__( 'Integrations', 'subkit-subscriptions' ),
 			__( 'Integrations', 'subkit-subscriptions' ),
 			Menu::CAPABILITY,
-			Menu::SLUG . '-integrations',
+			self::SLUG,
 			array( $this, 'render' )
 		);
 	}
@@ -56,6 +58,12 @@ class Integrations_Page {
 			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
 		}
 
+		App_Host::start( self::SLUG );
+		$this->render_screen();
+		App_Host::end();
+	}
+
+	private function render_screen(): void {
 		$integrations = $this->integrations();
 
 		Page_Shell::open(

@@ -96,22 +96,18 @@ class Menu {
 
 	/**
 	 * Home: setup until it is done, then how the business is doing.
-	 *
-	 * The server draws the checklist and the figures; the React screen stands beside them
-	 * and hides them once it has its own data.
 	 */
 	public function render(): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
 			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
 		}
 
+		App_Host::start( self::SLUG );
+
 		Page_Shell::open( __( 'Home', 'subkit-subscriptions' ), '', array(), '', false );
 
-		// Outside the fallback, which the React screen hides: these must stay visible.
 		$this->render_test_result();
 		$this->render_product_notice();
-
-		echo '<div id="subkit-dashboard-fallback">';
 
 		if ( ! $this->setup->is_complete() ) {
 			$this->render_checklist();
@@ -121,9 +117,9 @@ class Menu {
 			$this->render_summary();
 		}
 
-		echo '</div>';
-
 		Page_Shell::close();
+
+		App_Host::end();
 	}
 
 	public function render_list(): void {
@@ -131,6 +127,12 @@ class Menu {
 			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
 		}
 
+		App_Host::start( self::LIST_SLUG );
+		$this->render_list_screen();
+		App_Host::end();
+	}
+
+	private function render_list_screen(): void {
 		$id = absint( $_GET['subscription'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		if ( $id ) {
@@ -167,8 +169,6 @@ class Menu {
 			return;
 		}
 
-		echo '<div id="subkit-subscriptions-fallback">';
-
 		$table->views();
 
 		echo '<form method="get">';
@@ -183,7 +183,7 @@ class Menu {
 		$table->search_box( __( 'Search subscriptions', 'subkit-subscriptions' ), 'subkit-search' );
 		$table->display();
 
-		echo '</form></div>';
+		echo '</form>';
 
 		Page_Shell::close();
 	}
@@ -361,8 +361,7 @@ class Menu {
 		/* translators: %d: subscription ID */
 		$heading = sprintf( __( 'Subscription #%d', 'subkit-subscriptions' ), $id );
 
-		// The React screen draws its own heading row, so the shell's is for screen readers;
-		// the server-rendered copy keeps a visible one inside the part React replaces.
+		// The heading below carries the status pill, so the shell's is for screen readers.
 		Page_Shell::open(
 			$heading,
 			'',
@@ -377,7 +376,6 @@ class Menu {
 			false
 		);
 
-		echo '<div id="subkit-subscriptions-fallback">';
 		printf(
 			'<h2 class="subkit-detail-heading">%s <span class="subkit-pill subkit-pill--%s">%s</span></h2><p class="subkit-lede"><a href="%s">&larr; %s</a></p>',
 			esc_html( $heading ),
@@ -401,11 +399,6 @@ class Menu {
 		$this->render_process_button( $subscription );
 
 		$this->render_activity( $id );
-
-		// Closed before the hook below: whatever an extension draws here is not something
-		// the React screen knows how to redraw, so it must not be hidden along with the
-		// parts that are.
-		echo '</div>';
 
 		/**
 		 * Renders on the subscription detail screen, below its facts.

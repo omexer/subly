@@ -116,6 +116,18 @@ class Subscriptions_Controller {
 
 		register_rest_route(
 			self::NAMESPACE,
+			'/' . self::REST_BASE . '/(?P<id>[\d]+)/panels',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::READABLE,
+					'callback'            => array( $this, 'get_panels' ),
+					'permission_callback' => array( $this, 'can_write' ),
+				),
+			)
+		);
+
+		register_rest_route(
+			self::NAMESPACE,
 			'/' . self::REST_BASE . '/actions',
 			array(
 				array(
@@ -371,6 +383,26 @@ class Subscriptions_Controller {
 		}
 
 		return new \WP_REST_Response( $entries );
+	}
+
+	/**
+	 * What extensions draw under a subscription's admin screen, for the app to show after its own.
+	 *
+	 * @return \WP_REST_Response|\WP_Error
+	 */
+	public function get_panels( \WP_REST_Request $request ) {
+		$subscription = $this->find( $request );
+
+		if ( ! $subscription instanceof Subscription ) {
+			return $subscription;
+		}
+
+		ob_start();
+
+		/** This action is documented in includes/Admin/Menu.php */
+		do_action( 'subkit_admin_subscription_detail', $subscription );
+
+		return new \WP_REST_Response( array( 'html' => (string) ob_get_clean() ) );
 	}
 
 	/**

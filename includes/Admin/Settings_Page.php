@@ -84,6 +84,12 @@ class Settings_Page {
 	}
 
 	public function render(): void {
+		App_Host::start( self::SLUG );
+		$this->render_screen();
+		App_Host::end();
+	}
+
+	private function render_screen(): void {
 		$sections = $this->sections();
 		$current  = $this->current_section( $sections );
 

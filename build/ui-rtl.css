@@ -128,11 +128,17 @@
 .sk-mb-2 {
 	margin-bottom: 0.5rem;
 }
+.sk-mb-3 {
+	margin-bottom: 0.75rem;
+}
 .sk-mb-4 {
 	margin-bottom: 1rem;
 }
 .sk-mb-6 {
 	margin-bottom: 1.5rem;
+}
+.sk-mb-8 {
+	margin-bottom: 2rem;
 }
 .sk-ml-1 {
 	margin-right: 0.25rem;
@@ -157,6 +163,9 @@
 }
 .sk-mt-4 {
 	margin-top: 1rem;
+}
+.sk-mt-auto {
+	margin-top: auto;
 }
 .sk-block {
 	display: block;
@@ -187,6 +196,9 @@
 }
 .sk-h-4 {
 	height: 1rem;
+}
+.sk-h-40 {
+	height: 10rem;
 }
 .sk-h-48 {
 	height: 12rem;
@@ -239,6 +251,9 @@
 .sk-w-72 {
 	width: 18rem;
 }
+.sk-w-8 {
+	width: 2rem;
+}
 .sk-w-9 {
 	width: 2.25rem;
 }
@@ -273,6 +288,9 @@
 }
 .sk-list-none {
 	list-style-type: none;
+}
+.sk-grid-cols-\[repeat\(auto-fill\,minmax\(260px\,1fr\)\)\] {
+	grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
 }
 .sk-grid-cols-\[repeat\(auto-fit\,minmax\(200px\,1fr\)\)\] {
 	grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
@@ -443,6 +461,9 @@
 .sk-bg-muted-foreground {
 	background-color: hsl(var(--sk-muted-foreground));
 }
+.sk-bg-muted\/40 {
+	background-color: hsl(var(--sk-muted) / 0.4);
+}
 .sk-bg-primary {
 	background-color: hsl(var(--sk-primary));
 }
@@ -551,6 +572,9 @@
 }
 .sk-align-middle {
 	vertical-align: middle;
+}
+.sk-font-mono {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 .sk-text-2xl {
 	font-size: 1.5rem;

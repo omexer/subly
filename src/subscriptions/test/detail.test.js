@@ -55,12 +55,7 @@ async function render( props = {} ) {
 
 	await act( async () => {
 		createRoot( container ).render(
-			<Detail
-				id={ 812 }
-				onReady={ () => {} }
-				onFail={ () => {} }
-				{ ...props }
-			/>
+			<Detail id={ 812 } onFail={ () => {} } { ...props } />
 		);
 	} );
 }
@@ -155,13 +150,25 @@ describe( 'the subscription detail screen', () => {
 		);
 	} );
 
-	it( 'hands back to the server-rendered screen when the id is not real', async () => {
+	it( 'says so when the id is not real, rather than failing the screen', async () => {
 		apiFetch.mockRejectedValue( { code: 'subkit_not_found' } );
 		const onFail = jest.fn();
 
 		await render( { onFail } );
 
-		expect( onFail ).toHaveBeenCalled();
+		expect( container.textContent ).toContain(
+			'No subscription with that id.'
+		);
+		expect( onFail ).not.toHaveBeenCalled();
+	} );
+
+	it( 'tells the shell when it cannot load for any other reason', async () => {
+		apiFetch.mockRejectedValue( { code: 'rest_forbidden' } );
+		const onFail = jest.fn();
+
+		await render( { onFail } );
+
+		expect( onFail ).toHaveBeenCalledTimes( 1 );
 	} );
 
 	it( 'says a renewal is waiting on the payment provider, and does not offer to charge it again', async () => {
