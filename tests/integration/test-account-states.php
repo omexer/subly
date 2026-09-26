@@ -59,7 +59,16 @@ $product   = subkit_test_product();
 $made      = array();
 $users     = array();
 
-$options = array( Early_Renewal::OPTION => 'yes', 'subkit_allow_auto_renew_toggle' => 'yes' );
+// Amounts are asserted as text, so the store's price format is pinned too.
+$options = array(
+	Early_Renewal::OPTION                => 'yes',
+	'subkit_allow_auto_renew_toggle'     => 'yes',
+	'woocommerce_currency'               => 'USD',
+	'woocommerce_currency_pos'           => 'left',
+	'woocommerce_price_thousand_sep'     => ',',
+	'woocommerce_price_decimal_sep'      => '.',
+	'woocommerce_price_num_decimals'     => '2',
+);
 $was     = array();
 foreach ( $options as $name => $value ) {
 	$was[ $name ] = get_option( $name, null );

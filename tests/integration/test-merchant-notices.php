@@ -162,14 +162,22 @@ $dismiss    = static function ( string $notice, int $count, int $user_id = 1, ?s
 
 $customer = wp_insert_user( array( 'user_login' => 'sk_notices_' . wp_generate_password( 6, false, false ), 'user_pass' => wp_generate_password(), 'role' => 'customer' ) );
 
+// The store may already have subscriptions on the list; every count below is relative to them.
+$listed = static function () use ( $repair ): array {
+	delete_transient( Renewal_Tax_Repair::CACHE );
+	return $repair->affected_ids();
+};
+$base   = count( $listed() );
+$says   = static fn( string $html, int $count ): bool => str_contains( $html, 'SubKit: ' . $count . ' subscription' . ( 1 === $count ? ' renews' : 's renew' ) . ' with tax added twice' );
+
 echo "\n1. Tax added twice: the notice\n";
-$check( 'with nothing listed there is no notice', '' === $notice() );
+$html = $notice();
+$check( 'the notice matches what the store already has listed, if anything', 0 === $base ? '' === $html : $says( $html, $base ), array( $base, $html ) );
 
 $first = $make( 'notices-1@example.test', true );
-delete_transient( Renewal_Tax_Repair::CACHE );
+$check( 'setup: the old subscription is listed', in_array( $first->get_id(), $listed(), true ) );
 $html = $notice();
-$check( 'setup: the old subscription is listed', array( $first->get_id() ) === $repair->affected_ids(), $repair->affected_ids() );
-$check( 'an admin is told how many, and that customers may be owed refunds', str_contains( $html, '1 subscription renews with tax added twice' ) && str_contains( $html, 'may be owed a refund' ), $html );
+$check( 'an admin is told how many, and that customers may be owed refunds', $says( $html, $base + 1 ) && str_contains( $html, 'may be owed' ), array( $base, $html ) );
 $check( 'with a link to the list', str_contains( $html, esc_url( Renewal_Tax_Repair::list_url() . '#' . Renewal_Tax_Repair::NOTICE ) ), $html );
 
 wp_set_current_user( $customer );
@@ -178,32 +186,32 @@ wp_set_current_user( 1 );
 
 echo "\n2. Dismissing it\n";
 $_SERVER['HTTP_REFERER'] = admin_url( 'index.php' );
-$check( 'a customer cannot dismiss it', 'died' === $dismiss( Renewal_Tax_Repair::NOTICE, 1, $customer ) );
-$check( 'nor an admin without the nonce', 'died' === $dismiss( Renewal_Tax_Repair::NOTICE, 1, 1, 'not-a-nonce' ) );
-$check( 'so it still shows', '' !== $notice() );
-$back = $dismiss( Renewal_Tax_Repair::NOTICE, 1 );
+$check( 'a customer cannot dismiss it', 'died' === $dismiss( Renewal_Tax_Repair::NOTICE, $base + 1, $customer ) );
+$check( 'nor an admin without the nonce', 'died' === $dismiss( Renewal_Tax_Repair::NOTICE, $base + 1, 1, 'not-a-nonce' ) );
+$check( 'so it still shows', $says( $notice(), $base + 1 ) );
+$back = $dismiss( Renewal_Tax_Repair::NOTICE, $base + 1 );
 $check( 'dismissing returns to the screen it was dismissed on', 'redirect:' . admin_url( 'index.php' ) === $back, $back );
 $check( 'and it is gone', '' === $notice() );
-delete_transient( Renewal_Tax_Repair::CACHE );
+$listed();
 $check( 'and stays gone on the next load, while the count is unchanged', '' === $notice() );
 
 $second = $make( 'notices-2@example.test', true );
-delete_transient( Renewal_Tax_Repair::CACHE );
+$check( 'setup: the second is listed too', in_array( $second->get_id(), $listed(), true ) );
 $html = $notice();
-$check( 'it comes back when the count grows', str_contains( $html, '2 subscriptions renew with tax added twice' ), $html );
-$dismiss( Renewal_Tax_Repair::NOTICE, 2 );
-$check( 'dismissed again at two', '' === $notice() );
+$check( 'it comes back when the count grows', $says( $html, $base + 2 ), array( $base, $html ) );
+$dismiss( Renewal_Tax_Repair::NOTICE, $base + 2 );
+$check( 'dismissed again at the higher count', '' === $notice() );
 
 echo "\n3. Repairing\n";
 $repaired = $call( array( $repair, 'handle' ), array( 'subscription' => (string) $second->get_id(), 'from' => 'subkit', '_wpnonce' => wp_create_nonce( Renewal_Tax_Repair::ACTION . '_' . $second->get_id() ) ) );
 $check( 'a repair from SubKit → Settings returns there', 'redirect:' . add_query_arg( array( 'subkit_tax_repaired' => $second->get_id(), 'subkit_tax_repair_failed' => 0 ), Settings_Page::section_url() ) === $repaired, $repaired );
 $check( 'and it was repaired', ! in_array( $second->get_id(), $repair->affected_ids(), true ) && (float) wc_get_order( $second->get_id() )->get_total_tax() > 0 );
-$check( 'with one left, the notice stays dismissed', '' === $notice() );
+$check( 'with one fewer, the notice stays dismissed', '' === $notice() );
 
 $third = $make( 'notices-3@example.test', true );
-delete_transient( Renewal_Tax_Repair::CACHE );
+$check( 'setup: the third is listed', in_array( $third->get_id(), $listed(), true ) );
 $html = $notice();
-$check( 'a new one after a repair brings it back, though the count only returned to two', str_contains( $html, '2 subscriptions renew with tax added twice' ), $html );
+$check( 'a new one after a repair brings it back, though the count only returned to where it was dismissed', $says( $html, $base + 2 ), array( $base, $html ) );
 
 // Changed since the list was cached, so the repair must refuse it.
 $repair->affected_ids();
@@ -227,8 +235,9 @@ ob_start();
 $screen = (string) ob_get_clean();
 $_GET   = array();
 $check( 'the list says the repair did not happen', str_contains( $screen, sprintf( 'Subscription #%d was not repaired', $third->get_id() ) ), $screen );
-$check( 'and no longer offers it', ! str_contains( $screen, 'subscription=' . $third->get_id() . '&amp;_wpnonce' ) && ! in_array( $third->get_id(), $repair->affected_ids(), true ) );
-$check( 'while still listing the one left', in_array( $first->get_id(), $repair->affected_ids(), true ) && str_contains( $screen, 'from=woocommerce' ) );
+$plain  = str_replace( array( '&#038;', '&amp;' ), '&', $screen );
+$check( 'and no longer offers it', ! str_contains( $plain, 'subscription=' . $third->get_id() . '&from=' ) && ! in_array( $third->get_id(), $repair->affected_ids(), true ) );
+$check( 'while still offering the one left, returning to WooCommerce → Settings', in_array( $first->get_id(), $repair->affected_ids(), true ) && str_contains( $plain, 'subscription=' . $first->get_id() . '&from=woocommerce' ), $plain );
 
 echo "\n4. Payments awaiting confirmation\n";
 $check( 'the ledger records when a charge went pending', (bool) $wpdb->get_var( $wpdb->prepare( 'SHOW COLUMNS FROM %i LIKE %s', $wpdb->prefix . 'subkit_charge_slot', 'pending_gmt' ) ) && Migrator::DB_VERSION <= (int) get_option( 'subkit_db_version' ) );
@@ -258,18 +267,24 @@ $drawn = static function ( array $check ): string {
 	Settings::render_check( $check );
 	return (string) ob_get_clean();
 };
-$check( 'and the status card is not raised for it', ! in_array( (int) $slot->id, $stale_ids(), true ) && ! str_contains( $drawn( $card() ), 'subscription=' . $late->get_id() . '"' ) );
+// esc_url and wp_kses spell the ampersand differently; the store may list other renewals beside this one.
+$flat = static fn( string $html ): string => str_replace( array( '&#038;', '&amp;' ), '&', $html );
+$item = static function ( string $html ) use ( $flat, $late ): string {
+	preg_match( '#<li>(?:(?!</li>).)*subscription=' . $late->get_id() . '".*?</li>#s', $flat( $html ), $match );
+	return $match[0] ?? '';
+};
+$check( 'and the status card is not raised for it', ! in_array( (int) $slot->id, $stale_ids(), true ) && '' === $item( $drawn( $card() ) ) );
 
 $wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'pending_gmt' => gmdate( 'Y-m-d H:i:s', time() - 12 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot->id ) );
 $order = wc_get_order( (int) $slot->renewal_order_id );
 $html  = $drawn( $card() );
 $check( 'twelve days after going pending, it is listed', in_array( (int) $slot->id, $stale_ids(), true ) && ! $card()['ok'], $card() );
-$check( 'with a link to the subscription', str_contains( $html, 'href="' . str_replace( '&#038;', '&amp;', esc_url( admin_url( 'admin.php?page=' . \SubKit\Admin\Menu::LIST_SLUG . '&subscription=' . $late->get_id() ) ) ) . '"' ), $html );
-$check( 'its amount and how long it has waited', $order && str_contains( $html, number_format( (float) $order->get_total(), 2 ) ) && str_contains( $html, 'waiting 12 days' ), $html );
-$check( 'and a link to its renewal order', $order && str_contains( $html, 'href="' . str_replace( '&#038;', '&amp;', esc_url( $order->get_edit_order_url() ) ) . '"' ) && str_contains( $html, '#' . $order->get_order_number() . '</a>' ), $html );
+$check( 'with a link to the subscription', str_contains( $item( $html ), 'href="' . $flat( esc_url( admin_url( 'admin.php?page=' . \SubKit\Admin\Menu::LIST_SLUG . '&subscription=' . $late->get_id() ) ) ) . '"' ), $html );
+$check( 'its amount and how long it has waited', $order && str_contains( $item( $html ), number_format( (float) $order->get_total(), wc_get_price_decimals(), wc_get_price_decimal_separator(), wc_get_price_thousand_separator() ) ) && str_contains( $item( $html ), 'waiting 12 days' ), $item( $html ) );
+$check( 'and a link to its renewal order', $order && str_contains( $item( $html ), 'href="' . $flat( esc_url( $order->get_edit_order_url() ) ) . '"' ) && str_contains( $item( $html ), '#' . $order->get_order_number() . '</a>' ), $item( $html ) );
 
 $wpdb->query( $wpdb->prepare( 'UPDATE %i SET pending_gmt = NULL, created_gmt = %s WHERE id = %d', $wpdb->prefix . 'subkit_charge_slot', gmdate( 'Y-m-d H:i:s', time() - 11 * DAY_IN_SECONDS ), (int) $slot->id ) );
-$check( 'a slot that went pending before the moment was recorded falls back to when it was claimed', in_array( (int) $slot->id, $stale_ids(), true ) && str_contains( $drawn( $card() ), 'waiting 11 days' ) );
+$check( 'a slot that went pending before the moment was recorded falls back to when it was claimed', in_array( (int) $slot->id, $stale_ids(), true ) && str_contains( $item( $drawn( $card() ) ), 'waiting 11 days' ) );
 
 // ---- clean up -----------------------------------------------------------------------
 remove_filter( 'wp_die_handler', $died );
