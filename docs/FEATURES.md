@@ -1,6 +1,6 @@
 # EasySubscription — Feature Inventory
 
-Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at EasySubscription 0.23.0 and EasySubscription Pro 0.44.0, not from memory.
+Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at EasySubscription 0.23.0 and EasySubscription Pro 0.45.0, not from memory.
 
 Since 2026-09-24 both plugins have an integration suite (`tools/test.sh`, run in CI on PHP 8.1 and 8.4 — see [`TESTING.md`](TESTING.md)). **Run (suite)** below means a test in that suite drives the feature against a real WordPress and WooCommerce on every push. A gateway row stays **Mocked** even when the suite covers it: the gateway's HTTP is faked with `pre_http_request`.
 
