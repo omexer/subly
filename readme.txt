@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.21.1
+Stable tag: 0.22.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,10 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.22.0 =
+* **New settings screen.** SubKit → Settings is reorganised into General, Customer Controls, Renewal & Billing, Upgrade & Downgrade, Cart & Checkout, Shipping, Notifications, Payments and Integrations, with switches for on/off settings. Settings that depend on another appear only when it is switched on. Every setting keeps its value.
+* **Customer controls.** Choose whether customers may cancel from their account, and when a cancellation takes effect: at the end of the billing cycle (the default) or immediately. Customers are no longer asked to choose; the cancel form says which applies.
 
 = 0.21.1 =
 * **Fixed: deleting SubKit left its scheduled renewals and reminders behind.** Uninstalling with data removal now clears every scheduled SubKit job.

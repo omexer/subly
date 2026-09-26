@@ -143,7 +143,7 @@ $check( 'and does not offer its past due date as the next payment', ! str_contai
 
 $detail = $page( $s1->get_id() );
 $check( 'My Account shows it on the subscription', str_contains( $detail, 'Payment processing' ) && str_contains( $detail, 'waiting for your bank or payment provider' ), substr( $detail, 0, 400 ) );
-$check( 'without a paid-through date that has already passed', ! str_contains( $detail, "You've paid through" ), $detail );
+$check( 'without a paid-through date that has already passed', ! str_contains( $detail, 'stays active until ' . date_i18n( (string) get_option( 'date_format' ), strtotime( $due1 . ' UTC' ) ) ) && str_contains( $detail, 'stays active until the end of the current period' ), $detail );
 $check( 'and on the list', str_contains( $page(), 'Active · Payment processing' ) );
 
 $check( 'Pay early is not offered while it waits', ! Early_Renewal::is_available_for( $s1 ) && ! str_contains( $detail, 'Pay early' ), $detail );

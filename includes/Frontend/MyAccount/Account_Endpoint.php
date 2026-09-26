@@ -6,17 +6,14 @@ use SubKit\Data\Activity_Repository;
 use SubKit\Data\Subscription_Query;
 use SubKit\Domain\Subscription;
 use SubKit\Domain\Subscription_Status;
+use SubKit\Lifecycle\Cancellation_Policy;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * The customer's subscription screens under My Account.
- *
- * Viewing and cancelling are free and cannot be switched off: a customer who cannot stop
- * their own recurring charge is a chargeback and, in the UK/EU, a compliance problem.
- * UX Spec 8 and 10.
+ * The customer's subscription screens under My Account. UX Spec 8 and 10.
  */
 class Account_Endpoint {
 
@@ -135,9 +132,7 @@ class Account_Endpoint {
 		}
 
 		if ( 'cancel' === $action ) {
-			$when = isset( $_POST['subkit_when'] ) ? sanitize_key( wp_unslash( $_POST['subkit_when'] ) ) : 'period_end';
-
-			$this->cancel( $subscription, 'immediate' === $when );
+			$this->cancel( $subscription, Cancellation_Policy::is_immediate() );
 		}
 	}
 
@@ -173,7 +168,7 @@ class Account_Endpoint {
 	}
 
 	/**
-	 * What the customer is told when subkit_can_cancel says no.
+	 * What the customer is told when they cannot cancel online.
 	 */
 	public static function cancel_refused_message( Subscription $subscription ): string {
 		/**
@@ -190,7 +185,7 @@ class Account_Endpoint {
 	}
 
 	private function cancel( Subscription $subscription, bool $immediately ): void {
-		if ( ! apply_filters( 'subkit_can_cancel', true, $subscription, get_current_user_id() ) ) {
+		if ( ! Cancellation_Policy::allows( $subscription ) ) {
 			wc_add_notice( self::cancel_refused_message( $subscription ), 'error' );
 			return;
 		}

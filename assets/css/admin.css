@@ -451,9 +451,12 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 .subkit-crumbs__link:hover { color: var(--subkit-accent); }
 .subkit-crumbs__current { overflow: hidden; color: var(--subkit-ink); font-weight: 500; white-space: nowrap; text-overflow: ellipsis; }
 
-.subkit-shell__meta { display: flex; gap: 18px; font-size: 13px; }
-.subkit-shell__meta a { color: var(--subkit-ink-soft); text-decoration: none; }
+.subkit-shell__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; font-size: 14px; }
+.subkit-shell__meta a { display: inline-flex; align-items: center; gap: 6px; color: #3c434a; text-decoration: none; }
 .subkit-shell__meta a:hover { color: var(--subkit-accent); }
+.subkit-shell__meta a.subkit-shell__upgrade { padding: 7px 14px; border-radius: 6px; background: #fff4e8; color: var(--subkit-ink); font-weight: 500; }
+.subkit-shell__meta a.subkit-shell__upgrade:hover, .subkit-shell__meta a.subkit-shell__upgrade:focus { background: #ffe7cc; color: var(--subkit-ink); }
+.subkit-shell__upgrade svg { width: 20px; height: 20px; color: #f0801a; }
 
 .subkit-shell__body.wrap { max-width: 1240px; margin: 0 auto; padding: 28px 24px 0; box-sizing: border-box; }
 .subkit-shell .wp-header-end { visibility: hidden; margin: 0; border: 0; }
@@ -509,31 +512,48 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 
 .subkit-settings {
 	display: grid;
-	grid-template-columns: minmax(200px, 232px) minmax(0, 1fr) minmax(252px, 292px);
+	grid-template-columns: 250px minmax(0, 1fr);
 	align-items: start;
-	gap: var(--subkit-gap);
+	gap: var(--subkit-gap-lg);
 }
 
 .subkit-settings__nav {
+	position: sticky;
+	top: 120px;
+	padding: 24px 15px;
+	background: var(--subkit-bg);
+	border-radius: var(--subkit-radius-sm);
+	box-shadow: var(--subkit-shadow);
+}
+
+.subkit-settings__nav ul {
 	display: flex;
 	flex-direction: column;
-	background: var(--subkit-bg);
-	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius);
-	overflow: hidden;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.subkit-settings__nav li {
+	margin: 0;
 }
 
 .subkit-settings__tab {
 	display: flex;
+	align-items: center;
 	gap: 10px;
-	padding: 12px 14px;
-	border-bottom: 1px solid var(--subkit-line-soft);
+	padding: 8px 12px;
+	border-radius: 6px;
 	color: var(--subkit-ink);
+	font-size: 14px;
+	line-height: 1.3;
 	text-decoration: none;
 }
 
-.subkit-settings__tab:last-child {
-	border-bottom: 0;
+.subkit-settings__tab svg {
+	flex: none;
+	color: #3c434a;
 }
 
 .subkit-settings__tab:hover,
@@ -542,48 +562,47 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	color: var(--subkit-ink);
 }
 
+.subkit-settings__tab:focus-visible,
+.subkit-settings__subtab:focus-visible {
+	outline: 2px solid var(--subkit-accent);
+	outline-offset: 1px;
+	box-shadow: none;
+}
+
 .subkit-settings__tab.is-current {
-	background: var(--subkit-accent-soft);
-	box-shadow: inset 3px 0 0 var(--subkit-accent);
-}
-
-.subkit-settings__tab-text {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.subkit-settings__tab-text strong {
-	font-size: 13px;
-}
-
-.subkit-settings__tab-text em {
-	display: -webkit-box;
-	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 2;
-	overflow: hidden;
-	color: var(--subkit-ink-soft);
-	font-size: 12px;
-	font-style: normal;
-	line-height: 1.4;
-}
-
-/* Not .subkit-tile: that is the card on Integrations and Help. */
-.subkit-icon-tile {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex: 0 0 32px;
-	width: 32px;
-	height: 32px;
-	border-radius: var(--subkit-radius-sm);
 	background: var(--subkit-accent-soft);
 	color: var(--subkit-accent);
 }
 
-.subkit-settings__tab.is-current .subkit-icon-tile {
-	background: var(--subkit-accent);
-	color: #fff;
+.subkit-settings__tab.is-current svg {
+	color: var(--subkit-accent);
+}
+
+.wrap .subkit-settings__subnav {
+	gap: 2px;
+	margin: 4px 0 8px 32px;
+	padding-left: 10px;
+	border-left: 1px solid var(--subkit-line);
+}
+
+.subkit-settings__subtab {
+	display: block;
+	padding: 5px 10px;
+	border-radius: 6px;
+	color: var(--subkit-ink-soft);
+	font-size: 13px;
+	text-decoration: none;
+}
+
+.subkit-settings__subtab:hover,
+.subkit-settings__subtab:focus {
+	background: var(--subkit-line-soft);
+	color: var(--subkit-ink);
+}
+
+.subkit-settings__subtab.is-current {
+	color: var(--subkit-accent);
+	font-weight: 600;
 }
 
 .subkit-settings__main {
@@ -593,21 +612,32 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	min-width: 0;
 }
 
+.subkit-settings__card {
+	padding: 12px 30px;
+	background: var(--subkit-bg);
+	border-radius: var(--subkit-radius-sm);
+	box-shadow: var(--subkit-shadow);
+	scroll-margin-top: 120px;
+}
+
 .subkit-settings__card-head {
-	padding: 14px 16px;
-	border-bottom: 1px solid var(--subkit-line-soft);
+	padding: 22px 0 4px;
 }
 
 .subkit-settings__card-head h2 {
 	margin: 0;
-	font-size: 14px;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.4;
+	color: var(--subkit-ink);
 }
 
 .subkit-settings__card-head p {
-	margin: 4px 0 0;
+	margin: 6px 0 0;
+	max-width: 60%;
 	color: var(--subkit-ink-soft);
-	font-size: 12px;
-	max-width: 60ch;
+	font-size: 13px;
+	line-height: 1.7;
 }
 
 .subkit-settings__rows {
@@ -616,38 +646,101 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 }
 
 .subkit-settings__row {
-	display: grid;
-	grid-template-columns: minmax(0, 1.5fr) minmax(170px, 240px);
-	align-items: start;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	gap: var(--subkit-gap-lg);
-	padding: 16px 18px;
-	border-bottom: 1px solid var(--subkit-line-soft);
+	padding: 22px 0;
+	border-bottom: 1px solid var(--subkit-line);
 }
 
 .subkit-settings__row:last-child {
 	border-bottom: 0;
 }
 
-.subkit-settings__label label {
+/* Hidden only once scripts run, so without them every setting stays reachable. */
+.js .subkit-settings__row.is-hidden {
+	display: none;
+}
+
+.subkit-settings__row--wide {
+	display: block;
+}
+
+.subkit-settings__label {
+	flex: 0 1 60%;
+	min-width: 0;
+}
+
+.subkit-settings__title {
+	display: block;
+	color: var(--subkit-ink);
+	font-size: 14px;
 	font-weight: 600;
+	line-height: 1.5;
 }
 
 .subkit-settings__help {
 	margin: 4px 0 0;
 	color: var(--subkit-ink-soft);
-	font-size: 12px;
-	max-width: 62ch;
+	font-size: 13px;
+	line-height: 1.7;
 }
 
 .subkit-settings__control {
-	justify-self: end;
-	width: 100%;
-	max-width: 240px;
+	display: flex;
+	flex: none;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 10px;
+	max-width: 40%;
 }
 
-.subkit-input {
-	width: 100%;
-	max-width: 240px;
+.subkit-settings__suffix {
+	color: var(--subkit-ink-soft);
+	font-size: 13px;
+}
+
+.subkit-settings .subkit-input {
+	min-height: 40px;
+	padding: 0 12px;
+	border: 1px solid #c3c4c7;
+	border-radius: 4px;
+	background-color: #fff;
+	color: var(--subkit-ink);
+	font-size: 14px;
+	box-shadow: none;
+}
+
+.subkit-settings select.subkit-input {
+	min-width: 110px;
+	max-width: 260px;
+	padding-right: 32px;
+}
+
+.subkit-settings .subkit-input--short {
+	width: 70px;
+	text-align: center;
+}
+
+.subkit-settings .subkit-input--wide {
+	width: 300px;
+	max-width: 100%;
+}
+
+.subkit-settings textarea.subkit-input {
+	padding: 8px 12px;
+}
+
+.subkit-settings .subkit-input:focus {
+	border-color: var(--subkit-accent);
+	outline: 0;
+	box-shadow: 0 0 0 1px var(--subkit-accent);
+}
+
+.subkit-settings .subkit-checks {
+	padding: 0;
 }
 
 .subkit-settings__woo {
@@ -658,17 +751,23 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	display: none;
 }
 
+.subkit-settings__woo td {
+	padding: 0;
+}
+
 /* A checkbox drawn as a switch; the input stays the control that is read and saved. */
 .subkit-switch {
 	position: relative;
 	display: inline-block;
+	flex: none;
 	width: 40px;
 	height: 22px;
 }
 
-.subkit-switch input {
+.subkit-switch input[type="checkbox"] {
 	position: absolute;
 	inset: 0;
+	z-index: 1;
 	width: 100%;
 	height: 100%;
 	margin: 0;
@@ -680,7 +779,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	position: absolute;
 	inset: 0;
 	border-radius: 999px;
-	background: #c7cbd2;
+	background: #c3c4c7;
 	transition: background 120ms ease;
 	pointer-events: none;
 }
@@ -710,7 +809,16 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	outline-offset: 2px;
 }
 
+@media (prefers-reduced-motion: reduce) {
+	.subkit-switch__track,
+	.subkit-switch__track::after {
+		transition: none;
+	}
+}
+
 .subkit-settings__save {
+	position: sticky;
+	bottom: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
@@ -718,10 +826,8 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	padding: 12px 16px;
 	background: var(--subkit-bg);
 	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius);
+	border-radius: var(--subkit-radius-sm);
 	box-shadow: var(--subkit-shadow-lg);
-	position: sticky;
-	bottom: 12px;
 }
 
 .subkit-settings__save-note {
@@ -729,57 +835,36 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	font-size: 12px;
 }
 
-.subkit-settings__rail {
-	display: flex;
-	flex-direction: column;
-	gap: var(--subkit-gap);
+@media screen and (max-width: 960px) {
+	.subkit-settings {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.subkit-settings__nav {
+		position: static;
+	}
 }
 
-.subkit-settings__links {
-	display: flex;
-	flex-direction: column;
-}
+@media screen and (max-width: 782px) {
+	.subkit-settings__card {
+		padding: 8px 18px;
+	}
 
-.subkit-settings__link {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	padding: 12px 16px;
-	border-bottom: 1px solid var(--subkit-line-soft);
-	color: var(--subkit-ink);
-	text-decoration: none;
-}
+	.subkit-settings__row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+	}
 
-.subkit-settings__link:last-child {
-	border-bottom: 0;
-}
+	.subkit-settings__label,
+	.subkit-settings__card-head p {
+		max-width: none;
+	}
 
-.subkit-settings__link:hover,
-.subkit-settings__link:focus {
-	background: var(--subkit-line-soft);
-	color: var(--subkit-ink);
-}
-
-.subkit-settings__link-text {
-	display: flex;
-	flex: 1;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.subkit-settings__chevron {
-	color: var(--subkit-ink-soft);
-	flex: 0 0 auto;
-}
-
-.subkit-settings__link em {
-	color: var(--subkit-ink-soft);
-	font-size: 12px;
-	font-style: normal;
-}
-
-.subkit-settings .subkit-checks {
-	padding: 12px 16px;
+	.subkit-settings__control {
+		justify-content: flex-start;
+		max-width: 100%;
+	}
 }
 
 .subkit-notice {
@@ -794,36 +879,6 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	border-color: #bbf7d0;
 	background: #f0fdf4;
 	color: var(--subkit-good);
-}
-
-@media screen and (max-width: 1280px) {
-	.subkit-settings {
-		grid-template-columns: minmax(180px, 220px) minmax(0, 1fr);
-	}
-
-	.subkit-settings__rail {
-		grid-column: 1 / -1;
-		flex-direction: row;
-		flex-wrap: wrap;
-	}
-
-	.subkit-settings__rail > * {
-		flex: 1 1 280px;
-	}
-}
-
-@media screen and (max-width: 782px) {
-	.subkit-settings {
-		grid-template-columns: minmax(0, 1fr);
-	}
-
-	.subkit-settings__row {
-		grid-template-columns: minmax(0, 1fr);
-	}
-
-	.subkit-settings__control {
-		justify-self: start;
-	}
 }
 
 .subkit-notice--bad {

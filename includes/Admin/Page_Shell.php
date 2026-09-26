@@ -15,6 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Page_Shell {
 
+	public const UPGRADE_URL = 'https://github.com/pronob1010/subkit-subscriptions-pro';
+
 	/**
 	 * @param string                                   $title    The page heading.
 	 * @param string                                   $subtitle One line under it, or empty.
@@ -59,12 +61,25 @@ class Page_Shell {
 		Notices::render_toggle();
 
 		printf(
-			'<a href="%s">%s</a><a href="%s">%s</a>',
+			'<a href="%s">%s%s</a><a href="%s">%s%s</a>',
 			esc_url( admin_url( 'admin.php?page=' . Menu::SLUG . '-help' ) ),
+			self::icon( '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.6h.01"/>' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 			esc_html__( 'Help', 'subkit-subscriptions' ),
 			esc_url( admin_url( 'admin.php?page=' . Settings_Page::SLUG ) ),
+			self::icon( '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 			esc_html__( 'Settings', 'subkit-subscriptions' )
 		);
+
+		if ( ! did_action( 'subkit_pro_loaded' ) ) {
+			printf(
+				'<a class="subkit-shell__upgrade" href="%s" target="_blank" rel="noopener noreferrer">%s%s<span class="screen-reader-text"> %s</span></a>',
+				esc_url( self::UPGRADE_URL ),
+				self::icon( '<path d="M3 8l4.5 4L12 6l4.5 6L21 8l-2 10H5z"/>' ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+				esc_html__( 'Upgrade to Pro', 'subkit-subscriptions' ),
+				/* translators: accessibility text for a link that opens in a new tab */
+				esc_html__( '(opens in a new tab)', 'subkit-subscriptions' )
+			);
+		}
 
 		echo '</div></div></header>';
 
@@ -104,6 +119,10 @@ class Page_Shell {
 			esc_url( admin_url( 'admin.php?page=' . Menu::SLUG . '-help' ) ),
 			esc_html__( 'Help and system report', 'subkit-subscriptions' )
 		);
+	}
+
+	private static function icon( string $paths ): string {
+		return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths . '</svg>';
 	}
 
 	/**

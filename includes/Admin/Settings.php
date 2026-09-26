@@ -6,6 +6,7 @@ use SubKit\Billing\Renewal_Scheduler;
 use SubKit\Billing\Renewal_Tax_Repair;
 use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Data\Migrator;
+use SubKit\Lifecycle\Cancellation_Policy;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -31,9 +32,12 @@ class Settings extends \WC_Settings_Page {
 
 	public function get_sections(): array {
 		$sections = array(
-			''       => __( 'General', 'subkit-subscriptions' ),
-			'paypal' => __( 'PayPal', 'subkit-subscriptions' ),
-			'stripe' => __( 'Stripe', 'subkit-subscriptions' ),
+			''                  => __( 'General', 'subkit-subscriptions' ),
+			'customer_controls' => __( 'Customer controls', 'subkit-subscriptions' ),
+			'renewal'           => __( 'Renewal & billing', 'subkit-subscriptions' ),
+			'checkout'          => __( 'Cart & checkout', 'subkit-subscriptions' ),
+			'paypal'            => __( 'PayPal', 'subkit-subscriptions' ),
+			'stripe'            => __( 'Stripe', 'subkit-subscriptions' ),
 		);
 
 		// Core applies this in the method we are overriding; without it an extension can
@@ -56,6 +60,95 @@ class Settings extends \WC_Settings_Page {
 				'id'   => 'subkit_health_title',
 			),
 
+			array(
+				'title' => __( 'Access', 'subkit-subscriptions' ),
+				'type'  => 'title',
+				'desc'  => __( 'What a live subscription grants, and what lapsing takes away.', 'subkit-subscriptions' ),
+				'id'    => 'subkit_access_title',
+			),
+			array(
+				'title'    => __( 'Role while subscribed', 'subkit-subscriptions' ),
+				'desc_tip' => __( 'Assigned when a subscription becomes active. Administrators are never changed.', 'subkit-subscriptions' ),
+				'type'     => 'select',
+				'id'       => 'subkit_active_role',
+				'default'  => '',
+				'options'  => self::role_options(),
+			),
+			array(
+				'title'    => __( 'Role once it ends', 'subkit-subscriptions' ),
+				'desc_tip' => __( 'Assigned only when the customer has no other live subscription.', 'subkit-subscriptions' ),
+				'type'     => 'select',
+				'id'       => 'subkit_inactive_role',
+				'default'  => '',
+				'options'  => self::role_options(),
+			),
+			array(
+				'title'    => __( 'Delete data when the plugin is deleted', 'subkit-subscriptions' ),
+				'desc'     => __( 'Remove SubKit\'s settings and its own database tables on uninstall', 'subkit-subscriptions' ),
+				'type'     => 'checkbox',
+				'id'       => 'subkit_delete_data_on_uninstall',
+				'default'  => 'no',
+				'desc_tip' => __( 'Off by default, so deactivating or deleting the plugin to try something else loses nothing. Subscriptions and their orders are never deleted either way — they are WooCommerce orders and part of your financial record.', 'subkit-subscriptions' ),
+			),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_access_title',
+			),
+		);
+
+		return $settings;
+	}
+
+	public function get_settings_for_customer_controls_section(): array {
+		return array(
+			array(
+				'title' => __( 'Customer controls', 'subkit-subscriptions' ),
+				'type'  => 'title',
+				'id'    => 'subkit_customer_controls_title',
+			),
+			array(
+				'title'    => __( 'Allow customers to renew early', 'subkit-subscriptions' ),
+				'desc'     => __( 'Customers can pay their next renewal before it is due. The renewal date stays the same.', 'subkit-subscriptions' ),
+				'type'     => 'checkbox',
+				'id'       => \SubKit\Lifecycle\Early_Renewal::OPTION,
+				'default'  => 'no',
+				'desc_tip' => __( 'Only offered for cards SubKit charges itself, never for PayPal, which bills from a plan of its own.', 'subkit-subscriptions' ),
+			),
+			array(
+				'title'   => __( 'Allow customers to cancel', 'subkit-subscriptions' ),
+				'desc'    => __( 'Customers can cancel from My Account. When off, they are asked to contact you. In the UK and EU, customers must be able to cancel as easily as they signed up.', 'subkit-subscriptions' ),
+				'type'    => 'checkbox',
+				'id'      => Cancellation_Policy::OPTION,
+				'default' => 'yes',
+			),
+			array(
+				'title'          => __( 'Cancellation takes effect', 'subkit-subscriptions' ),
+				'desc'           => __( 'At the end of the billing cycle, the customer keeps access until the date they have paid for. Immediately ends access at once, with no refund for the time left.', 'subkit-subscriptions' ),
+				'type'           => 'select',
+				'id'             => Cancellation_Policy::OPTION_WHEN,
+				'default'        => Cancellation_Policy::AT_PERIOD_END,
+				'options'        => array(
+					Cancellation_Policy::AT_PERIOD_END => __( 'End of billing cycle', 'subkit-subscriptions' ),
+					Cancellation_Policy::IMMEDIATELY   => __( 'Immediately', 'subkit-subscriptions' ),
+				),
+				'subkit_show_if' => Cancellation_Policy::OPTION,
+			),
+			array(
+				'title'   => __( 'Allow customers to turn off auto-renew', 'subkit-subscriptions' ),
+				'desc'    => __( 'Customers can stop their subscription renewing. It then ends at the end of the current period, unless they turn renewal back on.', 'subkit-subscriptions' ),
+				'type'    => 'checkbox',
+				'id'      => 'subkit_allow_auto_renew_toggle',
+				'default' => 'no',
+			),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_customer_controls_title',
+			),
+		);
+	}
+
+	public function get_settings_for_renewal_section(): array {
+		$settings = array(
 			array(
 				'title' => __( 'Renewals', 'subkit-subscriptions' ),
 				'type'  => 'title',
@@ -105,12 +198,22 @@ class Settings extends \WC_Settings_Page {
 				'type' => 'sectionend',
 				'id'   => 'subkit_renewals_title',
 			),
+		);
 
+		// Only Pro's payment retries read it; without Pro a failed renewal goes on hold at once.
+		if ( ! did_action( 'subkit_pro_loaded' ) ) {
+			$settings = array_values( array_filter( $settings, static fn( array $setting ): bool => 'subkit_grace_period_days' !== $setting['id'] ) );
+		}
+
+		return $settings;
+	}
+
+	public function get_settings_for_checkout_section(): array {
+		return array(
 			array(
-				'title' => __( 'Access', 'subkit-subscriptions' ),
+				'title' => __( 'Cart & checkout', 'subkit-subscriptions' ),
 				'type'  => 'title',
-				'desc'  => __( 'What a live subscription grants, and what lapsing takes away.', 'subkit-subscriptions' ),
-				'id'    => 'subkit_access_title',
+				'id'    => 'subkit_checkout_title',
 			),
 			array(
 				'title'    => __( 'Buying without an account', 'subkit-subscriptions' ),
@@ -124,56 +227,10 @@ class Settings extends \WC_Settings_Page {
 				),
 			),
 			array(
-				'title'    => __( 'Let customers pay early', 'subkit-subscriptions' ),
-				'desc'     => __( 'Show a button in My Account that charges the next period now', 'subkit-subscriptions' ),
-				'type'     => 'checkbox',
-				'id'       => \SubKit\Lifecycle\Early_Renewal::OPTION,
-				'default'  => 'no',
-				'desc_tip' => __( 'The renewal date does not move: paying early settles the payment that was already coming. Only offered for cards SubKit charges itself, never for PayPal, which bills from a plan of its own.', 'subkit-subscriptions' ),
-			),
-			array(
-				'title'   => __( 'Let customers turn off renewal', 'subkit-subscriptions' ),
-				'desc'    => __( 'Show a switch in My Account that ends the subscription at the end of the paid period instead of cancelling it outright.', 'subkit-subscriptions' ),
-				'type'    => 'checkbox',
-				'id'      => 'subkit_allow_auto_renew_toggle',
-				'default' => 'no',
-			),
-			array(
-				'title'    => __( 'Role while subscribed', 'subkit-subscriptions' ),
-				'desc_tip' => __( 'Assigned when a subscription becomes active. Administrators are never changed.', 'subkit-subscriptions' ),
-				'type'     => 'select',
-				'id'       => 'subkit_active_role',
-				'default'  => '',
-				'options'  => self::role_options(),
-			),
-			array(
-				'title'    => __( 'Role once it ends', 'subkit-subscriptions' ),
-				'desc_tip' => __( 'Assigned only when the customer has no other live subscription.', 'subkit-subscriptions' ),
-				'type'     => 'select',
-				'id'       => 'subkit_inactive_role',
-				'default'  => '',
-				'options'  => self::role_options(),
-			),
-			array(
-				'title'    => __( 'Delete data when the plugin is deleted', 'subkit-subscriptions' ),
-				'desc'     => __( 'Remove SubKit\'s settings and its own database tables on uninstall', 'subkit-subscriptions' ),
-				'type'     => 'checkbox',
-				'id'       => 'subkit_delete_data_on_uninstall',
-				'default'  => 'no',
-				'desc_tip' => __( 'Off by default, so deactivating or deleting the plugin to try something else loses nothing. Subscriptions and their orders are never deleted either way — they are WooCommerce orders and part of your financial record.', 'subkit-subscriptions' ),
-			),
-			array(
 				'type' => 'sectionend',
-				'id'   => 'subkit_access_title',
+				'id'   => 'subkit_checkout_title',
 			),
 		);
-
-		// Only Pro's payment retries read it; without Pro a failed renewal goes on hold at once.
-		if ( ! did_action( 'subkit_pro_loaded' ) ) {
-			$settings = array_values( array_filter( $settings, static fn( array $setting ): bool => 'subkit_grace_period_days' !== ( $setting['id'] ?? '' ) ) );
-		}
-
-		return $settings;
 	}
 
 	public function get_settings_for_paypal_section(): array {

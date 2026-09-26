@@ -19,7 +19,7 @@ if ( ! $page ) {
 	subkit_test_abort( 'the Subscriptions settings tab is not registered' );
 }
 
-$ids     = static fn(): array => array_column( (array) $page->get_settings_for_section( '' ), 'id' );
+$ids     = static fn(): array => array_column( (array) $page->get_settings_for_section( 'renewal' ), 'id' );
 $was_pro = $wp_actions['subkit_pro_loaded'] ?? null;
 
 unset( $wp_actions['subkit_pro_loaded'] );

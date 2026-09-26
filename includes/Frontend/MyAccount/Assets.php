@@ -47,8 +47,6 @@ class Assets {
 		/* 44px minimum touch targets: cancel must be reachable on a phone. */
 		.subkit-card__actions .button,.subkit-cancel__actions .button{min-height:44px;line-height:44px;padding:0 1rem}
 		.subkit-items{margin:.5rem 0 1rem;padding-left:1.1rem}
-		.subkit-choice{display:flex;gap:.6rem;align-items:flex-start;padding:.75rem;border:1px solid rgba(0,0,0,.12);border-radius:6px;margin-bottom:.6rem;cursor:pointer;min-height:44px}
-		.subkit-choice em{display:block;font-size:.88em;opacity:.8;font-style:normal}
 		/* Equal visual weight: cancel is never a grey link next to a primary button. */
 		.subkit-cancel__actions{display:flex;flex-wrap:wrap;gap:.6rem}
 		.subkit-cancel__actions .subkit-btn--primary{background:#7f54b3;border-color:#7f54b3;color:#fff;font-weight:600}

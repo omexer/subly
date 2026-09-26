@@ -103,11 +103,14 @@ foreach ( array( 'another customer' => $bob, 'a logged-out visitor' => 0 ) as $w
 }
 
 // And the owner still can: a check that refuses everybody would pass everything above.
-$own = $subscription_for( $alice );
+$own  = $subscription_for( $alice );
+$when = get_option( 'subkit_cancellation_effective', null );
+update_option( 'subkit_cancellation_effective', 'immediate' );
 wp_set_current_user( $alice );
 $attempt( array( $account, 'handle_actions' ), $actions( $own->get_id() )['cancel'] );
 $check( 'the owner can cancel their own subscription', str_contains( wc_get_order( $own->get_id() )->get_status(), 'cancelled' ), wc_get_order( $own->get_id() )->get_status() );
 $own->delete( true );
+null === $when ? delete_option( 'subkit_cancellation_effective' ) : update_option( 'subkit_cancellation_effective', $when );
 
 delete_option( 'subkit_allow_early_renewal' );
 delete_option( 'subkit_allow_auto_renew_toggle' );

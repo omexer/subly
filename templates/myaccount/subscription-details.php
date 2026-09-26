@@ -13,22 +13,21 @@ defined( 'ABSPATH' ) || exit;
 
 use SubKit\Domain\Subscription_Status;
 use SubKit\Frontend\MyAccount\Status_Presenter;
+use SubKit\Lifecycle\Cancellation_Policy;
 
-$subkit_state      = Status_Presenter::for( $subscription );
-$subkit_pending    = Status_Presenter::pending_charge( $subscription );
-$subkit_by_link    = Status_Presenter::pays_by_link( $subscription );
-$subkit_can_cancel = ! in_array(
+$subkit_state   = Status_Presenter::for( $subscription );
+$subkit_pending = Status_Presenter::pending_charge( $subscription );
+$subkit_by_link = Status_Presenter::pays_by_link( $subscription );
+$subkit_live    = ! in_array(
 	$subscription->get_status_enum(),
 	array( Subscription_Status::Cancelled, Subscription_Status::Expired, Subscription_Status::Switched, Subscription_Status::PendingCancel ),
 	true
 );
 
-// A term the customer agreed to, such as a minimum number of payments, can hold the button back.
-$subkit_cancel_refused = '';
-if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscription, get_current_user_id() ) ) {
-	$subkit_can_cancel     = false;
-	$subkit_cancel_refused = \SubKit\Frontend\MyAccount\Account_Endpoint::cancel_refused_message( $subscription );
-}
+// A term the customer agreed to, such as a minimum number of payments, can hold both buttons back.
+$subkit_term_allows    = $subkit_live && apply_filters( 'subkit_can_cancel', true, $subscription, get_current_user_id() );
+$subkit_can_cancel     = $subkit_term_allows && Cancellation_Policy::is_offered();
+$subkit_cancel_refused = $subkit_live && ! $subkit_can_cancel ? \SubKit\Frontend\MyAccount\Account_Endpoint::cancel_refused_message( $subscription ) : '';
 ?>
 
 <p class="subkit-back">
@@ -101,6 +100,15 @@ if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscrip
 					<?php wp_nonce_field( 'subkit_pro_' . $subscription->get_id() ); ?>
 					<input type="hidden" name="subkit_pro_action" value="<?php echo esc_attr( (string) $subkit_slug ); ?>" />
 					<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( (string) $subscription->get_id() ); ?>" />
+					<?php
+					/**
+					 * Fields an extension needs on one of its action forms, such as a reason for pausing.
+					 *
+					 * @param string                      $slug
+					 * @param \SubKit\Domain\Subscription $subscription
+					 */
+					do_action( 'subkit_myaccount_action_fields', (string) $subkit_slug, $subscription );
+					?>
 					<button type="submit" class="button subkit-btn"><?php echo esc_html( (string) $subkit_label ); ?></button>
 				</form>
 			<?php endforeach; ?>
@@ -130,7 +138,7 @@ if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscrip
 	<?php endif; ?>
 
 	<?php
-	$subkit_auto_offered = \SubKit\Lifecycle\Auto_Renewal::is_offered() && $subkit_can_cancel;
+	$subkit_auto_offered = \SubKit\Lifecycle\Auto_Renewal::is_offered() && $subkit_term_allows;
 	$subkit_auto_on      = \SubKit\Lifecycle\Auto_Renewal::is_on( $subscription );
 	?>
 	<?php if ( $subkit_auto_offered ) : ?>
@@ -180,33 +188,21 @@ if ( $subkit_can_cancel && ! apply_filters( 'subkit_can_cancel', true, $subscrip
 			<input type="hidden" name="subkit_action" value="cancel" />
 			<input type="hidden" name="subkit_subscription" value="<?php echo esc_attr( (string) $subscription->get_id() ); ?>" />
 
-			<?php if ( $subscription->get_next_payment() && ! $subkit_pending ) : ?>
-				<p class="subkit-cancel__paid-through">
-					<?php
+			<p class="subkit-cancel__effect">
+				<?php
+				if ( Cancellation_Policy::is_immediate() ) {
+					esc_html_e( 'Your subscription ends now, and access ends with it. There is no refund for the time left.', 'subkit-subscriptions' );
+				} elseif ( $subscription->get_next_payment() && ! $subkit_pending ) {
 					printf(
 						/* translators: %s: date the current period ends */
-						esc_html__( "You've paid through %s.", 'subkit-subscriptions' ),
+						esc_html__( 'Your subscription stays active until %s. You will not be charged again.', 'subkit-subscriptions' ),
 						esc_html( date_i18n( (string) get_option( 'date_format' ), strtotime( $subscription->get_next_payment() . ' UTC' ) ) )
 					);
-					?>
-				</p>
-			<?php endif; ?>
-
-			<label class="subkit-choice">
-				<input type="radio" name="subkit_when" value="period_end" checked="checked" />
-				<span>
-					<strong><?php esc_html_e( 'Cancel at the end of the period', 'subkit-subscriptions' ); ?></strong>
-					<em><?php esc_html_e( 'Keep access until the period ends. No more charges.', 'subkit-subscriptions' ); ?></em>
-				</span>
-			</label>
-
-			<label class="subkit-choice">
-				<input type="radio" name="subkit_when" value="immediate" />
-				<span>
-					<strong><?php esc_html_e( 'Cancel immediately', 'subkit-subscriptions' ); ?></strong>
-					<em><?php esc_html_e( 'Ends access today. No refund for the remaining days.', 'subkit-subscriptions' ); ?></em>
-				</span>
-			</label>
+				} else {
+					esc_html_e( 'Your subscription stays active until the end of the current period. You will not be charged again.', 'subkit-subscriptions' );
+				}
+				?>
+			</p>
 
 			<div class="subkit-cancel__actions">
 				<button type="submit" class="button subkit-btn"><?php esc_html_e( 'Cancel subscription', 'subkit-subscriptions' ); ?></button>

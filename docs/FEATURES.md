@@ -1,6 +1,6 @@
 # SubKit — Feature Inventory
 
-Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.21.1 and SubKit Pro 0.41.1, not from memory.
+Everything either plugin does, what tier it is in, and **how well it is actually proven**. Measured against the committed code at SubKit 0.22.0 and SubKit Pro 0.41.1, not from memory.
 
 Since 2026-09-24 both plugins have an integration suite (`tools/test.sh`, run in CI on PHP 8.1 and 8.4 — see [`TESTING.md`](TESTING.md)). **Run (suite)** below means a test in that suite drives the feature against a real WordPress and WooCommerce on every push. A gateway row stays **Mocked** even when the suite covers it: the gateway's HTTP is faked with `pre_http_request`.
 

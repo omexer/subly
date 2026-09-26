@@ -171,3 +171,38 @@ document.addEventListener( 'click', function ( event ) {
 	button.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
 	panel.hidden = ! open;
 } );
+
+// Settings rows marked data-subkit-show-if="<switch id>" show only while that switch, and its own parent, is on.
+( function () {
+	var rows = document.querySelectorAll( '[data-subkit-show-if]' );
+
+	if ( ! rows.length ) {
+		return;
+	}
+
+	function shown( row, depth ) {
+		var parent = document.getElementById( row.getAttribute( 'data-subkit-show-if' ) );
+
+		if ( ! parent || 'checkbox' !== parent.type || depth > 10 ) {
+			return true;
+		}
+
+		var parentRow = parent.closest( '[data-subkit-show-if]' );
+
+		return parent.checked && ( ! parentRow || shown( parentRow, depth + 1 ) );
+	}
+
+	function sync() {
+		rows.forEach( function ( row ) {
+			row.classList.toggle( 'is-hidden', ! shown( row, 0 ) );
+		} );
+	}
+
+	document.addEventListener( 'change', function ( event ) {
+		if ( event.target && 'checkbox' === event.target.type ) {
+			sync();
+		}
+	} );
+
+	sync();
+}() );
