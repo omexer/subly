@@ -100,7 +100,8 @@ class Renewal_Scheduler {
 		$subscription = wc_get_order( (int) $subscription_id );
 		$status       = $subscription instanceof Subscription ? $subscription->get_status_enum() : null;
 
-		if ( ! $subscription instanceof Subscription || ! $status || ! $status->is_billable() ) {
+		// Switched off after this was queued.
+		if ( ! $subscription instanceof Subscription || ! $status || ! $status->is_billable() || (int) get_option( 'subkit_renewal_reminder_days', 3 ) < 1 ) {
 			return;
 		}
 

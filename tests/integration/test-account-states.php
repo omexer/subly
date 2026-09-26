@@ -303,7 +303,9 @@ $harness->next = 'decline';
 $processor->process( $s5->get_id() );
 $s5    = wc_get_order( $s5->get_id() );
 $state = Status_Presenter::for( $s5 );
-$check( 'a declined card renewal keeps the failure wording', Subscription_Status::OnHold === $s5->get_status_enum() && 'Payment needed' === $state['label'] && "We couldn't take your last payment." === $state['detail'] && 'Pay now' === ( Status_Presenter::primary_action( $s5 )['label'] ?? '' ), array( $s5->get_status(), $state ) );
+// SubKit Pro, when active, gives a failed renewal a grace period, and the wording names its end.
+$failed = $s5->in_grace() ? sprintf( "We couldn't take your last payment. You keep access until %s.", wp_date( (string) get_option( 'date_format' ), (int) $s5->grace_ends_at() ) ) : "We couldn't take your last payment.";
+$check( 'a declined card renewal keeps the failure wording', Subscription_Status::OnHold === $s5->get_status_enum() && 'Payment needed' === $state['label'] && $failed === $state['detail'] && 'Pay now' === ( Status_Presenter::primary_action( $s5 )['label'] ?? '' ), array( $s5->get_status(), $state ) );
 
 $s6     = $make( Test_Gateway::ID, 20 * DAY_IN_SECONDS );
 $detail = $page( $s6->get_id() );

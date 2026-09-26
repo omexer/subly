@@ -37,10 +37,22 @@ class Payment_Failed extends Subscription_Email {
 	}
 
 	protected function intro(): string {
+		$amount = $this->amount( $this->related_order ? $this->related_order->get_total() : $this->subscription->get_total() );
+		$ends   = $this->subscription->in_grace() ? $this->subscription->grace_ends_at() : null;
+
+		if ( null !== $ends ) {
+			return sprintf(
+				/* translators: 1: amount, 2: date the grace period ends */
+				__( "We tried to charge %1\$s for your subscription today, but the payment didn't go through. You keep access until %2\$s. Pay before then to keep your subscription going.", 'subkit-subscriptions' ),
+				$amount,
+				$this->date( gmdate( 'Y-m-d H:i:s', $ends ) )
+			);
+		}
+
 		return sprintf(
 			/* translators: %s: amount */
 			__( "We tried to charge %s for your subscription today, but the payment didn't go through. Your subscription is on hold until it is paid.", 'subkit-subscriptions' ),
-			$this->amount( $this->related_order ? $this->related_order->get_total() : $this->subscription->get_total() )
+			$amount
 		);
 	}
 

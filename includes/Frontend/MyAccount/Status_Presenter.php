@@ -84,7 +84,7 @@ class Status_Presenter {
 			Subscription_Status::OnHold => array(
 				'label'  => __( 'Payment needed', 'subkit-subscriptions' ),
 				'tone'   => 'warning',
-				'detail' => __( "We couldn't take your last payment.", 'subkit-subscriptions' ),
+				'detail' => self::payment_needed( $subscription ),
 			),
 			Subscription_Status::PendingCancel => array(
 				'label'  => __( 'Cancelling', 'subkit-subscriptions' ),
@@ -113,6 +113,17 @@ class Status_Presenter {
 				'detail' => __( 'Waiting for the first payment to clear.', 'subkit-subscriptions' ),
 			),
 		};
+	}
+
+	private static function payment_needed( Subscription $subscription ): string {
+		$ends = $subscription->in_grace() ? $subscription->grace_ends_at() : null;
+
+		if ( null === $ends ) {
+			return __( "We couldn't take your last payment.", 'subkit-subscriptions' );
+		}
+
+		/* translators: %s: date the grace period ends */
+		return sprintf( __( "We couldn't take your last payment. You keep access until %s.", 'subkit-subscriptions' ), wp_date( (string) get_option( 'date_format' ), $ends ) );
 	}
 
 	/**

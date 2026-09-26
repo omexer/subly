@@ -588,6 +588,16 @@ class Renewal_Processor {
 
 	private function decline( Subscription $subscription, \WC_Order $order, Charge_Result $result ): void {
 		$order->update_status( 'failed', $result->describe() );
+
+		/**
+		 * Fires before a declined renewal puts the subscription on hold, so a grace period can start before access is reconsidered.
+		 *
+		 * @param Subscription  $subscription Not saved yet; the hold that follows saves it.
+		 * @param \WC_Order     $order
+		 * @param Charge_Result $result
+		 */
+		do_action( 'subkit_before_failed_renewal_hold', $subscription, $order, $result );
+
 		$this->hold( $subscription, $result->describe() );
 
 		do_action( 'subkit_renewal_failed', $subscription, $order, $result );

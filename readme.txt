@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.22.0
+Stable tag: 0.23.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,10 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.23.0 =
+* **Customers keep access during the grace period.** When a renewal payment fails, the subscription waits on hold but the customer keeps their role, downloads and members-only content until the grace period ends. If it is still unpaid then, access ends. My Account and the payment-failed email say until when.
+* Renewal & Billing reads more plainly: the grace period explains that retries happen within it, and the renewal reminder is set as "days before renewal" (0 turns it off). A reminder queued before it was turned off is no longer sent.
 
 = 0.22.0 =
 * **New settings screen.** SubKit → Settings is reorganised into General, Customer Controls, Renewal & Billing, Upgrade & Downgrade, Cart & Checkout, Shipping, Notifications, Payments and Integrations, with switches for on/off settings. Settings that depend on another appear only when it is switched on. Every setting keeps its value.

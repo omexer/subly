@@ -63,12 +63,16 @@ class Downloadable_Access {
 		$subscriptions = Subscription_Query::get(
 			array(
 				'customer_id' => $user_id,
-				'status'      => array( Subscription_Status::Active->value, Subscription_Status::Trialling->value, Subscription_Status::PendingCancel->value ),
+				'status'      => array( Subscription_Status::Active->value, Subscription_Status::Trialling->value, Subscription_Status::PendingCancel->value, Subscription_Status::OnHold->value ),
 				'limit'       => 50,
 			)
 		);
 
 		foreach ( $subscriptions as $subscription ) {
+			if ( Subscription_Status::OnHold === $subscription->get_status_enum() && ! $subscription->in_grace() ) {
+				continue;
+			}
+
 			foreach ( $subscription->get_items() as $item ) {
 				if ( (int) $item->get_product_id() === $product_id || (int) $item->get_variation_id() === $product_id ) {
 					$found = true;

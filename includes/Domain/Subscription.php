@@ -183,6 +183,30 @@ class Subscription extends \WC_Order {
 		do_action( 'subkit_subscription_status_changed', $this, $from instanceof Subscription_Status ? $from->value : '', $to->value );
 	}
 
+	/**
+	 * When the grace period after a failed renewal ends, as a timestamp; null when there is none.
+	 */
+	public function grace_ends_at(): ?int {
+		/**
+		 * The end of this subscription's grace period after a failed renewal. SubKit alone gives none.
+		 *
+		 * @param int|null     $ends
+		 * @param Subscription $subscription
+		 */
+		$ends = apply_filters( 'subkit_grace_ends_at', null, $this );
+
+		return is_numeric( $ends ) ? (int) $ends : null;
+	}
+
+	/**
+	 * On hold after a failed renewal and still inside the grace period, so it keeps its access.
+	 */
+	public function in_grace(): bool {
+		$ends = Subscription_Status::OnHold === $this->get_status_enum() ? $this->grace_ends_at() : null;
+
+		return null !== $ends && time() < $ends;
+	}
+
 	// -------------------------------------------------------------- schedule props
 
 	public function get_billing_period( $context = 'view' ) {

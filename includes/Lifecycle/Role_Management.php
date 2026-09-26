@@ -48,6 +48,7 @@ class Role_Management {
 
 	public function register(): void {
 		add_action( 'subkit_subscription_status_changed', array( $this, 'on_status_change' ), 10, 3 );
+		add_action( 'subkit_subscription_grace_ended', array( $this, 'demote' ) );
 	}
 
 	/**
@@ -72,9 +73,17 @@ class Role_Management {
 			return;
 		}
 
+		if ( ! $subscription->in_grace() ) {
+			$this->demote( $subscription );
+		}
+	}
+
+	public function demote( Subscription $subscription ): void {
+		$user = $this->user_for( $subscription );
+
 		// Only demote once nothing else is keeping them in: a customer with two
 		// subscriptions must not lose access because one of them lapsed.
-		if ( ! $this->has_another_live_subscription( $user->ID, $subscription->get_id() ) ) {
+		if ( $user && ! $this->has_another_live_subscription( $user->ID, $subscription->get_id() ) ) {
 			$this->apply( $user, (string) get_option( self::OPTION_INACTIVE, '' ) );
 		}
 	}
@@ -137,7 +146,23 @@ class Role_Management {
 			)
 		);
 
-		return (bool) array_diff( $ids, array( $exclude_id ) );
+		if ( array_diff( $ids, array( $exclude_id ) ) ) {
+			return true;
+		}
+
+		foreach ( Subscription_Query::get(
+			array(
+				'customer_id' => $user_id,
+				'status'      => array( Subscription_Status::OnHold->value ),
+				'limit'       => -1,
+			)
+		) as $held ) {
+			if ( $held->get_id() !== $exclude_id && $held->in_grace() ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function user_for( Subscription $subscription ): ?\WP_User {
