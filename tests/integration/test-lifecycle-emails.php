@@ -2,7 +2,7 @@
 /**
  * The renewal reminder and the store notifications: scheduled at the right time, sent to the right person.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Renewal_Scheduler;

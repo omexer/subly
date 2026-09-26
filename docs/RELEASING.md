@@ -1,6 +1,6 @@
 # Releasing
 
-How a version of SubKit or SubKit Pro goes from `main` to a zip a store can install. The two plugins release the same way; the differences are at the end.
+How a version of EasySubscription or EasySubscription Pro goes from `main` to a zip a store can install. The two plugins release the same way; the differences are at the end.
 
 ---
 
@@ -119,7 +119,7 @@ Every push to `main` and every pull request also builds the zip in CI, as the **
 
 ---
 
-## Differences for SubKit Pro
+## Differences for EasySubscription Pro
 
 - **Release notes** come from `CHANGELOG.md`, since Pro is not on wordpress.org and has no `readme.txt`. Without an entry for the version, they fall back to the commits since the previous tag.
 - **When Pro needs a newer free plugin**, raise its minimum in the same bump: `tools/bump-version.sh X.Y.Z --min-free A.B.C`.

@@ -84,7 +84,7 @@ class Settings extends \WC_Settings_Page {
 			),
 			array(
 				'title'    => __( 'Delete data when the plugin is deleted', 'subkit-subscriptions' ),
-				'desc'     => __( 'Remove SubKit\'s settings and its own database tables on uninstall', 'subkit-subscriptions' ),
+				'desc'     => __( 'Remove EasySubscription\'s settings and its own database tables on uninstall', 'subkit-subscriptions' ),
 				'type'     => 'checkbox',
 				'id'       => 'subkit_delete_data_on_uninstall',
 				'default'  => 'no',
@@ -112,7 +112,7 @@ class Settings extends \WC_Settings_Page {
 				'type'     => 'checkbox',
 				'id'       => \SubKit\Lifecycle\Early_Renewal::OPTION,
 				'default'  => 'no',
-				'desc_tip' => __( 'Only offered for cards SubKit charges itself, never for PayPal, which bills from a plan of its own.', 'subkit-subscriptions' ),
+				'desc_tip' => __( 'Only offered for cards EasySubscription charges itself, never for PayPal, which bills from a plan of its own.', 'subkit-subscriptions' ),
 			),
 			array(
 				'title'   => __( 'Allow customers to cancel', 'subkit-subscriptions' ),
@@ -250,7 +250,7 @@ class Settings extends \WC_Settings_Page {
 			array(
 				'title' => __( 'PayPal Subscriptions', 'subkit-subscriptions' ),
 				'type'  => 'title',
-				'desc'  => __( 'PayPal manages the billing schedule itself and tells SubKit about each payment by webhook. Add the webhook URL below to your PayPal app before going live, or renewals will not be recorded.', 'subkit-subscriptions' ),
+				'desc'  => __( 'PayPal manages the billing schedule itself and tells EasySubscription about each payment by webhook. Add the webhook URL below to your PayPal app before going live, or renewals will not be recorded.', 'subkit-subscriptions' ),
 				'id'    => 'subkit_paypal_title',
 			),
 			array(
@@ -284,7 +284,7 @@ class Settings extends \WC_Settings_Page {
 			),
 			array(
 				'title'    => __( 'Webhook ID', 'subkit-subscriptions' ),
-				'desc'     => __( 'From your PayPal app, after you add the webhook URL below. Without it SubKit cannot verify that a webhook really came from PayPal, and will reject every one.', 'subkit-subscriptions' ),
+				'desc'     => __( 'From your PayPal app, after you add the webhook URL below. Without it EasySubscription cannot verify that a webhook really came from PayPal, and will reject every one.', 'subkit-subscriptions' ),
 				'id'       => 'subkit_paypal_webhook_id',
 				'type'     => 'text',
 				'css'      => 'width:26rem',
@@ -314,7 +314,7 @@ class Settings extends \WC_Settings_Page {
 			array(
 				'title' => __( 'Stripe', 'subkit-subscriptions' ),
 				'type'  => 'title',
-				'desc'  => __( 'Cards are collected by Stripe and charged again automatically when a renewal falls due. SubKit keeps the schedule; Stripe only stores the card.', 'subkit-subscriptions' ),
+				'desc'  => __( 'Cards are collected by Stripe and charged again automatically when a renewal falls due. EasySubscription keeps the schedule; Stripe only stores the card.', 'subkit-subscriptions' ),
 				'id'    => 'subkit_stripe_title',
 			),
 			array(
@@ -432,7 +432,7 @@ class Settings extends \WC_Settings_Page {
 		}
 
 		if ( $ids ) {
-			echo '<p class="description">' . esc_html__( 'These subscriptions were created before SubKit stored prices without tax. Because this store enters prices with tax, each renewal adds tax on top of a price that already includes it. Repair stores the price without tax, so renewals charge what the customer paid at checkout. Customers already charged extra may be owed a refund: check their past renewal orders.', 'subkit-subscriptions' ) . '</p>';
+			echo '<p class="description">' . esc_html__( 'These subscriptions were created before EasySubscription stored prices without tax. Because this store enters prices with tax, each renewal adds tax on top of a price that already includes it. Repair stores the price without tax, so renewals charge what the customer paid at checkout. Customers already charged extra may be owed a refund: check their past renewal orders.', 'subkit-subscriptions' ) . '</p>';
 
 			printf(
 				'<table class="widefat striped"><thead><tr><th>%s</th><th>%s</th><th>%s</th><th></th></tr></thead><tbody>',
@@ -536,7 +536,7 @@ class Settings extends \WC_Settings_Page {
 				'label' => __( 'Double-charge protection', 'subkit-subscriptions' ),
 				'ok'    => $migrator->charge_slot_guard_intact(),
 				'good'  => __( 'Active', 'subkit-subscriptions' ),
-				'bad'   => __( 'The unique index on the charge ledger is missing. Deactivate and reactivate SubKit.', 'subkit-subscriptions' ),
+				'bad'   => __( 'The unique index on the charge ledger is missing. Deactivate and reactivate EasySubscription.', 'subkit-subscriptions' ),
 			),
 			array(
 				'label' => __( 'Renewal tax', 'subkit-subscriptions' ),

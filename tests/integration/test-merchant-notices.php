@@ -2,7 +2,7 @@
 /**
  * The merchant is told about subscriptions renewing with tax added twice, and about renewals waiting too long on their payment provider.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Admin\Notice_Dismissals;
@@ -168,7 +168,7 @@ $listed = static function () use ( $repair ): array {
 	return $repair->affected_ids();
 };
 $base   = count( $listed() );
-$says   = static fn( string $html, int $count ): bool => str_contains( $html, 'SubKit: ' . $count . ' subscription' . ( 1 === $count ? ' renews' : 's renew' ) . ' with tax added twice' );
+$says   = static fn( string $html, int $count ): bool => str_contains( $html, 'EasySubscription: ' . $count . ' subscription' . ( 1 === $count ? ' renews' : 's renew' ) . ' with tax added twice' );
 
 echo "\n1. Tax added twice: the notice\n";
 $html = $notice();
@@ -204,7 +204,7 @@ $check( 'dismissed again at the higher count', '' === $notice() );
 
 echo "\n3. Repairing\n";
 $repaired = $call( array( $repair, 'handle' ), array( 'subscription' => (string) $second->get_id(), 'from' => 'subkit', '_wpnonce' => wp_create_nonce( Renewal_Tax_Repair::ACTION . '_' . $second->get_id() ) ) );
-$check( 'a repair from SubKit → Settings returns there', 'redirect:' . add_query_arg( array( 'subkit_tax_repaired' => $second->get_id(), 'subkit_tax_repair_failed' => 0 ), Settings_Page::section_url() ) === $repaired, $repaired );
+$check( 'a repair from EasySubscription → Settings returns there', 'redirect:' . add_query_arg( array( 'subkit_tax_repaired' => $second->get_id(), 'subkit_tax_repair_failed' => 0 ), Settings_Page::section_url() ) === $repaired, $repaired );
 $check( 'and it was repaired', ! in_array( $second->get_id(), $repair->affected_ids(), true ) && (float) wc_get_order( $second->get_id() )->get_total_tax() > 0 );
 $check( 'with one fewer, the notice stays dismissed', '' === $notice() );
 

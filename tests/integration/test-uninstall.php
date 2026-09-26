@@ -2,7 +2,7 @@
 /**
  * Deleting the plugin removes its own data only when asked, and never touches subscriptions.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 require __DIR__ . '/bootstrap.php';

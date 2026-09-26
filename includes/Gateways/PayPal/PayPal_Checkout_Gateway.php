@@ -25,7 +25,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		private readonly PayPal_Plans $plans
 	) {
 		$this->id                 = self::ID;
-		$this->method_title       = __( 'PayPal Subscriptions (SubKit)', 'subkit-subscriptions' );
+		$this->method_title       = __( 'PayPal Subscriptions (EasySubscription)', 'subkit-subscriptions' );
 		$this->method_description = __( 'Lets customers start a subscription with PayPal. Configure the credentials under WooCommerce → Settings → Subscriptions → PayPal.', 'subkit-subscriptions' );
 		$this->has_fields         = false;
 		$this->supports           = array( 'products' );

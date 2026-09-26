@@ -48,7 +48,7 @@ class Setup_Guide {
 
 		printf(
 			'<div class="notice notice-success"><p><strong>%s</strong> %s</p><p><a class="button button-primary" href="%s">%s</a> <a href="%s">%s</a></p></div>',
-			esc_html__( 'SubKit is active.', 'subkit-subscriptions' ),
+			esc_html__( 'EasySubscription is active.', 'subkit-subscriptions' ),
 			esc_html__( 'Turn any product into a subscription in about two minutes.', 'subkit-subscriptions' ),
 			esc_url( add_query_arg( array( 'page' => Menu::SLUG ), admin_url( 'admin.php' ) ) ),
 			esc_html__( 'Set up subscriptions', 'subkit-subscriptions' ),
@@ -204,7 +204,7 @@ class Setup_Guide {
 		$subscription->set_billing_period( 'month' );
 		$subscription->set_billing_interval( 1 );
 		$subscription->set_payment_method( Test_Gateway::ID );
-		$subscription->set_payment_method_title( __( 'SubKit self-test', 'subkit-subscriptions' ) );
+		$subscription->set_payment_method_title( __( 'EasySubscription self-test', 'subkit-subscriptions' ) );
 		$subscription->set_next_payment( gmdate( 'Y-m-d H:i:s', time() - MINUTE_IN_SECONDS ) );
 		$subscription->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
 		$subscription->update_meta_data( '_subkit_is_test', 'yes' );

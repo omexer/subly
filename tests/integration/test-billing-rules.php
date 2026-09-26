@@ -2,10 +2,10 @@
 /**
  * Renewal and billing rules the free plugin owns: the renewal reminder switch, where the
  * grace and renewal settings sit, and what a grace period means for roles, files and the
- * words a customer reads. SubKit alone gives no grace period; one is supplied here the way
- * SubKit Pro supplies it, through subkit_grace_ends_at.
+ * words a customer reads. EasySubscription alone gives no grace period; one is supplied here the way
+ * EasySubscription Pro supplies it, through subkit_grace_ends_at.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Renewal_Scheduler;

@@ -2,7 +2,7 @@
 /**
  * A customer can act on their own subscription and nobody else's, even holding a valid nonce.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

@@ -2,7 +2,7 @@
 /**
  * A card taken at Stripe checkout can be charged again at renewal.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

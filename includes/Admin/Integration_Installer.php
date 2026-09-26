@@ -36,7 +36,7 @@ class Integration_Installer {
 		$slug = isset( $_POST['slug'] ) ? sanitize_key( wp_unslash( $_POST['slug'] ) ) : '';
 
 		if ( '' === $slug || ! in_array( $slug, $this->allowed(), true ) ) {
-			wp_send_json_error( array( 'message' => __( 'That is not an integration SubKit offers.', 'subkit-subscriptions' ) ), 400 );
+			wp_send_json_error( array( 'message' => __( 'That is not an integration EasySubscription offers.', 'subkit-subscriptions' ) ), 400 );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';

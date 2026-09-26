@@ -47,18 +47,18 @@ class Help_Page {
 		$migrator  = new Migrator();
 
 		$rows = array(
-			'SubKit'      => defined( 'SUBKIT_VERSION' ) ? SUBKIT_VERSION : '?',
-			'SubKit Pro'  => defined( 'SUBKIT_PRO_VERSION' ) ? SUBKIT_PRO_VERSION : __( 'not installed', 'subkit-subscriptions' ),
-			'WordPress'   => get_bloginfo( 'version' ),
-			'WooCommerce' => defined( 'WC_VERSION' ) ? WC_VERSION : '?',
-			'PHP'         => PHP_VERSION,
-			'MySQL'       => $wpdb->db_version(),
-			'Theme'       => wp_get_theme()->get( 'Name' ) . ' ' . wp_get_theme()->get( 'Version' ),
-			'Locale'      => get_locale(),
-			'Currency'    => get_woocommerce_currency(),
-			'Timezone'    => wp_timezone_string(),
-			'HPOS'        => $this->hpos() ? 'yes' : 'no',
-			'Site URL'    => (string) get_option( 'siteurl' ),
+			'EasySubscription'     => defined( 'SUBKIT_VERSION' ) ? SUBKIT_VERSION : '?',
+			'EasySubscription Pro' => defined( 'SUBKIT_PRO_VERSION' ) ? SUBKIT_PRO_VERSION : __( 'not installed', 'subkit-subscriptions' ),
+			'WordPress'            => get_bloginfo( 'version' ),
+			'WooCommerce'          => defined( 'WC_VERSION' ) ? WC_VERSION : '?',
+			'PHP'                  => PHP_VERSION,
+			'MySQL'                => $wpdb->db_version(),
+			'Theme'                => wp_get_theme()->get( 'Name' ) . ' ' . wp_get_theme()->get( 'Version' ),
+			'Locale'               => get_locale(),
+			'Currency'             => get_woocommerce_currency(),
+			'Timezone'             => wp_timezone_string(),
+			'HPOS'                 => $this->hpos() ? 'yes' : 'no',
+			'Site URL'             => (string) get_option( 'siteurl' ),
 		);
 
 		$rows['Renewal queue'] = $scheduler instanceof Renewal_Scheduler && $scheduler->queue_is_healthy() ? 'healthy' : 'overdue tasks';

@@ -2,7 +2,7 @@
 /**
  * A cancellation made from the admin tells the customer, as one made in My Account does.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

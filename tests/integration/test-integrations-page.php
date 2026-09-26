@@ -2,7 +2,7 @@
 /**
  * Each Integrations tile says where that integration is set up.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 require __DIR__ . '/bootstrap.php';

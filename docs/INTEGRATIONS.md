@@ -3,7 +3,7 @@
 An integration hands a subscription to the plugin that grants what the customer is paying
 for — a course, a mailing list, a licence key — and takes it back when they stop paying.
 
-All of them are **SubKit Pro** — thirteen as of Pro 0.39.1. Find them under **SubKit → Integrations**: a card for each,
+All of them are **EasySubscription Pro** — thirteen as of Pro 0.39.1. Find them under **EasySubscription → Integrations**: a card for each,
 grouped by what it connects to, saying what it does, which plugin it needs, whether that
 plugin is active right now, and — for plugins on WordPress.org — an Install button.
 
@@ -29,7 +29,7 @@ because nothing was lost.
 **On a variable product, configure the parent.** Variations use the parent product's
 integration settings (Pro 0.39.0; before that they were silently skipped). A once-only
 background job granted the missing access to live variable subscriptions. LearnDash, Tutor
-LMS, LearnPress, MailPoet, FluentCRM and WP Fusion do not record what SubKit added, so when
+LMS, LearnPress, MailPoet, FluentCRM and WP Fusion do not record what EasySubscription added, so when
 such a subscription ends they remove everything the product configures — including access you
 may have granted by hand.
 
@@ -106,7 +106,7 @@ the tags belonging to statuses the customer no longer holds are removed — but 
 another of their subscriptions is in that status.
 
 This is the most flexible of the three, because your CRM automations key off the tags rather
-than off SubKit. A "win back" sequence triggers on the Cancelled tag; a dunning nudge on the
+than off EasySubscription. A "win back" sequence triggers on the Cancelled tag; a dunning nudge on the
 On hold one.
 
 The Integrations screen installs WP Fusion Lite from WordPress.org.
@@ -124,10 +124,10 @@ The Integrations screen installs WP Fusion Lite from WordPress.org.
 any type they already have.
 **Any other status** → they leave the groups and lose the type.
 
-SubKit records what it added and removes only that. A group or type the customer already had,
+EasySubscription records what it added and removes only that. A group or type the customer already had,
 joined on their own, or gets from another live subscription is left alone, as are group
 admins, moderators and banned members (removing a banned member's row would lift the ban). If
-someone else removes them or changes the type, SubKit forgets its record.
+someone else removes them or changes the type, EasySubscription forgets its record.
 
 > Run against BuddyPress 14.5.2. BuddyBoss Platform 3.5.0 was read from source only.
 
@@ -137,7 +137,7 @@ someone else removes them or changes the type, SubKit forgets its record.
 
 ### AffiliateWP
 
-**Configure:** **SubKit → Settings → AffiliateWP** — **Commission on renewals** (off by
+**Configure:** **EasySubscription → Settings → AffiliateWP** — **Commission on renewals** (off by
 default), **Renewal rate (%)** (blank uses AffiliateWP's own rate for that affiliate and
 product), **Renewals that earn** (0 for every renewal).
 
@@ -145,7 +145,7 @@ product), **Renewals that earn** (0 for every renewal).
 renewal, in AffiliateWP's WooCommerce context, so AffiliateWP's own refund and cancel handling
 applies. It earns only when the first referral is unpaid or paid, the affiliate is active and
 the product is not excluded.
-**Renewal fails or is cancelled** → that renewal's unpaid SubKit referral is rejected.
+**Renewal fails or is cancelled** → that renewal's unpaid EasySubscription referral is rejected.
 **Refund** → follows AffiliateWP's "reject on refund" setting.
 
 A renewal is never credited twice, including alongside AffiliateWP's Recurring Referrals
@@ -161,9 +161,9 @@ never earns.
 
 ### WhatsApp
 
-Not a plugin: SubKit Pro talks to the **Meta WhatsApp Cloud API** directly.
+Not a plugin: EasySubscription Pro talks to the **Meta WhatsApp Cloud API** directly.
 
-**Configure:** **SubKit → Settings → WhatsApp** — **Enable WhatsApp**, **Phone number ID**,
+**Configure:** **EasySubscription → Settings → WhatsApp** — **Enable WhatsApp**, **Phone number ID**,
 **Access token**, **App secret**, **Webhook verify token**, then for each event an approved
 **Template name**, **Template language** and **Body variables**. An event with no template
 sends nothing.
@@ -208,7 +208,7 @@ filtered by product and by status inside AutomatorWP.
 Needs AutomateWoo **6.2.3 or newer**, and Pro's subscription webhooks module (it rides the
 same events). Sold commercially, so the screen links out.
 
-**Configure:** nothing on the product. In AutomateWoo, SubKit subscriptions get:
+**Configure:** nothing on the product. In AutomateWoo, EasySubscription subscriptions get:
 
 | | |
 |---|---|
@@ -258,7 +258,7 @@ licence key every month.
 
 ## Installing them
 
-Where the plugin is on WordPress.org, **SubKit → Integrations** installs and activates it in
+Where the plugin is on WordPress.org, **EasySubscription → Integrations** installs and activates it in
 place — no round trip through the Plugins screen. Eight of the thirteen work this way: Tutor
 LMS, LearnPress, MailPoet, FluentCRM, WP Fusion Lite, AutomatorWP, License Manager for
 WooCommerce and BuddyPress.

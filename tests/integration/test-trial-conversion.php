@@ -2,7 +2,7 @@
 /**
  * A free trial signs up for nothing, keeps its card, and converts to a paid renewal at the real price.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

@@ -2,7 +2,7 @@
 /**
  * Subscriptions created before lines were stored without tax are listed, and a repair makes their renewals match checkout.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Renewal_Tax_Repair;

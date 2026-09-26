@@ -2,7 +2,7 @@
 /**
  * Both My Account screens render a real subscription without notices.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;
@@ -35,7 +35,7 @@ $text = preg_replace( '/\s+/', ' ', wp_strip_all_tags( $detail ) );
 $check( 'the detail renders', '' !== trim( $detail ) );
 $check( 'with its line item', str_contains( $detail, 'Render Probe Item' ), substr( $text, 0, 200 ) );
 $check( 'and the cancel form, which reads the renamed $can_cancel', str_contains( $detail, 'Cancel subscription' ), substr( $text, 0, 200 ) );
-$check( 'no PHP notices from SubKit while rendering', array() === $notices, $notices );
+$check( 'no PHP notices from EasySubscription while rendering', array() === $notices, $notices );
 
 restore_error_handler();
 $s->delete( true );

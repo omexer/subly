@@ -26,7 +26,7 @@ class Gateway_Notice {
 		}
 
 		$this->notice(
-			__( 'SubKit is not offering a payment method at checkout.', 'subkit-subscriptions' ),
+			__( 'EasySubscription is not offering a payment method at checkout.', 'subkit-subscriptions' ),
 			array_merge( $this->stripe(), $this->paypal_credentials() ),
 			$this->stripe() ? 'stripe' : 'paypal'
 		);
@@ -139,7 +139,7 @@ class Gateway_Notice {
 		}
 
 		return array(
-			__( 'PayPal is switched on but has no webhook ID. Customers can pay, and PayPal will keep charging them, but SubKit cannot verify what PayPal sends back — so renewals are rejected and never show against the subscription.', 'subkit-subscriptions' ),
+			__( 'PayPal is switched on but has no webhook ID. Customers can pay, and PayPal will keep charging them, but EasySubscription cannot verify what PayPal sends back — so renewals are rejected and never show against the subscription.', 'subkit-subscriptions' ),
 		);
 	}
 }

@@ -39,7 +39,7 @@ class Page_Shell {
 			'<a class="subkit-crumbs__home" href="%s">%s<span>%s</span></a>',
 			esc_url( $home ),
 			self::mark(), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
-			esc_html__( 'SubKit', 'subkit-subscriptions' )
+			esc_html__( 'EasySubscription', 'subkit-subscriptions' )
 		);
 
 		$last = count( $crumbs ) - 1;
@@ -115,7 +115,7 @@ class Page_Shell {
 		printf(
 			'</div><footer class="subkit-shell__foot">%s &middot; <a href="%s">%s</a></footer></div>',
 			/* translators: %s: version number */
-			esc_html( sprintf( __( 'SubKit %s', 'subkit-subscriptions' ), SUBKIT_VERSION ) ),
+			esc_html( sprintf( __( 'EasySubscription %s', 'subkit-subscriptions' ), SUBKIT_VERSION ) ),
 			esc_url( admin_url( 'admin.php?page=' . Menu::SLUG . '-help' ) ),
 			esc_html__( 'Help and system report', 'subkit-subscriptions' )
 		);

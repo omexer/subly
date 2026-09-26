@@ -2,7 +2,7 @@
 /**
  * The renewal lock has exactly one holder, even when the options cache is stale or two workers take over an expired lock at once.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Lock;

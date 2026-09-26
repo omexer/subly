@@ -2,7 +2,7 @@
 /**
  * What a subscription costs today: trials, sign-up fees, coupons, and the payment step a zero total would skip.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 require __DIR__ . '/bootstrap.php';

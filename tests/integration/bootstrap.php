@@ -2,12 +2,12 @@
 /**
  * Shared by every integration test.
  *
- * Each test is run through `wp eval-file`, so WordPress, WooCommerce and SubKit are loaded
+ * Each test is run through `wp eval-file`, so WordPress, WooCommerce and EasySubscription are loaded
  * and this file shares the test's scope: it leaves `$check` and `$fail` behind for the test
  * to use, and the fixtures every test can rely on. A test ends with subkit_test_done( $fail ),
  * which exits non-zero on any failure so the runner — and CI — sees it.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 if ( ! defined( 'ABSPATH' ) ) {

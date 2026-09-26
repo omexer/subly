@@ -2,7 +2,7 @@
 /**
  * A declined renewal paid through its payment link settles once, keeps the new card, and is never charged again.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Renewal_Processor;

@@ -2,7 +2,7 @@
 /**
  * A subscription cancelled "at the end of the period" really ends when that period does.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Renewal_Scheduler;

@@ -1,10 +1,10 @@
-=== SubKit – Subscriptions for WooCommerce ===
+=== EasySubscription – Subscriptions for WooCommerce ===
 Contributors: pronob1010
 Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.23.0
+Stable tag: 0.24.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Sell subscriptions in WooCommerce: recurring billing, free trials, Stripe and Pa
 
 == Description ==
 
-SubKit turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
+EasySubscription turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
 
 **This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real Stripe or PayPal account (or any other gateway's sandbox), and no renewal has yet been watched happening on its own over time.
 
@@ -28,9 +28,9 @@ SubKit turns WooCommerce products into subscriptions and runs the renewal billin
 = Taking payment =
 
 * **Stripe** saves the card at checkout and renewals are charged automatically. A renewal that needs 3-D Secure sends the customer to Stripe's own page to confirm it.
-* **PayPal** runs the schedule itself, and SubKit keeps in step through PayPal's webhooks.
+* **PayPal** runs the schedule itself, and EasySubscription keeps in step through PayPal's webhooks.
 * With no gateway at all, renewals become invoices the customer pays by hand.
-* Payments that are confirmed days later — Direct Debit and bank payments — wait as pending: the customer keeps access, the renewal order waits on hold so it cannot be paid twice, and SubKit never retries or re-charges it. The gateway settles it once the money is confirmed or refused.
+* Payments that are confirmed days later — Direct Debit and bank payments — wait as pending: the customer keeps access, the renewal order waits on hold so it cannot be paid twice, and EasySubscription never retries or re-charges it. The gateway settles it once the money is confirmed or refused.
 * A failed or waiting renewal can be paid from its payment link. Paying it restarts the subscription exactly once, keeps the card it was paid with for later renewals, and is never charged again.
 * A safeguard in the database means a renewal can never be charged twice, even when two processes try at the same moment.
 * A charge whose result never arrived is checked with the gateway, not simply tried again.
@@ -56,7 +56,7 @@ SubKit turns WooCommerce products into subscriptions and runs the renewal billin
 * Integrations and Help screens, with a system report that never contains your keys.
 * A REST API for subscriptions, authenticated with WooCommerce's own API keys.
 
-= SubKit Pro =
+= EasySubscription Pro =
 
 A separate plugin adds:
 
@@ -73,8 +73,8 @@ None of Pro's gateways has been run against a real sandbox yet either.
 
 1. Install and activate WooCommerce 8.0 or newer.
 2. Upload the `subkit-subscriptions` folder to `/wp-content/plugins/`, or upload the ZIP from **Plugins → Add New → Upload Plugin**.
-3. Activate SubKit.
-4. Open **SubKit → Home** and follow the setup checklist: connect a payment method, create a subscription product, and run a test renewal.
+3. Activate EasySubscription.
+4. Open **EasySubscription → Home** and follow the setup checklist: connect a payment method, create a subscription product, and run a test renewal.
 
 To turn a product into a subscription yourself, edit it and choose **Subscription** in the **Product data** dropdown.
 
@@ -86,7 +86,7 @@ Not yet. The renewal engine is built and tested against a running WordPress, and
 
 = Which payment methods can renew automatically? =
 
-Stripe and PayPal, both included. SubKit Pro adds Square, Braintree, Authorize.net, Mollie, Xendit and WooPayments renewals against the payment method those plugins saved at checkout, and its own checkouts for Razorpay (UPI Autopay), GoCardless Direct Debit and Adyen; Paddle bills its own schedule, as PayPal does. bKash and SSLCommerz cannot charge a customer again automatically, so Pro emails each renewal as a payment link. Without any of them, each renewal is an invoice the customer pays.
+Stripe and PayPal, both included. EasySubscription Pro adds Square, Braintree, Authorize.net, Mollie, Xendit and WooPayments renewals against the payment method those plugins saved at checkout, and its own checkouts for Razorpay (UPI Autopay), GoCardless Direct Debit and Adyen; Paddle bills its own schedule, as PayPal does. bKash and SSLCommerz cannot charge a customer again automatically, so Pro emails each renewal as a payment link. Without any of them, each renewal is an invoice the customer pays.
 
 = What happens to a Direct Debit renewal while it clears? =
 
@@ -106,8 +106,8 @@ Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS table
 
 == External services ==
 
-SubKit talks to a payment provider only when you have switched that provider on and entered
-its credentials. Nothing is sent anywhere by default, and SubKit sends nothing to its own
+EasySubscription talks to a payment provider only when you have switched that provider on and entered
+its credentials. Nothing is sent anywhere by default, and EasySubscription sends nothing to its own
 author or to any analytics service.
 
 = Stripe =
@@ -131,7 +131,7 @@ Used to create and run the billing plan, when PayPal is enabled under
 
 Requests go to `https://api-m.paypal.com`, or to `https://api-m.sandbox.paypal.com` when the
 environment is set to Sandbox. They are made when a subscription product is bought, and
-whenever PayPal notifies the site of a payment so SubKit can verify that the notification is
+whenever PayPal notifies the site of a payment so EasySubscription can verify that the notification is
 genuine. What is sent: the product name, the price, currency and billing cycle of the plan
 including any free trial or sign-up fee, the order number, the customer's first name, last
 name and billing email, this site's name and the addresses PayPal returns the customer to,
@@ -149,7 +149,7 @@ does. It happens only when you click Install, and sends only the plugin's slug.
 
 == Source code ==
 
-The JavaScript for SubKit's admin screens is bundled, and its unbundled source ships in this
+The JavaScript for EasySubscription's admin screens is bundled, and its unbundled source ships in this
 plugin's `src/` directory alongside the build configuration. To rebuild it:
 
 `npm install`
@@ -167,18 +167,21 @@ included in the plugin.
 
 == Changelog ==
 
+= 0.24.0 =
+* **SubKit is now EasySubscription.** The plugin, its menus, screens, notices and emails use the new name. Nothing else changes: settings, subscriptions, data and URLs stay exactly as they were.
+
 = 0.23.0 =
 * **Customers keep access during the grace period.** When a renewal payment fails, the subscription waits on hold but the customer keeps their role, downloads and members-only content until the grace period ends. If it is still unpaid then, access ends. My Account and the payment-failed email say until when.
 * Renewal & Billing reads more plainly: the grace period explains that retries happen within it, and the renewal reminder is set as "days before renewal" (0 turns it off). A reminder queued before it was turned off is no longer sent.
 
 = 0.22.0 =
-* **New settings screen.** SubKit → Settings is reorganised into General, Customer Controls, Renewal & Billing, Upgrade & Downgrade, Cart & Checkout, Shipping, Notifications, Payments and Integrations, with switches for on/off settings. Settings that depend on another appear only when it is switched on. Every setting keeps its value.
+* **New settings screen.** EasySubscription → Settings is reorganised into General, Customer Controls, Renewal & Billing, Upgrade & Downgrade, Cart & Checkout, Shipping, Notifications, Payments and Integrations, with switches for on/off settings. Settings that depend on another appear only when it is switched on. Every setting keeps its value.
 * **Customer controls.** Choose whether customers may cancel from their account, and when a cancellation takes effect: at the end of the billing cycle (the default) or immediately. Customers are no longer asked to choose; the cancel form says which applies.
 
 = 0.21.1 =
-* **Fixed: deleting SubKit left its scheduled renewals and reminders behind.** Uninstalling with data removal now clears every scheduled SubKit job.
+* **Fixed: deleting EasySubscription left its scheduled renewals and reminders behind.** Uninstalling with data removal now clears every scheduled EasySubscription job.
 * Integration tiles link to where each integration is set up, or say it is set per product.
-* The grace-period setting is shown only when SubKit Pro, which uses it, is active.
+* The grace-period setting is shown only when EasySubscription Pro, which uses it, is active.
 
 = 0.21.0 =
 * **Stores are told when subscriptions renew with tax added twice.** An admin notice gives the count and links to the list, where each can be repaired; it can be dismissed and comes back if more appear. Repair now returns you to the screen you started from, and says so when a subscription changed since the list was made.
@@ -212,11 +215,11 @@ included in the plugin.
 * Once a pending payment is confirmed, the next renewal is scheduled for its date straight away rather than waiting for the hourly check.
 
 = 0.19.0 =
-* **New for payment gateways: payments confirmed days later.** A gateway can now report a renewal as pending — Direct Debit and bank payments that clear over several days. While it is pending the customer keeps their access, the renewal order waits on hold so it cannot be paid twice, and SubKit never retries or re-charges it; the gateway settles it once the money is confirmed or refused. Used by SubKit Pro's GoCardless, Razorpay and other gateways.
+* **New for payment gateways: payments confirmed days later.** A gateway can now report a renewal as pending — Direct Debit and bank payments that clear over several days. While it is pending the customer keeps their access, the renewal order waits on hold so it cannot be paid twice, and EasySubscription never retries or re-charges it; the gateway settles it once the money is confirmed or refused. Used by EasySubscription Pro's GoCardless, Razorpay and other gateways.
 * A subscription that is ending waits for a pending renewal before it closes, and a renewal whose payment is still clearing from its pay page is not charged again.
 
 = 0.18.7 =
-* **Fixed: renewals ran up to an hour late, and busy stores fell behind.** After charging a renewal, SubKit failed to queue the next one, so every renewal waited for the hourly check — which queues at most 50 at a time, so a store with more renewals than that each hour slipped further behind. The next renewal is now queued as soon as one is charged.
+* **Fixed: renewals ran up to an hour late, and busy stores fell behind.** After charging a renewal, EasySubscription failed to queue the next one, so every renewal waited for the hourly check — which queues at most 50 at a time, so a store with more renewals than that each hour slipped further behind. The next renewal is now queued as soon as one is charged.
 * A payment gateway that keeps timing out is now retried with growing waits (2, 4, 8, 16 and 32 minutes) and then left to the hourly check, instead of the intended limit being ignored.
 
 = 0.18.6 =
@@ -240,11 +243,11 @@ included in the plugin.
 * **Fixed: a Shop Manager who bought a subscription lost the store.** The role change replaced every role a user had. Staff are now left as they are.
 
 = 0.18.1 =
-* **Fixed: renewals silently failed until an administrator opened wp-admin.** SubKit created its tables only on an admin page view, so a store activated from WP-CLI, deployed by a host, or updated in the background had none — and every renewal until someone logged in failed against a table that did not exist. They are now created on the first request of any kind.
+* **Fixed: renewals silently failed until an administrator opened wp-admin.** EasySubscription created its tables only on an admin page view, so a store activated from WP-CLI, deployed by a host, or updated in the background had none — and every renewal until someone logged in failed against a table that did not exist. They are now created on the first request of any kind.
 * **Fixed: the "Missed renewals" setting did nothing.** Its default — charge once and move the schedule forward — was saved and shown but never applied, so a subscription whose site had stopped running its scheduler was charged once for every missed period when it came back: three months down meant three charges within three hours. It now takes one charge covering the whole gap and resumes on the original day of the month. Choosing "Charge for every missed period" keeps the old behaviour.
 
 = 0.18.0 =
-* New filter `subkit_gateway_for_subscription`, so an extension can answer for a subscription whose WooCommerce payment method is not the id of the thing that renews it. SubKit Pro needs this to charge Mollie, Razorpay, Xendit, Square, Authorize.net or Braintree at all.
+* New filter `subkit_gateway_for_subscription`, so an extension can answer for a subscription whose WooCommerce payment method is not the id of the thing that renews it. EasySubscription Pro needs this to charge Mollie, Razorpay, Xendit, Square, Authorize.net or Braintree at all.
 
 = 0.17.0 =
 * **Fixed: every renewal was skipping a billing period.** A monthly subscription charged on 20 September was next charged on 20 November. Every store was billing half as often as it sold.
@@ -256,18 +259,18 @@ included in the plugin.
 * PayPal's setup notice no longer claims a missing webhook ID stops PayPal being offered at checkout. It does something different and worse: every webhook is rejected, so renewals are never recorded. Both notices now link to the section of Settings that fixes them.
 * Overdue trials are picked up by the hourly sweeper, which only looked at active subscriptions.
 * A subscription's recurring amount comes from the product rather than from the first order, so a one-off checkout coupon no longer discounts every renewal for ever.
-* New filters let an extension sell one product on more than one plan — see SubKit Pro's new Plans.
-* The plugin is now called SubKit – Subscriptions for WooCommerce. Only the name changes: same plugin, same settings, updated in place.
+* New filters let an extension sell one product on more than one plan — see EasySubscription Pro's new Plans.
+* The plugin is now called EasySubscription – Subscriptions for WooCommerce. Only the name changes: same plugin, same settings, updated in place.
 * Deleting the plugin can now remove its data with it, if you ask it to under WooCommerce → Settings → Subscriptions. Off by default, and subscriptions and their orders are never deleted either way.
 
 = 0.16.0 =
 * The subscriptions list leads with the customer, says how far off the next payment is ("today", "11 days overdue") rather than only its date, and puts the status tabs, search and bulk actions in one toolbar - the bulk bar appears when you select something instead of sitting there disabled. An empty list now says what will fill it, and a filtered one offers to clear the filters.
 * A subscription's own screen leads with the three figures that answer "what is this and what happens next", keeps the rest as details, and groups the activity log under the day each thing happened. Changing the schedule and ending the subscription are separate sections that say what they do first, and cancelling is no longer a button the same size and weight as Reactivate.
-* Fixed: every outlined button and bordered panel in SubKit's screens was drawing no border, because the stylesheet's own reset outranked the border it was meant to leave alone.
-* Notices from other plugins no longer open every SubKit screen. They are one line in the header bar that opens them; SubKit's own and WooCommerce's stay where they are.
+* Fixed: every outlined button and bordered panel in EasySubscription's screens was drawing no border, because the stylesheet's own reset outranked the border it was meant to leave alone.
+* Notices from other plugins no longer open every EasySubscription screen. They are one line in the header bar that opens them; EasySubscription's own and WooCommerce's stay where they are.
 
 = 0.15.0 =
-* SubKit -> Settings is a screen of its own instead of a jump into the WooCommerce settings tab: sections down the left, the settings in cards, and a panel on the right with quick links and whether renewals can actually run. Everything SubKit and SubKit Pro add appears here, and the old WooCommerce tab still works.
+* EasySubscription -> Settings is a screen of its own instead of a jump into the WooCommerce settings tab: sections down the left, the settings in cards, and a panel on the right with quick links and whether renewals can actually run. Everything EasySubscription and EasySubscription Pro add appears here, and the old WooCommerce tab still works.
 * Fixed: an edited stylesheet or script could stay cached in the browser until the next release. Admin assets now carry the file's own timestamp.
 
 = 0.14.0 =
@@ -277,27 +280,27 @@ included in the plugin.
 * Fixed: a subscription's end date was stored but never enforced, so renewals carried on past it. No renewal is now charged on or after the end date; the period already paid for runs to its end, and the subscription then expires.
 * Fixed: on the classic checkout, the sentence beside Place order showed "<bdi>" tags around the amounts.
 * When a subscription cannot be cancelled online, My Account now says so and why, in place of a Cancel button that only refused once pressed. For developers: the `subkit_cancel_refused_message` and `subkit_disclosure_sentence` filters are new, and the product panel's sections are actions extensions can add rows to.
-* SubKit Pro 0.13.0 needs this version.
+* EasySubscription Pro 0.13.0 needs this version.
 
 = 0.13.2 =
-* The plugin description now says what SubKit does today - the Stripe and PayPal gateways, the block checkout, Home and the rest - and why it is still a development release. It had not been updated since the first release.
+* The plugin description now says what EasySubscription does today - the Stripe and PayPal gateways, the block checkout, Home and the rest - and why it is still a development release. It had not been updated since the first release.
 * No code changes.
 
 = 0.13.1 =
 * Fixed: on a store with more than 50 active subscriptions, the hourly check for missed renewals could skip overdue ones indefinitely. It looked at the 50 oldest subscriptions and only then checked which were due, so a newer subscription whose renewal had been missed was never picked up. It now asks for due subscriptions directly, soonest first.
 
 = 0.13.0 =
-* SubKit has a Home screen. Until setup is finished it leads with the checklist; after that it shows recurring revenue, what needs your attention, and your most recent subscriptions.
-* The subscriptions list has its own page, SubKit → All subscriptions. Old links to a subscription or a filtered list still work: they are sent to the new address.
-* Every SubKit screen sits in the same frame now - a header with breadcrumbs, the page heading and a footer - in a new design. Integrations are cards grouped by what they connect to, and Help collects where to look first, with a one-click copy of the system report.
+* EasySubscription has a Home screen. Until setup is finished it leads with the checklist; after that it shows recurring revenue, what needs your attention, and your most recent subscriptions.
+* The subscriptions list has its own page, EasySubscription → All subscriptions. Old links to a subscription or a filtered list still work: they are sent to the new address.
+* Every EasySubscription screen sits in the same frame now - a header with breadcrumbs, the page heading and a footer - in a new design. Integrations are cards grouped by what they connect to, and Help collects where to look first, with a one-click copy of the system report.
 
 = 0.12.3 =
 * Fixed: the product page showed the price twice - "$5.00", then "$5.00 every month" - because WooCommerce printed the plain price and the terms block printed it again. The price itself now says how often it recurs, and the terms block starts with the facts.
 * The price now says how often it recurs wherever WooCommerce prints one: the shop, category pages, related products. A product on sale keeps its struck-through old price. An instalment or split plan shows the plan instead of a price that would misstate it.
 
 = 0.12.2 =
-* Fixed: SubKit's payment methods never appeared on the block checkout, which is the default checkout in current WooCommerce. A classic gateway is invisible there until it registers itself with the blocks registry, so a shop using blocks saw "There are no payment methods available" while the payments screen said Active. Both gateways now register.
-* Fixed: the rule that keeps SubKit's gateways off a cart with no subscription in it read the classic checkout only, so it could not answer correctly over the Store API the block checkout uses. It now looks at the cart, and gives the same answer to both.
+* Fixed: EasySubscription's payment methods never appeared on the block checkout, which is the default checkout in current WooCommerce. A classic gateway is invisible there until it registers itself with the blocks registry, so a shop using blocks saw "There are no payment methods available" while the payments screen said Active. Both gateways now register.
+* Fixed: the rule that keeps EasySubscription's gateways off a cart with no subscription in it read the classic checkout only, so it could not answer correctly over the Store API the block checkout uses. It now looks at the cart, and gives the same answer to both.
 
 = 0.12.1 =
 * Fixed: subscription products had no Add to cart button on their own product page, so they could not be bought from it. WooCommerce draws that button per product type, and the subscription types were not asking it to.
@@ -318,12 +321,12 @@ included in the plugin.
 = 0.10.0 =
 * The figures above the subscriptions list are now a live panel: monthly recurring revenue with a 30-day trend line, live subscriptions, and a bar showing where every subscription stands. Built with React and shadcn/ui.
 * The panel is drawn beside the old one and only replaces it once real figures arrive, so a failed request leaves the working summary on screen rather than an error.
-* New for developers: a read-only /subkit/v1/overview endpoint, and the shared admin components SubKit Pro's screens will be rebuilt on.
+* New for developers: a read-only /subkit/v1/overview endpoint, and the shared admin components EasySubscription Pro's screens will be rebuilt on.
 
 = 0.9.2 =
-* The plugin is now called SubKit – Subscriptions for WooCommerce. Nothing else changes; the same plugin, updated in place.
-* Variable subscription is only offered as a product type when SubKit Pro can actually bill it. Free registered the type but could not give a variation a schedule, so a customer buying one was charged once and never again. A product that is already a variable subscription keeps its type and says so on the edit screen.
-* SubKit Pro now refuses to activate without SubKit, and is deactivated along with it, instead of sitting in the plugin list doing nothing.
+* The plugin is now called EasySubscription – Subscriptions for WooCommerce. Nothing else changes; the same plugin, updated in place.
+* Variable subscription is only offered as a product type when EasySubscription Pro can actually bill it. Free registered the type but could not give a variation a schedule, so a customer buying one was charged once and never again. A product that is already a variable subscription keeps its type and says so on the edit screen.
+* EasySubscription Pro now refuses to activate without EasySubscription, and is deactivated along with it, instead of sitting in the plugin list doing nothing.
 * New guide: worked setups for twelve kinds of subscription business, with the field values to type and the integrations each one needs. See docs/BUSINESS-EXAMPLES.md.
 
 = 0.9.1 =
@@ -351,13 +354,13 @@ included in the plugin.
 * Fixed: a variable subscription reported no variations at all, because WooCommerce fell back to the wrong data store for the new type.
 
 = 0.6.1 =
-* The admin menu is now called SubKit rather than Subscriptions.
-* SubKit Pro can be activated whatever folder the free plugin sits in, including the subkit-subscriptions-main that a GitHub ZIP produces.
+* The admin menu is now called EasySubscription rather than Subscriptions.
+* EasySubscription Pro can be activated whatever folder the free plugin sits in, including the subkit-subscriptions-main that a GitHub ZIP produces.
 * Developers can exercise the licence screens without a store; see docs/TESTING.md.
 
 = 0.6.0 =
 * Subscriptions now has its own top-level admin menu instead of four separate entries under WooCommerce.
-* New Integrations screen: what SubKit can connect to, and whether each connection is live.
+* New Integrations screen: what EasySubscription can connect to, and whether each connection is live.
 * New Help screen with a system report to paste into a support request. It never includes credentials.
 * Guest checkout: a customer can buy a subscription without an account, and gets one made at checkout.
 * Customers can turn off automatic renewal and keep what they paid for until the period ends.
@@ -378,4 +381,4 @@ included in the plugin.
 Fixes missed renewals being skipped on stores with more than 50 active subscriptions.
 
 = 0.13.0 =
-SubKit now opens on a Home screen, and the subscriptions list moves to SubKit → All subscriptions. Old links still work.
+EasySubscription now opens on a Home screen, and the subscriptions list moves to EasySubscription → All subscriptions. Old links still work.

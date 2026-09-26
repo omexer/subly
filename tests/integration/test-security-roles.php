@@ -2,7 +2,7 @@
 /**
  * A subscription can never make anyone an administrator, or take a store role away.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

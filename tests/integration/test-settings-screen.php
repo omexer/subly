@@ -1,9 +1,9 @@
 <?php
 /**
- * SubKit → Settings: every section is reachable in its group, a page saves what it draws,
+ * EasySubscription → Settings: every section is reachable in its group, a page saves what it draws,
  * dependent rows carry their parent, and the cancellation controls hold on the server.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Admin\Settings_Page;
@@ -35,7 +35,7 @@ foreach ( WC_Admin_Settings::get_settings_pages() as $candidate ) {
 }
 $screen = \SubKit\Plugin::instance()->get( 'settings_page' );
 if ( ! $woo || ! $screen instanceof Settings_Page ) {
-	subkit_test_abort( 'the settings tab or the SubKit settings screen is not registered' );
+	subkit_test_abort( 'the settings tab or the EasySubscription settings screen is not registered' );
 }
 
 // Two sections of our own for the duration: one no group names, and one stacked beside Renewal.

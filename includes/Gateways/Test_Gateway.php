@@ -31,7 +31,7 @@ class Test_Gateway implements Recurring_Gateway {
 	}
 
 	public function title(): string {
-		return __( 'SubKit test gateway (development only)', 'subkit-subscriptions' );
+		return __( 'EasySubscription test gateway (development only)', 'subkit-subscriptions' );
 	}
 
 	public function model(): Gateway_Model {
@@ -55,7 +55,7 @@ class Test_Gateway implements Recurring_Gateway {
 		if ( ! $this->is_safe_to_run() ) {
 			return Charge_Result::hard_decline(
 				'test_gateway_disabled',
-				'The SubKit test gateway is registered but WP_DEBUG is off, so it will not simulate charges.'
+				'The EasySubscription test gateway is registered but WP_DEBUG is off, so it will not simulate charges.'
 			);
 		}
 

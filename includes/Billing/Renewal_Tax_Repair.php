@@ -230,8 +230,8 @@ class Renewal_Tax_Repair {
 				sprintf(
 					/* translators: %d: number of subscriptions */
 					_n(
-						'SubKit: %d subscription renews with tax added twice, so its customer pays more than at checkout and may be owed a refund.',
-						'SubKit: %d subscriptions renew with tax added twice, so their customers pay more than at checkout and may be owed refunds.',
+						'EasySubscription: %d subscription renews with tax added twice, so its customer pays more than at checkout and may be owed a refund.',
+						'EasySubscription: %d subscriptions renew with tax added twice, so their customers pay more than at checkout and may be owed refunds.',
 						$count,
 						'subkit-subscriptions'
 					),

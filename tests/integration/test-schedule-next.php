@@ -2,7 +2,7 @@
 /**
  * A renewal run by Action Scheduler queues the next one itself, instead of waiting for the hourly sweep.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Renewal_Scheduler;

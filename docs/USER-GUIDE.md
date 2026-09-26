@@ -1,8 +1,8 @@
-# SubKit — User Guide
+# EasySubscription — User Guide
 
-**SubKit 0.23.0 · SubKit Pro 0.41.1 · development release**
+**EasySubscription 0.23.0 · EasySubscription Pro 0.44.0 · development release**
 
-This guide explains everything SubKit does and every setting it has, in plain language. You
+This guide explains everything EasySubscription does and every setting it has, in plain language. You
 do not need to be technical to follow it.
 
 Please read [What is not proven yet](#what-is-not-proven-yet) before taking real money.
@@ -11,7 +11,7 @@ Please read [What is not proven yet](#what-is-not-proven-yet) before taking real
 
 ## Contents
 
-1. [What SubKit does](#what-subkit-does)
+1. [What EasySubscription does](#what-subkit-does)
 2. [Installing](#installing)
 3. [Your first subscription in five minutes](#your-first-subscription-in-five-minutes)
 4. [Making subscription products](#making-subscription-products)
@@ -30,17 +30,17 @@ the field values to type and the integrations each one needs.
 
 ---
 
-## What SubKit does
+## What EasySubscription does
 
 A normal WooCommerce product is bought once. A **subscription** product is bought once and
 then charges again on a schedule — every month, every year, every two weeks, whatever you
 choose.
 
-SubKit adds that. It creates a subscription record when somebody buys, charges them when the
+EasySubscription adds that. It creates a subscription record when somebody buys, charges them when the
 next payment falls due, emails them when something needs their attention, and gives them a
 place to see and cancel it themselves.
 
-**What you need:** WordPress 6.5+, WooCommerce 8.0+, PHP 8.1+. SubKit refuses to start and
+**What you need:** WordPress 6.5+, WooCommerce 8.0+, PHP 8.1+. EasySubscription refuses to start and
 tells you if any of these is missing, rather than half-working.
 
 **Free or Pro?** The free plugin is complete on its own — products, billing, renewals,
@@ -52,8 +52,8 @@ payment gateways and nine integrations.
 
 ## Installing
 
-1. Install and activate **SubKit – Subscriptions for WooCommerce**.
-2. For Pro, install **SubKit Subscriptions Pro** and activate it **after** the free plugin.
+1. Install and activate **EasySubscription – Subscriptions for WooCommerce**.
+2. For Pro, install **EasySubscription Subscriptions Pro** and activate it **after** the free plugin.
 
 Pro does nothing on its own and says so if you activate it alone. It needs the free plugin
 version 0.9.0 or newer.
@@ -61,13 +61,13 @@ version 0.9.0 or newer.
 > **The folder name does not matter.** Downloading from GitHub gives you a folder called
 > `subkit-subscriptions-main`. That is fine — Pro finds the free plugin either way.
 
-Then go to **SubKit** in the admin menu, just below WooCommerce.
+Then go to **EasySubscription** in the admin menu, just below WooCommerce.
 
 ---
 
 ## Your first subscription in five minutes
 
-On **SubKit → Home** there is a checklist. It walks you through four things, and
+On **EasySubscription → Home** there is a checklist. It walks you through four things, and
 the fourth is the one that matters.
 
 **1. Connect a payment method.** Stripe or PayPal — both are included free, and the checklist
@@ -134,7 +134,7 @@ reviews.
 > **Variable subscription needs Pro**, and only appears in the dropdown while Pro is active.
 > A variation holds none of its parent's meta, so without Pro's resolver nothing gives it a
 > billing schedule and it would sell as a one-off purchase. If you already have a variable
-> subscription and Pro is switched off, the product keeps its type and SubKit says so on the
+> subscription and Pro is switched off, the product keeps its type and EasySubscription says so on the
 > edit screen — it does not quietly turn into a simple product.
 
 **What about physical and digital?** Either type works for both. Tick **Virtual** for
@@ -193,7 +193,7 @@ Installment, which is sold as a fixed total.
 |---|---|---|
 | **Shipping required** | Both | The Virtual box, from the other side: **No** makes the product virtual. |
 | **Ship every** + **Delivery day** *(Pro)* | Recurring | A shipping cadence of its own — pay monthly, ship weekly — optionally pinned to a weekday. Leave **Ship every** empty to ship once per payment. |
-| **Shipping charge** *(Pro)* | Recurring | **Free shipping for renewals** — how SubKit has always billed: shipping is paid at checkout only. **Charge shipping on every renewal** adds the product's shipping to each renewal, by the method the customer chose at checkout. |
+| **Shipping charge** *(Pro)* | Recurring | **Free shipping for renewals** — how EasySubscription has always billed: shipping is paid at checkout only. **Charge shipping on every renewal** adds the product's shipping to each renewal, by the method the customer chose at checkout. |
 
 **More settings** *(Pro)*
 
@@ -216,7 +216,7 @@ Two of these are easy to confuse:
 - **Divide the price** divides one total. £300 over 3 parts = £100 each.
 - **Installment** repeats a price. £100 × 3 payments = £300 total.
 
-They do the same arithmetic from opposite ends, and a product cannot use both — SubKit
+They do the same arithmetic from opposite ends, and a product cannot use both — EasySubscription
 refuses to save that. An instalment plan charges the part, not the total, at checkout and on
 every renewal; with an uneven total the first payment takes the odd cents. A product cannot
 have both a choice of plans and an instalment plan.
@@ -229,7 +229,7 @@ instalment is charged when the trial ends.
 > honour a custom renewal price, a fixed expiry date or renewal shipping. A product that uses
 > any of them does not offer PayPal at checkout. Neither PayPal nor Paddle is offered for an
 > instalment product, or when any coupon discounts a subscription in the cart, because both
-> bill their own plan price. Gateways SubKit charges itself are unaffected. A minimum billing period works with PayPal, except that a PayPal customer
+> bill their own plan price. Gateways EasySubscription charges itself are unaffected. A minimum billing period works with PayPal, except that a PayPal customer
 > can always cancel inside PayPal itself.
 
 A refused setting — a price left empty, a date in the past — is not saved, and a red notice at
@@ -237,7 +237,7 @@ the top of the screen says why.
 
 ### What the customer sees
 
-SubKit writes the terms on the product page automatically — as separate plain facts, not one
+EasySubscription writes the terms on the product page automatically — as separate plain facts, not one
 long sentence. The first line is the product's own price, which now says how often it
 recurs; the facts follow underneath:
 
@@ -285,7 +285,7 @@ somebody picks one there is no single price to state.
 
 ## Every setting, explained
 
-All of these live under **SubKit → Settings**, a screen of sections: pick one on the left,
+All of these live under **EasySubscription → Settings**, a screen of sections: pick one on the left,
 change what you need, then **Save changes**. Each section saves on its own.
 
 ### System status
@@ -298,7 +298,7 @@ Health**. Five lines telling you whether billing is actually working:
 | **Renewal queue** | WordPress's background task system is running | Renewals are not happening. On a quiet site, ask your host to set up a real server cron. |
 | **Unresolved charges** | A charge whose outcome nobody ever learned | That subscription has **stopped billing** on purpose, because charging again might charge twice. Open it and check your payment provider. |
 | **Payments awaiting confirmation** | Renewals submitted to a payment provider that confirms days later (Direct Debit, bank payments) | One has waited more than 10 days. Check that the provider's webhook reaches your site, and look the payment up in its dashboard. |
-| **Double-charge protection** | The database safeguard is in place | Deactivate and reactivate SubKit. |
+| **Double-charge protection** | The database safeguard is in place | Deactivate and reactivate EasySubscription. |
 | **Renewal tax** | No subscription renews with tax added twice | See below. |
 
 **Subscriptions renewing with tax added twice.** Before 0.19.4, a store that enters prices
@@ -350,15 +350,15 @@ manage and cancel it.
 | **Create an account for them automatically** *(default)* | A guest who buys a subscription gets an account made at checkout. Smoothest for the customer. |
 | **Require them to log in first** | They must sign in or register before buying. |
 
-If someone checks out with an email that already has an account, SubKit stops and asks them
+If someone checks out with an email that already has an account, EasySubscription stops and asks them
 to log in. It will not attach the subscription to an account they have not proved is theirs.
 
 > If you choose **Require them to log in** but WooCommerce is not showing a login on the
-> checkout page, SubKit warns you — otherwise every subscription customer hits a dead end.
+> checkout page, EasySubscription warns you — otherwise every subscription customer hits a dead end.
 
 **Let customers pay early** — off by default. Shows a button in My Account that charges the next
 period now. The renewal date does not move: paying early settles the payment that was already
-coming. Offered only for methods SubKit charges itself, never PayPal.
+coming. Offered only for methods EasySubscription charges itself, never PayPal.
 
 **Let customers turn off renewal** — off by default. Turn it on to show a switch in My
 Account.
@@ -377,7 +377,7 @@ Two safeguards: an **administrator is never changed** (you cannot demote yoursel
 your own product), and a customer is only dropped when **no other live subscription** of
 theirs still grants the role.
 
-**Delete data when the plugin is deleted** — off by default. Removes SubKit's settings and own
+**Delete data when the plugin is deleted** — off by default. Removes EasySubscription's settings and own
 tables on uninstall. Subscriptions and their orders are never deleted either way.
 
 **Health digest** *(Pro)* — how often to email you a summary of subscriptions needing
@@ -387,27 +387,27 @@ attention: Daily, Weekly *(default)*, Monthly or Never.
 
 ## Taking payment
 
-SubKit adds its own payment methods under **SubKit → Settings**. All are off until you enter
+EasySubscription adds its own payment methods under **EasySubscription → Settings**. All are off until you enter
 credentials.
 
 | Gateway | How renewals are paid | Tier |
 |---|---|---|
-| **Stripe** | SubKit charges the saved card when a payment falls due. | Free |
+| **Stripe** | EasySubscription charges the saved card when a payment falls due. | Free |
 | **PayPal** | PayPal bills on its own schedule and tells us by webhook. | Free |
-| **Square**, **Braintree**, **Authorize.net**, **Mollie**, **Xendit**, **WooPayments** | SubKit charges the payment method that gateway's own WooCommerce plugin saved at checkout | Pro |
-| **Razorpay** (UPI Autopay), **GoCardless** (Direct Debit), **Adyen** | SubKit's own checkout sets up the mandate; SubKit charges renewals | Pro |
+| **Square**, **Braintree**, **Authorize.net**, **Mollie**, **Xendit**, **WooPayments** | EasySubscription charges the payment method that gateway's own WooCommerce plugin saved at checkout | Pro |
+| **Razorpay** (UPI Autopay), **GoCardless** (Direct Debit), **Adyen** | EasySubscription's own checkout sets up the mandate; EasySubscription charges renewals | Pro |
 | **Paddle** | Paddle bills on its own schedule and collects the tax, as merchant of record | Pro |
 | **bKash**, **SSLCommerz** | They cannot charge a customer again, so each renewal is emailed as a payment link | Pro |
 
 Each Pro gateway — what it rides on, where its settings are, its webhook address, its limits
-and how to check it in the provider's sandbox — is described in SubKit Pro's
+and how to check it in the provider's sandbox — is described in EasySubscription Pro's
 `docs/GATEWAYS.md`. None of them has yet been run against a real sandbox.
 
 **Payments confirmed days later.** Direct Debit (GoCardless), UPI Autopay (Razorpay), and some
 Adyen and WooPayments payments (SEPA, ACH) are submitted on the renewal date and confirmed
 days later. Meanwhile the renewal is *pending*: the customer keeps access, the renewal order
 waits **On hold** with the provider's reference, the next payment date does not move, and
-SubKit never retries or re-charges it. When the provider confirms, the renewal is marked paid
+EasySubscription never retries or re-charges it. When the provider confirms, the renewal is marked paid
 and the next one scheduled; if it fails, the normal failed-payment path runs once. A
 subscription cancelled at the end of its period waits for a pending renewal before it ends.
 
@@ -434,25 +434,25 @@ Stripe's own confirmation page.
 PayPal needs four things, and one of them catches everybody:
 
 1. **Client ID** and **Secret** from your PayPal app.
-2. **Webhook URL** — SubKit shows it. Copy it into your PayPal app and subscribe it to the
+2. **Webhook URL** — EasySubscription shows it. Copy it into your PayPal app and subscribe it to the
    billing-subscription and payment-sale events.
 3. **Webhook ID** — PayPal gives you this *after* you add the URL. Paste it back.
 
-**Without the Webhook ID, SubKit rejects every webhook** — because it cannot prove the
+**Without the Webhook ID, EasySubscription rejects every webhook** — because it cannot prove the
 message really came from PayPal — and no renewal is ever recorded. If PayPal is taking money
 and your subscriptions are not updating, this is why.
 
 **Known issue — tax.** In a store that enters prices without tax, PayPal bills its plan price
-with no tax added, so the order total SubKit records and the money PayPal actually takes can
+with no tax added, so the order total EasySubscription records and the money PayPal actually takes can
 differ. Not fixed yet.
 
 ### Square, Braintree, Authorize.net, Mollie and Xendit (Pro)
 
 These renew against the payment method that the store's **existing** plugin saved at
 checkout. Keep that plugin installed and configured for the first payment, and make sure it
-saves the card. SubKit only handles the renewals.
+saves the card. EasySubscription only handles the renewals.
 
-**If a Xendit renewal's answer never arrives** — a timeout, a dropped connection — SubKit asks
+**If a Xendit renewal's answer never arrives** — a timeout, a dropped connection — EasySubscription asks
 Xendit again for the same charge, which cannot bill the customer twice. It can only do that for
 24 hours. After that it stops and marks the charge as unresolved, so you can check your Xendit
 dashboard and settle it by hand, rather than risk charging again.
@@ -460,8 +460,8 @@ dashboard and settle it by hand, rather than risk charging again.
 ### Razorpay (Pro)
 
 Subscriptions bought through the Razorpay for WooCommerce plugin cannot renew — it never sets
-up a mandate — so they renew as emailed invoices. For automatic renewals, enable SubKit Pro's
-own **Razorpay Subscriptions (SubKit)** payment method (shown to customers as "UPI Autopay (Razorpay)"): INR only, UPI only (card mandates are not built yet),
+up a mandate — so they renew as emailed invoices. For automatic renewals, enable EasySubscription Pro's
+own **Razorpay Subscriptions (EasySubscription)** payment method (shown to customers as "UPI Autopay (Razorpay)"): INR only, UPI only (card mandates are not built yet),
 with a **mandate limit** per renewal (₹15,000 by default). The bank notifies the customer
 before each debit and debits about a day and a half later; the renewal is pending meanwhile.
 
@@ -470,21 +470,21 @@ before each debit and debits about a day and a half later; the renewal is pendin
 | Field | Appears on | What to put in it |
 |---|---|---|
 | **Enable PayPal** / **Enable Stripe** | Free gateways | Tick to offer it at checkout. Off until you do. |
-| **Enable … renewals** | Pro gateways that ride another plugin | Tick to let SubKit renew against that gateway's stored payment method. |
+| **Enable … renewals** | Pro gateways that ride another plugin | Tick to let EasySubscription renew against that gateway's stored payment method. |
 | **Environment** | All | **Test**/**Sandbox** while you are setting up, **Live** when real money should move. |
 | **Test secret key** / **Live secret key** | Stripe | From Stripe → Developers → API keys. `sk_test_…` and `sk_live_…`. |
 | **Client ID** / **Secret** | PayPal | From your PayPal app. |
-| **Webhook URL** | PayPal | SubKit shows it — copy it into PayPal. |
+| **Webhook URL** | PayPal | EasySubscription shows it — copy it into PayPal. |
 | **Webhook ID** | PayPal | PayPal gives you this after you add the URL. Paste it back. |
 | **Test API key** / **Live API key** | Mollie, Xendit | From that gateway's dashboard. |
 
 Pro's other gateways have their own fields; see Pro's `docs/GATEWAYS.md`.
 
-SubKit's gateways work on both checkouts — the classic one and the newer block checkout —
+EasySubscription's gateways work on both checkouts — the classic one and the newer block checkout —
 and on either they are offered only when the cart actually contains a subscription.
 
 A gateway with no credentials is never offered at checkout, even if enabled — so a
-half-configured gateway cannot be chosen by a customer and then fail. **SubKit tells you
+half-configured gateway cannot be chosen by a customer and then fail. **EasySubscription tells you
 when this is happening**, and names the field that is empty: seeing *Active* on the
 WooCommerce payments screen and *There are no payment methods available* at the checkout is
 almost always a gateway switched on with an empty key, or keys typed into Test while the
@@ -508,7 +508,7 @@ Under **My account → Subscriptions** they get a list and a detail page, where 
 - **Pay** a renewal that failed, or one waiting on them, from its payment link
 - **Pay early**, if you enabled it
 - **Pause**, **Resume** and **Switch plan** (Pro, where the gateway supports it)
-- **Update card** (Pro, SubKit Stripe subscriptions) — saves a new card on Stripe's own page;
+- **Update card** (Pro, EasySubscription Stripe subscriptions) — saves a new card on Stripe's own page;
   a renewal waiting on a declined card is retried on it straight away
 - **Upgrade your plan** (Pro) — the upgrades you chose on the product, with a confirmation
   page stating the new price and the date it starts. Nothing is charged at the switch; the
@@ -542,9 +542,9 @@ subscriptions), and the health digest to you.
 
 ## Running the shop day to day
 
-### SubKit → Home
+### EasySubscription → Home
 
-Where SubKit opens. Until setup is finished, the checklist comes first. After that:
+Where EasySubscription opens. Until setup is finished, the checklist comes first. After that:
 
 - **The numbers** — monthly recurring revenue, active subscriptions, how many are on a free
   trial, and how many are on hold after a failed payment.
@@ -554,7 +554,7 @@ Where SubKit opens. Until setup is finished, the checklist comes first. After th
 - **Recent subscriptions** — the latest six, each opening its own screen.
 - **Shortcuts** to Integrations, Settings and Help.
 
-### SubKit → All subscriptions
+### EasySubscription → All subscriptions
 
 Everyone who pays you on a schedule. You can **search** by name, email or id, **sort** by id,
 next payment or total, and **filter** by status.
@@ -619,7 +619,7 @@ with the reason. When a customer asks "why was I charged?", the answer is here.
 | **Thirteen integrations** | See [INTEGRATIONS.md](INTEGRATIONS.md), and [BUSINESS-EXAMPLES.md](BUSINESS-EXAMPLES.md) for which to connect for what |
 | **More gateways** | See [Taking payment](#taking-payment) |
 
-Pro's settings are sections of **SubKit → Settings** (the same sections appear under
+Pro's settings are sections of **EasySubscription → Settings** (the same sections appear under
 **WooCommerce → Settings → Subscriptions**):
 
 | Section | What is in it |
@@ -637,7 +637,7 @@ Pro's settings are sections of **SubKit → Settings** (the same sections appear
 
 ### Live QR settings
 
-**SubKit → Settings → Live QR.** Prints a QR code on the subscription so you can put it on a
+**EasySubscription → Settings → Live QR.** Prints a QR code on the subscription so you can put it on a
 packing slip; the customer scans it and sees where their subscription stands.
 
 | Setting | Default | What it does |
@@ -655,7 +655,7 @@ details** — whichever of the three sections you switch on.
 
 ### The Pro licence
 
-**SubKit → Settings → Licence.** Paste your key and activate.
+**EasySubscription → Settings → Licence.** Paste your key and activate.
 
 The licence controls **updates and support only**. If it lapses or expires, or the licence
 server is unreachable, **your Pro features keep working and your customers keep being
@@ -679,7 +679,7 @@ All of it lives under `/wp-json/subkit/v1/`.
 | `/subscriptions/<id>/actions` | POST | `cancel`, `expire`, `reactivate`, `change_status` — and `pause` / `resume` with Pro. |
 | `/subscriptions/<id>/activity` | GET | What has happened to it, newest first. |
 | `/subscriptions/statuses` | GET | The statuses and what they are called, so you do not hard-code either. |
-| `/dashboard` | GET | Everything the SubKit Home screen shows: setup steps, the numbers, what needs attention, recent subscriptions. |
+| `/dashboard` | GET | Everything the EasySubscription Home screen shows: setup steps, the numbers, what needs attention, recent subscriptions. |
 | `/overview` | GET | Recurring revenue, live count and the status breakdown, on their own. |
 | `/reports` | GET | *(Pro)* Every figure on the Reports screen. `days` sets the range. |
 | `/health` | GET | *(Pro)* Subscriptions at risk, why, and what would fix them. |
@@ -708,7 +708,7 @@ missed. An hourly check picks up every subscription whose renewal is overdue, th
 first, however many subscriptions the store has.
 
 **A subscription stopped billing and nothing explains it.** Check **Unresolved charges** in
-that same panel. If a charge's outcome was never learned, SubKit stops rather than risk
+that same panel. If a charge's outcome was never learned, EasySubscription stops rather than risk
 charging twice. Look the payment up at your provider, then act on the subscription.
 
 **A renewal has been "awaiting confirmation" for days.** Direct Debit and UPI Autopay
@@ -722,10 +722,10 @@ Health**, repair each one, and check whether its customer is owed a refund.
 **PayPal is charging but subscriptions are not updating.** The Webhook ID is missing or
 wrong. See the PayPal section above.
 
-**An integration is not doing anything.** **SubKit → Integrations** shows whether its plugin
+**An integration is not doing anything.** **EasySubscription → Integrations** shows whether its plugin
 is active. An integration whose plugin is missing does nothing, silently.
 
-**I need to ask for help.** **SubKit → Help** has a system report — versions, settings, queue
+**I need to ask for help.** **EasySubscription → Help** has a system report — versions, settings, queue
 health — to paste into your request. It contains no passwords and no customer data.
 
 ---

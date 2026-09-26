@@ -67,7 +67,7 @@ class Integrations_Page {
 			printf(
 				'<div class="subkit-card"><div class="subkit-empty"><p class="subkit-empty__title">%s</p><p>%s</p></div></div>',
 				esc_html__( 'Nothing to connect yet', 'subkit-subscriptions' ),
-				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. SubKit Pro adds them.', 'subkit-subscriptions' )
+				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. EasySubscription Pro adds them.', 'subkit-subscriptions' )
 			);
 
 			Page_Shell::close();

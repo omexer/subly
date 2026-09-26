@@ -1,9 +1,9 @@
 <?php
 /**
- * Plugin Name: SubKit – Subscriptions for WooCommerce
+ * Plugin Name: EasySubscription – Subscriptions for WooCommerce
  * Plugin URI:  https://github.com/pronob1010/subkit-subscriptions
  * Description: Turn any WooCommerce product into a subscription and let it bill itself.
- * Version:     0.23.0
+ * Version:     0.24.0
  * Author:      Pronob Mozumder
  * Text Domain: subkit-subscriptions
  * Domain Path: /languages
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SUBKIT_VERSION', '0.23.0' );
+define( 'SUBKIT_VERSION', '0.24.0' );
 define( 'SUBKIT_FILE', __FILE__ );
 define( 'SUBKIT_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SUBKIT_URL', plugin_dir_url( __FILE__ ) );
@@ -97,7 +97,7 @@ add_action(
 			add_action(
 				'admin_notices',
 				function () use ( $unmet ) {
-					echo '<div class="notice notice-error"><p><strong>SubKit</strong> needs ' . esc_html( implode( ', and ', $unmet ) ) . '. It has not been loaded.</p></div>';
+					echo '<div class="notice notice-error"><p><strong>EasySubscription</strong> needs ' . esc_html( implode( ', and ', $unmet ) ) . '. It has not been loaded.</p></div>';
 				}
 			);
 			return;

@@ -39,8 +39,8 @@ class Menu {
 	public function add_menu(): void {
 		// Menu label is the product; the page title stays what the page actually shows.
 		add_menu_page(
-			__( 'SubKit', 'subkit-subscriptions' ),
-			__( 'SubKit', 'subkit-subscriptions' ),
+			__( 'EasySubscription', 'subkit-subscriptions' ),
+			__( 'EasySubscription', 'subkit-subscriptions' ),
 			self::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' ),
@@ -52,7 +52,7 @@ class Menu {
 		// Without this the top-level entry repeats itself as its own first child.
 		add_submenu_page(
 			self::SLUG,
-			__( 'SubKit home', 'subkit-subscriptions' ),
+			__( 'EasySubscription home', 'subkit-subscriptions' ),
 			__( 'Home', 'subkit-subscriptions' ),
 			self::CAPABILITY,
 			self::SLUG,

@@ -1,4 +1,4 @@
-# Testing SubKit
+# Testing EasySubscription
 
 Five kinds of check. **Static analysis** runs anywhere and catches type and standards problems before the code runs. **Integration tests** run the PHP against a real WordPress and WooCommerce. **JavaScript tests** cover the React admin screens. **Screenshots** of those screens catch what tests cannot see. **Sandbox tests** talk to a real payment gateway and are the only way to prove the parts that matter most.
 
@@ -7,7 +7,7 @@ Five kinds of check. **Static analysis** runs anywhere and catches type and stan
 ## Integration tests
 
 Both plugins have a suite in `tests/integration/`: one PHP file per behaviour (22 in free, 47 in
-Pro as of 0.21.1 / 0.41.1), each run through `wp eval-file` inside a WordPress with WooCommerce
+Pro as of 0.24.0 / 0.44.0), each run through `wp eval-file` inside a WordPress with WooCommerce
 and the plugin active. Every file requires `tests/integration/bootstrap.php`, prints `PASS` /
 `FAIL` per check and ends with `subkit_test_done( $fail )`.
 
@@ -47,17 +47,17 @@ Rules the suite depends on:
 - **Gateways are tested with `pre_http_request` fakes.** No test contacts a real gateway: each
   gateway test answers the provider's API from a fake that matches requests by host (a site
   with WooCommerce usage tracking on can send other requests carrying the same query string).
-  Braintree is faked at its SDK. A passing gateway test proves SubKit handles the answers the
+  Braintree is faked at its SDK. A passing gateway test proves EasySubscription handles the answers the
   provider documents — not that the provider answers that way. See Pro's `docs/GATEWAYS.md`
   for the sandbox steps that close that gap.
 - **Stand-ins for premium plugins must be checked against licensed copies before release.**
   AffiliateWP and AutomateWoo cannot be installed in CI, so Pro's tests run against stand-ins
   (`tests/integration/automatewoo-stand-in.php`, built from AutomateWoo 6.9.0's GPL source; the
   AffiliateWP stand-in inside `test-affiliatewp.php`, built from its documentation). A stand-in
-  only proves SubKit calls what it expects to call. Run both integrations once against a
+  only proves EasySubscription calls what it expects to call. Run both integrations once against a
   licensed AffiliateWP and AutomateWoo on staging before each release that touches them.
   BuddyPress was run against BuddyPress 14.5.2 during development; where it is not active,
-  as in CI, `tests/integration/stand-ins/buddypress.php` stands in for the functions SubKit
+  as in CI, `tests/integration/stand-ins/buddypress.php` stands in for the functions EasySubscription
   calls.
 
 ---
@@ -137,7 +137,7 @@ python3 -m http.server 8765 --directory .preview
 
 Then open `http://localhost:8765/#dashboard`, and swap the hash for `#list`, `#detail`, `#reports` or `#health`. Add `?setup=done` before the hash to see Home once setup is finished. Pro's screens are included, so check out the Pro plugin beside the free one first.
 
-The preview draws SubKit's own frame but not WordPress's sidebar and admin bar. Look at the real admin once before a release.
+The preview draws EasySubscription's own frame but not WordPress's sidebar and admin bar. Look at the real admin once before a release.
 
 ---
 
@@ -221,7 +221,7 @@ On a fast connection the read can finish inside the second, and you will see an 
 ### The other gateways
 
 No harness like this exists for any other gateway yet. The manual sandbox steps for every
-gateway — free's Stripe and PayPal and all of Pro's — are in SubKit Pro's `docs/GATEWAYS.md`.
+gateway — free's Stripe and PayPal and all of Pro's — are in EasySubscription Pro's `docs/GATEWAYS.md`.
 PayPal and Paddle own their billing schedules, so there is no charge of ours to interrupt:
 they need a sandbox subscription and a check that the webhook mirrors it, exactly once.
 
@@ -237,7 +237,7 @@ this to `wp-config.php`:
 define( 'SUBKIT_PRO_TEST_LICENCE', true );
 ```
 
-Then **SubKit → Settings → Licence** gains a **Use a test licence** button. No store is
+Then **EasySubscription → Settings → Licence** gains a **Use a test licence** button. No store is
 contacted and any key is accepted.
 
 | Key | What it shows |

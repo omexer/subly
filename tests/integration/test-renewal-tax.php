@@ -2,7 +2,7 @@
 /**
  * A renewal charges what the checkout charged for the recurring line, whether the store enters prices with tax or without.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

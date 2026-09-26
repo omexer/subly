@@ -2,7 +2,7 @@
 /**
  * A subscription reads back through WooCommerce's legacy post store (HPOS off, or sync on) with every field intact.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore;

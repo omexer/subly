@@ -2,7 +2,7 @@
 /**
  * Paying a period early charges now and leaves the schedule where it was.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

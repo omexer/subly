@@ -8,7 +8,7 @@
  * forced the due date into the past before each payment, overwriting the wrong answer
  * before anything read it — so this asserts on the date the code chose, untouched.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

@@ -2,7 +2,7 @@
 /**
  * A charge the gateway accepts as pending waits for its answer: never charged or reconciled again, settled once either way.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Billing\Renewal_Processor;

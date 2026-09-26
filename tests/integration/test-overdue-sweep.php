@@ -2,7 +2,7 @@
 /**
  * The hourly sweep picks up overdue subscriptions, trials included, when a scheduled action was missed.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

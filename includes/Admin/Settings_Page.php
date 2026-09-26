@@ -94,7 +94,7 @@ class Settings_Page {
 		if ( ! $sections ) {
 			printf(
 				'<div class="subkit-notice subkit-notice--bad">%s</div>',
-				esc_html__( "WooCommerce's settings could not be loaded, so SubKit's settings cannot be shown. Check that WooCommerce is active.", 'subkit-subscriptions' )
+				esc_html__( "WooCommerce's settings could not be loaded, so EasySubscription's settings cannot be shown. Check that WooCommerce is active.", 'subkit-subscriptions' )
 			);
 			Page_Shell::close();
 

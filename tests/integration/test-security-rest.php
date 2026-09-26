@@ -1,8 +1,8 @@
 <?php
 /**
- * No SubKit REST route answers a visitor or a customer, and a forged PayPal webhook is refused.
+ * No EasySubscription REST route answers a visitor or a customer, and a forged PayPal webhook is refused.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 use SubKit\Domain\Subscription;

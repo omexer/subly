@@ -6,7 +6,7 @@
  * which is not what happens: PayPal is offered and charges the customer, and every
  * webhook is then rejected, so no renewal is ever recorded.
  *
- * @package SubKit
+ * @package EasySubscription
  */
 
 require __DIR__ . '/bootstrap.php';
