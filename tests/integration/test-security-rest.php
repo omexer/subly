@@ -31,6 +31,7 @@ $bodies = array(
 	'#/subscriptions/\d+/actions$#'  => array( 'action' => 'cancel' ),
 	'#/health/\d+/actions$#'         => array( 'action' => 'dismiss' ),
 	'#/subscriptions/\d+$#'          => array( 'status' => 'sk-cancelled' ),
+	'#/settings/\d+$#'               => array( 'values' => array( 'subkit_allow_cancellation' => 'no' ) ),
 );
 
 $routes = array();
@@ -53,7 +54,7 @@ foreach ( array( 'a visitor' => 0, 'a customer' => $customer ) as $who => $user 
 	$open = array();
 
 	foreach ( $routes as list( $method, $route ) ) {
-		$path    = preg_replace( '#\(\?P<id>[^)]+\)#', (string) $id, $route );
+		$path    = preg_replace( '#\(\?P<\w+>[^)]+\)#', (string) $id, $route );
 		$request = new WP_REST_Request( $method, $path );
 
 		if ( 'GET' !== $method ) {

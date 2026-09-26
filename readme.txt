@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.25.0
+Stable tag: 0.26.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.26.0 =
+* **Settings without reloads.** Switching sections is instant, settings that depend on a switch appear and disappear as you toggle it, and Save stores your changes in place with a confirmation. Unsaved changes are kept while you move between sections, and you are asked before leaving with changes unsaved.
 
 = 0.25.0 =
 * **The admin is one app.** Home, All subscriptions, Settings, Integrations and Help open inside one screen: moving between them, from the sidebar or from links, no longer reloads the page, and the browser's back and forward buttons work. Links and bookmarks keep working as before. Integrations and Help are rebuilt for it.

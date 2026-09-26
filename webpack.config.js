@@ -22,6 +22,7 @@ module.exports = {
 		subscriptions: './src/subscriptions/index.js',
 		integrations: './src/integrations/index.js',
 		help: './src/help/index.js',
+		settings: './src/settings/index.js',
 		blocks: './src/blocks/index.js',
 	},
 	externals: {

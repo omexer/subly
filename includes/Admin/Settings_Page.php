@@ -26,6 +26,30 @@ class Settings_Page {
 
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_page' ), 95 );
+		add_action( 'subkit_app_enqueue', array( $this, 'enqueue_route' ) );
+	}
+
+	/**
+	 * On every app page, not just this one: the shell swaps screens without a page load.
+	 */
+	public function enqueue_route(): void {
+		$asset = SUBKIT_PATH . 'build/settings.asset.php';
+
+		if ( ! is_readable( $asset ) ) {
+			return;
+		}
+
+		$asset = require $asset;
+
+		wp_enqueue_script(
+			'subkit-settings',
+			SUBKIT_URL . 'build/settings.js',
+			array_merge( $asset['dependencies'], array( 'subkit-ui', 'subkit-shell' ) ),
+			$asset['version'],
+			true
+		);
+
+		wp_set_script_translations( 'subkit-settings', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
 	}
 
 	public function add_page(): void {
@@ -64,23 +88,42 @@ class Settings_Page {
 			return;
 		}
 
-		$saved = false;
-
-		foreach ( $this->page_sections( $section, $sections ) as $id ) {
-			$fields = $this->settings_for( $id );
-
-			if ( $fields ) {
-				\WC_Admin_Settings::save_fields( $fields );
-				$saved = true;
-			}
-		}
-
-		if ( ! $saved ) {
+		if ( ! $this->save( $section, $sections ) ) {
 			return;
 		}
 
 		wp_safe_redirect( add_query_arg( 'subkit_saved', '1', self::section_url( $section ) ) );
 		exit;
+	}
+
+	/**
+	 * Saves the page as WooCommerce's tab does; given values save only the fields they name, as Woo blanks the rest.
+	 *
+	 * @param array<string, string>     $sections
+	 * @param array<string, mixed>|null $values Unslashed, keyed by option id.
+	 */
+	public function save( string $section, array $sections, ?array $values = null ): bool {
+		$saved = array();
+
+		foreach ( $this->page_sections( $section, $sections ) as $id ) {
+			$fields = $this->settings_for( $id );
+
+			if ( null !== $values ) {
+				$fields = array_values( array_filter( $fields, static fn( array $field ): bool => array_key_exists( (string) ( $field['id'] ?? '' ), $values ) ) );
+			}
+
+			if ( $fields ) {
+				\WC_Admin_Settings::save_fields( $fields, null === $values ? null : wp_slash( $values ) );
+				$saved[] = $id;
+			}
+		}
+
+		// After the whole stack is written: a section's checks may read another's settings.
+		foreach ( array_filter( $saved, static fn( string $id ): bool => '' !== $id ) as $id ) {
+			do_action( 'woocommerce_update_options_subkit_' . $id );
+		}
+
+		return (bool) $saved;
 	}
 
 	public function render(): void {
@@ -107,13 +150,6 @@ class Settings_Page {
 			return;
 		}
 
-		$on_page = $this->page_sections( $current, $sections );
-		$fields  = array();
-
-		foreach ( $on_page as $id ) {
-			$fields[ $id ] = $this->settings_for( $id );
-		}
-
 		echo '<div class="subkit-settings">';
 
 		$this->render_nav( $sections, $current );
@@ -122,7 +158,7 @@ class Settings_Page {
 		wp_nonce_field( self::NONCE, 'subkit_settings_nonce' );
 		printf( '<input type="hidden" name="subkit_section" value="%s" />', esc_attr( $current ) );
 
-		$this->render_cards( $fields );
+		$this->render_cards( $this->page_fields( $current, $sections ) );
 
 		printf(
 			'<div class="subkit-settings__save"><span class="subkit-settings__save-note">%s</span>'
@@ -228,30 +264,86 @@ class Settings_Page {
 	}
 
 	/**
+	 * The sections drawn together with this one: its whole group when stacked, else itself.
+	 *
 	 * @param array<string, string> $sections
 	 * @return string[]
 	 */
-	private function page_sections( string $current, array $sections ): array {
+	public function page_sections( string $current, array $sections ): array {
 		$group = self::group_of( $current );
 
 		return empty( self::groups()[ $group ]['list'] ) ? $this->group_sections( $group, $sections ) : array( $current );
 	}
 
 	/**
-	 * What just happened, if anything: a save of our own, or a licence action that came
-	 * back here from SubKit Pro.
+	 * @param array<string, string> $sections
+	 * @return array<string, array<int, array<string, mixed>>>
 	 */
-	private function render_notices(): void {
-		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- redirect flags, not actions.
-		if ( isset( $_GET['subkit_saved'] ) ) {
-			printf( '<div class="subkit-notice subkit-notice--good">%s</div>', esc_html__( 'Settings saved.', 'subkit-subscriptions' ) );
+	public function page_fields( string $current, array $sections ): array {
+		$fields = array();
+
+		foreach ( $this->page_sections( $current, $sections ) as $id ) {
+			$fields[ $id ] = $this->settings_for( $id );
 		}
 
-		$licence = isset( $_GET['subkit_license_notice'] ) ? sanitize_text_field( wp_unslash( $_GET['subkit_license_notice'] ) ) : '';
-		// phpcs:enable WordPress.Security.NonceVerification.Recommended
+		return $fields;
+	}
+
+	/**
+	 * Groups with a section on this site; `list` when it shows its sections one at a time.
+	 *
+	 * @param array<string, string> $sections
+	 * @return array<int, array{id: string, label: string, icon: string, list: bool, sections: array<int, array{id: string, title: string}>}>
+	 */
+	public function menu( array $sections ): array {
+		$menu = array();
+
+		foreach ( self::groups() as $id => $group ) {
+			$members = $this->group_sections( $id, $sections );
+
+			// A group with nothing in it on this site is left out rather than drawn empty.
+			if ( ! $members ) {
+				continue;
+			}
+
+			$menu[] = array(
+				'id'       => $id,
+				'label'    => $group['label'],
+				'icon'     => $group['icon'],
+				'list'     => ! empty( $group['list'] ) && count( $members ) > 1,
+				'sections' => array_map(
+					static fn( string $section ): array => array(
+						'id'    => $section,
+						'title' => (string) $sections[ $section ],
+					),
+					$members
+				),
+			);
+		}
+
+		return $menu;
+	}
+
+	/**
+	 * What just happened: a save of our own, or a licence action that came back from Pro.
+	 *
+	 * @param array<string, mixed> $query Slashed, as $_GET is.
+	 * @return array<int, array{type: string, message: string}>
+	 */
+	public function notices( array $query ): array {
+		$notices = array();
+
+		if ( isset( $query['subkit_saved'] ) ) {
+			$notices[] = array(
+				'type'    => 'good',
+				'message' => __( 'Settings saved.', 'subkit-subscriptions' ),
+			);
+		}
+
+		$licence = isset( $query['subkit_license_notice'] ) ? sanitize_text_field( wp_unslash( (string) $query['subkit_license_notice'] ) ) : '';
 
 		if ( '' === $licence ) {
-			return;
+			return $notices;
 		}
 
 		$known = array(
@@ -260,11 +352,19 @@ class Settings_Page {
 			'ok'          => __( 'Licence updated.', 'subkit-subscriptions' ),
 		);
 
-		printf(
-			'<div class="subkit-notice subkit-notice--%s">%s</div>',
-			isset( $known[ $licence ] ) ? 'good' : 'bad',
-			esc_html( $known[ $licence ] ?? $licence )
+		$notices[] = array(
+			'type'    => isset( $known[ $licence ] ) ? 'good' : 'bad',
+			'message' => $known[ $licence ] ?? $licence,
 		);
+
+		return $notices;
+	}
+
+	private function render_notices(): void {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- redirect flags, not actions.
+		foreach ( $this->notices( $_GET ) as $notice ) {
+			printf( '<div class="subkit-notice subkit-notice--%s">%s</div>', esc_attr( $notice['type'] ), esc_html( $notice['message'] ) );
+		}
 	}
 
 	/**
@@ -275,36 +375,29 @@ class Settings_Page {
 
 		echo '<nav class="subkit-settings__nav" aria-label="' . esc_attr__( 'Settings sections', 'subkit-subscriptions' ) . '"><ul>';
 
-		foreach ( self::groups() as $id => $group ) {
-			$members = $this->group_sections( $id, $sections );
-
-			// A group with nothing in it on this site is left out rather than drawn empty.
-			if ( ! $members ) {
-				continue;
-			}
-
-			$here    = $id === $active;
-			$listing = ! empty( $group['list'] ) && count( $members ) > 1;
+		foreach ( $this->menu( $sections ) as $group ) {
+			$here    = $group['id'] === $active;
+			$members = array_column( $group['sections'], 'id' );
 
 			printf(
 				'<li><a class="subkit-settings__tab%s" href="%s"%s><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">%s</svg><span>%s</span></a>',
 				$here ? ' is-current' : '',
 				esc_url( self::section_url( $members[0] ) ),
-				$here && ! $listing ? ' aria-current="page"' : '',
+				$here && ! $group['list'] ? ' aria-current="page"' : '',
 				$group['icon'], // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 				esc_html( $group['label'] )
 			);
 
-			if ( $here && $listing ) {
+			if ( $here && $group['list'] ) {
 				echo '<ul class="subkit-settings__subnav">';
 
-				foreach ( $members as $section ) {
+				foreach ( $group['sections'] as $section ) {
 					printf(
 						'<li><a class="subkit-settings__subtab%s" href="%s"%s>%s</a></li>',
-						$section === $current ? ' is-current' : '',
-						esc_url( self::section_url( $section ) ),
-						$section === $current ? ' aria-current="page"' : '',
-						esc_html( (string) $sections[ $section ] )
+						$section['id'] === $current ? ' is-current' : '',
+						esc_url( self::section_url( $section['id'] ) ),
+						$section['id'] === $current ? ' aria-current="page"' : '',
+						esc_html( $section['title'] )
 					);
 				}
 
@@ -320,31 +413,31 @@ class Settings_Page {
 	/**
 	 * WooCommerce's settings array is a flat list where a "title" opens a group and
 	 * "sectionend" closes it. Each group becomes a card; a page of one card needs no heading,
-	 * since the menu already names it.
+	 * since the menu already names it. A row PHP has to draw carries its markup.
 	 *
 	 * @param array<string, array<int, array<string, mixed>>> $by_section
+	 * @return array<int, array{title: string, desc: string, anchor: ?string, rows: array<int, array{field: array<string, mixed>, joined: array<int, array<string, mixed>>, html: ?string}>}>
 	 */
-	private function render_cards( array $by_section ): void {
-		$all     = array_merge( ...array_values( $by_section ) );
-		$toggles = $this->toggle_states( $all );
-		$joined  = $this->joined_fields( $all );
-		$cards   = array();
+	public function cards( array $by_section ): array {
+		$all    = $by_section ? array_merge( ...array_values( $by_section ) ) : array();
+		$joined = $this->joined_fields( $all );
+		$cards  = array();
 
 		foreach ( $by_section as $section => $fields ) {
 			$card  = null;
-			$rows  = '';
+			$rows  = array();
 			$first = true;
 
 			foreach ( $fields as $field ) {
 				$type = (string) ( $field['type'] ?? '' );
 
 				if ( 'title' === $type || 'sectionend' === $type ) {
-					if ( '' !== trim( $rows ) ) {
+					if ( $rows ) {
 						$cards[] = array( $card, $rows, $first ? (string) $section : null );
 						$first   = false;
 					}
 
-					$rows = '';
+					$rows = array();
 					$card = 'title' === $type
 						? array( (string) ( $field['title'] ?? '' ), (string) ( $field['desc'] ?? '' ) )
 						: null;
@@ -355,36 +448,69 @@ class Settings_Page {
 					continue;
 				}
 
-				ob_start();
-				$this->render_row( $field, $toggles, $joined[ (string) ( $field['id'] ?? '' ) ] ?? array() );
-				$rows .= (string) ob_get_clean();
+				$html = '' === (string) ( $field['id'] ?? '' ) ? $this->wide_markup( $field ) : null;
+
+				// A custom row with nothing to say, such as the tax repair with nothing to repair, draws nothing.
+				if ( '' === $html ) {
+					continue;
+				}
+
+				$rows[] = array(
+					'field'  => $field,
+					'joined' => $joined[ (string) ( $field['id'] ?? '' ) ] ?? array(),
+					'html'   => $html,
+				);
 			}
 
-			if ( '' !== trim( $rows ) ) {
+			if ( $rows ) {
 				$cards[] = array( $card, $rows, $first ? (string) $section : null );
 			}
 		}
 
 		$titled = count( $cards ) > 1;
 
-		foreach ( $cards as list( $card, $rows, $anchor ) ) {
-			printf( '<section class="subkit-settings__card"%s>', null === $anchor ? '' : ' id="' . esc_attr( 'subkit-section-' . ( '' === $anchor ? 'general' : $anchor ) ) . '"' );
+		return array_map(
+			static fn( array $card ): array => array(
+				'title'  => $titled ? (string) ( $card[0][0] ?? '' ) : '',
+				'desc'   => (string) ( $card[0][1] ?? '' ),
+				'anchor' => $card[2],
+				'rows'   => $card[1],
+			),
+			$cards
+		);
+	}
 
-			$title = $titled ? (string) ( $card[0] ?? '' ) : '';
-			$desc  = (string) ( $card[1] ?? '' );
+	/**
+	 * @param array<string, array<int, array<string, mixed>>> $by_section
+	 */
+	private function render_cards( array $by_section ): void {
+		$toggles = $this->toggle_states( $by_section ? array_merge( ...array_values( $by_section ) ) : array() );
 
-			if ( '' !== $title || '' !== $desc ) {
+		foreach ( $this->cards( $by_section ) as $card ) {
+			printf( '<section class="subkit-settings__card"%s>', null === $card['anchor'] ? '' : ' id="' . esc_attr( 'subkit-section-' . ( '' === $card['anchor'] ? 'general' : $card['anchor'] ) ) . '"' );
+
+			if ( '' !== $card['title'] || '' !== $card['desc'] ) {
 				echo '<header class="subkit-settings__card-head">';
-				if ( '' !== $title ) {
-					printf( '<h2>%s</h2>', esc_html( $title ) );
+				if ( '' !== $card['title'] ) {
+					printf( '<h2>%s</h2>', esc_html( $card['title'] ) );
 				}
-				if ( '' !== $desc ) {
-					printf( '<p>%s</p>', wp_kses_post( $desc ) );
+				if ( '' !== $card['desc'] ) {
+					printf( '<p>%s</p>', wp_kses_post( $card['desc'] ) );
 				}
 				echo '</header>';
 			}
 
-			echo '<div class="subkit-settings__rows">' . $rows . '</div></section>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where each row was built.
+			echo '<div class="subkit-settings__rows">';
+
+			foreach ( $card['rows'] as $row ) {
+				if ( null === $row['html'] ) {
+					$this->render_row( $row['field'], $toggles, $row['joined'] );
+				} else {
+					echo '<div class="subkit-settings__row subkit-settings__row--wide">' . $row['html'] . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where it was built.
+				}
+			}
+
+			echo '</div></section>';
 		}
 	}
 
@@ -447,32 +573,8 @@ class Settings_Page {
 	 */
 	private function render_row( array $field, array $toggles, array $joined ): void {
 		$id     = (string) ( $field['id'] ?? '' );
-		$type   = (string) ( $field['type'] ?? 'text' );
 		$help   = $this->help_text( $field );
 		$parent = (string) ( $field['subkit_show_if'] ?? '' );
-
-		if ( 'subkit_status' === $type ) {
-			echo '<div class="subkit-settings__row subkit-settings__row--wide"><div class="subkit-checks">';
-
-			foreach ( Settings::status_checks() as $check ) {
-				Settings::render_check( $check );
-			}
-
-			echo '</div></div>';
-
-			return;
-		}
-
-		if ( '' === $id ) {
-			$markup = $this->woo_markup( $field );
-
-			// A custom row with nothing to say, such as the tax repair with nothing to repair, draws nothing.
-			if ( '' !== $markup ) {
-				echo '<div class="subkit-settings__row subkit-settings__row--wide">' . $markup . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce's own field output.
-			}
-
-			return;
-		}
 
 		printf(
 			'<div class="subkit-settings__row%s"%s>',
@@ -505,9 +607,7 @@ class Settings_Page {
 	private function render_control( array $field, bool $described ): void {
 		$id    = (string) ( $field['id'] ?? '' );
 		$type  = (string) ( $field['type'] ?? 'text' );
-		$value = array_key_exists( 'value', $field )
-			? (string) $field['value']
-			: (string) \WC_Admin_Settings::get_option( $id, $field['default'] ?? '' );
+		$value = (string) $this->field_value( $field );
 		$aria  = $described ? sprintf( ' aria-describedby="%s"', esc_attr( $id . '-help' ) ) : '';
 
 		switch ( $type ) {
@@ -565,12 +665,43 @@ class Settings_Page {
 	}
 
 	/**
+	 * What a field holds now: a fixed value it shows, such as a webhook address, or the saved option.
+	 *
+	 * @param array<string, mixed> $field
+	 * @return mixed
+	 */
+	public function field_value( array $field ) {
+		return array_key_exists( 'value', $field )
+			? $field['value']
+			: \WC_Admin_Settings::get_option( (string) ( $field['id'] ?? '' ), $field['default'] ?? '' );
+	}
+
+	/**
+	 * A row with no option of its own, such as the health checks, drawn whole by PHP.
+	 *
+	 * @param array<string, mixed> $field
+	 */
+	public function wide_markup( array $field ): string {
+		if ( 'subkit_status' !== ( $field['type'] ?? '' ) ) {
+			return $this->woo_markup( $field );
+		}
+
+		ob_start();
+
+		foreach ( Settings::status_checks() as $check ) {
+			Settings::render_check( $check );
+		}
+
+		return '<div class="subkit-checks">' . ob_get_clean() . '</div>';
+	}
+
+	/**
 	 * Anything this screen has no markup for - a custom type another plugin registered -
 	 * is handed back to WooCommerce so it still renders and still saves.
 	 *
 	 * @param array<string, mixed> $field
 	 */
-	private function woo_markup( array $field ): string {
+	public function woo_markup( array $field ): string {
 		ob_start();
 		\WC_Admin_Settings::output_fields( array( $field ) );
 		$markup = trim( (string) ob_get_clean() );
@@ -581,7 +712,7 @@ class Settings_Page {
 	/**
 	 * @param array<string, mixed> $field
 	 */
-	private function help_text( array $field ): string {
+	public function help_text( array $field ): string {
 		$desc = '' === $this->suffix( $field ) ? trim( (string) ( $field['desc'] ?? '' ) ) : '';
 		$tip  = isset( $field['desc_tip'] ) && is_string( $field['desc_tip'] ) ? trim( $field['desc_tip'] ) : '';
 
@@ -599,7 +730,7 @@ class Settings_Page {
 	 *
 	 * @param array<string, mixed> $field
 	 */
-	private function suffix( array $field ): string {
+	public function suffix( array $field ): string {
 		return 'number' === ( $field['type'] ?? '' ) && true !== ( $field['desc_tip'] ?? false ) ? trim( (string) ( $field['desc'] ?? '' ) ) : '';
 	}
 
@@ -623,7 +754,7 @@ class Settings_Page {
 	/**
 	 * @return array<string, string>
 	 */
-	private function sections(): array {
+	public function sections(): array {
 		$page = $this->woo_page();
 
 		return $page ? (array) $page->get_sections() : array();
@@ -642,7 +773,7 @@ class Settings_Page {
 	/**
 	 * @return array<int, array<string, mixed>>
 	 */
-	private function settings_for( string $section ): array {
+	public function settings_for( string $section ): array {
 		$page = $this->woo_page();
 
 		return $page ? (array) $page->get_settings_for_section( $section ) : array();

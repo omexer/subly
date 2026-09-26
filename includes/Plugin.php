@@ -21,6 +21,7 @@ use SubKit\Rest\Dashboard_Controller;
 use SubKit\Rest\Help_Controller;
 use SubKit\Rest\Integrations_Controller;
 use SubKit\Rest\Overview_Controller;
+use SubKit\Rest\Settings_Controller;
 use SubKit\Rest\Subscriptions_Controller;
 use SubKit\Checkout\Cart_Validation;
 use SubKit\Checkout\Guest_Checkout;
@@ -295,6 +296,9 @@ final class Plugin {
 
 		$this->services['settings_page'] = new Settings_Page();
 		$this->services['settings_page']->register();
+
+		$this->services['settings_api'] = new Settings_Controller( $this->services['settings_page'] );
+		$this->services['settings_api']->register();
 
 		$this->services['admin_notices'] = new Notices();
 		$this->services['admin_notices']->register();
