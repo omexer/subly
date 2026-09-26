@@ -155,8 +155,7 @@ class Settings extends \WC_Settings_Page {
 				'id'    => 'subkit_grace_title',
 			),
 			array(
-				'title'             => __( 'Grace period after due date', 'subkit-subscriptions' ),
-				'desc'              => __( 'days', 'subkit-subscriptions' ),
+				'title'             => __( 'Grace period after due date (Days)', 'subkit-subscriptions' ),
 				'desc_tip'          => __( 'The customer keeps access for this many days after a renewal payment fails. Retries happen within this window; when it ends, the action above applies.', 'subkit-subscriptions' ),
 				'id'                => 'subkit_grace_period_days',
 				'type'              => 'number',
@@ -167,8 +166,7 @@ class Settings extends \WC_Settings_Page {
 				),
 			),
 			array(
-				'title'             => __( 'Send renewal reminder', 'subkit-subscriptions' ),
-				'desc'              => __( 'days before renewal', 'subkit-subscriptions' ),
+				'title'             => __( 'Send renewal reminder (Days before)', 'subkit-subscriptions' ),
 				'desc_tip'          => __( 'Emails the customer before the card is charged, so the charge is not a surprise. 0 turns the reminder off.', 'subkit-subscriptions' ),
 				'id'                => 'subkit_renewal_reminder_days',
 				'type'              => 'number',
