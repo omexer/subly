@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.26.1
+Stable tag: 0.27.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,13 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.27.0 =
+* **Your logo.** The EasySubscription logo leads every screen, and its icon marks the admin menu.
+* **Notifications.** Every EasySubscription email is listed with one switch — the same switch WooCommerce uses, so both screens always agree — and edited inside EasySubscription: subject, heading, additional content and format, with a preview. The renewal reminder is now set in hours before the renewal (existing stores are converted automatically).
+* **New emails:** a trial ending reminder (3 days before a free trial turns into a paid subscription), an expiring soon reminder for subscriptions with an end date, and a subscription reactivated email.
+* **Cart & Checkout:** choose whether subscriptions and one-time products can be bought together, send customers straight to checkout when they subscribe, and set the Subscribe button text.
+* **API Settings:** let WooCommerce API keys use the subscription API (off by default; a read-only key can only read), with the list of endpoints and a link to create keys. Payment webhooks are unaffected.
 
 = 0.26.1 =
 * Settings show a number's unit in its title, such as "Grace period after due date (Days)", instead of beside the box.
