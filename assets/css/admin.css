@@ -445,7 +445,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 .subkit-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
 .subkit-crumbs__home { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; color: var(--subkit-ink); text-decoration: none; }
 .subkit-crumbs__home:hover, .subkit-crumbs__home:focus { color: var(--subkit-ink); }
-.subkit-mark { flex: none; color: var(--subkit-accent); }
+.subkit-logo { display: block; flex: none; width: auto; height: 28px; }
 .subkit-crumbs__sep { color: #d1d5db; }
 .subkit-crumbs__link { color: var(--subkit-ink-soft); text-decoration: none; }
 .subkit-crumbs__link:hover { color: var(--subkit-accent); }

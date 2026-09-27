@@ -36,6 +36,15 @@ class Menu {
 	 */
 	public const PARENT = self::SLUG;
 
+	/**
+	 * The brand glyph alone, as a data URI, so WordPress recolours it like its own menu icons.
+	 */
+	private static function menu_icon(): string {
+		$svg = (string) file_get_contents( SUBKIT_PATH . 'assets/images/menu-icon.svg' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a bundled file.
+
+		return 'data:image/svg+xml;base64,' . base64_encode( trim( $svg ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- WordPress reads menu icons this way.
+	}
+
 	public function add_menu(): void {
 		// Menu label is the product; the page title stays what the page actually shows.
 		add_menu_page(
@@ -44,7 +53,7 @@ class Menu {
 			self::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' ),
-			'dashicons-update',
+			self::menu_icon(),
 			// Directly below WooCommerce, which sits at 55.6.
 			56
 		);

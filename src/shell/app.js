@@ -82,36 +82,6 @@ function Failed() {
 	);
 }
 
-function Mark() {
-	return (
-		<svg
-			className="subkit-mark"
-			width="24"
-			height="24"
-			viewBox="0 0 24 24"
-			aria-hidden="true"
-			focusable="false"
-		>
-			<rect width="24" height="24" rx="6" fill="currentColor" />
-			<path
-				d="M16.5 9.2A5 5 0 0 0 7.4 10M7.5 14.8a5 5 0 0 0 9.1-.8"
-				fill="none"
-				stroke="#fff"
-				strokeWidth="1.9"
-				strokeLinecap="round"
-			/>
-			<path
-				d="M16.9 6.6v2.9H14M7.1 17.4v-2.9H10"
-				fill="none"
-				stroke="#fff"
-				strokeWidth="1.9"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-		</svg>
-	);
-}
-
 function Icon( { children } ) {
 	return (
 		<svg
@@ -318,13 +288,16 @@ export function Shell( { fallback, links } ) {
 						) }
 					>
 						<a className="subkit-crumbs__home" href={ links.home }>
-							<Mark />
-							<span>
-								{ __(
+							<img
+								className="subkit-logo"
+								src={ links.logo }
+								width="178"
+								height="28"
+								alt={ __(
 									'EasySubscription',
 									'subkit-subscriptions'
 								) }
-							</span>
+							/>
 						</a>
 						<span className="subkit-crumbs__sep" aria-hidden="true">
 							/

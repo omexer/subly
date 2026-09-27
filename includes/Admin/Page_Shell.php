@@ -36,10 +36,10 @@ class Page_Shell {
 
 		echo '<nav class="subkit-crumbs" aria-label="' . esc_attr__( 'Breadcrumb', 'subkit-subscriptions' ) . '">';
 		printf(
-			'<a class="subkit-crumbs__home" href="%s">%s<span>%s</span></a>',
+			'<a class="subkit-crumbs__home" href="%s"><img class="subkit-logo" src="%s" width="178" height="28" alt="%s"></a>',
 			esc_url( $links['home'] ),
-			self::mark(), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
-			esc_html__( 'EasySubscription', 'subkit-subscriptions' )
+			esc_url( $links['logo'] ),
+			esc_attr__( 'EasySubscription', 'subkit-subscriptions' )
 		);
 
 		$last = count( $crumbs ) - 1;
@@ -124,10 +124,11 @@ class Page_Shell {
 	/**
 	 * The header's links, shared with the app shell so both headers go to the same places.
 	 *
-	 * @return array{home: string, help: string, settings: string, upgrade: string}
+	 * @return array{home: string, help: string, settings: string, upgrade: string, logo: string}
 	 */
 	public static function header_links(): array {
 		return array(
+			'logo'     => SUBKIT_URL . 'assets/images/logo.svg',
 			'home'     => admin_url( 'admin.php?page=' . Menu::SLUG ),
 			'help'     => admin_url( 'admin.php?page=' . Help_Page::SLUG ),
 			'settings' => admin_url( 'admin.php?page=' . Settings_Page::SLUG ),
@@ -137,17 +138,5 @@ class Page_Shell {
 
 	private static function icon( string $paths ): string {
 		return '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' . $paths . '</svg>';
-	}
-
-	/**
-	 * The mark: a renewal loop in a rounded square. Drawn here so there is no image
-	 * request, and so it takes the brand colour from the stylesheet.
-	 */
-	public static function mark(): string {
-		return '<svg class="subkit-mark" width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
-			. '<rect width="24" height="24" rx="6" fill="currentColor"/>'
-			. '<path d="M16.5 9.2A5 5 0 0 0 7.4 10M7.5 14.8a5 5 0 0 0 9.1-.8" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>'
-			. '<path d="M16.9 6.6v2.9H14M7.1 17.4v-2.9H10" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>'
-			. '</svg>';
 	}
 }
