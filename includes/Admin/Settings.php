@@ -237,8 +237,40 @@ class Settings extends \WC_Settings_Page {
 				),
 			),
 			array(
+				'title'   => __( 'Allow mixed checkout', 'subkit-subscriptions' ),
+				'desc'    => __( 'Customers can buy a subscription and one-time products in the same order. When off, a subscription is checked out on its own.', 'subkit-subscriptions' ),
+				'type'    => 'checkbox',
+				'id'      => \SubKit\Checkout\Cart_Validation::OPTION_MIXED,
+				'default' => 'yes',
+			),
+			array(
+				'title'   => __( 'Enable one-click checkout', 'subkit-subscriptions' ),
+				'desc'    => __( 'Adding a subscription to the cart takes the customer straight to checkout.', 'subkit-subscriptions' ),
+				'type'    => 'checkbox',
+				'id'      => \SubKit\Checkout\One_Click_Checkout::OPTION,
+				'default' => 'no',
+			),
+			array(
 				'type' => 'sectionend',
 				'id'   => 'subkit_checkout_title',
+			),
+
+			array(
+				'title' => __( 'Custom labels', 'subkit-subscriptions' ),
+				'type'  => 'title',
+				'id'    => 'subkit_labels_title',
+			),
+			array(
+				'title'       => __( 'Subscribe button text', 'subkit-subscriptions' ),
+				'desc_tip'    => __( 'The add to cart button on subscription products, on the product page and in product lists. Leave empty to use "Subscribe".', 'subkit-subscriptions' ),
+				'type'        => 'text',
+				'id'          => \SubKit\Frontend\Product_Display::OPTION_BUTTON_TEXT,
+				'default'     => '',
+				'placeholder' => __( 'Subscribe', 'subkit-subscriptions' ),
+			),
+			array(
+				'type' => 'sectionend',
+				'id'   => 'subkit_labels_title',
 			),
 		);
 	}

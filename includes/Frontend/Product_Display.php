@@ -16,6 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Product_Display {
 
+	public const OPTION_BUTTON_TEXT = 'subkit_subscribe_button_text';
+
 	public function __construct( private readonly Disclosure $disclosure ) {}
 
 	public function register(): void {
@@ -27,6 +29,42 @@ class Product_Display {
 		add_action( 'woocommerce_review_order_after_order_total', array( $this, 'on_checkout_totals' ) );
 		add_action( 'woocommerce_review_order_before_submit', array( $this, 'before_place_order' ) );
 		add_action( 'wp_enqueue_scripts', array( $this, 'styles' ) );
+		add_filter( 'woocommerce_product_single_add_to_cart_text', array( $this, 'single_button_text' ), 10, 2 );
+		add_filter( 'woocommerce_product_add_to_cart_text', array( $this, 'list_button_text' ), 10, 2 );
+	}
+
+	public static function button_text(): string {
+		$text = trim( (string) get_option( self::OPTION_BUTTON_TEXT, '' ) );
+
+		return '' === $text ? __( 'Subscribe', 'subkit-subscriptions' ) : $text;
+	}
+
+	/**
+	 * @param string $text
+	 * @param mixed  $product
+	 */
+	public function single_button_text( $text, $product ): string {
+		return Subscription_Product::is_subscription( $product ) ? self::button_text() : (string) $text;
+	}
+
+	/**
+	 * Only where the button adds to the cart: "Select options" and "Read more" say what they do.
+	 *
+	 * @param string $text
+	 * @param mixed  $product
+	 */
+	public function list_button_text( $text, $product ): string {
+		if (
+			! $product instanceof \WC_Product
+			|| $product instanceof \WC_Product_Variable
+			|| ! $product->is_purchasable()
+			|| ! $product->is_in_stock()
+			|| ! Subscription_Product::is_subscription( $product )
+		) {
+			return (string) $text;
+		}
+
+		return self::button_text();
 	}
 
 	public function on_product_page(): void {

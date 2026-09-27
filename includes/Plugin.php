@@ -17,6 +17,7 @@ use SubKit\Data\Cleanup;
 use SubKit\Data\Migrator;
 use SubKit\Data\Order_Type;
 use SubKit\Data\Stats;
+use SubKit\Rest\Api_Access;
 use SubKit\Rest\Dashboard_Controller;
 use SubKit\Rest\Help_Controller;
 use SubKit\Rest\Integrations_Controller;
@@ -28,6 +29,7 @@ use SubKit\Checkout\Guest_Checkout;
 use SubKit\Checkout\Store_Api;
 use SubKit\Checkout\Subscription_Factory;
 use SubKit\Checkout\Initial_Payment;
+use SubKit\Checkout\One_Click_Checkout;
 use SubKit\Checkout\Renewal_Order_Pay;
 use SubKit\Checkout\Trial_Payment;
 use SubKit\Frontend\Disclosure;
@@ -136,6 +138,9 @@ final class Plugin {
 		$this->services['subscriptions_api'] = new Subscriptions_Controller( $this->services['activity'], $this->services['processor'] );
 		$this->services['subscriptions_api']->register();
 
+		$this->services['api_access'] = new Api_Access();
+		$this->services['api_access']->register();
+
 		$this->services['product_types'] = new Product_Types();
 		$this->services['product_types']->register();
 
@@ -149,6 +154,9 @@ final class Plugin {
 
 		$this->services['cart_rules'] = new Cart_Validation();
 		$this->services['cart_rules']->register();
+
+		$this->services['one_click'] = new One_Click_Checkout();
+		$this->services['one_click']->register();
 
 		$this->services['initial_payment'] = new Initial_Payment();
 		$this->services['initial_payment']->register();

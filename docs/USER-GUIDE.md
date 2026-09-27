@@ -383,6 +383,17 @@ tables on uninstall. Subscriptions and their orders are never deleted either way
 **Health digest** *(Pro)* — how often to email you a summary of subscriptions needing
 attention: Daily, Weekly *(default)*, Monthly or Never.
 
+### Cart & checkout
+
+| Setting | Default | What it does |
+|---|---|---|
+| **Allow mixed checkout** | On | A subscription and one-time products can be bought in one order. Off, the cart refuses to mix them in either direction, and both checkouts refuse a cart that already mixes them. |
+| **Enable one-click checkout** | Off | Adding a subscription to the cart goes straight to checkout, from the product page and from product lists. |
+| **Subscribe button text** | *Subscribe* | The add to cart button on subscription products. Leave it empty for *Subscribe* in the shopper's language. |
+
+A cart still holds one subscription at a time, whatever these say: most gateways keep one
+payment agreement per order.
+
 ---
 
 ## Taking payment
@@ -665,9 +676,11 @@ charged.** A licence problem will never stop you taking money.
 
 ## The REST API
 
-Free. Everything below works without a licence, authenticated the way WooCommerce
-authenticates everything else: **WooCommerce → Settings → Advanced → REST API**, a key with
-read/write on an account that can manage WooCommerce.
+Free. Everything below works without a licence. A logged-in store manager can always use it;
+for an app, turn on **EasySubscription → Settings → API Settings → Allow API keys**, then create
+a key under **WooCommerce → Settings → Advanced → REST API** on an account that can manage
+WooCommerce. It authenticates exactly as it does on WooCommerce's own API: a read key can only
+read, and a write key can only make changes. API Settings lists every endpoint on your site.
 
 All of it lives under `/wp-json/subkit/v1/`.
 
