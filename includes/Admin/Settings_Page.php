@@ -198,7 +198,7 @@ class Settings_Page {
 			'switching'          => array(
 				'label'    => __( 'Upgrade & Downgrade', 'subkit-subscriptions' ),
 				'icon'     => '<path d="M7 20V4m0 0L3.5 7.5M7 4l3.5 3.5M17 4v16m0 0 3.5-3.5M17 20l-3.5-3.5"/>',
-				'sections' => array( 'upsell' ),
+				'sections' => array( 'switching', 'upsell' ),
 			),
 			'checkout'           => array(
 				'label'    => __( 'Cart & Checkout', 'subkit-subscriptions' ),
@@ -213,7 +213,12 @@ class Settings_Page {
 			'notifications'      => array(
 				'label'    => __( 'Notifications', 'subkit-subscriptions' ),
 				'icon'     => '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
-				'sections' => array( 'payment_methods' ),
+				'sections' => array( 'notifications', 'payment_methods' ),
+			),
+			'api'                => array(
+				'label'    => __( 'API Settings', 'subkit-subscriptions' ),
+				'icon'     => '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m9.5 10-2.5 2 2.5 2M14.5 10l2.5 2-2.5 2"/>',
+				'sections' => array( 'api' ),
 			),
 			'payments'           => array(
 				'label'    => __( 'Payments', 'subkit-subscriptions' ),
