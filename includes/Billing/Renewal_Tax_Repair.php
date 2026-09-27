@@ -4,6 +4,7 @@ namespace SubKit\Billing;
 
 use SubKit\Admin\Menu;
 use SubKit\Admin\Notice_Dismissals;
+use SubKit\Admin\Notices;
 use SubKit\Admin\Settings_Page;
 use SubKit\Data\Activity_Repository;
 use SubKit\Data\Subscription_Query;
@@ -225,7 +226,8 @@ class Renewal_Tax_Repair {
 		}
 
 		printf(
-			'<div class="notice notice-warning"><p>%s</p><p><a class="button button-primary" href="%s">%s</a> <a class="button" href="%s">%s</a></p></div>',
+			'<div class="%s"><p>%s</p><p><a class="button button-primary" href="%s">%s</a> <a class="button" href="%s">%s</a></p></div>',
+			esc_attr( Notices::important( 'warning' ) ),
 			esc_html(
 				sprintf(
 					/* translators: %d: number of subscriptions */

@@ -152,25 +152,30 @@ document.addEventListener( 'click', function ( event ) {
 	done();
 } );
 
-// The header bar's "other notices" button, which opens the panel under the bar.
-document.addEventListener( 'click', function ( event ) {
-	var button = event.target.closest( '[data-subkit-notices-toggle]' );
+// The server header's notification centre opens without script; this only closes it like a menu.
+( function () {
+	function close( keepFocus ) {
+		document.querySelectorAll( 'details[data-subkit-notify][open]' ).forEach( function ( details ) {
+			details.open = false;
 
-	if ( ! button ) {
-		return;
+			if ( keepFocus ) {
+				details.querySelector( 'summary' ).focus();
+			}
+		} );
 	}
 
-	var panel = document.getElementById( 'subkit-other-notices' );
+	document.addEventListener( 'mousedown', function ( event ) {
+		if ( ! event.target.closest( 'details[data-subkit-notify]' ) ) {
+			close( false );
+		}
+	} );
 
-	if ( ! panel ) {
-		return;
-	}
-
-	var open = 'true' !== button.getAttribute( 'aria-expanded' );
-
-	button.setAttribute( 'aria-expanded', open ? 'true' : 'false' );
-	panel.hidden = ! open;
-} );
+	document.addEventListener( 'keydown', function ( event ) {
+		if ( 'Escape' === event.key && document.querySelector( 'details[data-subkit-notify][open]' ) ) {
+			close( true );
+		}
+	} );
+} )();
 
 // Settings rows marked data-subkit-show-if="<switch id>" show only while that switch, and its own parent, is on.
 ( function () {

@@ -97,7 +97,7 @@ add_action(
 			add_action(
 				'admin_notices',
 				function () use ( $unmet ) {
-					echo '<div class="notice notice-error"><p><strong>EasySubscription</strong> needs ' . esc_html( implode( ', and ', $unmet ) ) . '. It has not been loaded.</p></div>';
+					echo '<div class="notice notice-error subkit-notice--important"><p><strong>EasySubscription</strong> needs ' . esc_html( implode( ', and ', $unmet ) ) . '. It has not been loaded.</p></div>';
 				}
 			);
 			return;

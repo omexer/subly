@@ -83,13 +83,6 @@ class Page_Shell {
 
 		echo '</div></div></header>';
 
-		// Below the bar, so opening them pushes the page down rather than covering it.
-		$notices = \SubKit\Plugin::instance()->get( 'admin_notices' );
-
-		if ( $notices instanceof Notices ) {
-			$notices->render_panel();
-		}
-
 		echo '<div class="wrap subkit-shell__body">';
 		echo '<div class="subkit-head' . ( $visible ? '' : ' screen-reader-text' ) . '"><div class="subkit-head__text">';
 		echo '<h1 class="subkit-head__title">' . esc_html( $title ) . '</h1>';
@@ -109,6 +102,8 @@ class Page_Shell {
 		// WordPress moves admin notices to just below this marker; without it they land
 		// wherever the first heading happens to be, which inside a custom layout is anywhere.
 		echo '<hr class="wp-header-end">';
+
+		Notices::render_important();
 	}
 
 	public static function close(): void {

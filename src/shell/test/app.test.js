@@ -18,12 +18,13 @@ const SERVER = `
 	</ul></li></ul>
 	<div id="wpbody-content">
 		<div id="subkit-app" class="subkit-ui" data-page="first"></div><div id="subkit-fallback">
-			<header><button type="button" data-subkit-notices-toggle>1 other notice</button></header>
-			<div id="subkit-other-notices" hidden>Elsewhere</div>
+			<header><details class="subkit-notify" data-subkit-notify><summary class="subkit-notify__bell">1</summary>
+				<div class="subkit-notify__panel" id="subkit-other-notices"><div class="subkit-notify__list"><div class="notice notice-info"><p>Elsewhere</p></div></div></div>
+			</details></header>
 			<div class="wrap">
 				<h1>First</h1>
 				<hr class="wp-header-end">
-				<div class="notice notice-success"><p>Saved.</p></div>
+				<div class="notice notice-success subkit-notice--important subkit-notice--feedback"><p>Saved.</p></div>
 				<p>Server first</p>
 				<div class="notice inline"><p>Inline hint</p></div>
 			</div>
@@ -85,6 +86,7 @@ beforeEach( () => {
 	window.history.replaceState( {}, '', `${ ADMIN }?page=first` );
 	document.title = 'Old ‹ Shop — WordPress';
 	document.body.innerHTML = SERVER;
+	document.body.className = 'js subkit-app-page';
 	window.subkitShellData = {
 		links: {
 			home: '/home',
@@ -122,14 +124,19 @@ describe( 'the app shell', () => {
 			host().querySelector( '.subkit-crumbs__current' ).textContent
 		).toBe( 'First route' );
 		expect( fallback().hidden ).toBe( true );
-		expect( host().textContent ).toContain( 'Saved.' );
 		expect(
-			host().querySelector( '[data-subkit-notices-toggle]' )
-		).not.toBeNull();
+			host().querySelector( '.subkit-alerts' ).textContent
+		).toContain( 'Saved.' );
 		expect(
-			host().querySelector( '#subkit-other-notices' )
-		).not.toBeNull();
+			host().querySelector( '.subkit-notify__bell' ).textContent
+		).toBe( '1' );
+		expect(
+			host().querySelector( '.subkit-notify__list' ).textContent
+		).toBe( 'Elsewhere' );
 		expect( fallback().textContent ).toContain( 'Inline hint' );
+		expect( document.body.classList.contains( 'subkit-app-page' ) ).toBe(
+			true
+		);
 		expect( document.title ).toBe( 'First route ‹ Shop — WordPress' );
 		expect(
 			host()
@@ -166,8 +173,8 @@ describe( 'the app shell', () => {
 		expect( fallback() ).toBeNull();
 		expect( host().textContent ).not.toContain( 'Saved.' );
 		expect(
-			host().querySelector( '[data-subkit-notices-toggle]' )
-		).not.toBeNull();
+			host().querySelector( '.subkit-notify__list' ).textContent
+		).toBe( 'Elsewhere' );
 		expect( document.title ).toBe( 'Second ‹ Shop — WordPress' );
 		expect( menu( 'Second' ).classList.contains( 'current' ) ).toBe( true );
 		expect( menu( 'First' ).classList.contains( 'current' ) ).toBe( false );
@@ -206,7 +213,9 @@ describe( 'the app shell', () => {
 			},
 		] );
 		await click(
-			host().querySelector( 'button:not([data-subkit-notices-toggle])' )
+			[ ...host().querySelectorAll( 'button' ) ].find( ( b ) =>
+				b.textContent.startsWith( 'Open' )
+			)
 		);
 
 		expect( window.location.href ).toBe( `${ ADMIN }?page=first&id=7` );
@@ -227,11 +236,11 @@ describe( 'the app shell', () => {
 		expect( host().childElementCount ).toBe( 0 );
 		expect( fallback().textContent ).toContain( 'Saved.' );
 		expect(
-			fallback().querySelector( '[data-subkit-notices-toggle]' )
-		).not.toBeNull();
-		expect(
-			fallback().querySelector( '#subkit-other-notices' )
-		).not.toBeNull();
+			fallback().querySelector( '.subkit-notify__list' ).textContent
+		).toBe( 'Elsewhere' );
+		expect( document.body.classList.contains( 'subkit-app-page' ) ).toBe(
+			false
+		);
 		expect(
 			fallback()
 				.querySelector( 'hr' )
@@ -344,8 +353,8 @@ describe( 'the app shell', () => {
 		expect( fallback() ).toBeNull();
 		expect( host().textContent ).toContain( 'Route two' );
 		expect(
-			host().querySelector( '[data-subkit-notices-toggle]' )
-		).not.toBeNull();
+			host().querySelector( '.subkit-notify__list' ).textContent
+		).toBe( 'Elsewhere' );
 	} );
 
 	it( 'loads a page that has no route instead of drawing nothing', async () => {

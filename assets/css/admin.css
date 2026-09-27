@@ -917,48 +917,184 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	color: var(--subkit-bad);
 }
 
-/* ---------------------------------------------------- notices from elsewhere */
+/* ------------------------------------------------ the notification centre */
 
-.subkit-shell__notices {
+.subkit-notify {
+	position: relative;
 	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 0;
-	border: 0;
-	background: none;
-	color: var(--subkit-ink-soft);
-	font: inherit;
-	font-size: 13px;
-	cursor: pointer;
 }
 
-.subkit-shell__notices:hover {
+.subkit-notify__bell {
+	position: relative;
+	display: inline-grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: none;
+	color: #3c434a;
+	cursor: pointer;
+	list-style: none;
+}
+
+.subkit-notify__bell::-webkit-details-marker {
+	display: none;
+}
+
+.subkit-notify__bell:hover,
+.subkit-notify__bell[aria-expanded="true"],
+.subkit-notify[open] > .subkit-notify__bell {
+	background: var(--subkit-line-soft);
 	color: var(--subkit-ink);
 }
 
-.subkit-shell__notices-dot {
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: var(--subkit-warn);
+.subkit-notify__bell:focus-visible {
+	outline: 2px solid var(--subkit-accent);
+	outline-offset: 1px;
+}
+
+.subkit-notify__count {
+	position: absolute;
+	top: 1px;
+	right: 0;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 4px;
+	border: 2px solid #fff;
+	border-radius: 999px;
+	background: var(--subkit-bad);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 600;
+	line-height: 16px;
+	text-align: center;
+	box-sizing: content-box;
+}
+
+.subkit-notify__panel {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	z-index: 100;
+	width: min(440px, calc(100vw - 32px));
+	max-height: min(70vh, 560px);
+	overflow-y: auto;
+	border: 1px solid var(--subkit-line);
+	border-radius: var(--subkit-radius);
+	background: var(--subkit-bg);
+	box-shadow: var(--subkit-shadow-lg);
+	text-align: left;
+}
+
+.subkit-notify__panel[hidden] {
+	display: none;
+}
+
+/* On a phone the bell is not at the edge, so the panel spans the bar instead of hanging off-screen. */
+@media screen and (max-width: 600px) {
+	.subkit-shell__inner {
+		position: relative;
+	}
+
+	.subkit-notify {
+		position: static;
+	}
+
+	.subkit-notify__panel {
+		top: 100%;
+		right: 16px;
+		left: 16px;
+		width: auto;
+	}
+}
+
+.subkit-notify__panel:focus {
+	outline: none;
+}
+
+.subkit-notify__head {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	margin: 0;
+	padding: 10px 14px;
+	border-bottom: 1px solid var(--subkit-line);
+	background: var(--subkit-bg);
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--subkit-ink);
+}
+
+.subkit-notify__list > * {
+	margin: 0;
+	border-bottom: 1px solid var(--subkit-line-soft);
+}
+
+.subkit-notify__list > *:last-child {
+	border-bottom: 0;
+}
+
+.subkit-notify__list :is(div.notice, div.error, div.updated) {
+	margin: 0;
+	padding: 8px 14px 8px 12px;
+	border-width: 0 0 0 3px;
+	border-radius: 0;
+	box-shadow: none;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.subkit-notify__list :is(div.notice, div.error, div.updated).is-dismissible {
+	padding-right: 36px;
+}
+
+.subkit-notify__list :is(p, li, h1, h2, h3, h4) {
+	margin: 2px 0;
+	padding: 0;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.subkit-notify__list :is(h1, h2, h3, h4) {
+	font-weight: 600;
+}
+
+.subkit-notify__list .button {
+	min-height: 28px;
+	margin: 4px 4px 2px 0;
+	padding: 0 10px;
+	font-size: 12px;
+	line-height: 26px;
+}
+
+.subkit-notify__list .notice-dismiss {
+	padding: 6px;
 }
 
 .subkit-other-notices {
-	border-bottom: 1px solid var(--subkit-line);
-	background: var(--subkit-line-soft);
-}
-
-.subkit-other-notices__inner {
 	max-width: 1240px;
 	margin: 0 auto;
 	padding: 8px 24px;
 	box-sizing: border-box;
 }
 
-.subkit-other-notices__inner .notice,
-.subkit-other-notices__inner .updated,
-.subkit-other-notices__inner .error {
-	margin: 8px 0;
+/* Important notices before the shell compacts them, and on screens it does not draw. */
+
+.subkit-shell .notice.subkit-notice--important {
+	margin: 0 0 8px;
+	padding: 8px 12px;
+	border: 1px solid var(--subkit-line);
+	border-left-width: 3px;
+	border-radius: var(--subkit-radius-sm);
+	box-shadow: var(--subkit-shadow);
+	font-size: 13px;
+}
+
+.subkit-shell .notice.subkit-notice--important p {
+	margin: 2px 0;
+	padding: 0;
 }
 
 /* WordPress's own notices, on our screens only, so they sit with the cards rather than on top of them. */

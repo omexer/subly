@@ -1,27 +1,210 @@
-.subkit-app__slot {
+/* Until the shell moves them: nothing but important notices shows on a page it draws. */
+body.subkit-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):not(.subkit-notice--important, .inline, .below-h2, .subkit-notify__list *, .subkit-app__route *) {
+	display: none;
+}
+
+.subkit-app__landing {
 	display: contents;
 }
 
-/* Left edge colour stays WordPress's, which is what says success or error. */
-.subkit-app__notices > .notice,
-.subkit-app__notices > .updated,
-.subkit-app__notices > .error {
-	margin: 0 0 var(--subkit-gap);
-	padding: 12px 14px;
-	border-width: 1px 1px 1px 3px;
-	border-style: solid;
-	border-top-color: var(--subkit-line);
-	border-right-color: var(--subkit-line);
-	border-bottom-color: var(--subkit-line);
-	border-radius: var(--subkit-radius);
-	box-shadow: var(--subkit-shadow);
-	font-size: 13px;
+.subkit-alerts:empty {
+	display: none;
 }
 
-.subkit-app__notices > .notice p,
-.subkit-app__notices > .updated p,
-.subkit-app__notices > .error p {
+.subkit-alerts {
+	display: grid;
+	gap: 8px;
+	margin: 0 0 var(--subkit-gap);
+}
+
+.subkit-shell .notice.subkit-alert {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	margin: 0;
+	padding: 8px 10px 8px 12px;
+	border: 1px solid var(--subkit-line);
+	border-left: 3px solid var(--subkit-alert-tone, var(--subkit-accent));
+	border-radius: var(--subkit-radius-sm);
+	background: var(--subkit-bg);
+	box-shadow: var(--subkit-shadow);
+	font-size: 13px;
+	line-height: 1.45;
+	color: var(--subkit-ink);
+}
+
+.subkit-shell .subkit-alert--error { --subkit-alert-tone: var(--subkit-bad); }
+.subkit-shell .subkit-alert--warning { --subkit-alert-tone: var(--subkit-warn); }
+.subkit-shell .subkit-alert--success { --subkit-alert-tone: var(--subkit-good); }
+
+.subkit-shell .subkit-alert.is-open {
+	align-items: flex-start;
+}
+
+.subkit-alert__icon {
+	display: grid;
+	flex: none;
+	place-items: center;
+	color: var(--subkit-alert-tone, var(--subkit-accent));
+}
+
+.subkit-alert__text {
+	flex: 1;
+	min-width: 0;
+}
+
+.subkit-shell .subkit-alert p.subkit-alert__title {
 	margin: 0;
 	padding: 0;
+	overflow: hidden;
+	font-weight: 600;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.subkit-alert__detail {
+	overflow: hidden;
+	color: var(--subkit-ink-soft);
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.subkit-shell .subkit-alert__detail :is(p, ul, ol, li) {
+	display: inline;
+	margin: 0 !important; /* Beats the inline list styles some notices carry. */
+	padding: 0;
+}
+
+.subkit-alert__detail li + li::before {
+	content: " ";
+}
+
+.subkit-shell .subkit-alert.is-open :is(.subkit-alert__title, .subkit-alert__detail) {
+	white-space: normal;
+}
+
+.subkit-shell .subkit-alert.is-open .subkit-alert__detail :is(p, ul, ol) {
+	display: block;
+	margin: 4px 0 0 !important;
+}
+
+.subkit-shell .subkit-alert.is-open .subkit-alert__detail ul {
+	padding-left: 18px;
+	list-style: disc;
+}
+
+.subkit-shell .subkit-alert.is-open .subkit-alert__detail li {
+	display: list-item;
+}
+
+.subkit-alert.is-open .subkit-alert__detail li + li::before {
+	content: none;
+}
+
+.subkit-alert__actions {
+	display: flex;
+	flex: none;
+	align-items: center;
+	gap: 6px;
+}
+
+.subkit-shell .subkit-alert__actions .button {
+	min-height: 28px;
+	margin: 0;
+	padding: 0 10px;
+	font-size: 12px;
+	line-height: 26px;
+}
+
+.subkit-alert__more,
+.subkit-alerts__more {
+	padding: 4px 6px;
+	border: 0;
+	border-radius: 6px;
+	background: none;
+	color: var(--subkit-accent);
+	font: inherit;
+	font-size: 12px;
+	font-weight: 500;
+	cursor: pointer;
+}
+
+.subkit-alert__more:hover,
+.subkit-alerts__more:hover {
+	background: var(--subkit-accent-soft);
+}
+
+.subkit-alert__more[aria-expanded="true"] {
+	background: var(--subkit-accent-soft);
+}
+
+.subkit-alerts__more {
+	margin: -8px 0 var(--subkit-gap);
+	padding-left: 0;
+}
+
+.subkit-alert__dismiss {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	color: var(--subkit-ink-soft);
+}
+
+.subkit-alert__dismiss:hover,
+.subkit-alert__dismiss:focus {
+	background: var(--subkit-line-soft);
+	color: var(--subkit-ink);
+}
+
+/* WordPress adds its own close button to dismissible notices, positioned for its layout. */
+.subkit-shell .subkit-alert.is-dismissible {
+	padding-right: 10px;
+}
+
+.subkit-shell .subkit-alert > .notice-dismiss {
+	position: static;
+	flex: none;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border-radius: 6px;
+}
+
+.subkit-shell .subkit-alert > .notice-dismiss::before {
+	font-size: 18px;
+	line-height: 28px;
+}
+
+.subkit-alert :is(.subkit-alert__more, .subkit-alert__dismiss, .notice-dismiss):focus-visible,
+.subkit-alerts__more:focus-visible {
+	outline: 2px solid var(--subkit-accent);
+	outline-offset: 1px;
+	box-shadow: none;
+}
+
+/* An important notice past the first few sits in the notification centre like any other. */
+.subkit-shell .subkit-notify__list .notice.subkit-alert {
+	border-width: 0 0 0 3px;
+	border-bottom: 1px solid var(--subkit-line-soft);
+	border-radius: 0;
+	box-shadow: none;
+}
+
+@media screen and (max-width: 600px) {
+	.subkit-shell .notice.subkit-alert {
+		flex-wrap: wrap;
+	}
+
+	.subkit-alert__text {
+		flex-basis: calc(100% - 40px);
+	}
+
+	.subkit-alert__actions {
+		margin-left: 28px;
+	}
 }
 

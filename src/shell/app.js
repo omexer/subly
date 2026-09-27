@@ -1,5 +1,5 @@
 /**
- * The app's frame: the header, the notices WordPress printed for this page, and the route.
+ * The app's frame: the header with its notification centre, the page's important notices, and the route.
  */
 import {
 	Component,
@@ -12,7 +12,7 @@ import {
 	useRef,
 	useState,
 } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { Button, Card, CardContent, Skeleton } from '@subkit/ui';
 import {
 	browser,
@@ -24,8 +24,12 @@ import {
 	subscribe,
 } from './router';
 import { highlightMenu, interceptLinks } from './links';
+import { createNotices } from './notices';
 
-const NOTICES = 'div.notice, div.error, div.updated';
+// Set by the server on pages the shell draws; the stylesheet hides their notices until they are moved.
+const APP_PAGE = 'subkit-app-page';
+const FOCUSABLE =
+	'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
 
 class Boundary extends Component {
 	constructor( props ) {
@@ -101,30 +105,125 @@ function Icon( { children } ) {
 	);
 }
 
-/**
- * Moves nodes into a slot, returning how to put each one back where it was.
- *
- * @param {Element[]} nodes
- * @param {Element}   slot
- * @return {Function[]} Restorers, in the order the nodes were moved.
- */
-function adopt( nodes, slot ) {
-	return nodes.map( ( node ) => {
-		const parent = node.parentNode;
-		const next = node.nextSibling;
+function NoticeCentre( { count, open, setOpen, listRef } ) {
+	const wrapRef = useRef( null );
+	const bellRef = useRef( null );
+	const panelRef = useRef( null );
+	const shown = open && count > 0;
 
-		slot.appendChild( node );
+	useEffect( () => {
+		if ( ! shown ) {
+			return;
+		}
 
-		return () => parent.insertBefore( node, next );
-	} );
-}
+		const panel = panelRef.current;
 
-function pageNotices( fallback ) {
-	return [ ...fallback.querySelectorAll( NOTICES ) ].filter(
-		( node ) =>
-			! node.matches( '.inline, .below-h2' ) &&
-			! node.closest( '#subkit-other-notices' ) &&
-			! node.parentElement.closest( NOTICES )
+		panel.focus();
+
+		const trap = ( event ) => {
+			const items = [ ...panel.querySelectorAll( FOCUSABLE ) ].filter(
+				( el ) => ! el.closest( '[hidden]' )
+			);
+			const active = panel.ownerDocument.activeElement;
+
+			if ( ! items.length ) {
+				event.preventDefault();
+			} else if (
+				event.shiftKey &&
+				( active === items[ 0 ] || active === panel )
+			) {
+				event.preventDefault();
+				items.at( -1 ).focus();
+			} else if ( ! event.shiftKey && active === items.at( -1 ) ) {
+				event.preventDefault();
+				items[ 0 ].focus();
+			}
+		};
+		const onDown = ( event ) => {
+			if ( ! wrapRef.current.contains( event.target ) ) {
+				setOpen( false );
+			}
+		};
+		const onKey = ( event ) => {
+			if ( 'Escape' === event.key ) {
+				setOpen( false );
+				bellRef.current?.focus();
+			} else if (
+				'Tab' === event.key &&
+				panel.contains( panel.ownerDocument.activeElement )
+			) {
+				trap( event );
+			}
+		};
+
+		document.addEventListener( 'mousedown', onDown );
+		document.addEventListener( 'keydown', onKey );
+
+		return () => {
+			document.removeEventListener( 'mousedown', onDown );
+			document.removeEventListener( 'keydown', onKey );
+		};
+	}, [ shown, setOpen ] );
+
+	const label = sprintf(
+		/* translators: %d: number of notifications */
+		_n(
+			'%d notification',
+			'%d notifications',
+			count,
+			'subkit-subscriptions'
+		),
+		count
+	);
+
+	return (
+		<div ref={ wrapRef } className="subkit-notify">
+			{ count > 0 ? (
+				<button
+					ref={ bellRef }
+					type="button"
+					className="subkit-notify__bell"
+					aria-label={ label }
+					title={ label }
+					aria-expanded={ shown }
+					aria-controls="subkit-notify-panel"
+					onClick={ () => setOpen( ! open ) }
+				>
+					<svg
+						viewBox="0 0 24 24"
+						width="18"
+						height="18"
+						fill="none"
+						stroke="currentColor"
+						strokeWidth="1.6"
+						strokeLinecap="round"
+						strokeLinejoin="round"
+						aria-hidden="true"
+						focusable="false"
+					>
+						<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" />
+					</svg>
+					<span className="subkit-notify__count" aria-hidden="true">
+						{ count }
+					</span>
+				</button>
+			) : null }
+			{ /* Always mounted: the notices live in the list whether or not it is open. */ }
+			<div
+				ref={ panelRef }
+				id="subkit-notify-panel"
+				className="subkit-notify__panel"
+				role="dialog"
+				aria-label={ __( 'Notifications', 'subkit-subscriptions' ) }
+				tabIndex={ -1 }
+				hidden={ ! shown }
+			>
+				<p className="subkit-notify__head">
+					{ __( 'Notifications', 'subkit-subscriptions' ) }
+				</p>
+				<div ref={ listRef } className="subkit-notify__list" />
+			</div>
+		</div>
 	);
 }
 
@@ -149,10 +248,12 @@ export function Shell( { fallback, links } ) {
 	const navRef = useRef( 0 );
 	const mountRef = useRef( 0 );
 	const failedRef = useRef( null );
-	const restorers = useRef( [] );
-	const toggleSlot = useRef( null );
-	const panelSlot = useRef( null );
-	const noticeSlot = useRef( null );
+	const notices = useRef( null );
+	const alertsRef = useRef( null );
+	const listRef = useRef( null );
+	const routeRef = useRef( null );
+	const [ counts, setCounts ] = useState( { more: 0, centre: 0 } );
+	const [ centreOpen, setCentreOpen ] = useState( false );
 	const route = getRoute( loc.page );
 
 	useEffect(
@@ -184,8 +285,9 @@ export function Shell( { fallback, links } ) {
 
 			// The first page falls back to what the server drew for it, which is still on the page.
 			if ( 0 === navRef.current && fallback && fallback.isConnected ) {
-				restorers.current.reverse().forEach( ( restore ) => restore() );
-				restorers.current = [];
+				notices.current?.restore();
+				notices.current = null;
+				document.body.classList.remove( APP_PAGE );
 				fallback
 					.querySelectorAll( '[data-subkit-header-end]' )
 					.forEach( ( marker ) =>
@@ -202,52 +304,46 @@ export function Shell( { fallback, links } ) {
 
 	useLayoutEffect( () => {
 		// A first route that threw has already failed by the time this runs in the same commit.
-		if (
-			! showing ||
-			! fallback ||
-			! fallback.isConnected ||
-			( 0 === loc.nav && 0 === failedRef.current )
-		) {
+		if ( ! showing || ( 0 === loc.nav && 0 === failedRef.current ) ) {
 			return;
 		}
 
-		const chrome = [
-			[
-				fallback.querySelector( '[data-subkit-notices-toggle]' ),
-				toggleSlot.current,
-			],
-			[
-				fallback.querySelector( '#subkit-other-notices' ),
-				panelSlot.current,
-			],
-		].filter( ( [ node ] ) => node );
+		if ( ! notices.current ) {
+			const root =
+				document.getElementById( 'wpbody-content' ) || document.body;
 
-		chrome.forEach( ( [ node, slot ] ) => {
-			restorers.current.push( ...adopt( [ node ], slot ) );
-		} );
+			document.body.classList.add( APP_PAGE );
+			notices.current = createNotices( {
+				alerts: alertsRef.current,
+				list: listRef.current,
+				isRoute: ( node ) => !! routeRef.current?.contains( node ),
+				onChange: setCounts,
+			} );
+			notices.current.collect( root );
+			notices.current.watch( root );
+		}
+
+		if ( ! fallback || ! fallback.isConnected ) {
+			return;
+		}
 
 		if ( 0 === loc.nav ) {
-			restorers.current.push(
-				...adopt( pageNotices( fallback ), noticeSlot.current )
-			);
 			fallback.hidden = true;
 			return;
 		}
 
-		restorers.current = [];
 		fallback.remove();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ showing, loc.nav ] );
 
+	useEffect( () => () => notices.current?.stop(), [] );
+
 	useLayoutEffect( () => {
-		if ( 0 === loc.nav || ! noticeSlot.current ) {
+		if ( 0 === loc.nav ) {
 			return;
 		}
 
-		// What WordPress said about the first page is not about this one.
-		[ ...noticeSlot.current.children ]
-			.filter( ( node ) => ! node.classList.contains( 'wp-header-end' ) )
-			.forEach( ( node ) => node.remove() );
+		notices.current?.dropFeedback();
 
 		if ( 'pop' !== loc.kind ) {
 			window.scrollTo( 0, 0 );
@@ -310,7 +406,12 @@ export function Shell( { fallback, links } ) {
 						</span>
 					</nav>
 					<div className="subkit-shell__meta">
-						<span ref={ toggleSlot } className="subkit-app__slot" />
+						<NoticeCentre
+							count={ counts.centre }
+							open={ centreOpen }
+							setOpen={ setCentreOpen }
+							listRef={ listRef }
+						/>
 						<a href={ links.help }>
 							<Icon>
 								<rect
@@ -357,21 +458,42 @@ export function Shell( { fallback, links } ) {
 					</div>
 				</div>
 			</header>
-			<div ref={ panelSlot } />
 			<div className="wrap subkit-shell__body">
 				<h1 className="screen-reader-text">{ route.title }</h1>
-				<div ref={ noticeSlot } className="subkit-app__notices">
+				<div className="subkit-app__landing">
 					<hr className="wp-header-end" />
 				</div>
-				{ failedAt === loc.nav ? (
-					<Failed />
-				) : (
-					<Boundary key={ loc.mount } onError={ ctx.fail }>
-						<Suspense fallback={ <Loading /> }>
-							<RouteView route={ route } ctx={ ctx } />
-						</Suspense>
-					</Boundary>
-				) }
+				<div ref={ alertsRef } className="subkit-alerts" />
+				{ counts.more > 0 ? (
+					<button
+						type="button"
+						className="subkit-alerts__more"
+						aria-controls="subkit-notify-panel"
+						onClick={ () => setCentreOpen( true ) }
+					>
+						{ sprintf(
+							/* translators: %d: number of important notices not shown */
+							_n(
+								'and %d more',
+								'and %d more',
+								counts.more,
+								'subkit-subscriptions'
+							),
+							counts.more
+						) }
+					</button>
+				) : null }
+				<div ref={ routeRef } className="subkit-app__route">
+					{ failedAt === loc.nav ? (
+						<Failed />
+					) : (
+						<Boundary key={ loc.mount } onError={ ctx.fail }>
+							<Suspense fallback={ <Loading /> }>
+								<RouteView route={ route } ctx={ ctx } />
+							</Suspense>
+						</Boundary>
+					) }
+				</div>
 			</div>
 		</div>
 	);
@@ -389,8 +511,10 @@ export function boot() {
 
 	const fallback = document.getElementById( 'subkit-fallback' );
 
-	// WordPress moves notices under this marker; ours sits under the app's header instead.
-	if ( fallback && getRoute( host.dataset.page ) ) {
+	if ( ! getRoute( host.dataset.page ) ) {
+		document.body.classList.remove( APP_PAGE );
+	} else if ( fallback ) {
+		// WordPress moves notices under this marker; ours sits under the app's header instead.
 		fallback.querySelectorAll( '.wp-header-end' ).forEach( ( marker ) => {
 			marker.classList.remove( 'wp-header-end' );
 			marker.setAttribute( 'data-subkit-header-end', '' );

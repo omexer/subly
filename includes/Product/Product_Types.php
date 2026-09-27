@@ -2,6 +2,8 @@
 
 namespace SubKit\Product;
 
+use SubKit\Admin\Notices;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -128,7 +130,7 @@ class Product_Types {
 			return;
 		}
 
-		echo '<div class="notice notice-error is-dismissible"><p>' . esc_html__(
+		echo '<div class="' . esc_attr( Notices::important( 'error', true ) ) . '"><p>' . esc_html__(
 			'This is a variable subscription, but EasySubscription Pro is not active, so nothing gives its variations a billing schedule. A customer buying one is charged once and never again. Activate EasySubscription Pro, or change the product type to Subscription.',
 			'subkit-subscriptions'
 		) . '</p></div>';

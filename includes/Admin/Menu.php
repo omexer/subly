@@ -206,8 +206,8 @@ class Menu {
 		}
 
 		printf(
-			'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
-			'pass' === $result ? 'success' : 'error',
+			'<div class="%s"><p>%s</p></div>',
+			esc_attr( Notices::feedback( 'pass' === $result ? 'success' : 'error', true ) ),
 			'pass' === $result
 				? esc_html__( 'Test renewal succeeded. A subscription was created, renewed and cleaned up — automatic billing works on this site.', 'subkit-subscriptions' )
 				: esc_html__( 'The test renewal did not complete. Check that scheduled tasks are running, then try again.', 'subkit-subscriptions' )
@@ -265,8 +265,8 @@ class Menu {
 		$held  = $asked - $changed;
 
 		printf(
-			'<div class="notice notice-%s is-dismissible"><p>%s%s</p></div>',
-			$changed ? 'success' : 'warning',
+			'<div class="%s"><p>%s%s</p></div>',
+			esc_attr( Notices::feedback( $changed ? 'success' : 'warning', true ) ),
 			esc_html(
 				sprintf(
 					/* translators: %d: number of subscriptions */
@@ -303,8 +303,8 @@ class Menu {
 
 		if ( '' !== $message ) {
 			printf(
-				'<div class="notice notice-%s is-dismissible"><p>%s</p></div>',
-				'created' === $result ? 'success' : 'error',
+				'<div class="%s"><p>%s</p></div>',
+				esc_attr( Notices::feedback( 'created' === $result ? 'success' : 'error', true ) ),
 				esc_html( $message )
 			);
 		}
