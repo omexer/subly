@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.28.0
+Stable tag: 0.28.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -166,6 +166,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.28.1 =
+* The notification bell sits beside Help and Settings with its count as a small pill next to it, instead of a badge that covered the bell.
 
 = 0.28.0 =
 * **SubKit is now EasySubscription in every name:** folder, files, code, settings, database tables, hooks, the API (`easysubscription/v1`) and the repository. It is a new plugin: nothing is carried over from SubKit.
