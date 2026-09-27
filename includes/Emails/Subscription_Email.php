@@ -98,14 +98,15 @@ abstract class Subscription_Email extends \WC_Email {
 		$loaded = $this->subscription instanceof Subscription;
 
 		return array(
-			'email_heading' => $this->get_heading(),
-			'intro'         => $loaded ? $this->intro() : __( 'This is a preview. Real messages include the subscription details here.', 'subkit-subscriptions' ),
-			'facts'         => $loaded ? $this->facts() : array(),
-			'cta'           => $loaded ? $this->call_to_action() : null,
-			'outro'         => $loaded ? $this->outro() : '',
-			'subscription'  => $this->subscription,
-			'sent_to_admin' => ! $this->customer_email,
-			'email'         => $this,
+			'email_heading'      => $this->get_heading(),
+			'intro'              => $loaded ? $this->intro() : __( 'This is a preview. Real messages include the subscription details here.', 'subkit-subscriptions' ),
+			'facts'              => $loaded ? $this->facts() : array(),
+			'cta'                => $loaded ? $this->call_to_action() : null,
+			'outro'              => $loaded ? $this->outro() : '',
+			'additional_content' => $this->get_additional_content(),
+			'subscription'       => $this->subscription,
+			'sent_to_admin'      => ! $this->customer_email,
+			'email'              => $this,
 		);
 	}
 

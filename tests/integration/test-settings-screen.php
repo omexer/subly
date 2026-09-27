@@ -155,7 +155,7 @@ $check( 'with the one on screen marked', 'Stripe' === trim( (string) $stripe->qu
 $check( 'and only its own fields in the form', 0 === $stripe->query( '//form//*[@id="subkit_paypal_client_id"]' )->length );
 
 $renewal = $render( 'recovery' );
-$check( 'a stacked group draws its sections together', str_contains( $renewal, 'id="subkit_renewal_reminder_days"' ) && str_contains( $renewal, 'id="subkit_test_stacked_option"' ) );
+$check( 'a stacked group draws its sections together', str_contains( $renewal, 'id="subkit_catch_up_policy"' ) && str_contains( $renewal, 'id="subkit_test_stacked_option"' ) );
 $check( 'with an anchor for each', str_contains( $renewal, 'id="subkit-section-recovery"' ) && str_contains( $renewal, 'id="subkit-section-renewal"' ) );
 
 $general = $render( '' );
@@ -210,11 +210,11 @@ $row = $row_of( $render( 'customer_controls' ), Cancellation_Policy::OPTION_WHEN
 $check( 'switched back on, it saves and the row shows', 'yes' === get_option( Cancellation_Policy::OPTION ) && $row && ! str_contains( $row->getAttribute( 'class' ), 'is-hidden' ) );
 $check( 'and the dependent setting applies again', Cancellation_Policy::is_immediate() );
 
-$post                                  = $form_of( $render( 'renewal' ) );
-$post['subkit_renewal_reminder_days']  = '5';
-$post['subkit_test_stacked_option']    = 'saved together';
+$post                                = $form_of( $render( 'renewal' ) );
+$post['subkit_catch_up_policy']      = 'charge_all';
+$post['subkit_test_stacked_option']  = 'saved together';
 $save( $post );
-$check( 'a stacked page saves every section on it', '5' === (string) get_option( 'subkit_renewal_reminder_days' ) && 'saved together' === get_option( 'subkit_test_stacked_option' ) );
+$check( 'a stacked page saves every section on it', 'charge_all' === (string) get_option( 'subkit_catch_up_policy' ) && 'saved together' === get_option( 'subkit_test_stacked_option' ) );
 
 $post                             = $form_of( $render( 'subkit_test_extra' ) );
 $post['subkit_test_extra_option'] = 'listed';

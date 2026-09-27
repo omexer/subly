@@ -35,6 +35,9 @@ $run = function () { define( 'WP_UNINSTALL_PLUGIN', 'subkit-subscriptions/subkit
 $queued_actions = array(
 	\SubKit\Billing\Renewal_Scheduler::ACTION_RENEWAL,
 	\SubKit\Billing\Renewal_Scheduler::ACTION_REMINDER,
+	\SubKit\Billing\Renewal_Scheduler::ACTION_TRIAL_REMINDER,
+	\SubKit\Billing\Renewal_Scheduler::ACTION_EXPIRY_REMINDER,
+	\SubKit\Emails\Mailer::ACTION_REACTIVATED,
 	\SubKit\Billing\Renewal_Scheduler::ACTION_SWEEP,
 	\SubKit\Billing\Renewal_Processor::ACTION_SETTLE,
 	\SubKit\Billing\Renewal_Processor::ACTION_RESOLVE,

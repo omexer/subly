@@ -20,10 +20,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Renewal_Scheduler {
 
-	public const ACTION_RENEWAL  = 'subkit_scheduled_renewal';
-	public const ACTION_REMINDER = 'subkit_renewal_reminder';
-	public const ACTION_SWEEP    = 'subkit_sweep_overdue';
-	public const GROUP           = 'subkit';
+	public const ACTION_RENEWAL         = 'subkit_scheduled_renewal';
+	public const ACTION_REMINDER        = 'subkit_renewal_reminder';
+	public const ACTION_TRIAL_REMINDER  = 'subkit_trial_reminder';
+	public const ACTION_EXPIRY_REMINDER = 'subkit_expiry_reminder';
+	public const ACTION_SWEEP           = 'subkit_sweep_overdue';
+	public const GROUP                  = 'subkit';
+
+	public const OPTION_REMINDER_HOURS = 'subkit_renewal_reminder_hours';
+	public const OPTION_EXPIRY_HOURS   = 'subkit_expiry_reminder_hours';
+	public const DEFAULT_HOURS         = 24;
+	public const TRIAL_REMINDER_HOURS  = 72;
+
+	private const META_TRIAL_REMINDED  = '_subkit_trial_reminded';
+	private const META_EXPIRY_REMINDED = '_subkit_expiry_reminded';
 
 	/** Cap per sweep so a site dark for a month does not fire thousands of charges at once. */
 	private const SWEEP_BATCH = 50;
@@ -41,6 +51,8 @@ class Renewal_Scheduler {
 		add_action( 'init', array( $this, 'ensure_sweeper' ), 30 );
 		add_action( self::ACTION_SWEEP, array( $this, 'sweep' ) );
 		add_action( self::ACTION_REMINDER, array( $this, 'remind' ) );
+		add_action( self::ACTION_TRIAL_REMINDER, array( $this, 'remind_trial' ) );
+		add_action( self::ACTION_EXPIRY_REMINDER, array( $this, 'remind_expiry' ) );
 	}
 
 	/**
@@ -66,7 +78,18 @@ class Renewal_Scheduler {
 		$due = strtotime( $next . ' UTC' );
 
 		$this->schedule_at( $subscription->get_id(), $due );
-		$this->schedule_reminder( $subscription->get_id(), $due );
+		$this->schedule_reminder( $subscription, $due );
+		$this->schedule_trial_reminder( $subscription );
+		$this->schedule_expiry_reminder( $subscription );
+	}
+
+	/**
+	 * Hours ahead for a reminder, never less than one: its email's own switch is what turns it off.
+	 */
+	public static function hours( string $option ): int {
+		$hours = get_option( $option, self::DEFAULT_HOURS );
+
+		return is_numeric( $hours ) ? max( 1, (int) $hours ) : self::DEFAULT_HOURS;
 	}
 
 	/**
@@ -74,23 +97,55 @@ class Renewal_Scheduler {
 	 * closer than the warning period — a reminder that arrives after the charge is worse
 	 * than none at all.
 	 */
-	private function schedule_reminder( int $subscription_id, int $due ): void {
+	private function schedule_reminder( Subscription $subscription, int $due ): void {
+		$last = null !== $this->ends_at( $subscription );
+
+		$this->queue( self::ACTION_REMINDER, $subscription->get_id(), $last ? 0 : $due - self::hours( self::OPTION_REMINDER_HOURS ) * HOUR_IN_SECONDS );
+	}
+
+	private function schedule_trial_reminder( Subscription $subscription ): void {
+		$end = Subscription_Status::Trialling === $subscription->get_status_enum() ? (string) $subscription->get_trial_end() : '';
+
+		$this->queue( self::ACTION_TRIAL_REMINDER, $subscription->get_id(), '' === $end ? 0 : strtotime( $end . ' UTC' ) - self::TRIAL_REMINDER_HOURS * HOUR_IN_SECONDS );
+	}
+
+	private function schedule_expiry_reminder( Subscription $subscription ): void {
+		$ends = $this->ends_at( $subscription );
+
+		$this->queue( self::ACTION_EXPIRY_REMINDER, $subscription->get_id(), null === $ends ? 0 : $ends - self::hours( self::OPTION_EXPIRY_HOURS ) * HOUR_IN_SECONDS );
+	}
+
+	/**
+	 * One pending action per subscription and hook, at $at; none when $at has passed.
+	 */
+	private function queue( string $hook, int $subscription_id, int $at ): void {
 		if ( ! function_exists( 'as_schedule_single_action' ) ) {
 			return;
 		}
 
-		$days = (int) get_option( 'subkit_renewal_reminder_days', 3 );
 		$args = array( 'subscription_id' => $subscription_id );
 
-		as_unschedule_all_actions( self::ACTION_REMINDER, $args, self::GROUP );
+		as_unschedule_all_actions( $hook, $args, self::GROUP );
 
-		$at = $due - ( $days * DAY_IN_SECONDS );
+		if ( $at > time() ) {
+			as_schedule_single_action( $at, $hook, $args, self::GROUP );
+		}
+	}
 
-		if ( $days < 1 || $at <= time() ) {
-			return;
+	/**
+	 * When a subscription on its last paid period stops: the next payment on or after its end date is never charged.
+	 */
+	private function ends_at( Subscription $subscription ): ?int {
+		$end  = (string) $subscription->get_end_date();
+		$next = (string) $subscription->get_next_payment();
+
+		if ( '' === $end || '' === $next ) {
+			return null;
 		}
 
-		as_schedule_single_action( $at, self::ACTION_REMINDER, $args, self::GROUP );
+		$next_at = strtotime( $next . ' UTC' );
+
+		return $next_at >= strtotime( $end . ' UTC' ) ? $next_at : null;
 	}
 
 	/**
@@ -100,8 +155,7 @@ class Renewal_Scheduler {
 		$subscription = wc_get_order( (int) $subscription_id );
 		$status       = $subscription instanceof Subscription ? $subscription->get_status_enum() : null;
 
-		// Switched off after this was queued.
-		if ( ! $subscription instanceof Subscription || ! $status || ! $status->is_billable() || (int) get_option( 'subkit_renewal_reminder_days', 3 ) < 1 ) {
+		if ( ! $subscription instanceof Subscription || ! $status || ! $status->is_billable() ) {
 			return;
 		}
 
@@ -109,16 +163,100 @@ class Renewal_Scheduler {
 
 		// The date can have moved since this was queued — a payment taken early, a plan
 		// switched — and warning about a charge that is no longer coming is a support call.
-		if ( empty( $next ) || strtotime( $next . ' UTC' ) <= time() ) {
+		if ( empty( $next ) || strtotime( $next . ' UTC' ) <= time() || null !== $this->ends_at( $subscription ) ) {
 			return;
 		}
 
 		/**
-		 * Fires a few days before a subscription is charged.
+		 * Fires a few hours before a subscription is charged.
 		 *
 		 * @param Subscription $subscription
 		 */
 		do_action( 'subkit_renewal_due_soon', $subscription );
+	}
+
+	/**
+	 * The trial reminder has warned of the first payment, or is queued to: sent or pending for this trial's end.
+	 */
+	public function trial_reminder_covers( Subscription $subscription ): bool {
+		$end = (string) $subscription->get_trial_end();
+
+		if ( Subscription_Status::Trialling !== $subscription->get_status_enum() || '' === $end ) {
+			return false;
+		}
+
+		return gmdate( 'Y-m-d H:i:s', strtotime( $end . ' UTC' ) ) === (string) $subscription->get_meta( self::META_TRIAL_REMINDED )
+			|| ( function_exists( 'as_get_scheduled_actions' ) && $this->has_pending( self::ACTION_TRIAL_REMINDER, array( 'subscription_id' => $subscription->get_id() ) ) );
+	}
+
+	/**
+	 * @param int|string $subscription_id
+	 */
+	public function remind_trial( $subscription_id ): void {
+		$subscription = wc_get_order( (int) $subscription_id );
+
+		if ( ! $subscription instanceof Subscription || Subscription_Status::Trialling !== $subscription->get_status_enum() ) {
+			return;
+		}
+
+		$end = (string) $subscription->get_trial_end();
+
+		if ( '' === $end || ! $this->due_now( $subscription, self::ACTION_TRIAL_REMINDER, strtotime( $end . ' UTC' ), self::TRIAL_REMINDER_HOURS, self::META_TRIAL_REMINDED ) ) {
+			return;
+		}
+
+		/**
+		 * Fires once per trial end, a few days before the trial turns into the first payment.
+		 *
+		 * @param Subscription $subscription
+		 */
+		do_action( 'subkit_trial_ending_soon', $subscription );
+	}
+
+	/**
+	 * @param int|string $subscription_id
+	 */
+	public function remind_expiry( $subscription_id ): void {
+		$subscription = wc_get_order( (int) $subscription_id );
+		$status       = $subscription instanceof Subscription ? $subscription->get_status_enum() : null;
+		$ends         = $subscription instanceof Subscription ? $this->ends_at( $subscription ) : null;
+
+		if ( ! $status || ! $status->is_billable() || null === $ends || ! $this->due_now( $subscription, self::ACTION_EXPIRY_REMINDER, $ends, self::hours( self::OPTION_EXPIRY_HOURS ), self::META_EXPIRY_REMINDED ) ) {
+			return;
+		}
+
+		/**
+		 * Fires once per end date, before a subscription with a fixed end stops.
+		 *
+		 * @param Subscription $subscription
+		 */
+		do_action( 'subkit_subscription_ending_soon', $subscription );
+	}
+
+	/**
+	 * Claims the reminder for the moment it is about, so a re-run sends nothing; a moment moved later is queued again instead.
+	 */
+	private function due_now( Subscription $subscription, string $hook, int $moment, int $hours, string $meta ): bool {
+		if ( $moment <= time() ) {
+			return false;
+		}
+
+		if ( $moment - $hours * HOUR_IN_SECONDS > time() + HOUR_IN_SECONDS ) {
+			$this->queue( $hook, $subscription->get_id(), $moment - $hours * HOUR_IN_SECONDS );
+
+			return false;
+		}
+
+		$key = gmdate( 'Y-m-d H:i:s', $moment );
+
+		if ( $key === (string) $subscription->get_meta( $meta ) ) {
+			return false;
+		}
+
+		$subscription->update_meta_data( $meta, $key );
+		$subscription->save();
+
+		return true;
 	}
 
 	/**
@@ -190,6 +328,8 @@ class Renewal_Scheduler {
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( self::ACTION_RENEWAL, array( 'subscription_id' => $subscription_id ), self::GROUP );
 			as_unschedule_all_actions( self::ACTION_REMINDER, array( 'subscription_id' => $subscription_id ), self::GROUP );
+			as_unschedule_all_actions( self::ACTION_TRIAL_REMINDER, array( 'subscription_id' => $subscription_id ), self::GROUP );
+			as_unschedule_all_actions( self::ACTION_EXPIRY_REMINDER, array( 'subscription_id' => $subscription_id ), self::GROUP );
 		}
 	}
 

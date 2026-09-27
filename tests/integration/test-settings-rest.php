@@ -156,7 +156,7 @@ $check( 'General is addressed as general', 'general' === ( $general['section'] ?
 $check( 'cards keep their titles, one per WooCommerce title', in_array( 'Access', array_column( $general['cards'] ?? array(), 'title' ), true ) );
 
 $renewal = $get( '/renewal' )->get_data();
-$check( 'a stacked group returns all its sections together', array( 'recovery', 'renewal' ) === ( $renewal['sections'] ?? null ) && isset( $fields_of( $renewal )['subkit_test_stacked_option'], $fields_of( $renewal )['subkit_renewal_reminder_days'] ), $renewal['sections'] ?? null );
+$check( 'a stacked group returns all its sections together', array( 'recovery', 'renewal' ) === ( $renewal['sections'] ?? null ) && isset( $fields_of( $renewal )['subkit_test_stacked_option'], $fields_of( $renewal )['subkit_catch_up_policy'] ), $renewal['sections'] ?? null );
 $check( 'a section that does not exist is a 404', 404 === $get( '/subkit_no_such_section' )->get_status() );
 
 echo "\n3. A save writes only the posted fields of that page\n";
@@ -213,19 +213,20 @@ $post( 'subkit_test_extra', array( 'subkit_test_extra_note' => 'Hello <script>al
 $check( 'a textarea is kept to safe HTML', 'Hello alert(1)<strong>there</strong>' === get_option( 'subkit_test_extra_note' ), get_option( 'subkit_test_extra_note' ) );
 $check( 'a backslash survives the save', 'C:\\shop\\files' === get_option( 'subkit_test_extra_path' ), get_option( 'subkit_test_extra_path' ) );
 
-$sanitised = static fn( $value ) => '2' === $value ? '5' : $value;
-add_filter( 'woocommerce_admin_settings_sanitize_option_subkit_renewal_reminder_days', $sanitised );
-$post( 'renewal', array( 'subkit_renewal_reminder_days' => '2' ) );
-remove_filter( 'woocommerce_admin_settings_sanitize_option_subkit_renewal_reminder_days', $sanitised );
-$check( "a field's own sanitising filter runs", '5' === get_option( 'subkit_renewal_reminder_days' ), get_option( 'subkit_renewal_reminder_days' ) );
+$sanitised = static fn( $value ) => 'charge_all' === $value ? 'rebase' : $value;
+update_option( 'subkit_catch_up_policy', 'charge_all' );
+add_filter( 'woocommerce_admin_settings_sanitize_option_subkit_catch_up_policy', $sanitised );
+$post( 'renewal', array( 'subkit_catch_up_policy' => 'charge_all' ) );
+remove_filter( 'woocommerce_admin_settings_sanitize_option_subkit_catch_up_policy', $sanitised );
+$check( "a field's own sanitising filter runs", 'rebase' === get_option( 'subkit_catch_up_policy' ), get_option( 'subkit_catch_up_policy' ) );
 
 echo "\n6. A stacked group saves each of its sections\n";
 $fired  = static fn( string $id ): int => did_action( 'woocommerce_update_options_subkit_' . $id );
 $before = array( 'renewal' => $fired( 'renewal' ), 'recovery' => $fired( 'recovery' ) );
-$stack  = $post( 'renewal', array( 'subkit_renewal_reminder_days' => '4', 'subkit_test_stacked_option' => 'stacked' ) );
-$check( 'both sections are written from one save', 200 === $stack->get_status() && '4' === get_option( 'subkit_renewal_reminder_days' ) && 'stacked' === get_option( 'subkit_test_stacked_option' ), $stack->get_data() );
+$stack  = $post( 'renewal', array( 'subkit_catch_up_policy' => 'charge_all', 'subkit_test_stacked_option' => 'stacked' ) );
+$check( 'both sections are written from one save', 200 === $stack->get_status() && 'charge_all' === get_option( 'subkit_catch_up_policy' ) && 'stacked' === get_option( 'subkit_test_stacked_option' ), $stack->get_data() );
 $check( "each section's update action runs once, as on WooCommerce's own tab", $before['renewal'] + 1 === $fired( 'renewal' ) && $before['recovery'] + 1 === $fired( 'recovery' ) );
-$only = $post( 'renewal', array( 'subkit_renewal_reminder_days' => '3' ) );
+$only = $post( 'renewal', array( 'subkit_catch_up_policy' => 'rebase' ) );
 $check( 'a section with nothing posted is not saved or announced', 200 === $only->get_status() && 'stacked' === get_option( 'subkit_test_stacked_option' ) && $before['recovery'] + 1 === $fired( 'recovery' ) );
 
 echo "\n7. What WooCommerce is told during a save comes back\n";

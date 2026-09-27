@@ -54,7 +54,10 @@ add_filter(
 
 echo "\nRenewal reminder\n";
 $scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
-$set( 'subkit_renewal_reminder_days', 3 );
+$reminder  = WC()->mailer()->get_emails()['SubKit_Renewal_Reminder'];
+$set( Renewal_Scheduler::OPTION_REMINDER_HOURS, 72 );
+$set( $reminder->get_option_key(), array( 'enabled' => 'yes' ) );
+WC()->mailer()->init();
 $r = $make( Subscription_Status::Active );
 $scheduler->schedule_next( $r );
 $check( 'fixture: a reminder is queued', (bool) as_next_scheduled_action( Renewal_Scheduler::ACTION_REMINDER, array( 'subscription_id' => $r->get_id() ), Renewal_Scheduler::GROUP ) );
@@ -63,15 +66,14 @@ $sent = array();
 $scheduler->remind( $r->get_id() );
 $check( 'fixture: while on, it is sent', 1 === count( $sent ), count( $sent ) );
 
-foreach ( array( '0' => 0, 'empty' => '' ) as $label => $off ) {
-	$set( 'subkit_renewal_reminder_days', $off );
-	$sent = array();
-	$scheduler->remind( $r->get_id() );
-	$check( "switched off ($label) after it was queued, it sends nothing", array() === $sent, count( $sent ) );
-	$scheduler->schedule_next( $r );
-	$check( "and nothing new is queued ($label)", ! as_next_scheduled_action( Renewal_Scheduler::ACTION_REMINDER, array( 'subscription_id' => $r->get_id() ), Renewal_Scheduler::GROUP ) );
-}
-$set( 'subkit_renewal_reminder_days', 3 );
+// Its one switch is the email's own, under WooCommerce → Emails or Notifications.
+$set( $reminder->get_option_key(), array( 'enabled' => 'no' ) );
+WC()->mailer()->init();
+$sent = array();
+$scheduler->remind( $r->get_id() );
+$check( 'switched off after it was queued, it sends nothing', array() === $sent, count( $sent ) );
+$set( $reminder->get_option_key(), array( 'enabled' => 'yes' ) );
+WC()->mailer()->init();
 
 echo "\nWhere the settings sit\n";
 global $wp_actions;
@@ -100,7 +102,7 @@ if ( null === $was_pro ) {
 } else {
 	$wp_actions['subkit_pro_loaded'] = $was_pro;
 }
-$check( 'the grace period and the reminder share the Grace period card', array( 'subkit_grace_period_days', 'subkit_renewal_reminder_days' ) === ( $groups['Grace period'] ?? null ), $groups );
+$check( 'the grace period has its card, the reminder having moved to Notifications', array( 'subkit_grace_period_days' ) === ( $groups['Grace period'] ?? null ), $groups );
 $check( 'missed renewals and free first payments share the Renewal card', array( 'subkit_catch_up_policy', \SubKit\Checkout\Trial_Payment::OPTION ) === ( $groups['Renewal'] ?? null ), $groups );
 
 echo "\nWithout a grace period\n";

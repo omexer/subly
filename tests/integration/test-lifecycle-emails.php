@@ -38,20 +38,23 @@ $make = function ( Subscription_Status $status, int $days ) {
 $scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
 
 echo "\nScheduling\n";
+$hours_were = get_option( Renewal_Scheduler::OPTION_REMINDER_HOURS, null );
+update_option( Renewal_Scheduler::OPTION_REMINDER_HOURS, 72 );
 $far = $make( Subscription_Status::Active, 10 );
 $scheduler->schedule_next( $far );
 $at = as_next_scheduled_action( Renewal_Scheduler::ACTION_REMINDER, array( 'subscription_id' => $far->get_id() ), Renewal_Scheduler::GROUP );
-$check( 'reminder queued 3 days before the charge', $at && abs( $at - ( time() + 7 * DAY_IN_SECONDS ) ) < 120, array( $at, time() + 7 * DAY_IN_SECONDS ) );
+$check( 'reminder queued the set hours before the charge', $at && abs( $at - ( time() + 7 * DAY_IN_SECONDS ) ) < 120, array( $at, time() + 7 * DAY_IN_SECONDS ) );
 
 $soon = $make( Subscription_Status::Active, 1 );
 $scheduler->schedule_next( $soon );
 $check( 'no reminder when the charge is sooner than the notice period', ! as_next_scheduled_action( Renewal_Scheduler::ACTION_REMINDER, array( 'subscription_id' => $soon->get_id() ), Renewal_Scheduler::GROUP ) );
 
-update_option( 'subkit_renewal_reminder_days', 0 );
-$off = $make( Subscription_Status::Active, 10 );
+update_option( Renewal_Scheduler::OPTION_REMINDER_HOURS, 12 );
+$off = $make( Subscription_Status::Active, 1 );
 $scheduler->schedule_next( $off );
-$check( 'reminders can be switched off', ! as_next_scheduled_action( Renewal_Scheduler::ACTION_REMINDER, array( 'subscription_id' => $off->get_id() ), Renewal_Scheduler::GROUP ) );
-delete_option( 'subkit_renewal_reminder_days' );
+$at = as_next_scheduled_action( Renewal_Scheduler::ACTION_REMINDER, array( 'subscription_id' => $off->get_id() ), Renewal_Scheduler::GROUP );
+$check( 'a shorter notice period still reminds a charge a day away', $at && abs( $at - ( time() + 12 * HOUR_IN_SECONDS ) ) < 120, $at );
+null === $hours_were ? delete_option( Renewal_Scheduler::OPTION_REMINDER_HOURS ) : update_option( Renewal_Scheduler::OPTION_REMINDER_HOURS, $hours_were );
 
 echo "\nSending\n";
 $sent = array();

@@ -667,6 +667,36 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	display: block;
 }
 
+.subkit-settings__row--stacked {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+}
+
+.subkit-settings__row--stacked .subkit-settings__label {
+	flex: none;
+}
+
+.subkit-settings__row--stacked .subkit-settings__control {
+	justify-content: flex-start;
+	max-width: none;
+}
+
+.subkit-settings .subkit-settings__row--stacked .subkit-input--wide {
+	width: 100%;
+	max-width: 640px;
+}
+
+.subkit-email-preview {
+	display: block;
+	width: 100%;
+	height: 640px;
+	margin: 16px 0 18px;
+	border: 1px solid var(--subkit-line);
+	border-radius: var(--subkit-radius-sm);
+	background: #fff;
+}
+
 .subkit-settings__label {
 	flex: 0 1 60%;
 	min-width: 0;

@@ -24,7 +24,8 @@ $was_pro = $wp_actions['subkit_pro_loaded'] ?? null;
 
 unset( $wp_actions['subkit_pro_loaded'] );
 $check( 'without EasySubscription Pro the grace period is not offered', ! in_array( 'subkit_grace_period_days', $ids(), true ), $ids() );
-$check( 'while the settings around it still are', in_array( 'subkit_catch_up_policy', $ids(), true ) && in_array( 'subkit_renewal_reminder_days', $ids(), true ) );
+$check( 'while the settings around it still are', in_array( 'subkit_catch_up_policy', $ids(), true ) );
+$check( 'and its card, with nothing else in it, goes too', ! in_array( 'subkit_grace_title', $ids(), true ), $ids() );
 
 $wp_actions['subkit_pro_loaded'] = 1;
 $check( 'with EasySubscription Pro it is', in_array( 'subkit_grace_period_days', $ids(), true ) );

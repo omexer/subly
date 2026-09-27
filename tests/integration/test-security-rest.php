@@ -32,6 +32,7 @@ $bodies = array(
 	'#/health/\d+/actions$#'         => array( 'action' => 'dismiss' ),
 	'#/subscriptions/\d+$#'          => array( 'status' => 'sk-cancelled' ),
 	'#/settings/\d+$#'               => array( 'values' => array( 'subkit_allow_cancellation' => 'no' ) ),
+	'#/settings/emails/\d+$#'        => array( 'values' => array( 'subject' => 'Hijacked' ) ),
 );
 
 $routes = array();

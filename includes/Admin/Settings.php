@@ -6,6 +6,7 @@ use SubKit\Billing\Renewal_Scheduler;
 use SubKit\Billing\Renewal_Tax_Repair;
 use SubKit\Data\Charge_Slot_Repository;
 use SubKit\Data\Migrator;
+use SubKit\Emails\Notification_Settings;
 use SubKit\Lifecycle\Cancellation_Policy;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -36,6 +37,7 @@ class Settings extends \WC_Settings_Page {
 			'customer_controls' => __( 'Customer controls', 'subkit-subscriptions' ),
 			'renewal'           => __( 'Renewal & billing', 'subkit-subscriptions' ),
 			'checkout'          => __( 'Cart & checkout', 'subkit-subscriptions' ),
+			'notifications'     => __( 'Notifications', 'subkit-subscriptions' ),
 			'paypal'            => __( 'PayPal', 'subkit-subscriptions' ),
 			'stripe'            => __( 'Stripe', 'subkit-subscriptions' ),
 		);
@@ -166,17 +168,6 @@ class Settings extends \WC_Settings_Page {
 				),
 			),
 			array(
-				'title'             => __( 'Send renewal reminder (Days before)', 'subkit-subscriptions' ),
-				'desc_tip'          => __( 'Emails the customer before the card is charged, so the charge is not a surprise. 0 turns the reminder off.', 'subkit-subscriptions' ),
-				'id'                => 'subkit_renewal_reminder_days',
-				'type'              => 'number',
-				'default'           => 3,
-				'custom_attributes' => array(
-					'min'  => '0',
-					'step' => '1',
-				),
-			),
-			array(
 				'type' => 'sectionend',
 				'id'   => 'subkit_grace_title',
 			),
@@ -210,9 +201,9 @@ class Settings extends \WC_Settings_Page {
 			),
 		);
 
-		// Only Pro's payment retries read it; without Pro a failed renewal goes on hold at once.
+		// Only Pro's payment retries read it; without Pro a failed renewal goes on hold at once, and its card has nothing else.
 		if ( ! did_action( 'subkit_pro_loaded' ) ) {
-			$settings = array_values( array_filter( $settings, static fn( array $setting ): bool => 'subkit_grace_period_days' !== $setting['id'] ) );
+			$settings = array_values( array_filter( $settings, static fn( array $setting ): bool => ! in_array( $setting['id'], array( 'subkit_grace_period_days', 'subkit_grace_title' ), true ) ) );
 		}
 
 		return $settings;
@@ -273,6 +264,10 @@ class Settings extends \WC_Settings_Page {
 				'id'   => 'subkit_labels_title',
 			),
 		);
+	}
+
+	public function get_settings_for_notifications_section(): array {
+		return Notification_Settings::fields();
 	}
 
 	public function get_settings_for_paypal_section(): array {

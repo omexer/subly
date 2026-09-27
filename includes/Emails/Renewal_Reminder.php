@@ -19,7 +19,7 @@ class Renewal_Reminder extends Subscription_Email {
 	public function __construct() {
 		$this->id             = 'subkit_renewal_reminder';
 		$this->title          = __( 'Upcoming renewal', 'subkit-subscriptions' );
-		$this->description    = __( 'Sent to the customer a few days before a subscription is charged. The notice period is set under WooCommerce → Settings → Subscriptions.', 'subkit-subscriptions' );
+		$this->description    = __( 'Sent to the customer before a subscription is charged. How far ahead is set under EasySubscription → Settings → Notifications.', 'subkit-subscriptions' );
 		$this->customer_email = true;
 
 		parent::__construct();

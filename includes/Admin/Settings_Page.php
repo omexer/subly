@@ -113,7 +113,7 @@ class Settings_Page {
 			}
 
 			if ( $fields ) {
-				\WC_Admin_Settings::save_fields( $fields, null === $values ? null : wp_slash( $values ) );
+				\WC_Admin_Settings::save_fields( $fields, null === $values ? null : wp_slash( self::as_posted( $values ) ) );
 				$saved[] = $id;
 			}
 		}
@@ -124,6 +124,26 @@ class Settings_Page {
 		}
 
 		return (bool) $saved;
+	}
+
+	/**
+	 * An array-option id such as woocommerce_x_settings[enabled] nested as a browser posts it, which is where WooCommerce reads it.
+	 *
+	 * @param array<string, mixed> $values
+	 * @return array<string, mixed>
+	 */
+	private static function as_posted( array $values ): array {
+		$posted = array();
+
+		foreach ( $values as $id => $value ) {
+			if ( preg_match( '/^([^\[\]]+)\[([^\[\]]+)\]$/', (string) $id, $parts ) ) {
+				$posted[ $parts[1] ][ $parts[2] ] = $value;
+			} else {
+				$posted[ $id ] = $value;
+			}
+		}
+
+		return $posted;
 	}
 
 	public function render(): void {

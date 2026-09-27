@@ -2,7 +2,9 @@
 
 namespace SubKit\Emails;
 
+use SubKit\Billing\Renewal_Scheduler;
 use SubKit\Domain\Subscription;
+use SubKit\Domain\Subscription_Status;
 use SubKit\Gateways\Charge_Result;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -24,6 +26,9 @@ class Mailer {
 		'Confirm_Payment'           => Confirm_Payment::class,
 		'Subscription_Cancelled'    => Subscription_Cancelled::class,
 		'Renewal_Reminder'          => Renewal_Reminder::class,
+		'Trial_Ending'              => Trial_Ending::class,
+		'Expiring_Soon'             => Expiring_Soon::class,
+		'Subscription_Reactivated'  => Subscription_Reactivated::class,
 		'Merchant_New_Subscription' => Merchant_New_Subscription::class,
 		'Merchant_Cancelled'        => Merchant_Subscription_Cancelled::class,
 		'Merchant_Ended'            => Merchant_Subscription_Ended::class,
@@ -45,6 +50,10 @@ class Mailer {
 		'customer_failed_order',
 	);
 
+	public const ACTION_REACTIVATED = 'subkit_reactivated_email';
+
+	private const META_REACTIVATED = '_subkit_reactivated_notified';
+
 	public function register(): void {
 		add_filter( 'woocommerce_email_classes', array( $this, 'add_emails' ) );
 
@@ -60,6 +69,11 @@ class Mailer {
 		add_action( 'subkit_subscription_cancelled', array( $this, 'on_cancelled' ), 10, 1 );
 		add_action( 'subkit_renewal_due_soon', array( $this, 'on_due_soon' ), 10, 1 );
 		add_action( 'subkit_subscription_finished', array( $this, 'on_finished' ), 10, 2 );
+		add_action( 'subkit_trial_ending_soon', array( $this, 'on_trial_ending' ), 10, 1 );
+		add_action( 'subkit_subscription_ending_soon', array( $this, 'on_ending_soon' ), 10, 1 );
+		add_action( 'subkit_subscription_status_changed', array( $this, 'on_status_changed' ), 10, 3 );
+		add_action( 'subkit_subscription_resumed', array( $this, 'queue_reactivated' ), 10, 1 );
+		add_action( self::ACTION_REACTIVATED, array( $this, 'send_reactivated' ), 10, 2 );
 	}
 
 	/**
@@ -108,11 +122,86 @@ class Mailer {
 	}
 
 	public function on_due_soon( Subscription $subscription ): void {
+		// Two emails about one first payment is one too many.
+		$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
+
+		if ( $scheduler instanceof Renewal_Scheduler && $scheduler->trial_reminder_covers( $subscription ) && self::is_enabled( 'Trial_Ending' ) ) {
+			return;
+		}
+
 		$this->dispatch( 'Renewal_Reminder', array( $subscription ) );
 	}
 
 	public function on_finished( Subscription $subscription, string $reason = '' ): void {
 		$this->dispatch( 'Merchant_Ended', array( $subscription, $reason ) );
+	}
+
+	public function on_trial_ending( Subscription $subscription ): void {
+		$this->dispatch( 'Trial_Ending', array( $subscription ) );
+	}
+
+	public function on_ending_soon( Subscription $subscription ): void {
+		$this->dispatch( 'Expiring_Soon', array( $subscription ) );
+	}
+
+	/**
+	 * A withdrawn cancellation. Renewals never leave sk-pending-cancel for active, so none is mistaken for one.
+	 *
+	 * @param Subscription $subscription
+	 * @param string       $from
+	 * @param string       $to
+	 */
+	public function on_status_changed( $subscription, $from, $to ): void {
+		if ( $subscription instanceof Subscription && Subscription_Status::PendingCancel->value === $from && Subscription_Status::Active->value === $to ) {
+			$this->queue_reactivated( $subscription );
+		}
+	}
+
+	/**
+	 * Sent from the queue, not here: the status change is not saved yet, and may be undone in the same request.
+	 */
+	public function queue_reactivated( Subscription $subscription ): void {
+		if ( function_exists( 'as_enqueue_async_action' ) && $subscription->get_id() ) {
+			as_enqueue_async_action(
+				self::ACTION_REACTIVATED,
+				array(
+					'subscription_id' => $subscription->get_id(),
+					'at'              => time(),
+				),
+				Renewal_Scheduler::GROUP
+			);
+		}
+	}
+
+	/**
+	 * @param int|string $subscription_id
+	 * @param int|string $at When it was reactivated; a re-run for the same moment sends nothing.
+	 */
+	public function send_reactivated( $subscription_id, $at = 0 ): void {
+		$subscription = wc_get_order( (int) $subscription_id );
+		$status       = $subscription instanceof Subscription ? $subscription->get_status_enum() : null;
+
+		if ( ! $status || ! $status->is_billable() || (string) $at === (string) $subscription->get_meta( self::META_REACTIVATED ) ) {
+			return;
+		}
+
+		$subscription->update_meta_data( self::META_REACTIVATED, (string) $at );
+		$subscription->save();
+
+		$this->dispatch( 'Subscription_Reactivated', array( $subscription ) );
+	}
+
+	/**
+	 * Whether one of these emails is switched on, by its key in CLASSES.
+	 */
+	public static function is_enabled( string $key ): bool {
+		if ( ! function_exists( 'WC' ) || ! WC()->mailer() ) {
+			return false;
+		}
+
+		$email = WC()->mailer()->get_emails()[ 'SubKit_' . $key ] ?? null;
+
+		return $email instanceof \WC_Email && $email->is_enabled();
 	}
 
 	/**

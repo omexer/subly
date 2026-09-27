@@ -9,6 +9,7 @@
  * @var array       $facts
  * @var array|null  $cta
  * @var string      $outro
+ * @var string      $additional_content
  */
 
 /** @var \WC_Email $email Supplied by WC_Email::get_content_html(). */
@@ -47,6 +48,10 @@ do_action( 'woocommerce_email_header', $email_heading, $email );
 
 <?php if ( '' !== $outro ) : ?>
 	<p><?php echo wp_kses_post( $outro ); ?></p>
+<?php endif; ?>
+
+<?php if ( ! empty( $additional_content ) ) : ?>
+	<?php echo wp_kses_post( wpautop( wptexturize( $additional_content ) ) ); ?>
 <?php endif; ?>
 
 <?php

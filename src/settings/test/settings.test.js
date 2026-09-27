@@ -132,10 +132,96 @@ const PAGES = {
 	},
 };
 
+PAGES.notifications = {
+	section: 'notifications',
+	group: 'notifications',
+	sections: [ 'notifications' ],
+	cards: [
+		{
+			title: '',
+			desc: '',
+			anchor: 'notifications',
+			rows: [
+				field(
+					'woocommerce_subkit_trial_ending_settings[enabled]',
+					'checkbox',
+					'yes',
+					{
+						title: 'Trial ending reminder',
+						subkit_email: 'subkit_trial_ending',
+					}
+				),
+				field( 'plain_switch', 'checkbox', 'yes' ),
+			],
+		},
+	],
+};
+
+const EMAIL = {
+	id: 'subkit_trial_ending',
+	title: 'Trial ending',
+	description: 'Sent before a free trial ends.',
+	recipient: 'customer',
+	woo_url: 'admin.php?page=wc-settings&tab=email&section=subkit_trial_ending',
+	preview_url: '/wp-admin/?preview_woocommerce_mail=true&type=Trial',
+	fields: [
+		{
+			key: 'enabled',
+			type: 'checkbox',
+			title: 'Enable/Disable',
+			label: 'Enable this email notification',
+			help: '',
+			placeholder: '',
+			options: [],
+			value: 'yes',
+		},
+		{
+			key: 'subject',
+			type: 'text',
+			title: 'Subject',
+			label: '',
+			help: 'Available placeholders: <code>{site_title}</code>',
+			placeholder: 'Your free trial ends soon',
+			options: [],
+			value: '',
+		},
+		{
+			key: 'email_type',
+			type: 'select',
+			title: 'Email type',
+			label: '',
+			help: '',
+			placeholder: '',
+			options: [
+				{ value: 'html', label: 'HTML' },
+				{ value: 'plain', label: 'Plain text' },
+			],
+			value: 'html',
+		},
+	],
+};
+
 let saveReply;
 
 function respond() {
 	apiFetch.mockImplementation( ( options ) => {
+		if ( options.path.startsWith( '/subkit/v1/settings/emails/' ) ) {
+			return options.method === 'POST'
+				? Promise.resolve( {
+						...EMAIL,
+						fields: EMAIL.fields.map( ( item ) =>
+							item.key in options.data.values
+								? {
+										...item,
+										value: options.data.values[ item.key ],
+								  }
+								: item
+						),
+						errors: [],
+				  } )
+				: Promise.resolve( EMAIL );
+		}
+
 		if ( options.method === 'POST' ) {
 			return saveReply( options );
 		}
@@ -545,4 +631,91 @@ test( 'a section that cannot load says so', async () => {
 	expect( el( '[role="alert"]' ).textContent ).toBe(
 		'There is no such settings section.'
 	);
+} );
+
+test( 'an email row opens that email in the app, and comes back', async () => {
+	await render( 'section=notifications' );
+
+	expect(
+		el( '#plain_switch' ).closest( '.subkit-settings__row' ).textContent
+	).not.toContain( 'Edit' );
+
+	const edit = el( 'button[aria-label="Edit Trial ending reminder"]' );
+
+	await click( edit );
+
+	expect( setParams ).toHaveBeenLastCalledWith( {
+		section: 'notifications',
+		email: 'subkit_trial_ending',
+	} );
+	expect( el( 'h2' ).textContent ).toBe( 'Trial ending' );
+	expect( el( '#subkit-email-subject' ).placeholder ).toBe(
+		'Your free trial ends soon'
+	);
+	expect( el( '#subkit-email-subject-help' ).innerHTML ).toContain(
+		'<code>{site_title}</code>'
+	);
+	expect( el( '#subkit-email-enabled' ) ).toBeNull();
+	expect(
+		Array.from( container.querySelectorAll( 'a' ) )
+			.find( ( a ) => a.textContent === 'Open in WooCommerce' )
+			.getAttribute( 'href' )
+	).toBe( EMAIL.woo_url );
+	expect( el( 'iframe' ).getAttribute( 'src' ) ).toBe( EMAIL.preview_url );
+
+	await click(
+		Array.from( container.querySelectorAll( 'button' ) ).find(
+			( b ) => b.textContent === '← Back to notifications'
+		)
+	);
+
+	expect( setParams ).toHaveBeenLastCalledWith( {
+		section: 'notifications',
+	} );
+	expect( el( '#plain_switch' ) ).not.toBeNull();
+} );
+
+test( 'an email is saved through its own route, with only what changed', async () => {
+	await render( 'section=notifications&email=subkit_trial_ending' );
+
+	expect( el( 'button[type="submit"]' ).disabled ).toBe( true );
+
+	await type( el( '#subkit-email-subject' ), 'Trial ends {site_title}' );
+	await save();
+
+	const posts = apiFetch.mock.calls.filter(
+		( [ options ] ) => options.method === 'POST'
+	);
+
+	expect( posts ).toHaveLength( 1 );
+	expect( posts[ 0 ][ 0 ].path ).toBe(
+		'/subkit/v1/settings/emails/subkit_trial_ending'
+	);
+	expect( posts[ 0 ][ 0 ].data ).toEqual( {
+		values: { subject: 'Trial ends {site_title}' },
+	} );
+	expect( el( '[role="status"]' ).textContent ).toBe( 'Email saved.' );
+	expect( el( '#subkit-email-subject' ).value ).toBe(
+		'Trial ends {site_title}'
+	);
+	expect( el( 'button[type="submit"]' ).disabled ).toBe( true );
+} );
+
+test( 'leaving an email with unsaved edits asks first', async () => {
+	await render( 'section=notifications&email=subkit_trial_ending' );
+	await type( el( '#subkit-email-subject' ), 'Draft' );
+
+	const confirm = jest.spyOn( window, 'confirm' ).mockReturnValue( false );
+
+	await click(
+		Array.from( container.querySelectorAll( 'button' ) ).find(
+			( b ) => b.textContent === '← Back to notifications'
+		)
+	);
+	await click( link( 'General' ) );
+
+	expect( confirm ).toHaveBeenCalledTimes( 2 );
+	expect( el( '#subkit-email-subject' ).value ).toBe( 'Draft' );
+
+	confirm.mockRestore();
 } );

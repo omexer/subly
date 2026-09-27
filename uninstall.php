@@ -32,7 +32,7 @@ $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LI
 delete_metadata( 'user', 0, 'subkit_dismissed_notices', '', true );
 
 if ( function_exists( 'as_unschedule_all_actions' ) ) {
-	foreach ( array( 'subkit_scheduled_renewal', 'subkit_renewal_reminder', 'subkit_sweep_overdue', 'subkit_settle_paid_renewal', 'subkit_resolve_pending_renewal', 'subkit_daily_snapshot', 'subkit_paypal_process_webhook' ) as $subkit_action ) {
+	foreach ( array( 'subkit_scheduled_renewal', 'subkit_renewal_reminder', 'subkit_trial_reminder', 'subkit_expiry_reminder', 'subkit_reactivated_email', 'subkit_sweep_overdue', 'subkit_settle_paid_renewal', 'subkit_resolve_pending_renewal', 'subkit_daily_snapshot', 'subkit_paypal_process_webhook' ) as $subkit_action ) {
 		// Hook alone: given a group as well, Action Scheduler only matches actions queued with no arguments.
 		as_unschedule_all_actions( $subkit_action );
 	}

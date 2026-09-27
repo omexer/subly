@@ -22,6 +22,7 @@ use SubKit\Rest\Dashboard_Controller;
 use SubKit\Rest\Help_Controller;
 use SubKit\Rest\Integrations_Controller;
 use SubKit\Rest\Overview_Controller;
+use SubKit\Rest\Email_Settings_Controller;
 use SubKit\Rest\Settings_Controller;
 use SubKit\Rest\Subscriptions_Controller;
 use SubKit\Checkout\Cart_Validation;
@@ -59,6 +60,7 @@ use SubKit\Admin\Settings;
 use SubKit\Admin\Settings_Page;
 use SubKit\Admin\Setup_Guide;
 use SubKit\Emails\Mailer;
+use SubKit\Emails\Notification_Settings;
 use SubKit\Privacy\Personal_Data;
 use SubKit\Lifecycle\Auto_Renewal;
 use SubKit\Lifecycle\Cancellation_Survey;
@@ -252,6 +254,9 @@ final class Plugin {
 		$this->services['mailer'] = new Mailer();
 		$this->services['mailer']->register();
 
+		$this->services['notification_settings'] = new Notification_Settings();
+		$this->services['notification_settings']->register();
+
 		add_filter(
 			'woocommerce_get_settings_pages',
 			static function ( array $pages ): array {
@@ -307,6 +312,9 @@ final class Plugin {
 
 		$this->services['settings_api'] = new Settings_Controller( $this->services['settings_page'] );
 		$this->services['settings_api']->register();
+
+		$this->services['email_settings_api'] = new Email_Settings_Controller( $this->services['settings_page'] );
+		$this->services['email_settings_api']->register();
 
 		$this->services['admin_notices'] = new Notices();
 		$this->services['admin_notices']->register();

@@ -7,6 +7,7 @@
  * @var array      $facts
  * @var array|null $cta
  * @var string     $outro
+ * @var string     $additional_content
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -35,6 +36,10 @@ if ( ! empty( $cta['url'] ) ) {
 
 if ( '' !== $outro ) {
 	echo "\n" . $subkit_text( $outro ) . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+}
+
+if ( ! empty( $additional_content ) ) {
+	echo "\n" . $subkit_text( $additional_content ) . "\n"; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 }
 
 echo "\n----------\n\n";

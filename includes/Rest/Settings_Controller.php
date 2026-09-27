@@ -249,6 +249,7 @@ final class Settings_Controller {
 			'custom_attributes' => (object) array_map( 'strval', (array) ( $field['custom_attributes'] ?? array() ) ),
 			'subkit_show_if'    => (string) ( $field['subkit_show_if'] ?? '' ),
 			'subkit_joins'      => (string) ( $field['subkit_joins'] ?? '' ),
+			'subkit_email'      => (string) ( $field['subkit_email'] ?? '' ),
 		);
 	}
 

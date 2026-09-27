@@ -3,6 +3,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Skeleton, cn } from '@subkit/ui';
 import { Row } from './field';
+import { EmailEditor } from './email';
 import { fieldsOf, isShown } from './visibility';
 
 export const PAGE = 'subkit-subscriptions-settings';
@@ -132,7 +133,7 @@ function Nav( { groups, section, group, onPick } ) {
 	);
 }
 
-function Cards( { page, valueOf, onChange } ) {
+function Cards( { page, valueOf, onChange, onEdit } ) {
 	const byId = fieldsOf( page );
 
 	return page.cards.map( ( card, index ) => (
@@ -168,6 +169,7 @@ function Cards( { page, valueOf, onChange } ) {
 							field={ row }
 							valueOf={ valueOf }
 							onChange={ onChange }
+							onEdit={ onEdit }
 						/>
 					) : null;
 				} ) }
@@ -191,6 +193,8 @@ function Loading() {
 
 export function Settings( { params, setParams } ) {
 	const section = sectionOf( params );
+	const email = params.get( 'email' ) || '';
+	const [ emailDirty, setEmailDirty ] = useState( false );
 	const [ menu, setMenu ] = useState( null );
 	const [ pages, setPages ] = useState( {} );
 	const [ saved, setSaved ] = useState( {} );
@@ -265,7 +269,7 @@ export function Settings( { params, setParams } ) {
 
 	const dirty = Object.keys( drafts ).length > 0;
 
-	useLeaveGuard( dirty );
+	useLeaveGuard( dirty || emailDirty );
 
 	const page = pages[ section ];
 	const changed = {};
@@ -276,7 +280,32 @@ export function Settings( { params, setParams } ) {
 		}
 	} );
 
+	// An email's unsaved edits live only in its editor, so leaving it asks first.
+	const keepEmailEdits = () =>
+		emailDirty &&
+		// eslint-disable-next-line no-alert -- the browser's own prompt is the accessible one here.
+		! window.confirm(
+			__(
+				'You have unsaved changes to this email. Leave without saving them?',
+				'subkit-subscriptions'
+			)
+		);
+
+	const sectionParams = section === GENERAL ? {} : { section };
+
+	const openEmail = ( id ) => setParams( { ...sectionParams, email: id } );
+
+	const closeEmail = () => {
+		if ( ! keepEmailEdits() ) {
+			setParams( sectionParams );
+		}
+	};
+
 	const pick = ( target ) => {
+		if ( keepEmailEdits() ) {
+			return;
+		}
+
 		setErrors( [] );
 		setMenu( ( was ) => ( { ...was, notices: [] } ) );
 		setParams( target === GENERAL ? {} : { section: target } );
@@ -370,56 +399,68 @@ export function Settings( { params, setParams } ) {
 						<Skeleton className="sk-h-64 sk-w-full" />
 					</nav>
 				) }
-				<form
-					className="subkit-settings__main"
-					method="post"
-					action=""
-					onSubmit={ onSubmit }
-				>
-					{ page ? (
-						<Cards
-							page={ page }
-							valueOf={ valueOf }
-							onChange={ onChange }
-						/>
-					) : (
-						<Loading />
-					) }
-					{ errors.length ? (
-						<div
-							className="subkit-notice subkit-notice--bad"
-							role="alert"
-						>
-							{ errors.map( ( error ) => (
-								<p key={ error } className="sk-m-0">
-									{ error }
-								</p>
-							) ) }
+				{ email ? (
+					<EmailEditor
+						id={ email }
+						onBack={ closeEmail }
+						onDirty={ setEmailDirty }
+					/>
+				) : (
+					<form
+						className="subkit-settings__main"
+						method="post"
+						action=""
+						onSubmit={ onSubmit }
+					>
+						{ page ? (
+							<Cards
+								page={ page }
+								valueOf={ valueOf }
+								onChange={ onChange }
+								onEdit={ openEmail }
+							/>
+						) : (
+							<Loading />
+						) }
+						{ errors.length ? (
+							<div
+								className="subkit-notice subkit-notice--bad"
+								role="alert"
+							>
+								{ errors.map( ( error ) => (
+									<p key={ error } className="sk-m-0">
+										{ error }
+									</p>
+								) ) }
+							</div>
+						) : null }
+						<div className="subkit-settings__save">
+							<span className="subkit-settings__save-note">
+								{ dirty
+									? __(
+											'You have unsaved changes.',
+											'subkit-subscriptions'
+									  )
+									: __(
+											'Changes apply to new renewals and purchases from the moment you save.',
+											'subkit-subscriptions'
+									  ) }
+							</span>
+							<button
+								type="submit"
+								className="button button-primary subkit-btn subkit-btn--primary"
+								disabled={ ! pending || saving }
+							>
+								{ saving
+									? __( 'Saving…', 'subkit-subscriptions' )
+									: __(
+											'Save changes',
+											'subkit-subscriptions'
+									  ) }
+							</button>
 						</div>
-					) : null }
-					<div className="subkit-settings__save">
-						<span className="subkit-settings__save-note">
-							{ dirty
-								? __(
-										'You have unsaved changes.',
-										'subkit-subscriptions'
-								  )
-								: __(
-										'Changes apply to new renewals and purchases from the moment you save.',
-										'subkit-subscriptions'
-								  ) }
-						</span>
-						<button
-							type="submit"
-							className="button button-primary subkit-btn subkit-btn--primary"
-							disabled={ ! pending || saving }
-						>
-							{ saving
-								? __( 'Saving…', 'subkit-subscriptions' )
-								: __( 'Save changes', 'subkit-subscriptions' ) }
-						</button>
-					</div>
-				</form>
+					</form>
+				) }
 			</div>
 			<div
 				className="sk-fixed sk-bottom-24 sk-right-8 sk-z-50"

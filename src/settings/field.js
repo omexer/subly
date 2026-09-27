@@ -1,4 +1,5 @@
 import { Fragment } from '@wordpress/element';
+import { __, sprintf } from '@wordpress/i18n';
 import { cn } from '@subkit/ui';
 
 const RENAMED = { readonly: 'readOnly', maxlength: 'maxLength' };
@@ -99,9 +100,14 @@ export function Control( { field, value, onChange, described } ) {
 	);
 }
 
-export function Row( { field, valueOf, onChange } ) {
+export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 	return (
-		<div className="subkit-settings__row">
+		<div
+			className={ cn(
+				'subkit-settings__row',
+				stacked && 'subkit-settings__row--stacked'
+			) }
+		>
 			<div className="subkit-settings__label">
 				<label className="subkit-settings__title" htmlFor={ field.id }>
 					{ field.title }
@@ -116,6 +122,20 @@ export function Row( { field, valueOf, onChange } ) {
 				) : null }
 			</div>
 			<div className="subkit-settings__control">
+				{ field.subkit_email && onEdit ? (
+					<button
+						type="button"
+						className="subkit-btn subkit-btn--sm"
+						aria-label={ sprintf(
+							/* translators: %s: the email's name, such as "Renewal reminder" */
+							__( 'Edit %s', 'subkit-subscriptions' ),
+							field.title
+						) }
+						onClick={ () => onEdit( field.subkit_email ) }
+					>
+						{ __( 'Edit', 'subkit-subscriptions' ) }
+					</button>
+				) : null }
 				<Control
 					field={ field }
 					value={ valueOf( field.id ) }
