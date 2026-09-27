@@ -10,7 +10,7 @@ The zip holds only what a store runs:
 
 | Free | Pro |
 |---|---|
-| `subkit-subscriptions.php`, `includes/`, `assets/`, `build/`, `templates/`, `languages/`, `readme.txt` | `subkit-subscriptions-pro.php`, `includes/`, `assets/`, `build/`, `templates/` |
+| `easysubscription.php`, `includes/`, `assets/`, `build/`, `templates/`, `languages/`, `readme.txt` | `easysubscription-pro.php`, `includes/`, `assets/`, `build/`, `templates/` |
 
 **Nothing else.** Not `docs/`, not the React source in `src/`, not `tools/`, not `vendor/` or `node_modules/`, not the CI or lint configuration.
 
@@ -19,7 +19,7 @@ That is enforced two ways, so a mistake stops the build instead of shipping:
 - **`.distignore`** lists what to remove.
 - **An allow list in `tools/build.sh`** fails the build on any top-level file that is not expected, so a new config file added to the repository cannot slip into a release unnoticed. The build also refuses `docs`, `src`, `node_modules`, `.git`, source maps and `.env` files anywhere in the zip, and lints every PHP file inside it.
 
-The zip is built from **committed** files only (`git archive HEAD`), and its folder is always the real plugin slug — never the `subkit-subscriptions-main` a GitHub download produces.
+The zip is built from **committed** files only (`git archive HEAD`), and its folder is always the real plugin slug — never the `easysubscription-main` a GitHub download produces.
 
 ---
 
@@ -34,7 +34,7 @@ The version is written in several places — the plugin header, a PHP constant, 
 ## Before the first release
 
 - `composer install` and `npm ci` in the plugin.
-- For Pro: the free plugin checked out beside it, and the `SUBKIT_FREE_REPO_TOKEN` secret set in the Pro repository.
+- For Pro: the free plugin checked out beside it, and the `EASYSUBSCRIPTION_FREE_REPO_TOKEN` secret set in the Pro repository.
 
 ---
 

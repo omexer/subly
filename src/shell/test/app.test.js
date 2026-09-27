@@ -17,14 +17,14 @@ const SERVER = `
 		<li><a href="admin.php?page=second">Second</a></li>
 	</ul></li></ul>
 	<div id="wpbody-content">
-		<div id="subkit-app" class="subkit-ui" data-page="first"></div><div id="subkit-fallback">
-			<header><details class="subkit-notify" data-subkit-notify><summary class="subkit-notify__bell">1</summary>
-				<div class="subkit-notify__panel" id="subkit-other-notices"><div class="subkit-notify__list"><div class="notice notice-info"><p>Elsewhere</p></div></div></div>
+		<div id="easysubscription-app" class="easysubscription-ui" data-page="first"></div><div id="easysubscription-fallback">
+			<header><details class="easysubscription-notify" data-easysubscription-notify><summary class="easysubscription-notify__bell">1</summary>
+				<div class="easysubscription-notify__panel" id="easysubscription-other-notices"><div class="easysubscription-notify__list"><div class="notice notice-info"><p>Elsewhere</p></div></div></div>
 			</details></header>
 			<div class="wrap">
 				<h1>First</h1>
 				<hr class="wp-header-end">
-				<div class="notice notice-success subkit-notice--important subkit-notice--feedback"><p>Saved.</p></div>
+				<div class="notice notice-success easysubscription-notice--important easysubscription-notice--feedback"><p>Saved.</p></div>
 				<p>Server first</p>
 				<div class="notice inline"><p>Inline hint</p></div>
 			</div>
@@ -66,8 +66,8 @@ async function click( node ) {
 	} );
 }
 
-const fallback = () => document.getElementById( 'subkit-fallback' );
-const host = () => document.getElementById( 'subkit-app' );
+const fallback = () => document.getElementById( 'easysubscription-fallback' );
+const host = () => document.getElementById( 'easysubscription-app' );
 const menu = ( text ) =>
 	[ ...document.querySelectorAll( '#adminmenu a' ) ].find(
 		( a ) => a.textContent === text
@@ -86,8 +86,8 @@ beforeEach( () => {
 	window.history.replaceState( {}, '', `${ ADMIN }?page=first` );
 	document.title = 'Old ‹ Shop — WordPress';
 	document.body.innerHTML = SERVER;
-	document.body.className = 'js subkit-app-page';
-	window.subkitShellData = {
+	document.body.className = 'js easysubscription-app-page';
+	window.easysubscriptionShellData = {
 		links: {
 			home: '/home',
 			help: '/help',
@@ -121,38 +121,41 @@ describe( 'the app shell', () => {
 
 		expect( host().textContent ).toContain( 'Route one' );
 		expect(
-			host().querySelector( '.subkit-crumbs__current' ).textContent
+			host().querySelector( '.easysubscription-crumbs__current' )
+				.textContent
 		).toBe( 'First route' );
 		expect( fallback().hidden ).toBe( true );
 		expect(
-			host().querySelector( '.subkit-alerts' ).textContent
+			host().querySelector( '.easysubscription-alerts' ).textContent
 		).toContain( 'Saved.' );
 		expect(
-			host().querySelector( '.subkit-notify__bell' ).textContent
+			host().querySelector( '.easysubscription-notify__bell' ).textContent
 		).toBe( '1' );
 		expect(
-			host().querySelector( '.subkit-notify__list' ).textContent
+			host().querySelector( '.easysubscription-notify__list' ).textContent
 		).toBe( 'Elsewhere' );
 		expect( fallback().textContent ).toContain( 'Inline hint' );
-		expect( document.body.classList.contains( 'subkit-app-page' ) ).toBe(
-			true
-		);
+		expect(
+			document.body.classList.contains( 'easysubscription-app-page' )
+		).toBe( true );
 		expect( document.title ).toBe( 'First route ‹ Shop — WordPress' );
 		expect(
 			host()
-				.querySelector( 'a.subkit-shell__upgrade' )
+				.querySelector( 'a.easysubscription-shell__upgrade' )
 				.getAttribute( 'href' )
 		).toBe( 'https://example.test/pro' );
 	} );
 
 	it( 'leaves out Upgrade when there is nothing to upgrade to', async () => {
-		window.subkitShellData.links.upgrade = '';
+		window.easysubscriptionShellData.links.upgrade = '';
 
 		await boot( [
 			{ page: 'first', title: 'First', render: () => <p>Route one</p> },
 		] );
 
-		expect( host().querySelector( '.subkit-shell__upgrade' ) ).toBeNull();
+		expect(
+			host().querySelector( '.easysubscription-shell__upgrade' )
+		).toBeNull();
 	} );
 
 	it( 'moves to another route in place, dropping the server render and the first page’s notices', async () => {
@@ -173,7 +176,7 @@ describe( 'the app shell', () => {
 		expect( fallback() ).toBeNull();
 		expect( host().textContent ).not.toContain( 'Saved.' );
 		expect(
-			host().querySelector( '.subkit-notify__list' ).textContent
+			host().querySelector( '.easysubscription-notify__list' ).textContent
 		).toBe( 'Elsewhere' );
 		expect( document.title ).toBe( 'Second ‹ Shop — WordPress' );
 		expect( menu( 'Second' ).classList.contains( 'current' ) ).toBe( true );
@@ -236,11 +239,12 @@ describe( 'the app shell', () => {
 		expect( host().childElementCount ).toBe( 0 );
 		expect( fallback().textContent ).toContain( 'Saved.' );
 		expect(
-			fallback().querySelector( '.subkit-notify__list' ).textContent
+			fallback().querySelector( '.easysubscription-notify__list' )
+				.textContent
 		).toBe( 'Elsewhere' );
-		expect( document.body.classList.contains( 'subkit-app-page' ) ).toBe(
-			false
-		);
+		expect(
+			document.body.classList.contains( 'easysubscription-app-page' )
+		).toBe( false );
 		expect(
 			fallback()
 				.querySelector( 'hr' )
@@ -353,7 +357,7 @@ describe( 'the app shell', () => {
 		expect( fallback() ).toBeNull();
 		expect( host().textContent ).toContain( 'Route two' );
 		expect(
-			host().querySelector( '.subkit-notify__list' ).textContent
+			host().querySelector( '.easysubscription-notify__list' ).textContent
 		).toBe( 'Elsewhere' );
 	} );
 

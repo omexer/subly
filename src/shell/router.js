@@ -119,7 +119,7 @@ export function navigate( page, params = {} ) {
 		return;
 	}
 
-	window.history.pushState( { subkit: page }, '', href );
+	window.history.pushState( { easysubscription: page }, '', href );
 	commit( page, toParams( params ), 'navigate' );
 }
 
@@ -131,7 +131,7 @@ export function setParams( params, { replace = false } = {} ) {
 	const href = hrefFor( location.page, params );
 
 	window.history[ replace ? 'replaceState' : 'pushState' ](
-		{ subkit: location.page },
+		{ easysubscription: location.page },
 		'',
 		href
 	);

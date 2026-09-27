@@ -3,27 +3,27 @@
  * Renewal and billing rules the free plugin owns: the renewal reminder switch, where the
  * grace and renewal settings sit, and what a grace period means for roles, files and the
  * words a customer reads. EasySubscription alone gives no grace period; one is supplied here the way
- * EasySubscription Pro supplies it, through subkit_grace_ends_at.
+ * EasySubscription Pro supplies it, through easysubscription_grace_ends_at.
  *
  * @package EasySubscription
  */
 
-use SubKit\Billing\Renewal_Scheduler;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Frontend\MyAccount\Status_Presenter;
+use EasySubscription\Billing\Renewal_Scheduler;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Frontend\MyAccount\Status_Presenter;
 
 require __DIR__ . '/bootstrap.php';
 require_once ABSPATH . 'wp-admin/includes/user.php';
 
-$absent = '__subkit_absent__';
+$absent = '__easysubscription_absent__';
 $saved  = array();
 $set    = function ( string $name, $value ) use ( &$saved, $absent ): void {
 	if ( ! array_key_exists( $name, $saved ) ) { $saved[ $name ] = get_option( $name, $absent ); }
 	update_option( $name, $value );
 };
 
-$product = subkit_test_product();
+$product = easysubscription_test_product();
 $made    = array();
 $make    = function ( Subscription_Status $status, int $customer = 1, int $due_in_days = 10 ) use ( $product, &$made ): Subscription {
 	$s = new Subscription();
@@ -53,8 +53,8 @@ add_filter(
 );
 
 echo "\nRenewal reminder\n";
-$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
-$reminder  = WC()->mailer()->get_emails()['SubKit_Renewal_Reminder'];
+$scheduler = \EasySubscription\Plugin::instance()->get( 'scheduler' );
+$reminder  = WC()->mailer()->get_emails()['EasySubscription_Renewal_Reminder'];
 $set( Renewal_Scheduler::OPTION_REMINDER_HOURS, 72 );
 $set( $reminder->get_option_key(), array( 'enabled' => 'yes' ) );
 WC()->mailer()->init();
@@ -79,15 +79,15 @@ echo "\nWhere the settings sit\n";
 global $wp_actions;
 $page = null;
 foreach ( WC_Admin_Settings::get_settings_pages() as $candidate ) {
-	if ( $candidate instanceof WC_Settings_Page && 'subkit' === $candidate->get_id() ) {
+	if ( $candidate instanceof WC_Settings_Page && 'easysubscription' === $candidate->get_id() ) {
 		$page = $candidate;
 	}
 }
 if ( ! $page ) {
-	subkit_test_abort( 'the Subscriptions settings tab is not registered' );
+	easysubscription_test_abort( 'the Subscriptions settings tab is not registered' );
 }
-$was_pro                         = $wp_actions['subkit_pro_loaded'] ?? null;
-$wp_actions['subkit_pro_loaded'] = 1;
+$was_pro                         = $wp_actions['easysubscription_pro_loaded'] ?? null;
+$wp_actions['easysubscription_pro_loaded'] = 1;
 $groups                          = array();
 $current                         = '';
 foreach ( $page->get_settings_for_section( 'renewal' ) as $field ) {
@@ -98,30 +98,30 @@ foreach ( $page->get_settings_for_section( 'renewal' ) as $field ) {
 	}
 }
 if ( null === $was_pro ) {
-	unset( $wp_actions['subkit_pro_loaded'] );
+	unset( $wp_actions['easysubscription_pro_loaded'] );
 } else {
-	$wp_actions['subkit_pro_loaded'] = $was_pro;
+	$wp_actions['easysubscription_pro_loaded'] = $was_pro;
 }
-$check( 'the grace period has its card, the reminder having moved to Notifications', array( 'subkit_grace_period_days' ) === ( $groups['Grace period'] ?? null ), $groups );
-$check( 'missed renewals and free first payments share the Renewal card', array( 'subkit_catch_up_policy', \SubKit\Checkout\Trial_Payment::OPTION ) === ( $groups['Renewal'] ?? null ), $groups );
+$check( 'the grace period has its card, the reminder having moved to Notifications', array( 'easysubscription_grace_period_days' ) === ( $groups['Grace period'] ?? null ), $groups );
+$check( 'missed renewals and free first payments share the Renewal card', array( 'easysubscription_catch_up_policy', \EasySubscription\Checkout\Trial_Payment::OPTION ) === ( $groups['Renewal'] ?? null ), $groups );
 
 echo "\nWithout a grace period\n";
 $user = wp_insert_user(
 	array(
 		'user_login' => 'sk_rules_' . strtolower( wp_generate_password( 8, false, false ) ),
 		'user_pass'  => wp_generate_password( 32 ),
-		'user_email' => 'sk-rules-' . strtolower( wp_generate_password( 8, false, false ) ) . '@example.test',
+		'user_email' => 'es-rules-' . strtolower( wp_generate_password( 8, false, false ) ) . '@example.test',
 		'role'       => 'customer',
 	)
 );
 if ( is_wp_error( $user ) ) {
-	subkit_test_abort( 'could not create a customer: ' . $user->get_error_message() );
+	easysubscription_test_abort( 'could not create a customer: ' . $user->get_error_message() );
 }
 foreach ( array( 'sk_rules_member', 'sk_rules_lapsed' ) as $role ) {
 	add_role( $role, $role, array( 'read' => true ) );
 }
-$set( 'subkit_active_role', 'sk_rules_member' );
-$set( 'subkit_inactive_role', 'sk_rules_lapsed' );
+$set( 'easysubscription_active_role', 'sk_rules_member' );
+$set( 'easysubscription_inactive_role', 'sk_rules_lapsed' );
 $roles     = static function () use ( $user ): array {
 	clean_user_cache( $user );
 	return ( new WP_User( $user ) )->roles;
@@ -146,7 +146,7 @@ $check( 'My Account says only that the payment failed', "We couldn't take your l
 echo "\nWith a grace period\n";
 $ends  = time() + 5 * DAY_IN_SECONDS;
 $grace = static fn( $given, $subscription ) => $subscription instanceof Subscription && 'yes' === $subscription->get_meta( '_sk_rules_grace' ) ? $ends : $given;
-add_filter( 'subkit_grace_ends_at', $grace, 20, 2 );
+add_filter( 'easysubscription_grace_ends_at', $grace, 20, 2 );
 
 $plain->transition_to( Subscription_Status::Active );
 $plain->save();
@@ -162,7 +162,7 @@ $date   = wp_date( (string) get_option( 'date_format' ), $ends );
 $detail = Status_Presenter::for( $graced )['detail'];
 $check( 'My Account says until when access lasts', "We couldn't take your last payment. You keep access until $date." === $detail, $detail );
 
-$email = WC()->mailer()->get_emails()['SubKit_Payment_Failed'] ?? null;
+$email = WC()->mailer()->get_emails()['EasySubscription_Payment_Failed'] ?? null;
 if ( $email && $email->is_enabled() ) {
 	$sent = array();
 	$email->trigger( $graced, $graced );
@@ -180,17 +180,17 @@ $active->save();
 $check( 'a grace period only counts while on hold', ! $active->in_grace() );
 
 $expired = static fn( $given, $subscription ) => $subscription instanceof Subscription && 'yes' === $subscription->get_meta( '_sk_rules_grace' ) ? time() - 1 : $given;
-add_filter( 'subkit_grace_ends_at', $expired, 30, 2 );
+add_filter( 'easysubscription_grace_ends_at', $expired, 30, 2 );
 $check( 'and only until it ends', ! wc_get_order( $graced->get_id() )->in_grace() );
-remove_filter( 'subkit_grace_ends_at', $expired, 30 );
+remove_filter( 'easysubscription_grace_ends_at', $expired, 30 );
 
 echo "\nWhen the grace period ends\n";
 $demoted = 0;
 $count   = function () use ( &$demoted ): void { ++$demoted; };
 add_action( 'set_user_role', $count );
-do_action( 'subkit_subscription_grace_ended', wc_get_order( $graced->get_id() ) );
+do_action( 'easysubscription_subscription_grace_ended', wc_get_order( $graced->get_id() ) );
 $check( 'the role goes', in_array( 'sk_rules_lapsed', $roles(), true ) && ! in_array( 'sk_rules_member', $roles(), true ), $roles() );
-do_action( 'subkit_subscription_grace_ended', wc_get_order( $graced->get_id() ) );
+do_action( 'easysubscription_subscription_grace_ended', wc_get_order( $graced->get_id() ) );
 $check( 'once, however often it is announced', 1 === $demoted, $demoted );
 remove_action( 'set_user_role', $count );
 
@@ -203,14 +203,14 @@ $ending->transition_to( Subscription_Status::Cancelled, 'Cancelled.' );
 $ending->save();
 $check( 'another subscription ending keeps the role another in its grace period still gives', in_array( 'sk_rules_member', $roles(), true ), $roles() );
 
-remove_filter( 'subkit_grace_ends_at', $grace, 20 );
+remove_filter( 'easysubscription_grace_ends_at', $grace, 20 );
 
 // ---- Clean up --------------------------------------------------------------------------
 global $wpdb;
 foreach ( $made as $id ) {
 	$scheduler->unschedule( $id );
 	as_unschedule_all_actions( Renewal_Scheduler::ACTION_REMINDER, array( 'subscription_id' => $id ), Renewal_Scheduler::GROUP );
-	$wpdb->delete( $wpdb->prefix . 'subkit_activity', array( 'subscription_id' => $id ) );
+	$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $id ) );
 	wc_get_order( $id )?->delete( true );
 }
 wp_delete_user( $user );
@@ -220,4 +220,4 @@ foreach ( array( 'sk_rules_member', 'sk_rules_lapsed' ) as $role ) {
 foreach ( $saved as $name => $old ) {
 	$absent === $old ? delete_option( $name ) : update_option( $name, $old );
 }
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

@@ -1,12 +1,12 @@
 <?php
 
-namespace SubKit\Frontend\MyAccount;
+namespace EasySubscription\Frontend\MyAccount;
 
-use SubKit\Data\Activity_Repository;
-use SubKit\Data\Subscription_Query;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Lifecycle\Cancellation_Policy;
+use EasySubscription\Data\Activity_Repository;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Lifecycle\Cancellation_Policy;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -47,11 +47,11 @@ class Account_Endpoint {
 
 			// Sit directly under Orders, where customers already look.
 			if ( 'orders' === $key ) {
-				$new[ self::ENDPOINT ] = __( 'Subscriptions', 'subkit-subscriptions' );
+				$new[ self::ENDPOINT ] = __( 'Subscriptions', 'easysubscription' );
 			}
 		}
 
-		return isset( $new[ self::ENDPOINT ] ) ? $new : $new + array( self::ENDPOINT => __( 'Subscriptions', 'subkit-subscriptions' ) );
+		return isset( $new[ self::ENDPOINT ] ) ? $new : $new + array( self::ENDPOINT => __( 'Subscriptions', 'easysubscription' ) );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class Account_Endpoint {
 			$subscription = $this->owned_subscription( $id );
 
 			if ( ! $subscription ) {
-				wc_print_notice( __( 'That subscription could not be found.', 'subkit-subscriptions' ), 'error' );
+				wc_print_notice( __( 'That subscription could not be found.', 'easysubscription' ), 'error' );
 				return;
 			}
 
@@ -75,7 +75,7 @@ class Account_Endpoint {
 					'endpoint'     => self::ENDPOINT,
 				),
 				'',
-				SUBKIT_PATH . 'templates/'
+				EASYSUBSCRIPTION_PATH . 'templates/'
 			);
 
 			return;
@@ -88,7 +88,7 @@ class Account_Endpoint {
 				'endpoint'      => self::ENDPOINT,
 			),
 			'',
-			SUBKIT_PATH . 'templates/'
+			EASYSUBSCRIPTION_PATH . 'templates/'
 		);
 	}
 
@@ -97,34 +97,34 @@ class Account_Endpoint {
 	 * survey is shown, which makes survey-as-a-barrier structurally impossible.
 	 */
 	public function handle_actions(): void {
-		if ( ! isset( $_POST['subkit_action'], $_POST['subkit_subscription'] ) ) {
+		if ( ! isset( $_POST['easysubscription_action'], $_POST['easysubscription_subscription'] ) ) {
 			return;
 		}
 
-		$action = sanitize_key( wp_unslash( $_POST['subkit_action'] ) );
-		$id     = absint( wp_unslash( $_POST['subkit_subscription'] ) );
+		$action = sanitize_key( wp_unslash( $_POST['easysubscription_action'] ) );
+		$id     = absint( wp_unslash( $_POST['easysubscription_subscription'] ) );
 
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'subkit_' . $action . '_' . $id ) ) {
-			wc_add_notice( __( 'That request has expired. Please try again.', 'subkit-subscriptions' ), 'error' );
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'easysubscription_' . $action . '_' . $id ) ) {
+			wc_add_notice( __( 'That request has expired. Please try again.', 'easysubscription' ), 'error' );
 			return;
 		}
 
 		// Never trust the ID in the request: re-check ownership server side.
 		$subscription = $this->owned_subscription( $id );
 		if ( ! $subscription ) {
-			wc_add_notice( __( 'That subscription could not be found.', 'subkit-subscriptions' ), 'error' );
+			wc_add_notice( __( 'That subscription could not be found.', 'easysubscription' ), 'error' );
 			return;
 		}
 
 		if ( 'auto_renew' === $action ) {
-			$wanted = isset( $_POST['subkit_auto_renew'] ) ? sanitize_key( wp_unslash( $_POST['subkit_auto_renew'] ) ) : 'on';
+			$wanted = isset( $_POST['easysubscription_auto_renew'] ) ? sanitize_key( wp_unslash( $_POST['easysubscription_auto_renew'] ) ) : 'on';
 
 			$this->set_auto_renew( $subscription, 'on' === $wanted );
 			return;
 		}
 
 		if ( 'renew_early' === $action ) {
-			$result = \SubKit\Lifecycle\Early_Renewal::charge( $subscription );
+			$result = \EasySubscription\Lifecycle\Early_Renewal::charge( $subscription );
 
 			wc_add_notice( $result['message'], $result['ok'] ? 'success' : 'error' );
 			wp_safe_redirect( wc_get_account_endpoint_url( self::ENDPOINT . '/' . $subscription->get_id() ) );
@@ -137,13 +137,13 @@ class Account_Endpoint {
 	}
 
 	private function set_auto_renew( Subscription $subscription, bool $on ): void {
-		if ( ! \SubKit\Lifecycle\Auto_Renewal::is_offered() ) {
+		if ( ! \EasySubscription\Lifecycle\Auto_Renewal::is_offered() ) {
 			return;
 		}
 
-		$auto = \SubKit\Plugin::instance()->get( 'auto_renewal' );
+		$auto = \EasySubscription\Plugin::instance()->get( 'auto_renewal' );
 
-		if ( ! $auto instanceof \SubKit\Lifecycle\Auto_Renewal ) {
+		if ( ! $auto instanceof \EasySubscription\Lifecycle\Auto_Renewal ) {
 			return;
 		}
 
@@ -152,14 +152,14 @@ class Account_Endpoint {
 		if ( Status_Presenter::pays_by_link( $subscription ) ) {
 			wc_add_notice(
 				$on
-					? __( 'Renewal is back on. At the end of each period we will send you a renewal to pay.', 'subkit-subscriptions' )
-					: __( 'Renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be asked to pay again.', 'subkit-subscriptions' )
+					? __( 'Renewal is back on. At the end of each period we will send you a renewal to pay.', 'easysubscription' )
+					: __( 'Renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be asked to pay again.', 'easysubscription' )
 			);
 		} else {
 			wc_add_notice(
 				$on
-					? __( 'Automatic renewal is back on. Your subscription will keep renewing.', 'subkit-subscriptions' )
-					: __( 'Automatic renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be charged again.', 'subkit-subscriptions' )
+					? __( 'Automatic renewal is back on. Your subscription will keep renewing.', 'easysubscription' )
+					: __( 'Automatic renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be charged again.', 'easysubscription' )
 			);
 		}
 
@@ -178,8 +178,8 @@ class Account_Endpoint {
 		 * @param Subscription $subscription
 		 */
 		return (string) apply_filters(
-			'subkit_cancel_refused_message',
-			__( 'This subscription cannot be cancelled online. Please contact us.', 'subkit-subscriptions' ),
+			'easysubscription_cancel_refused_message',
+			__( 'This subscription cannot be cancelled online. Please contact us.', 'easysubscription' ),
 			$subscription
 		);
 	}
@@ -193,10 +193,10 @@ class Account_Endpoint {
 		$target = $immediately ? Subscription_Status::Cancelled : Subscription_Status::PendingCancel;
 
 		try {
-			$subscription->transition_to( $target, __( 'Cancelled by the customer.', 'subkit-subscriptions' ) );
+			$subscription->transition_to( $target, __( 'Cancelled by the customer.', 'easysubscription' ) );
 			$subscription->save();
 		} catch ( \InvalidArgumentException $e ) {
-			wc_add_notice( __( 'This subscription can no longer be cancelled.', 'subkit-subscriptions' ), 'error' );
+			wc_add_notice( __( 'This subscription can no longer be cancelled.', 'easysubscription' ), 'error' );
 			return;
 		}
 
@@ -206,12 +206,12 @@ class Account_Endpoint {
 			$immediately ? 'Cancelled immediately by the customer.' : 'Cancellation scheduled for the end of the period.'
 		);
 
-		do_action( 'subkit_subscription_cancelled', $subscription, 'customer' );
+		do_action( 'easysubscription_subscription_cancelled', $subscription, 'customer' );
 
 		wc_add_notice(
 			$immediately
-				? __( 'Your subscription has been cancelled.', 'subkit-subscriptions' )
-				: __( 'Your subscription will end when the current period finishes. You will not be charged again.', 'subkit-subscriptions' )
+				? __( 'Your subscription has been cancelled.', 'easysubscription' )
+				: __( 'Your subscription will end when the current period finishes. You will not be charged again.', 'easysubscription' )
 		);
 
 		wp_safe_redirect( add_query_arg( 'cancelled', '1', wc_get_account_endpoint_url( self::ENDPOINT . '/' . $subscription->get_id() ) ) );

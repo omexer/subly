@@ -5,22 +5,22 @@
  * @package EasySubscription
  */
 
-use SubKit\Billing\Renewal_Processor;
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Frontend\MyAccount\Status_Presenter;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Manual_Gateway;
-use SubKit\Gateways\Test_Gateway;
-use SubKit\Lifecycle\Early_Renewal;
+use EasySubscription\Billing\Renewal_Processor;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Frontend\MyAccount\Status_Presenter;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Manual_Gateway;
+use EasySubscription\Gateways\Test_Gateway;
+use EasySubscription\Lifecycle\Early_Renewal;
 
 require __DIR__ . '/bootstrap.php';
 
 global $wpdb;
 
-$harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
+$harness = new class() implements \EasySubscription\Gateways\Recurring_Gateway {
 	public string $next = 'pending';
 	public int $charges = 0;
 
@@ -47,7 +47,7 @@ $link_gateway = new class() extends Manual_Gateway {
 	public function id(): string { return 'sk_test_pay_link'; }
 };
 
-$free = \SubKit\Plugin::instance();
+$free = \EasySubscription\Plugin::instance();
 $free->get( 'gateways' )->add( $harness );
 $free->get( 'gateways' )->add( $link_gateway );
 
@@ -55,14 +55,14 @@ $processor = $free->get( 'processor' );
 $slots     = $free->get( 'charge_slots' );
 $lock      = $free->get( 'lock' );
 $account   = $free->get( 'account' );
-$product   = subkit_test_product();
+$product   = easysubscription_test_product();
 $made      = array();
 $users     = array();
 
 // Amounts are asserted as text, so the store's price format is pinned too.
 $options = array(
 	Early_Renewal::OPTION                => 'yes',
-	'subkit_allow_auto_renew_toggle'     => 'yes',
+	'easysubscription_allow_auto_renew_toggle'     => 'yes',
 	'woocommerce_currency'               => 'USD',
 	'woocommerce_currency_pos'           => 'left',
 	'woocommerce_price_thousand_sep'     => ',',
@@ -87,7 +87,7 @@ $make = function ( string $method, int $due_offset = -HOUR_IN_SECONDS ) use ( $p
 	$item->set_props( array( 'name' => 'States probe', 'product_id' => $product->get_id(), 'quantity' => 1, 'subtotal' => '20', 'total' => '20' ) );
 	$s->add_item( $item );
 	$s->set_next_payment( gmdate( 'Y-m-d H:i:s', time() + $due_offset ) );
-	$s->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
+	$s->update_meta_data( '_easysubscription_site_url', get_option( 'siteurl' ) );
 	$s->transition_to( Subscription_Status::Pending );
 	$s->calculate_totals( false );
 	$s->save();
@@ -103,7 +103,7 @@ $submit = function ( Subscription $s ) use ( $processor, $slots, $harness ): arr
 	$slot  = $slots->latest_unsettled( $s->get_id() );
 	$order = $slot ? wc_get_order( (int) $slot->renewal_order_id ) : null;
 	if ( ! $slot || ! $order instanceof WC_Order || Charge_Slot_Repository::STATE_PENDING !== $slot->state ) {
-		subkit_test_abort( 'the harness did not leave a pending renewal: ' . wp_json_encode( $slot ) );
+		easysubscription_test_abort( 'the harness did not leave a pending renewal: ' . wp_json_encode( $slot ) );
 	}
 	return array( $slot, $order );
 };
@@ -115,7 +115,7 @@ $page = function ( int $id = 0 ) use ( $account ): string {
 };
 
 $rest = function ( int $id ): array {
-	$response = rest_do_request( new WP_REST_Request( 'GET', '/subkit/v1/subscriptions/' . $id ) );
+	$response = rest_do_request( new WP_REST_Request( 'GET', '/easysubscription/v1/subscriptions/' . $id ) );
 	return array( $response->get_status(), (array) $response->get_data() );
 };
 
@@ -124,7 +124,7 @@ $notes_saying = static function ( int $order_id, string $needle ): int {
 };
 
 $activity_saying = static function ( int $subscription_id, string $needle ) use ( $wpdb ): int {
-	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}subkit_activity WHERE subscription_id = %d AND message LIKE %s", $subscription_id, '%' . $wpdb->esc_like( $needle ) . '%' ) );
+	return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}easysubscription_activity WHERE subscription_id = %d AND message LIKE %s", $subscription_id, '%' . $wpdb->esc_like( $needle ) . '%' ) );
 };
 
 echo "\n1. A renewal waiting on the payment provider\n";
@@ -132,7 +132,7 @@ $s1                     = $make( Test_Gateway::ID );
 $due1                   = $s1->get_next_payment();
 list( $slot1, $order1 ) = $submit( $s1 );
 // A retried period keeps the slot it was first claimed in, so the claim time is not when this payment was submitted.
-$wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - 5 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
+$wpdb->update( $wpdb->prefix . 'easysubscription_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - 5 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
 $s1                     = wc_get_order( $s1->get_id() );
 $state                  = Status_Presenter::for( $s1 );
 $today                  = wp_date( (string) get_option( 'date_format' ) );
@@ -154,7 +154,7 @@ $check( 'and asking for it anyway charges nothing', ! $early['ok'] && $charges =
 list( $code, $data ) = $rest( $s1->get_id() );
 $check( 'the admin payload says a payment is pending, since when, and on which order', 200 === $code && true === $data['payment_pending'] && abs( strtotime( $data['payment_pending_since'] . ' UTC' ) - time() ) < 120 && $order1->get_id() === $data['payment_pending_order']['id'] && $order1->get_edit_order_url() === $data['payment_pending_order']['url'], $data );
 
-$table = new \SubKit\Admin\Subscriptions_Table();
+$table = new \EasySubscription\Admin\Subscriptions_Table();
 $cell  = $table->column_default( $s1, 'status' );
 $check( 'the admin list shows it, linked to the renewal order, with how long it has waited', str_contains( $cell, 'Payment processing' ) && str_contains( $cell, esc_url( $order1->get_edit_order_url() ) ) && preg_match( '/submitted \d+ \w+ ago/', $cell ), $cell );
 $check( 'and does not offer Renew now for it', ! str_contains( $table->column_default( $s1, 'subscription' ), 'Renew now' ) );
@@ -170,7 +170,7 @@ $check( 'and hides the button that would only resume it', ! str_contains( $scree
 $processor->process( $s1->get_id() );
 $check( 'running the renewal again charges nothing and changes nothing', $charges === $harness->charges && Status_Presenter::for( wc_get_order( $s1->get_id() ) ) === $state );
 
-$stranger = wp_insert_user( array( 'user_login' => 'sk_states_' . wp_generate_password( 6, false, false ), 'user_pass' => wp_generate_password( 32 ), 'user_email' => 'sk-states-' . wp_generate_password( 6, false, false ) . '@example.test', 'role' => 'customer' ) );
+$stranger = wp_insert_user( array( 'user_login' => 'sk_states_' . wp_generate_password( 6, false, false ), 'user_pass' => wp_generate_password( 32 ), 'user_email' => 'es-states-' . wp_generate_password( 6, false, false ) . '@example.test', 'role' => 'customer' ) );
 $users[]  = $stranger;
 wp_set_current_user( $stranger );
 $theirs = $page( $s1->get_id() );
@@ -217,9 +217,9 @@ $lock->acquire( $s3b->get_id() );
 $processor->resolve_pending( wc_get_order( $order3b->get_id() ), Charge_Result::hard_decline( 'payment_failed', 'The bank returned it.' ) );
 $needle_b = 'renewal order #' . $order3b->get_order_number() . ' failed';
 $queued   = array( 'order_id' => $order3b->get_id(), 'outcome' => 'hard_decline', 'reference' => '', 'code' => 'payment_failed', 'message' => 'The bank returned it.' );
-$check( 'under a running renewal\'s lock it is queued, not written', 0 === $notes_saying( $order3b->get_id(), $needle_b ) && (bool) as_next_scheduled_action( Renewal_Processor::ACTION_RESOLVE, $queued, 'subkit' ) );
+$check( 'under a running renewal\'s lock it is queued, not written', 0 === $notes_saying( $order3b->get_id(), $needle_b ) && (bool) as_next_scheduled_action( Renewal_Processor::ACTION_RESOLVE, $queued, 'easysubscription' ) );
 $lock->release( $s3b->get_id() );
-as_unschedule_all_actions( Renewal_Processor::ACTION_RESOLVE, $queued, 'subkit' );
+as_unschedule_all_actions( Renewal_Processor::ACTION_RESOLVE, $queued, 'easysubscription' );
 $processor->resolve_queued( ...array_values( $queued ) );
 $processor->resolve_queued( ...array_values( $queued ) );
 $check( 'and the queued answer records it once', 1 === $notes_saying( $order3b->get_id(), $needle_b ) && 1 === $activity_saying( $s3b->get_id(), $needle_b ) );
@@ -244,7 +244,7 @@ $order4 = Status_Presenter::payable_order( $s4 );
 $state  = Status_Presenter::for( $s4 );
 $action = Status_Presenter::primary_action( $s4 );
 if ( Subscription_Status::OnHold !== $s4->get_status_enum() || ! $order4 ) {
-	subkit_test_abort( 'a manual renewal did not leave the subscription on hold with an order to pay: ' . $s4->get_status() );
+	easysubscription_test_abort( 'a manual renewal did not leave the subscription on hold with an order to pay: ' . $s4->get_status() );
 }
 $check( 'the badge says the renewal is due', 'Renewal due' === $state['label'], $state );
 $check( 'the detail says it is ready to pay, with its amount', 'Your renewal of $20.00 is ready to pay.' === $state['detail'], $state['detail'] );
@@ -261,13 +261,13 @@ $s4c    = $make( Manual_Gateway::ID, 20 * DAY_IN_SECONDS );
 $detail = $page( $s4c->get_id() );
 $check( 'an active pay-by-link subscription never says it renews automatically', ! str_contains( $detail, 'Automatic renewal' ) && ! str_contains( $detail, 'automatic renewal' ) && ! str_contains( $detail, 'renews automatically' ) && str_contains( $detail, 'we send you a renewal to pay' ) && str_contains( $detail, 'Stop renewing' ), $detail );
 
-if ( ! class_exists( 'SubKit_Test_Redirected' ) ) {
+if ( ! class_exists( 'EasySubscription_Test_Redirected' ) ) {
 	// Handlers redirect and exit once they act; stop at the redirect and read the state.
-	final class SubKit_Test_Redirected extends Exception {}
+	final class EasySubscription_Test_Redirected extends Exception {}
 }
 $told     = array();
 $redirect = static function ( $to ) {
-	throw new SubKit_Test_Redirected( (string) $to );
+	throw new EasySubscription_Test_Redirected( (string) $to );
 };
 $listen   = static function ( $message ) use ( &$told ) {
 	$told[] = $message;
@@ -277,14 +277,14 @@ add_filter( 'wp_redirect', $redirect, 1 );
 add_filter( 'woocommerce_add_success', $listen );
 $toggle = static function ( Subscription $s, string $to ) use ( $account ): void {
 	$_POST = array(
-		'subkit_action'       => 'auto_renew',
-		'subkit_subscription' => (string) $s->get_id(),
-		'subkit_auto_renew'   => $to,
-		'_wpnonce'            => wp_create_nonce( 'subkit_auto_renew_' . $s->get_id() ),
+		'easysubscription_action'       => 'auto_renew',
+		'easysubscription_subscription' => (string) $s->get_id(),
+		'easysubscription_auto_renew'   => $to,
+		'_wpnonce'            => wp_create_nonce( 'easysubscription_auto_renew_' . $s->get_id() ),
 	);
 	try {
 		$account->handle_actions();
-	} catch ( SubKit_Test_Redirected $e ) {
+	} catch ( EasySubscription_Test_Redirected $e ) {
 		unset( $e );
 	}
 	$_POST = array();
@@ -313,17 +313,17 @@ $check( 'and an automatic subscription still says it renews automatically', str_
 
 // ---- clean up -----------------------------------------------------------------------
 foreach ( $made as $id ) {
-	$renewals = $wpdb->get_col( $wpdb->prepare( 'SELECT renewal_order_id FROM %i WHERE subscription_id = %d AND renewal_order_id IS NOT NULL', $wpdb->prefix . 'subkit_charge_slot', $id ) );
+	$renewals = $wpdb->get_col( $wpdb->prepare( 'SELECT renewal_order_id FROM %i WHERE subscription_id = %d AND renewal_order_id IS NOT NULL', $wpdb->prefix . 'easysubscription_charge_slot', $id ) );
 	foreach ( $renewals as $renewal_id ) {
 		$r = wc_get_order( (int) $renewal_id );
 		$r && $r->delete( true );
 	}
 	$free->get( 'scheduler' )->unschedule( $id );
-	as_unschedule_all_actions( 'subkit_dunning_retry', array( 'subscription_id' => $id ), 'subkit' );
+	as_unschedule_all_actions( 'easysubscription_dunning_retry', array( 'subscription_id' => $id ), 'easysubscription' );
 	$s = wc_get_order( $id );
 	$s && $s->delete( true );
-	$wpdb->delete( $wpdb->prefix . 'subkit_charge_slot', array( 'subscription_id' => $id ) );
-	$wpdb->delete( $wpdb->prefix . 'subkit_activity', array( 'subscription_id' => $id ) );
+	$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $id ) );
+	$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $id ) );
 }
 foreach ( $users as $user ) {
 	require_once ABSPATH . 'wp-admin/includes/user.php';
@@ -333,4 +333,4 @@ foreach ( $was as $name => $value ) {
 	null === $value ? delete_option( $name ) : update_option( $name, $value );
 }
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

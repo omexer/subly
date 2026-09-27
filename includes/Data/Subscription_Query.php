@@ -1,9 +1,9 @@
 <?php
 
-namespace SubKit\Data;
+namespace EasySubscription\Data;
 
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -13,10 +13,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Query subscriptions without tripping over WooCommerce's status handling.
  *
  * wc_get_orders() resolves an omitted status — and 'any' — to the shop_order status
- * list, which never contains our sk-* slugs, so a bare
- * wc_get_orders( array( 'type' => 'subkit_sub' ) ) silently returns nothing. Statuses
+ * list, which never contains our es-* slugs, so a bare
+ * wc_get_orders( array( 'type' => 'easysubscription_sub' ) ) silently returns nothing. Statuses
  * must also be passed wc- prefixed even though the object reports them unprefixed.
- * Everything in SubKit queries through here so that asymmetry lives in one place.
+ * Everything in EasySubscription queries through here so that asymmetry lives in one place.
  */
 class Subscription_Query {
 
@@ -79,7 +79,7 @@ class Subscription_Query {
 	 * Find one subscription by a meta value, across every status.
 	 *
 	 * Exists so callers never hand-roll wc_get_orders() for this: passing status 'any'
-	 * silently matches only shop_order statuses and returns nothing for sk-* records.
+	 * silently matches only shop_order statuses and returns nothing for es-* records.
 	 */
 	public static function find_by_meta( string $meta_key, string $meta_value ): ?Subscription {
 		if ( '' === $meta_value ) {

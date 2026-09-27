@@ -2,7 +2,7 @@ module.exports = {
 	extends: [ 'plugin:@wordpress/eslint-plugin/recommended' ],
 	settings: {
 		// Resolved by webpack from a global at runtime, so there is no module to find.
-		'import/core-modules': [ '@subkit/ui', '@subkit/shell', '@woocommerce/blocks-registry', '@woocommerce/settings' ],
+		'import/core-modules': [ '@easysubscription/ui', '@easysubscription/shell', '@woocommerce/blocks-registry', '@woocommerce/settings' ],
 	},
 	overrides: [
 		{

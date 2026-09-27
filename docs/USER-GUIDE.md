@@ -11,7 +11,7 @@ Please read [What is not proven yet](#what-is-not-proven-yet) before taking real
 
 ## Contents
 
-1. [What EasySubscription does](#what-subkit-does)
+1. [What EasySubscription does](#what-easysubscription-does)
 2. [Installing](#installing)
 3. [Your first subscription in five minutes](#your-first-subscription-in-five-minutes)
 4. [Making subscription products](#making-subscription-products)
@@ -59,7 +59,7 @@ Pro does nothing on its own and says so if you activate it alone. It needs the f
 version 0.9.0 or newer.
 
 > **The folder name does not matter.** Downloading from GitHub gives you a folder called
-> `subkit-subscriptions-main`. That is fine — Pro finds the free plugin either way.
+> `easysubscription-main`. That is fine — Pro finds the free plugin either way.
 
 Then go to **EasySubscription** in the admin menu, just below WooCommerce.
 
@@ -617,8 +617,8 @@ with the reason. When a customer asks "why was I charged?", the answer is here.
 | **Card updates** | "Update card" in My Account, an "Update your payment details" email on permanent declines, and an expiring-card warning |
 | **Win-back** | Up to three emails to customers whose subscription ended, each with an optional single-use discount and a "Come back" button |
 | **Anniversaries** | A thank-you email on 12-month (or chosen) milestones, with an optional renewal discount or store coupon |
-| **Members-only content** | Lock posts, pages or part of a post (`[subkit_restricted]`) to subscribers of chosen products |
-| **Webhooks** | Subscription events through WooCommerce's own webhooks (topics `subkit_subscription.*`) |
+| **Members-only content** | Lock posts, pages or part of a post (`[easysubscription_restricted]`) to subscribers of chosen products |
+| **Webhooks** | Subscription events through WooCommerce's own webhooks (topics `easysubscription_subscription.*`) |
 | **WhatsApp** | Renewal, payment and cancellation messages through the Meta WhatsApp Cloud API, to customers who opt in |
 | **Subscription limits** | One active, one ever, or N per customer; and a cap on total payments |
 | **Delivery schedules** | Ship on a different cadence from billing, with a printable manifest |
@@ -682,7 +682,7 @@ a key under **WooCommerce → Settings → Advanced → REST API** on an account
 WooCommerce. It authenticates exactly as it does on WooCommerce's own API: a read key can only
 read, and a write key can only make changes. API Settings lists every endpoint on your site.
 
-All of it lives under `/wp-json/subkit/v1/`.
+All of it lives under `/wp-json/easysubscription/v1/`.
 
 | Route | Method | What it does |
 |---|---|---|

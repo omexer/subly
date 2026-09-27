@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Domain;
+namespace EasySubscription\Domain;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Subscription extends \WC_Order {
 
-	public const TYPE = 'subkit_sub';
+	public const TYPE = 'easysubscription_sub';
 
 	protected $object_type = self::TYPE;
 
@@ -40,15 +40,15 @@ class Subscription extends \WC_Order {
 	 * Meta keys backing $extra_data. Kept private so the mapping lives in one place.
 	 */
 	private const META_MAP = array(
-		'billing_period'    => '_subkit_billing_period',
-		'billing_interval'  => '_subkit_billing_interval',
-		'trial_end'         => '_subkit_trial_end',
-		'next_payment'      => '_subkit_next_payment',
-		'end_date'          => '_subkit_end_date',
-		'parent_order_id'   => '_subkit_parent_order_id',
-		'payment_token_id'  => '_subkit_payment_token_id',
-		'schedule_sync_day' => '_subkit_schedule_sync_day',
-		'period_index'      => '_subkit_period_index',
+		'billing_period'    => '_easysubscription_billing_period',
+		'billing_interval'  => '_easysubscription_billing_interval',
+		'trial_end'         => '_easysubscription_trial_end',
+		'next_payment'      => '_easysubscription_next_payment',
+		'end_date'          => '_easysubscription_end_date',
+		'parent_order_id'   => '_easysubscription_parent_order_id',
+		'payment_token_id'  => '_easysubscription_payment_token_id',
+		'schedule_sync_day' => '_easysubscription_schedule_sync_day',
+		'period_index'      => '_easysubscription_period_index',
 	);
 
 	/**
@@ -120,7 +120,7 @@ class Subscription extends \WC_Order {
 	 * Subscriptions use their own status set, not the shop_order one.
 	 *
 	 * WC_Abstract_Order::set_status() silently rewrites anything outside this list to
-	 * "pending", so without the override every sk-* status would be discarded on save.
+	 * "pending", so without the override every es-* status would be discarded on save.
 	 */
 	protected function get_valid_statuses() {
 		return array_map(
@@ -136,7 +136,7 @@ class Subscription extends \WC_Order {
 			return Subscription_Status::Pending->value;
 		}
 
-		// The data store may hand back a wc- prefixed slug; ours are sk-* underneath.
+		// The data store may hand back a wc- prefixed slug; ours are es-* underneath.
 		return is_string( $status ) && 0 === strpos( $status, 'wc-' ) ? substr( $status, 3 ) : $status;
 	}
 
@@ -151,7 +151,7 @@ class Subscription extends \WC_Order {
 	 */
 	public function transition_to( Subscription_Status $to, string $note = '' ): void {
 		// Read the stored status, not the view default: a brand-new object reports
-		// sk-pending while its prop is still unset, and skipping the write there would
+		// es-pending while its prop is still unset, and skipping the write there would
 		// leave WooCommerce's own "pending" on the record.
 		$stored = $this->get_status( 'edit' );
 		$from   = '' === $stored || null === $stored ? null : Subscription_Status::tryFrom( $stored );
@@ -180,7 +180,7 @@ class Subscription extends \WC_Order {
 		 * @param string       $from
 		 * @param string       $to
 		 */
-		do_action( 'subkit_subscription_status_changed', $this, $from instanceof Subscription_Status ? $from->value : '', $to->value );
+		do_action( 'easysubscription_subscription_status_changed', $this, $from instanceof Subscription_Status ? $from->value : '', $to->value );
 	}
 
 	/**
@@ -188,12 +188,12 @@ class Subscription extends \WC_Order {
 	 */
 	public function grace_ends_at(): ?int {
 		/**
-		 * The end of this subscription's grace period after a failed renewal. SubKit alone gives none.
+		 * The end of this subscription's grace period after a failed renewal. EasySubscription alone gives none.
 		 *
 		 * @param int|null     $ends
 		 * @param Subscription $subscription
 		 */
-		$ends = apply_filters( 'subkit_grace_ends_at', null, $this );
+		$ends = apply_filters( 'easysubscription_grace_ends_at', null, $this );
 
 		return is_numeric( $ends ) ? (int) $ends : null;
 	}
@@ -220,7 +220,7 @@ class Subscription extends \WC_Order {
 
 		$allowed = array( 'day', 'week', 'month', 'year' );
 		if ( ! in_array( $value, $allowed, true ) ) {
-			$this->error( 'subkit_invalid_billing_period', 'Billing period must be one of: ' . implode( ', ', $allowed ) );
+			$this->error( 'easysubscription_invalid_billing_period', 'Billing period must be one of: ' . implode( ', ', $allowed ) );
 		}
 		$this->set_prop( 'billing_period', $value );
 	}
@@ -236,7 +236,7 @@ class Subscription extends \WC_Order {
 
 		$value = absint( $value );
 		if ( $value < 1 ) {
-			$this->error( 'subkit_invalid_billing_interval', 'Billing interval must be 1 or more.' );
+			$this->error( 'easysubscription_invalid_billing_interval', 'Billing interval must be 1 or more.' );
 		}
 		$this->set_prop( 'billing_interval', $value );
 	}

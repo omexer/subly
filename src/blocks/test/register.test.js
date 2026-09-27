@@ -23,7 +23,7 @@ const load = () => {
 	} );
 };
 
-describe( 'registering SubKit with the block checkout', () => {
+describe( 'registering EasySubscription with the block checkout', () => {
 	beforeEach( () => {
 		registerPaymentMethod.mockClear();
 		getSetting.mockReset();
@@ -33,12 +33,12 @@ describe( 'registering SubKit with the block checkout', () => {
 		getSetting.mockImplementation(
 			( key ) =>
 				( {
-					subkit_stripe_data: {
+					easysubscription_stripe_data: {
 						title: 'Credit or debit card',
 						description: 'Pay by card.',
 						supports: [ 'products' ],
 					},
-					subkit_paypal_data: {
+					easysubscription_paypal_data: {
 						title: 'PayPal',
 						description: 'Pay with PayPal.',
 						supports: [ 'products' ],
@@ -51,7 +51,7 @@ describe( 'registering SubKit with the block checkout', () => {
 		expect( registerPaymentMethod ).toHaveBeenCalledTimes( 2 );
 		expect(
 			registerPaymentMethod.mock.calls.map( ( call ) => call[ 0 ].name )
-		).toEqual( [ 'subkit_stripe', 'subkit_paypal' ] );
+		).toEqual( [ 'easysubscription_stripe', 'easysubscription_paypal' ] );
 		expect( registerPaymentMethod.mock.calls[ 0 ][ 0 ].ariaLabel ).toBe(
 			'Credit or debit card'
 		);
@@ -59,7 +59,7 @@ describe( 'registering SubKit with the block checkout', () => {
 
 	it( 'registers nothing for a gateway the server left out', () => {
 		getSetting.mockImplementation( ( key ) =>
-			'subkit_stripe_data' === key
+			'easysubscription_stripe_data' === key
 				? { title: 'Card', description: '', supports: [ 'products' ] }
 				: null
 		);
@@ -68,11 +68,11 @@ describe( 'registering SubKit with the block checkout', () => {
 
 		expect( registerPaymentMethod ).toHaveBeenCalledTimes( 1 );
 		expect( registerPaymentMethod.mock.calls[ 0 ][ 0 ].name ).toBe(
-			'subkit_stripe'
+			'easysubscription_stripe'
 		);
 	} );
 
-	it( 'registers nothing at all when no SubKit gateway is available', () => {
+	it( 'registers nothing at all when no EasySubscription gateway is available', () => {
 		getSetting.mockReturnValue( null );
 
 		load();
@@ -82,7 +82,7 @@ describe( 'registering SubKit with the block checkout', () => {
 
 	it( 'decodes a title the server encoded', () => {
 		getSetting.mockImplementation( ( key ) =>
-			'subkit_stripe_data' === key
+			'easysubscription_stripe_data' === key
 				? { title: 'Card &amp; wallet', description: '', supports: [] }
 				: null
 		);

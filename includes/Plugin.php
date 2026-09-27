@@ -1,73 +1,73 @@
 <?php
 
-namespace SubKit;
+namespace EasySubscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use SubKit\Billing\Lock;
-use SubKit\Billing\Renewal_Order_Factory;
-use SubKit\Billing\Renewal_Processor;
-use SubKit\Billing\Renewal_Scheduler;
-use SubKit\Billing\Renewal_Tax_Repair;
-use SubKit\Data\Activity_Repository;
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Data\Cleanup;
-use SubKit\Data\Migrator;
-use SubKit\Data\Order_Type;
-use SubKit\Data\Stats;
-use SubKit\Rest\Api_Access;
-use SubKit\Rest\Dashboard_Controller;
-use SubKit\Rest\Help_Controller;
-use SubKit\Rest\Integrations_Controller;
-use SubKit\Rest\Overview_Controller;
-use SubKit\Rest\Email_Settings_Controller;
-use SubKit\Rest\Settings_Controller;
-use SubKit\Rest\Subscriptions_Controller;
-use SubKit\Checkout\Cart_Validation;
-use SubKit\Checkout\Guest_Checkout;
-use SubKit\Checkout\Store_Api;
-use SubKit\Checkout\Subscription_Factory;
-use SubKit\Checkout\Initial_Payment;
-use SubKit\Checkout\One_Click_Checkout;
-use SubKit\Checkout\Renewal_Order_Pay;
-use SubKit\Checkout\Trial_Payment;
-use SubKit\Frontend\Disclosure;
-use SubKit\Frontend\Product_Display;
-use SubKit\Gateways\Gateway_Registry;
-use SubKit\Gateways\PayPal\PayPal_Checkout_Gateway;
-use SubKit\Gateways\PayPal\PayPal_Client;
-use SubKit\Gateways\PayPal\PayPal_Plans;
-use SubKit\Gateways\PayPal\PayPal_Gateway;
-use SubKit\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
-use SubKit\Gateways\Stripe\Stripe_Checkout_Gateway;
-use SubKit\Gateways\Stripe\Stripe_Client;
-use SubKit\Gateways\Stripe\Stripe_Gateway;
-use SubKit\Product\Product_Meta_Fields;
-use SubKit\Product\Product_Types;
-use SubKit\Admin\App_Host;
-use SubKit\Admin\Assets as Admin_Assets;
-use SubKit\Admin\Help_Page;
-use SubKit\Admin\Integration_Installer;
-use SubKit\Admin\Integrations_Page;
-use SubKit\Admin\Gateway_Notice;
-use SubKit\Blocks\Gateway_Support;
-use SubKit\Admin\Menu;
-use SubKit\Admin\Notice_Dismissals;
-use SubKit\Admin\Notices;
-use SubKit\Admin\Settings;
-use SubKit\Admin\Settings_Page;
-use SubKit\Admin\Setup_Guide;
-use SubKit\Emails\Mailer;
-use SubKit\Emails\Notification_Settings;
-use SubKit\Privacy\Personal_Data;
-use SubKit\Lifecycle\Auto_Renewal;
-use SubKit\Lifecycle\Cancellation_Survey;
-use SubKit\Lifecycle\Role_Management;
-use SubKit\Frontend\Downloadable_Access;
-use SubKit\Frontend\MyAccount\Account_Endpoint;
-use SubKit\Frontend\MyAccount\Assets as Account_Assets;
+use EasySubscription\Billing\Lock;
+use EasySubscription\Billing\Renewal_Order_Factory;
+use EasySubscription\Billing\Renewal_Processor;
+use EasySubscription\Billing\Renewal_Scheduler;
+use EasySubscription\Billing\Renewal_Tax_Repair;
+use EasySubscription\Data\Activity_Repository;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Data\Cleanup;
+use EasySubscription\Data\Migrator;
+use EasySubscription\Data\Order_Type;
+use EasySubscription\Data\Stats;
+use EasySubscription\Rest\Api_Access;
+use EasySubscription\Rest\Dashboard_Controller;
+use EasySubscription\Rest\Help_Controller;
+use EasySubscription\Rest\Integrations_Controller;
+use EasySubscription\Rest\Overview_Controller;
+use EasySubscription\Rest\Email_Settings_Controller;
+use EasySubscription\Rest\Settings_Controller;
+use EasySubscription\Rest\Subscriptions_Controller;
+use EasySubscription\Checkout\Cart_Validation;
+use EasySubscription\Checkout\Guest_Checkout;
+use EasySubscription\Checkout\Store_Api;
+use EasySubscription\Checkout\Subscription_Factory;
+use EasySubscription\Checkout\Initial_Payment;
+use EasySubscription\Checkout\One_Click_Checkout;
+use EasySubscription\Checkout\Renewal_Order_Pay;
+use EasySubscription\Checkout\Trial_Payment;
+use EasySubscription\Frontend\Disclosure;
+use EasySubscription\Frontend\Product_Display;
+use EasySubscription\Gateways\Gateway_Registry;
+use EasySubscription\Gateways\PayPal\PayPal_Checkout_Gateway;
+use EasySubscription\Gateways\PayPal\PayPal_Client;
+use EasySubscription\Gateways\PayPal\PayPal_Plans;
+use EasySubscription\Gateways\PayPal\PayPal_Gateway;
+use EasySubscription\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
+use EasySubscription\Gateways\Stripe\Stripe_Checkout_Gateway;
+use EasySubscription\Gateways\Stripe\Stripe_Client;
+use EasySubscription\Gateways\Stripe\Stripe_Gateway;
+use EasySubscription\Product\Product_Meta_Fields;
+use EasySubscription\Product\Product_Types;
+use EasySubscription\Admin\App_Host;
+use EasySubscription\Admin\Assets as Admin_Assets;
+use EasySubscription\Admin\Help_Page;
+use EasySubscription\Admin\Integration_Installer;
+use EasySubscription\Admin\Integrations_Page;
+use EasySubscription\Admin\Gateway_Notice;
+use EasySubscription\Blocks\Gateway_Support;
+use EasySubscription\Admin\Menu;
+use EasySubscription\Admin\Notice_Dismissals;
+use EasySubscription\Admin\Notices;
+use EasySubscription\Admin\Settings;
+use EasySubscription\Admin\Settings_Page;
+use EasySubscription\Admin\Setup_Guide;
+use EasySubscription\Emails\Mailer;
+use EasySubscription\Emails\Notification_Settings;
+use EasySubscription\Privacy\Personal_Data;
+use EasySubscription\Lifecycle\Auto_Renewal;
+use EasySubscription\Lifecycle\Cancellation_Survey;
+use EasySubscription\Lifecycle\Role_Management;
+use EasySubscription\Frontend\Downloadable_Access;
+use EasySubscription\Frontend\MyAccount\Account_Endpoint;
+use EasySubscription\Frontend\MyAccount\Assets as Account_Assets;
 
 /**
  * Service registration. Deliberately a plain registry rather than a DI container —
@@ -216,7 +216,7 @@ final class Plugin {
 		);
 
 		add_action(
-			'subkit_register_gateways',
+			'easysubscription_register_gateways',
 			function ( Gateway_Registry $registry ): void {
 				if ( $this->services['paypal_client']->is_enabled() ) {
 					$registry->add( new PayPal_Gateway( $this->services['paypal_client'] ) );
@@ -335,13 +335,13 @@ final class Plugin {
 		$this->services['integration_installer']->register();
 
 		/**
-		 * Fires once SubKit Free is loaded and its public API is available.
+		 * Fires once EasySubscription Free is loaded and its public API is available.
 		 *
-		 * SubKit Pro boots from this hook; see Developer Guide 4.
+		 * EasySubscription Pro boots from this hook; see Developer Guide 4.
 		 *
 		 * @param string $version Free plugin version.
 		 */
-		do_action( 'subkit_loaded', SUBKIT_VERSION );
+		do_action( 'easysubscription_loaded', EASYSUBSCRIPTION_VERSION );
 	}
 
 	public function get( string $id ): ?object {

@@ -5,21 +5,21 @@
  * @package EasySubscription
  */
 
-use SubKit\Billing\Renewal_Scheduler;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Recurring_Gateway;
+use EasySubscription\Billing\Renewal_Scheduler;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Recurring_Gateway;
 
 require __DIR__ . '/bootstrap.php';
 
-$plugin = \SubKit\Plugin::instance();
+$plugin = \EasySubscription\Plugin::instance();
 
 $gateway = new class() implements Recurring_Gateway {
 	public int $charges = 0;
 	public bool $time_out = false;
-	public function id(): string { return 'subkit_test_schedule_next'; }
+	public function id(): string { return 'easysubscription_test_schedule_next'; }
 	public function title(): string { return 'Schedule next harness'; }
 	public function model(): Gateway_Model { return Gateway_Model::Tokenized; }
 	public function supports( string $f ): bool { return true; }
@@ -34,7 +34,7 @@ $gateway = new class() implements Recurring_Gateway {
 };
 $plugin->get( 'gateways' )->add( $gateway );
 
-$product   = subkit_test_product();
+$product   = easysubscription_test_product();
 $scheduler = $plugin->get( 'scheduler' );
 $made      = array();
 
@@ -46,7 +46,7 @@ $make = static function ( string $next ) use ( $product, $gateway, &$made ): Sub
 	$s->set_billing_interval( 1 );
 	$s->set_payment_method( $gateway->id() );
 	$s->set_address( array( 'first_name' => 'Schedule', 'email' => 'schedulenext@example.test' ), 'billing' );
-	$s->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
+	$s->update_meta_data( '_easysubscription_site_url', get_option( 'siteurl' ) );
 	$item = new WC_Order_Item_Product();
 	$item->set_props( array( 'name' => 'Schedule next probe', 'product_id' => $product->get_id(), 'quantity' => 1, 'subtotal' => '20', 'total' => '20' ) );
 	$s->add_item( $item );
@@ -71,7 +71,7 @@ $pending = static function ( Subscription $s ): array {
 
 // Through the Action Scheduler runner, which marks the action running while it executes.
 $run = static function ( int $action_id ): void {
-	ActionScheduler::runner()->process_action( $action_id, 'subkit-test' );
+	ActionScheduler::runner()->process_action( $action_id, 'easysubscription-test' );
 };
 
 $queue_now = static function ( Subscription $s ): int {
@@ -84,8 +84,8 @@ $orders_for = static function ( Subscription $s ): array {
 	return array_map(
 		'intval',
 		$hpos
-			? $wpdb->get_col( $wpdb->prepare( 'SELECT order_id FROM %i WHERE meta_key = %s AND meta_value = %d AND order_id <> %d', $wpdb->prefix . 'wc_orders_meta', '_subkit_subscription_id', $s->get_id(), $s->get_id() ) )
-			: $wpdb->get_col( $wpdb->prepare( 'SELECT post_id FROM %i WHERE meta_key = %s AND meta_value = %d AND post_id <> %d', $wpdb->postmeta, '_subkit_subscription_id', $s->get_id(), $s->get_id() ) )
+			? $wpdb->get_col( $wpdb->prepare( 'SELECT order_id FROM %i WHERE meta_key = %s AND meta_value = %d AND order_id <> %d', $wpdb->prefix . 'wc_orders_meta', '_easysubscription_subscription_id', $s->get_id(), $s->get_id() ) )
+			: $wpdb->get_col( $wpdb->prepare( 'SELECT post_id FROM %i WHERE meta_key = %s AND meta_value = %d AND post_id <> %d', $wpdb->postmeta, '_easysubscription_subscription_id', $s->get_id(), $s->get_id() ) )
 	);
 };
 
@@ -148,4 +148,4 @@ foreach ( $made as $s ) {
 	$s->delete( true );
 }
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

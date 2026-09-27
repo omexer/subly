@@ -1,9 +1,9 @@
 <?php
 
-namespace SubKit\Rest;
+namespace EasySubscription\Rest;
 
-use SubKit\Admin\Menu;
-use SubKit\Admin\Settings_Page;
+use EasySubscription\Admin\Menu;
+use EasySubscription\Admin\Settings_Page;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Settings_Controller {
 
-	public const NAMESPACE = 'subkit/v1';
+	public const NAMESPACE = 'easysubscription/v1';
 
 	/**
 	 * WooCommerce's default section has an empty id, which a URL path cannot carry.
@@ -141,9 +141,9 @@ final class Settings_Controller {
 
 		if ( $unknown ) {
 			return new \WP_Error(
-				'subkit_unknown_setting',
+				'easysubscription_unknown_setting',
 				/* translators: %s: comma-separated option names */
-				sprintf( __( 'Not saved: %s is not a setting on this page.', 'subkit-subscriptions' ), implode( ', ', array_map( 'strval', $unknown ) ) ),
+				sprintf( __( 'Not saved: %s is not a setting on this page.', 'easysubscription' ), implode( ', ', array_map( 'strval', $unknown ) ) ),
 				array( 'status' => 400 )
 			);
 		}
@@ -152,9 +152,9 @@ final class Settings_Controller {
 
 		if ( $invalid ) {
 			return new \WP_Error(
-				'subkit_invalid_setting',
+				'easysubscription_invalid_setting',
 				/* translators: %s: comma-separated option names */
-				sprintf( __( 'Not saved: %s needs a single value.', 'subkit-subscriptions' ), implode( ', ', array_map( 'strval', $invalid ) ) ),
+				sprintf( __( 'Not saved: %s needs a single value.', 'easysubscription' ), implode( ', ', array_map( 'strval', $invalid ) ) ),
 				array( 'status' => 400 )
 			);
 		}
@@ -247,9 +247,9 @@ final class Settings_Controller {
 			'value'             => $this->value( $field ),
 			'placeholder'       => (string) ( $field['placeholder'] ?? '' ),
 			'custom_attributes' => (object) array_map( 'strval', (array) ( $field['custom_attributes'] ?? array() ) ),
-			'subkit_show_if'    => (string) ( $field['subkit_show_if'] ?? '' ),
-			'subkit_joins'      => (string) ( $field['subkit_joins'] ?? '' ),
-			'subkit_email'      => (string) ( $field['subkit_email'] ?? '' ),
+			'easysubscription_show_if'    => (string) ( $field['easysubscription_show_if'] ?? '' ),
+			'easysubscription_joins'      => (string) ( $field['easysubscription_joins'] ?? '' ),
+			'easysubscription_email'      => (string) ( $field['easysubscription_email'] ?? '' ),
 		);
 	}
 
@@ -291,8 +291,8 @@ final class Settings_Controller {
 		$sections = $this->page->sections();
 
 		return $sections ? $sections : new \WP_Error(
-			'subkit_settings_unavailable',
-			__( "WooCommerce's settings could not be loaded, so EasySubscription's settings cannot be shown. Check that WooCommerce is active.", 'subkit-subscriptions' ),
+			'easysubscription_settings_unavailable',
+			__( "WooCommerce's settings could not be loaded, so EasySubscription's settings cannot be shown. Check that WooCommerce is active.", 'easysubscription' ),
 			array( 'status' => 503 )
 		);
 	}
@@ -306,8 +306,8 @@ final class Settings_Controller {
 		$section = self::GENERAL === $asked ? '' : $asked;
 
 		return isset( $sections[ $section ] ) ? $section : new \WP_Error(
-			'subkit_unknown_section',
-			__( 'There is no such settings section.', 'subkit-subscriptions' ),
+			'easysubscription_unknown_section',
+			__( 'There is no such settings section.', 'easysubscription' ),
 			array( 'status' => 404 )
 		);
 	}

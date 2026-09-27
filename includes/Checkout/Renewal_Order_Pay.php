@@ -1,11 +1,11 @@
 <?php
 
-namespace SubKit\Checkout;
+namespace EasySubscription\Checkout;
 
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Gateway_Registry;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Gateway_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -35,7 +35,7 @@ final class Renewal_Order_Pay {
 		$order_id = is_array( $available ) && isset( $wp->query_vars['order-pay'] ) ? absint( $wp->query_vars['order-pay'] ) : 0;
 		$order    = $order_id ? wc_get_order( $order_id ) : null;
 
-		if ( ! $order instanceof \WC_Order || 'subkit_renewal' !== $order->get_created_via() ) {
+		if ( ! $order instanceof \WC_Order || 'easysubscription_renewal' !== $order->get_created_via() ) {
 			return $available;
 		}
 
@@ -57,7 +57,7 @@ final class Renewal_Order_Pay {
 	 * @return string[]
 	 */
 	public function payable_statuses( $statuses, $order = null ) {
-		if ( ! $order instanceof \WC_Order || 'subkit_renewal' !== $order->get_created_via() ) {
+		if ( ! $order instanceof \WC_Order || 'easysubscription_renewal' !== $order->get_created_via() ) {
 			return $statuses;
 		}
 
@@ -69,7 +69,7 @@ final class Renewal_Order_Pay {
 		}
 
 		// Held for the customer to act (an invoice, a bank's confirmation), which they do on this page.
-		if ( '' !== (string) $order->get_meta( '_subkit_action_url' ) ) {
+		if ( '' !== (string) $order->get_meta( '_easysubscription_action_url' ) ) {
 			$statuses   = (array) $statuses;
 			$statuses[] = 'on-hold';
 		}
@@ -78,7 +78,7 @@ final class Renewal_Order_Pay {
 	}
 
 	private static function subscription_for( \WC_Order $order ): ?Subscription {
-		$subscription = wc_get_order( (int) $order->get_meta( '_subkit_subscription_id' ) );
+		$subscription = wc_get_order( (int) $order->get_meta( '_easysubscription_subscription_id' ) );
 
 		return $subscription instanceof Subscription ? $subscription : null;
 	}

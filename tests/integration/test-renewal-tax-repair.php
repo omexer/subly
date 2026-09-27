@@ -5,31 +5,31 @@
  * @package EasySubscription
  */
 
-use SubKit\Billing\Renewal_Tax_Repair;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Recurring_Gateway;
+use EasySubscription\Billing\Renewal_Tax_Repair;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Recurring_Gateway;
 
 require __DIR__ . '/bootstrap.php';
 
-$plugin = \SubKit\Plugin::instance();
+$plugin = \EasySubscription\Plugin::instance();
 $repair = $plugin->get( 'tax_repair' );
 
 if ( ! $repair instanceof Renewal_Tax_Repair ) {
-	subkit_test_abort( 'the repair service is not registered' );
+	easysubscription_test_abort( 'the repair service is not registered' );
 }
 
 $since = strtotime( (string) get_option( Renewal_Tax_Repair::OPTION_SINCE, '' ) . ' UTC' );
 if ( ! $since ) {
-	subkit_test_abort( 'the cut-over time was never recorded' );
+	easysubscription_test_abort( 'the cut-over time was never recorded' );
 }
 
 $gateway = new class() implements Recurring_Gateway {
 	/** @var string[] */
 	public array $charged = array();
-	public function id(): string { return 'subkit_test_tax_repair'; }
+	public function id(): string { return 'easysubscription_test_tax_repair'; }
 	public function title(): string { return 'Tax repair harness'; }
 	public function model(): Gateway_Model { return Gateway_Model::Tokenized; }
 	public function supports( string $f ): bool { return true; }
@@ -45,7 +45,7 @@ $gateway = new class() implements Recurring_Gateway {
 $plugin->get( 'gateways' )->add( $gateway );
 
 if ( WC_Tax::find_rates( array( 'country' => 'GB' ) ) ) {
-	subkit_test_abort( 'this site already has tax rates for GB; the expected totals would be wrong' );
+	easysubscription_test_abort( 'this site already has tax rates for GB; the expected totals would be wrong' );
 }
 
 $options = array(
@@ -62,12 +62,12 @@ foreach ( $options as $name => $value ) {
 $rate = WC_Tax::_insert_tax_rate( array( 'tax_rate_country' => 'GB', 'tax_rate' => '20.0000', 'tax_rate_name' => 'VAT', 'tax_rate_priority' => 1, 'tax_rate_compound' => 0, 'tax_rate_shipping' => 1, 'tax_rate_order' => 0, 'tax_rate_class' => '' ) );
 WC_Cache_Helper::invalidate_cache_group( 'taxes' );
 
-$p = new \SubKit\Product\Simple_Subscription();
+$p = new \EasySubscription\Product\Simple_Subscription();
 $p->set_name( 'SK tax repair probe' );
 $p->set_status( 'publish' );
 $p->set_regular_price( '12.00' );
-$p->update_meta_data( \SubKit\Product\Subscription_Product::META_PERIOD, 'month' );
-$p->update_meta_data( \SubKit\Product\Subscription_Product::META_INTERVAL, 1 );
+$p->update_meta_data( \EasySubscription\Product\Subscription_Product::META_PERIOD, 'month' );
+$p->update_meta_data( \EasySubscription\Product\Subscription_Product::META_INTERVAL, 1 );
 $p->save();
 
 $orders = array();
@@ -84,16 +84,16 @@ $buy = static function () use ( $plugin, $gateway, $p, &$orders ): Subscription 
 	$order_id = WC()->checkout()->create_order( array( 'billing_country' => 'GB', 'billing_email' => 'taxrepair@example.test', 'payment_method' => '' ) );
 	WC()->cart->empty_cart();
 	if ( is_wp_error( $order_id ) ) {
-		subkit_test_abort( 'checkout failed: ' . $order_id->get_error_message() );
+		easysubscription_test_abort( 'checkout failed: ' . $order_id->get_error_message() );
 	}
 	$order = wc_get_order( $order_id );
 	$order->set_payment_method( $gateway->id() );
 	$order->save();
 	$orders[] = $order_id;
 	$plugin->get( 'subscription_factory' )->from_checkout( $order_id );
-	$sub = wc_get_order( (int) wc_get_order( $order_id )->get_meta( '_subkit_subscription_id' ) );
+	$sub = wc_get_order( (int) wc_get_order( $order_id )->get_meta( '_easysubscription_subscription_id' ) );
 	if ( ! $sub instanceof Subscription ) {
-		subkit_test_abort( 'no subscription was created from the checkout' );
+		easysubscription_test_abort( 'no subscription was created from the checkout' );
 	}
 	$sub->transition_to( Subscription_Status::Active );
 	$sub->save();
@@ -125,7 +125,7 @@ $renew = static function ( Subscription $sub ) use ( $plugin, $gateway, &$orders
 	$plugin->get( 'processor' )->process( $sub->get_id() );
 	global $wpdb;
 	$hpos = \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
-	foreach ( $wpdb->get_col( $wpdb->prepare( $hpos ? "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key = '_subkit_subscription_id' AND meta_value = %d" : "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_subkit_subscription_id' AND meta_value = %d", $sub->get_id() ) ) as $id ) {
+	foreach ( $wpdb->get_col( $wpdb->prepare( $hpos ? "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key = '_easysubscription_subscription_id' AND meta_value = %d" : "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_easysubscription_subscription_id' AND meta_value = %d", $sub->get_id() ) ) as $id ) {
 		$orders[] = (int) $id;
 	}
 	return $gateway->charged[ $before ] ?? 'none';
@@ -148,7 +148,7 @@ echo "\nListing\n";
 $old      = $make_old( $buy() );
 $new      = $buy();
 $repriced = $make_old( $buy() );
-$repriced->update_meta_data( '_subkit_renewal_price_applied', 'yes' );
+$repriced->update_meta_data( '_easysubscription_renewal_price_applied', 'yes' );
 $repriced->save();
 
 $ids = $listed();
@@ -225,4 +225,4 @@ foreach ( $saved as $name => $value ) {
 WC_Cache_Helper::invalidate_cache_group( 'taxes' );
 delete_transient( Renewal_Tax_Repair::CACHE );
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

@@ -10,7 +10,7 @@
  * @package EasySubscription
  */
 
-use SubKit\Rest\Api_Access;
+use EasySubscription\Rest\Api_Access;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -20,14 +20,14 @@ ob_start();
 global $wpdb;
 
 if ( ! class_exists( 'WC_REST_Authentication' ) ) {
-	subkit_test_abort( "WooCommerce's REST authentication is not loaded" );
+	easysubscription_test_abort( "WooCommerce's REST authentication is not loaded" );
 }
 
 $absent   = new stdClass();
 $snapshot = array(
 	Api_Access::OPTION                                         => get_option( Api_Access::OPTION, $absent ),
-	\SubKit\Frontend\Product_Display::OPTION_BUTTON_TEXT       => get_option( \SubKit\Frontend\Product_Display::OPTION_BUTTON_TEXT, $absent ),
-	'subkit_paypal_webhook_id'                                 => get_option( 'subkit_paypal_webhook_id', $absent ),
+	\EasySubscription\Frontend\Product_Display::OPTION_BUTTON_TEXT       => get_option( \EasySubscription\Frontend\Product_Display::OPTION_BUTTON_TEXT, $absent ),
+	'easysubscription_paypal_webhook_id'                                 => get_option( 'easysubscription_paypal_webhook_id', $absent ),
 );
 $server_before = array_intersect_key( $_SERVER, array_flip( array( 'REQUEST_METHOD', 'REQUEST_URI', 'HTTPS', 'PHP_AUTH_USER', 'PHP_AUTH_PW', 'CONTENT_TYPE' ) ) );
 $get_before    = $_GET;
@@ -53,7 +53,7 @@ foreach ( $GLOBALS['wp_filter']['determine_current_user']->callbacks[15] ?? arra
 	}
 }
 if ( ! $shared ) {
-	subkit_test_abort( "WooCommerce's REST authentication is not hooked" );
+	easysubscription_test_abort( "WooCommerce's REST authentication is not hooked" );
 }
 $unhook( $shared );
 $auth = null;
@@ -63,7 +63,7 @@ $make_user = static function ( string $role ): int {
 		array(
 			'user_login' => 'sk_api_' . $role . '_' . wp_generate_password( 6, false, false ),
 			'user_pass'  => wp_generate_password( 32 ),
-			'user_email' => 'sk-api-' . wp_generate_password( 6, false, false ) . '@example.test',
+			'user_email' => 'es-api-' . wp_generate_password( 6, false, false ) . '@example.test',
 			'role'       => $role,
 		)
 	);
@@ -158,42 +158,42 @@ $is_ours = static function ( string $uri ): bool {
 $save_toggle = static function ( string $value ): int {
 	$GLOBALS['current_user'] = null;
 	wp_set_current_user( 1 );
-	$request = new WP_REST_Request( 'POST', '/subkit/v1/settings/api' );
+	$request = new WP_REST_Request( 'POST', '/easysubscription/v1/settings/api' );
 	$request->set_header( 'content-type', 'application/json' );
 	$request->set_body( wp_json_encode( array( 'values' => array( Api_Access::OPTION => $value ) ) ) );
 	return rest_do_request( $request )->get_status();
 };
 
-$label  = \SubKit\Frontend\Product_Display::OPTION_BUTTON_TEXT;
+$label  = \EasySubscription\Frontend\Product_Display::OPTION_BUTTON_TEXT;
 $change = static fn( string $text ): array => array( 'values' => array( $label => $text ) );
 update_option( $label, 'Before' );
 
 echo "\n1. Off, the default: a valid key is ignored on EasySubscription's routes\n";
 delete_option( Api_Access::OPTION );
 $check( 'the key is valid: WooCommerce\'s own route accepts it', 200 === $call( 'GET', '/wc/v3/products', $read_write )[0], $status );
-$check( 'GET on subkit/v1 is refused as a visitor', array( 401, 'rest_forbidden' ) === $call( 'GET', '/subkit/v1/overview', $read_write ), array( $status, $code ) );
-$check( 'POST on subkit/v1 is refused, nothing written', 401 === $call( 'POST', '/subkit/v1/settings/checkout', $read_write, $change( 'Off write' ) )[0] && 'Before' === get_option( $label ) );
-$check( 'our filter leaves WooCommerce\'s answer alone', false === $is_ours( '/wp-json/subkit/v1/overview' ) && true === (bool) apply_filters( 'woocommerce_rest_is_request_to_rest_api', true ) );
+$check( 'GET on easysubscription/v1 is refused as a visitor', array( 401, 'rest_forbidden' ) === $call( 'GET', '/easysubscription/v1/overview', $read_write ), array( $status, $code ) );
+$check( 'POST on easysubscription/v1 is refused, nothing written', 401 === $call( 'POST', '/easysubscription/v1/settings/checkout', $read_write, $change( 'Off write' ) )[0] && 'Before' === get_option( $label ) );
+$check( 'our filter leaves WooCommerce\'s answer alone', false === $is_ours( '/wp-json/easysubscription/v1/overview' ) && true === (bool) apply_filters( 'woocommerce_rest_is_request_to_rest_api', true ) );
 
 echo "\n2. On: WooCommerce authenticates the key, with its permission and its user's capability\n";
 $check( 'the switch saves on through the settings API', 200 === $save_toggle( 'yes' ) && Api_Access::enabled() );
-$check( 'a read key can GET', 200 === $call( 'GET', '/subkit/v1/overview', $read )[0], array( $status, $code ) );
-$check( 'a read key can GET a route with a parameter', 200 === $call( 'GET', '/subkit/v1/settings/api', $read )[0], array( $status, $code ) );
-$check( 'a read key cannot POST, nothing written', array( 401, 'woocommerce_rest_authentication_error' ) === $call( 'POST', '/subkit/v1/settings/checkout', $read, $change( 'Read write' ) ) && 'Before' === get_option( $label ), array( $status, $code, get_option( $label ) ) );
-$check( '  nor on a second try', 401 === $call( 'POST', '/subkit/v1/settings/checkout', $read, $change( 'Read write' ) )[0] && 'Before' === get_option( $label ) );
-$check( 'a write key cannot GET', array( 401, 'woocommerce_rest_authentication_error' ) === $call( 'GET', '/subkit/v1/overview', $write ), array( $status, $code ) );
-$check( 'a write key can POST', 200 === $call( 'POST', '/subkit/v1/settings/checkout', $write, $change( 'Write key' ) )[0] && 'Write key' === get_option( $label ), array( $status, $code ) );
-$check( 'a read/write key can GET', 200 === $call( 'GET', '/subkit/v1/overview', $read_write )[0] );
-$check( 'a read/write key can POST', 200 === $call( 'POST', '/subkit/v1/settings/checkout', $read_write, $change( 'Read-write key' ) )[0] && 'Read-write key' === get_option( $label ), array( $status, $code ) );
-$check( '  and the same POST again changes nothing further', 200 === $call( 'POST', '/subkit/v1/settings/checkout', $read_write, $change( 'Read-write key' ) )[0] && 'Read-write key' === get_option( $label ) );
-$check( 'a customer\'s read/write key is forbidden to GET', array( 403, 'rest_forbidden' ) === $call( 'GET', '/subkit/v1/overview', $customers ), array( $status, $code ) );
-$check( 'a customer\'s read/write key is forbidden to POST, nothing written', 403 === $call( 'POST', '/subkit/v1/settings/checkout', $customers, $change( 'Customer' ) )[0] && 'Read-write key' === get_option( $label ), array( $status, $code ) );
-$check( 'a wrong secret is refused', array( 401, 'woocommerce_rest_authentication_error' ) === $call( 'GET', '/subkit/v1/overview', $wrong ), array( $status, $code ) );
-$check( 'no key is still a visitor', array( 401, 'rest_forbidden' ) === $call( 'GET', '/subkit/v1/overview', null ), array( $status, $code ) );
-$check( 'plain permalinks are recognised too', true === $is_ours( '/index.php?rest_route=/subkit/v1/overview' ) && true === $is_ours( '/wp-json/SubKit/V1/overview' ) && true === $is_ours( '/wp-json/subkit-pro/v1/deliveries' ) );
-$check( 'the pretty and index.php forms of the address are recognised', true === $is_ours( '/index.php/wp-json/subkit/v1/overview' ) );
-$check( 'a REST-looking address that is not a REST request is not claimed', false === $is_ours( '/wp-admin/admin-ajax.php/wp-json/subkit/v1/overview' ) && false === $is_ours( '/wp-admin/admin.php?rest_route=/subkit/v1/overview' ) && false === $is_ours( '/shop/wp-json/subkit/v1/overview' ) && false === $is_ours( '/?p=1&x=/wp-json/subkit/v1/overview' ) );
-$check( 'other plugins\' routes are not claimed', false === $is_ours( '/wp-json/subkitx/v1/overview' ) && false === $is_ours( '/wp-json/subkit/v10/overview' ) && false === $is_ours( '/wp-json/wp/v2/users' ) && false === $is_ours( '/subkit/v1/overview' ) );
+$check( 'a read key can GET', 200 === $call( 'GET', '/easysubscription/v1/overview', $read )[0], array( $status, $code ) );
+$check( 'a read key can GET a route with a parameter', 200 === $call( 'GET', '/easysubscription/v1/settings/api', $read )[0], array( $status, $code ) );
+$check( 'a read key cannot POST, nothing written', array( 401, 'woocommerce_rest_authentication_error' ) === $call( 'POST', '/easysubscription/v1/settings/checkout', $read, $change( 'Read write' ) ) && 'Before' === get_option( $label ), array( $status, $code, get_option( $label ) ) );
+$check( '  nor on a second try', 401 === $call( 'POST', '/easysubscription/v1/settings/checkout', $read, $change( 'Read write' ) )[0] && 'Before' === get_option( $label ) );
+$check( 'a write key cannot GET', array( 401, 'woocommerce_rest_authentication_error' ) === $call( 'GET', '/easysubscription/v1/overview', $write ), array( $status, $code ) );
+$check( 'a write key can POST', 200 === $call( 'POST', '/easysubscription/v1/settings/checkout', $write, $change( 'Write key' ) )[0] && 'Write key' === get_option( $label ), array( $status, $code ) );
+$check( 'a read/write key can GET', 200 === $call( 'GET', '/easysubscription/v1/overview', $read_write )[0] );
+$check( 'a read/write key can POST', 200 === $call( 'POST', '/easysubscription/v1/settings/checkout', $read_write, $change( 'Read-write key' ) )[0] && 'Read-write key' === get_option( $label ), array( $status, $code ) );
+$check( '  and the same POST again changes nothing further', 200 === $call( 'POST', '/easysubscription/v1/settings/checkout', $read_write, $change( 'Read-write key' ) )[0] && 'Read-write key' === get_option( $label ) );
+$check( 'a customer\'s read/write key is forbidden to GET', array( 403, 'rest_forbidden' ) === $call( 'GET', '/easysubscription/v1/overview', $customers ), array( $status, $code ) );
+$check( 'a customer\'s read/write key is forbidden to POST, nothing written', 403 === $call( 'POST', '/easysubscription/v1/settings/checkout', $customers, $change( 'Customer' ) )[0] && 'Read-write key' === get_option( $label ), array( $status, $code ) );
+$check( 'a wrong secret is refused', array( 401, 'woocommerce_rest_authentication_error' ) === $call( 'GET', '/easysubscription/v1/overview', $wrong ), array( $status, $code ) );
+$check( 'no key is still a visitor', array( 401, 'rest_forbidden' ) === $call( 'GET', '/easysubscription/v1/overview', null ), array( $status, $code ) );
+$check( 'plain permalinks are recognised too', true === $is_ours( '/index.php?rest_route=/easysubscription/v1/overview' ) && true === $is_ours( '/wp-json/EasySubscription/V1/overview' ) && true === $is_ours( '/wp-json/easysubscription-pro/v1/deliveries' ) );
+$check( 'the pretty and index.php forms of the address are recognised', true === $is_ours( '/index.php/wp-json/easysubscription/v1/overview' ) );
+$check( 'a REST-looking address that is not a REST request is not claimed', false === $is_ours( '/wp-admin/admin-ajax.php/wp-json/easysubscription/v1/overview' ) && false === $is_ours( '/wp-admin/admin.php?rest_route=/easysubscription/v1/overview' ) && false === $is_ours( '/shop/wp-json/easysubscription/v1/overview' ) && false === $is_ours( '/?p=1&x=/wp-json/easysubscription/v1/overview' ) );
+$check( 'other plugins\' routes are not claimed', false === $is_ours( '/wp-json/easysubscriptionx/v1/overview' ) && false === $is_ours( '/wp-json/easysubscription/v10/overview' ) && false === $is_ours( '/wp-json/wp/v2/users' ) && false === $is_ours( '/easysubscription/v1/overview' ) );
 
 echo "\n3. Webhook receivers: the same with the switch on or off\n";
 $receivers = array();
@@ -202,17 +202,17 @@ foreach ( array_keys( rest_get_server()->get_routes() ) as $route ) {
 		$receivers[] = (string) $route;
 	}
 }
-$check( 'the PayPal receiver is one of them', in_array( '/subkit/v1/webhook/paypal', $receivers, true ), $receivers );
+$check( 'the PayPal receiver is one of them', in_array( '/easysubscription/v1/webhook/paypal', $receivers, true ), $receivers );
 $claimed = array_values( array_filter( $receivers, static fn( string $route ): bool => $is_ours( '/wp-json' . $route ) || $is_ours( '/index.php?rest_route=' . $route ) ) );
 $check( 'no receiver is handed to WooCommerce\'s key check', array() === $claimed, $claimed );
-$check( '  nor one written differently', false === $is_ours( '/wp-json/SubKit/v1/Webhook/PayPal/' ) && false === $is_ours( '/wp-json/subkit/v1/web%68ook/paypal' ) );
+$check( '  nor one written differently', false === $is_ours( '/wp-json/EasySubscription/v1/Webhook/PayPal/' ) && false === $is_ours( '/wp-json/easysubscription/v1/web%68ook/paypal' ) );
 
 // With no webhook ID the receiver refuses every event itself, without asking PayPal.
-delete_option( 'subkit_paypal_webhook_id' );
+delete_option( 'easysubscription_paypal_webhook_id' );
 $forged = static function ( ?array $key ) use ( $call ): array {
 	return $call(
 		'POST',
-		'/subkit/v1/webhook/paypal',
+		'/easysubscription/v1/webhook/paypal',
 		$key,
 		array(
 			'id'         => 'WH-FORGED-' . wp_generate_password( 8, false, false ),
@@ -242,22 +242,22 @@ foreach ( $endpoints as $namespace => $routes ) {
 	}
 }
 $expected = array();
-foreach ( rest_get_server()->get_routes( 'subkit/v1' ) as $route => $handlers ) {
-	if ( '/subkit/v1' !== $route && ! Api_Access::is_receiver( (string) $route ) ) {
+foreach ( rest_get_server()->get_routes( 'easysubscription/v1' ) as $route => $handlers ) {
+	if ( '/easysubscription/v1' !== $route && ! Api_Access::is_receiver( (string) $route ) ) {
 		$expected[] = (string) preg_replace( '#\(\?P<(\w+)>[^)]*\)#', '{$1}', (string) $route );
 	}
 }
-$check( 'every subkit/v1 route is listed', array() === array_diff( $expected, $listed ), array_diff( $expected, $listed ) );
+$check( 'every easysubscription/v1 route is listed', array() === array_diff( $expected, $listed ), array_diff( $expected, $listed ) );
 $check( 'no webhook receiver is listed', array() === array_filter( $listed, static fn( string $route ): bool => str_contains( $route, 'webhook' ) ), $listed );
-$by_path = array_column( $endpoints['subkit/v1'] ?? array(), 'methods', 'path' );
+$by_path = array_column( $endpoints['easysubscription/v1'] ?? array(), 'methods', 'path' );
 $check( 'each route carries its methods', array( 'GET' ) === ( $by_path['/overview'] ?? null ) && array( 'GET', 'POST' ) === ( $by_path['/settings/{section}'] ?? null ), $by_path );
 
 $GLOBALS['current_user'] = null;
 wp_set_current_user( 1 );
-$page = rest_do_request( new WP_REST_Request( 'GET', '/subkit/v1/settings/api' ) )->get_data();
+$page = rest_do_request( new WP_REST_Request( 'GET', '/easysubscription/v1/settings/api' ) )->get_data();
 $html = implode( '', array_filter( array_column( array_merge( ...array_column( $page['cards'] ?? array(), 'rows' ) ), 'html' ) ) );
 $ids  = array_filter( array_column( array_merge( ...array_column( $page['cards'] ?? array(), 'rows' ) ), 'id' ) );
-$check( 'the API Settings page has the switch and the endpoint list', in_array( Api_Access::OPTION, $ids, true ) && str_contains( $html, esc_html( rest_url( 'subkit/v1' ) ) ) && str_contains( $html, '/settings/{section}' ), $ids );
+$check( 'the API Settings page has the switch and the endpoint list', in_array( Api_Access::OPTION, $ids, true ) && str_contains( $html, esc_html( rest_url( 'easysubscription/v1' ) ) ) && str_contains( $html, '/settings/{section}' ), $ids );
 $check( '  with no receiver in it', ! str_contains( $html, 'webhook/paypal' ) );
 $check( '  and a link to create API keys', str_contains( $html, 'section=keys' ) && str_contains( $html, 'Create API keys' ) );
 $check( 'it sits in the API Settings group', 'api' === ( $page['group'] ?? '' ) );
@@ -288,4 +288,4 @@ $GLOBALS['current_user'] = null;
 wp_set_current_user( 1 );
 
 ob_end_flush();
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

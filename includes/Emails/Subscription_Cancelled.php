@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Emails;
+namespace EasySubscription\Emails;
 
-use SubKit\Domain\Subscription;
+use EasySubscription\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,20 +11,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Subscription_Cancelled extends Subscription_Email {
 
 	public function __construct() {
-		$this->id             = 'subkit_subscription_cancelled';
-		$this->title          = __( 'Subscription cancelled', 'subkit-subscriptions' );
-		$this->description    = __( 'Confirmation sent to the customer whenever a subscription is cancelled.', 'subkit-subscriptions' );
+		$this->id             = 'easysubscription_subscription_cancelled';
+		$this->title          = __( 'Subscription cancelled', 'easysubscription' );
+		$this->description    = __( 'Confirmation sent to the customer whenever a subscription is cancelled.', 'easysubscription' );
 		$this->customer_email = true;
 
 		parent::__construct();
 	}
 
 	public function get_default_subject(): string {
-		return __( 'Your subscription has been cancelled', 'subkit-subscriptions' );
+		return __( 'Your subscription has been cancelled', 'easysubscription' );
 	}
 
 	public function get_default_heading(): string {
-		return __( 'Your subscription has been cancelled', 'subkit-subscriptions' );
+		return __( 'Your subscription has been cancelled', 'easysubscription' );
 	}
 
 	public function trigger( Subscription $subscription ): void {
@@ -36,24 +36,24 @@ class Subscription_Cancelled extends Subscription_Email {
 	protected function intro(): string {
 		$end = $this->subscription->get_end_date() ?: $this->subscription->get_next_payment();
 
-		if ( 'sk-pending-cancel' === $this->subscription->get_status() && $end ) {
+		if ( 'es-pending-cancel' === $this->subscription->get_status() && $end ) {
 			return sprintf(
 				/* translators: %s: date access ends */
-				__( "Your subscription is cancelled and won't be charged again. You still have access until %s.", 'subkit-subscriptions' ),
+				__( "Your subscription is cancelled and won't be charged again. You still have access until %s.", 'easysubscription' ),
 				$this->date( $end )
 			);
 		}
 
-		return __( "Your subscription is cancelled and won't be charged again.", 'subkit-subscriptions' );
+		return __( "Your subscription is cancelled and won't be charged again.", 'easysubscription' );
 	}
 
 	protected function facts(): array {
 		return array(
-			__( 'Subscription', 'subkit-subscriptions' ) => '#' . $this->subscription->get_id(),
+			__( 'Subscription', 'easysubscription' ) => '#' . $this->subscription->get_id(),
 		);
 	}
 
 	protected function outro(): string {
-		return __( 'Changed your mind? You can start a new subscription at any time.', 'subkit-subscriptions' );
+		return __( 'Changed your mind? You can start a new subscription at any time.', 'easysubscription' );
 	}
 }

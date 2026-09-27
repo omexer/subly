@@ -6,51 +6,51 @@
  * utility of ours can never match a core rule or the other way round.
  */
 module.exports = {
-	prefix: 'sk-',
-	darkMode: [ 'class', '.subkit-ui--dark' ],
+	prefix: 'es-',
+	darkMode: [ 'class', '.easysubscription-ui--dark' ],
 	corePlugins: { preflight: false },
 	content: [ './src/**/*.{js,jsx}' ],
 	theme: {
 		extend: {
 			colors: {
-				border: 'hsl(var(--sk-border))',
-				input: 'hsl(var(--sk-input))',
-				ring: 'hsl(var(--sk-ring))',
-				background: 'hsl(var(--sk-background))',
-				foreground: 'hsl(var(--sk-foreground))',
+				border: 'hsl(var(--es-border))',
+				input: 'hsl(var(--es-input))',
+				ring: 'hsl(var(--es-ring))',
+				background: 'hsl(var(--es-background))',
+				foreground: 'hsl(var(--es-foreground))',
 				primary: {
-					DEFAULT: 'hsl(var(--sk-primary))',
-					foreground: 'hsl(var(--sk-primary-foreground))',
+					DEFAULT: 'hsl(var(--es-primary))',
+					foreground: 'hsl(var(--es-primary-foreground))',
 				},
 				secondary: {
-					DEFAULT: 'hsl(var(--sk-secondary))',
-					foreground: 'hsl(var(--sk-secondary-foreground))',
+					DEFAULT: 'hsl(var(--es-secondary))',
+					foreground: 'hsl(var(--es-secondary-foreground))',
 				},
 				muted: {
-					DEFAULT: 'hsl(var(--sk-muted))',
-					foreground: 'hsl(var(--sk-muted-foreground))',
+					DEFAULT: 'hsl(var(--es-muted))',
+					foreground: 'hsl(var(--es-muted-foreground))',
 				},
 				accent: {
-					DEFAULT: 'hsl(var(--sk-accent))',
-					foreground: 'hsl(var(--sk-accent-foreground))',
+					DEFAULT: 'hsl(var(--es-accent))',
+					foreground: 'hsl(var(--es-accent-foreground))',
 				},
 				destructive: {
-					DEFAULT: 'hsl(var(--sk-destructive))',
-					foreground: 'hsl(var(--sk-destructive-foreground))',
+					DEFAULT: 'hsl(var(--es-destructive))',
+					foreground: 'hsl(var(--es-destructive-foreground))',
 				},
 				success: {
-					DEFAULT: 'hsl(var(--sk-success))',
-					foreground: 'hsl(var(--sk-success-foreground))',
+					DEFAULT: 'hsl(var(--es-success))',
+					foreground: 'hsl(var(--es-success-foreground))',
 				},
 				card: {
-					DEFAULT: 'hsl(var(--sk-card))',
-					foreground: 'hsl(var(--sk-card-foreground))',
+					DEFAULT: 'hsl(var(--es-card))',
+					foreground: 'hsl(var(--es-card-foreground))',
 				},
 			},
 			borderRadius: {
-				lg: 'var(--sk-radius)',
-				md: 'calc(var(--sk-radius) - 2px)',
-				sm: 'calc(var(--sk-radius) - 4px)',
+				lg: 'var(--es-radius)',
+				md: 'calc(var(--es-radius) - 2px)',
+				sm: 'calc(var(--es-radius) - 4px)',
 			},
 		},
 	},

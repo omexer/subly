@@ -1,14 +1,14 @@
 <?php
 /**
  * R0 spike harness — answers R0-1 (HPOS custom order type) and R0-2 (period_index).
- * Run: docker compose exec -T wordpress php /var/www/html/subkit-r0.php
+ * Run: docker compose exec -T wordpress php /var/www/html/easysubscription-r0.php
  */
 
 require_once dirname( __DIR__, 5 ) . '/wp-load.php';
 
-use SubKit\Data\Subscription_Query;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 global $wpdb;
 
@@ -35,10 +35,10 @@ check( 'class_name maps to our class', isset( $type_args['class_name'] ) && Subs
 // Data store resolves?
 try {
 	$store = WC_Data_Store::load( Subscription::TYPE );
-	check( 'WC_Data_Store::load( subkit_sub ) resolves', true );
+	check( 'WC_Data_Store::load( easysubscription_sub ) resolves', true );
 	echo "          store: " . get_class( $store->get_current_class_name() ? $store : $store ) . " -> " . $store->get_current_class_name() . "\n";
 } catch ( \Exception $e ) {
-	check( 'WC_Data_Store::load( subkit_sub ) resolves', false, $e->getMessage() );
+	check( 'WC_Data_Store::load( easysubscription_sub ) resolves', false, $e->getMessage() );
 	finding( 'R0-1 BLOCKER: data store did not resolve: ' . $e->getMessage() );
 }
 
@@ -65,7 +65,7 @@ $hpos_status = $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$wpdb->prefi
 $in_posts = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE ID = %d", $sub_id ) );
 
 check( 'row written to wc_orders (HPOS)', 1 === $in_hpos );
-check( 'wc_orders.type is subkit_sub', Subscription::TYPE === $hpos_type, "type={$hpos_type}" );
+check( 'wc_orders.type is easysubscription_sub', Subscription::TYPE === $hpos_type, "type={$hpos_type}" );
 echo "          wc_orders.status = '{$hpos_status}'\n";
 if ( 0 !== $in_posts ) {
 	finding( 'A row was also written to wp_posts (compatibility mode may be on).' );
@@ -76,7 +76,7 @@ $loaded = wc_get_order( $sub_id );
 check( 'wc_get_order() returns our class', $loaded instanceof Subscription, is_object( $loaded ) ? get_class( $loaded ) : var_export( $loaded, true ) );
 
 if ( $loaded instanceof Subscription ) {
-	check( 'get_type() is subkit_sub', Subscription::TYPE === $loaded->get_type() );
+	check( 'get_type() is easysubscription_sub', Subscription::TYPE === $loaded->get_type() );
 	check( 'status round-trips', Subscription_Status::Active === $loaded->get_status_enum(), 'got ' . var_export( $loaded->get_status(), true ) );
 	check( 'billing_period round-trips', 'month' === $loaded->get_billing_period(), var_export( $loaded->get_billing_period(), true ) );
 	check( 'billing_interval round-trips', 1 === $loaded->get_billing_interval(), var_export( $loaded->get_billing_interval(), true ) );
@@ -87,7 +87,7 @@ if ( $loaded instanceof Subscription ) {
 }
 
 // Meta storage location
-$meta_in_hpos = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}wc_orders_meta WHERE order_id = %d AND meta_key = %s", $sub_id, '_subkit_next_payment' ) );
+$meta_in_hpos = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}wc_orders_meta WHERE order_id = %d AND meta_key = %s", $sub_id, '_easysubscription_next_payment' ) );
 check( 'schedule meta stored in wc_orders_meta', 1 === $meta_in_hpos );
 
 // Line items
@@ -110,7 +110,7 @@ check( 'order notes work', ! empty( $notes ) );
 // Querying
 $found = wc_get_orders( array( 'type' => Subscription::TYPE, 'limit' => -1, 'return' => 'ids' ) );
 check( 'KNOWN TRAP: bare wc_get_orders( type ) returns nothing', ! in_array( $sub_id, array_map( 'intval', $found ), true ) );
-finding( 'wc_get_orders() with only a type returns nothing for custom order types: an omitted status (and "any") resolves to the shop_order status list, which never contains sk-*. Statuses must be passed wc- prefixed even though the object reports them unprefixed. Wrapped in Subscription_Query so no caller has to know.' );
+finding( 'wc_get_orders() with only a type returns nothing for custom order types: an omitted status (and "any") resolves to the shop_order status list, which never contains es-*. Statuses must be passed wc- prefixed even though the object reports them unprefixed. Wrapped in Subscription_Query so no caller has to know.' );
 
 check( 'Subscription_Query::ids() finds it', in_array( $sub_id, Subscription_Query::ids( array( 'limit' => -1 ) ), true ) );
 check( 'Subscription_Query filters by status', in_array( $sub_id, Subscription_Query::billable_ids( array( 'limit' => -1 ) ), true ) );
@@ -133,7 +133,7 @@ check( 'subscriptions do NOT leak into shop_order queries', ! in_array( $sub_id,
 // ==================================================== R0-2
 echo "\n[R0-2] period_index / charge-slot semantics\n";
 
-$slot_table = $wpdb->prefix . 'subkit_charge_slot';
+$slot_table = $wpdb->prefix . 'easysubscription_charge_slot';
 $wpdb->query( "DROP TABLE IF EXISTS {$slot_table}" );
 $wpdb->query( "CREATE TABLE {$slot_table} (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,

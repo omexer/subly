@@ -1,13 +1,13 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * What SubKit can connect to, and whether each connection is live.
+ * What EasySubscription can connect to, and whether each connection is live.
  *
  * The free plugin ships no integrations of its own. This screen exists so a merchant can
  * see what is possible and what is missing, rather than discovering that an integration
@@ -24,8 +24,8 @@ class Integrations_Page {
 	public function add_page(): void {
 		add_submenu_page(
 			Menu::PARENT,
-			__( 'Integrations', 'subkit-subscriptions' ),
-			__( 'Integrations', 'subkit-subscriptions' ),
+			__( 'Integrations', 'easysubscription' ),
+			__( 'Integrations', 'easysubscription' ),
 			Menu::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
@@ -43,7 +43,7 @@ class Integrations_Page {
 		 *
 		 * @param array $integrations
 		 */
-		$integrations = (array) apply_filters( 'subkit_admin_integrations', array() );
+		$integrations = (array) apply_filters( 'easysubscription_admin_integrations', array() );
 
 		usort(
 			$integrations,
@@ -55,7 +55,7 @@ class Integrations_Page {
 
 	public function render(): void {
 		if ( ! current_user_can( Menu::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'easysubscription' ) );
 		}
 
 		App_Host::start( self::SLUG );
@@ -67,15 +67,15 @@ class Integrations_Page {
 		$integrations = $this->integrations();
 
 		Page_Shell::open(
-			__( 'Integrations', 'subkit-subscriptions' ),
-			__( 'Hand a subscription to the plugin that delivers what it pays for, and take it back when it ends.', 'subkit-subscriptions' )
+			__( 'Integrations', 'easysubscription' ),
+			__( 'Hand a subscription to the plugin that delivers what it pays for, and take it back when it ends.', 'easysubscription' )
 		);
 
 		if ( ! $integrations ) {
 			printf(
-				'<div class="subkit-card"><div class="subkit-empty"><p class="subkit-empty__title">%s</p><p>%s</p></div></div>',
-				esc_html__( 'Nothing to connect yet', 'subkit-subscriptions' ),
-				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. EasySubscription Pro adds them.', 'subkit-subscriptions' )
+				'<div class="easysubscription-card"><div class="easysubscription-empty"><p class="easysubscription-empty__title">%s</p><p>%s</p></div></div>',
+				esc_html__( 'Nothing to connect yet', 'easysubscription' ),
+				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. EasySubscription Pro adds them.', 'easysubscription' )
 			);
 
 			Page_Shell::close();
@@ -86,12 +86,12 @@ class Integrations_Page {
 
 		foreach ( $integrations as $integration ) {
 			$category              = (string) ( $integration['category'] ?? '' );
-			$category              = '' !== $category ? $category : __( 'Other', 'subkit-subscriptions' );
+			$category              = '' !== $category ? $category : __( 'Other', 'easysubscription' );
 			$groups[ $category ][] = $integration;
 		}
 
 		foreach ( $groups as $category => $items ) {
-			echo '<h2 class="subkit-section-title">' . esc_html( $category ) . '</h2><div class="subkit-grid">';
+			echo '<h2 class="easysubscription-section-title">' . esc_html( $category ) . '</h2><div class="easysubscription-grid">';
 
 			foreach ( $items as $integration ) {
 				$this->render_tile( $integration );
@@ -100,7 +100,7 @@ class Integrations_Page {
 			echo '</div>';
 		}
 
-		echo '<p class="subkit-lede" style="margin-top:24px">' . esc_html__( 'An integration only does anything while the plugin it connects to is active, and only for products you have configured it on.', 'subkit-subscriptions' ) . '</p>';
+		echo '<p class="easysubscription-lede" style="margin-top:24px">' . esc_html__( 'An integration only does anything while the plugin it connects to is active, and only for products you have configured it on.', 'easysubscription' ) . '</p>';
 
 		Page_Shell::close();
 	}
@@ -113,36 +113,36 @@ class Integrations_Page {
 		$title       = (string) ( $integration['title'] ?? '' );
 		$description = (string) ( $integration['description'] ?? '' );
 
-		echo '<div class="subkit-tile"><div class="subkit-tile__top">';
+		echo '<div class="easysubscription-tile"><div class="easysubscription-tile__top">';
 
 		$this->render_icon( $integration );
 
 		printf(
-			'<div><h3 class="subkit-tile__title">%s</h3><p class="subkit-tile__meta">%s</p></div></div>',
+			'<div><h3 class="easysubscription-tile__title">%s</h3><p class="easysubscription-tile__meta">%s</p></div></div>',
 			esc_html( $title ),
 			esc_html(
 				sprintf(
 					/* translators: %s: the plugin an integration needs */
-					__( 'Needs %s', 'subkit-subscriptions' ),
+					__( 'Needs %s', 'easysubscription' ),
 					(string) ( $integration['requires'] ?? $title )
 				)
 			)
 		);
 
 		if ( '' !== $description ) {
-			echo '<p class="subkit-tile__body">' . esc_html( $description ) . '</p>';
+			echo '<p class="easysubscription-tile__body">' . esc_html( $description ) . '</p>';
 		}
 
 		$hint = (string) ( $integration['hint'] ?? '' );
 
 		if ( '' !== $hint ) {
-			echo '<p class="subkit-tile__meta">' . esc_html( $hint ) . '</p>';
+			echo '<p class="easysubscription-tile__meta">' . esc_html( $hint ) . '</p>';
 		}
 
 		printf(
-			'<div class="subkit-tile__foot"><span class="subkit-badge %s">%s</span><span class="subkit-tile__action">',
-			$active ? 'subkit-badge--good' : '',
-			esc_html( $active ? __( 'Connected', 'subkit-subscriptions' ) : __( 'Not active', 'subkit-subscriptions' ) )
+			'<div class="easysubscription-tile__foot"><span class="easysubscription-badge %s">%s</span><span class="easysubscription-tile__action">',
+			$active ? 'easysubscription-badge--good' : '',
+			esc_html( $active ? __( 'Connected', 'easysubscription' ) : __( 'Not active', 'easysubscription' ) )
 		);
 
 		$this->render_configure( $integration );
@@ -163,12 +163,12 @@ class Integrations_Page {
 		$first = strtoupper( function_exists( 'mb_substr' ) ? mb_substr( $title, 0, 1 ) : substr( $title, 0, 1 ) );
 
 		if ( '' === $icon ) {
-			printf( '<span class="subkit-tile__icon" aria-hidden="true">%s</span>', esc_html( $first ) );
+			printf( '<span class="easysubscription-tile__icon" aria-hidden="true">%s</span>', esc_html( $first ) );
 			return;
 		}
 
 		printf(
-			'<span class="subkit-tile__icon" aria-hidden="true" data-initial="%s"><img src="%s" alt="" width="40" height="40" loading="lazy" onerror="this.parentNode.textContent=this.parentNode.dataset.initial"></span>',
+			'<span class="easysubscription-tile__icon" aria-hidden="true" data-initial="%s"><img src="%s" alt="" width="40" height="40" loading="lazy" onerror="this.parentNode.textContent=this.parentNode.dataset.initial"></span>',
 			esc_attr( $first ),
 			esc_url( $icon )
 		);
@@ -186,9 +186,9 @@ class Integrations_Page {
 
 		if ( '' !== $slug && current_user_can( 'install_plugins' ) && current_user_can( 'activate_plugins' ) ) {
 			printf(
-				'<button type="button" class="subkit-btn subkit-btn--primary subkit-btn--sm subkit-install" data-slug="%s">%s</button>',
+				'<button type="button" class="easysubscription-btn easysubscription-btn--primary easysubscription-btn--sm easysubscription-install" data-slug="%s">%s</button>',
 				esc_attr( $slug ),
-				esc_html__( 'Install', 'subkit-subscriptions' )
+				esc_html__( 'Install', 'easysubscription' )
 			);
 
 			return;
@@ -201,9 +201,9 @@ class Integrations_Page {
 		}
 
 		printf(
-			'<a class="subkit-btn subkit-btn--sm" href="%s" target="_blank" rel="noopener noreferrer">%s <span aria-hidden="true">&#8599;</span></a>',
+			'<a class="easysubscription-btn easysubscription-btn--sm" href="%s" target="_blank" rel="noopener noreferrer">%s <span aria-hidden="true">&#8599;</span></a>',
 			esc_url( $url ),
-			esc_html__( 'Get it', 'subkit-subscriptions' )
+			esc_html__( 'Get it', 'easysubscription' )
 		);
 	}
 
@@ -220,9 +220,9 @@ class Integrations_Page {
 		$label = (string) ( $integration['configure_label'] ?? '' );
 
 		printf(
-			'<a class="subkit-btn subkit-btn--sm" href="%s">%s</a>',
+			'<a class="easysubscription-btn easysubscription-btn--sm" href="%s">%s</a>',
 			esc_url( $url ),
-			esc_html( '' !== $label ? $label : __( 'Settings', 'subkit-subscriptions' ) )
+			esc_html( '' !== $label ? $label : __( 'Settings', 'easysubscription' ) )
 		);
 	}
 }

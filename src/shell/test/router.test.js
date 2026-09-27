@@ -45,14 +45,14 @@ describe( 'the router', () => {
 		router.subscribe( seen );
 		const before = window.history.length;
 
-		router.navigate( 'list', { status: 'sk-active', empty: '' } );
+		router.navigate( 'list', { status: 'es-active', empty: '' } );
 
 		expect( window.location.href ).toBe(
-			`${ ADMIN }?page=list&status=sk-active`
+			`${ ADMIN }?page=list&status=es-active`
 		);
 		expect( window.history.length ).toBe( before + 1 );
 		expect( router.current().page ).toBe( 'list' );
-		expect( router.current().params.toString() ).toBe( 'status=sk-active' );
+		expect( router.current().params.toString() ).toBe( 'status=es-active' );
 		expect( seen ).toHaveBeenCalledWith(
 			expect.objectContaining( { page: 'list', kind: 'navigate' } )
 		);

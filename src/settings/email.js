@@ -1,18 +1,18 @@
 import { useEffect, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Skeleton } from '@subkit/ui';
+import { Skeleton } from '@easysubscription/ui';
 import { Row } from './field';
 
 const SAVED_FOR = 4000;
 
 // DOM ids for the email's own keys, which are as plain as "subject".
-const PREFIX = 'subkit-email-';
+const PREFIX = 'easysubscription-email-';
 
 function messageOf( error ) {
 	return (
 		error?.message ||
-		__( 'That did not work. Try again.', 'subkit-subscriptions' )
+		__( 'That did not work. Try again.', 'easysubscription' )
 	);
 }
 
@@ -46,7 +46,9 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 		setFailure( '' );
 
 		apiFetch( {
-			path: `/subkit/v1/settings/emails/${ encodeURIComponent( id ) }`,
+			path: `/easysubscription/v1/settings/emails/${ encodeURIComponent(
+				id
+			) }`,
 		} ).then( setEmail, ( error ) => setFailure( messageOf( error ) ) );
 	}, [ id ] );
 
@@ -71,10 +73,10 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 	const back = (
 		<button
 			type="button"
-			className="subkit-btn subkit-btn--sm sk-self-start"
+			className="easysubscription-btn easysubscription-btn--sm es-self-start"
 			onClick={ onBack }
 		>
-			{ __( '← Back to notifications', 'subkit-subscriptions' ) }
+			{ __( '← Back to notifications', 'easysubscription' ) }
 		</button>
 	);
 
@@ -82,7 +84,10 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 		return (
 			<>
 				{ back }
-				<div className="subkit-notice subkit-notice--bad" role="alert">
+				<div
+					className="easysubscription-notice easysubscription-notice--bad"
+					role="alert"
+				>
 					{ failure }
 				</div>
 			</>
@@ -91,8 +96,11 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 
 	if ( ! email ) {
 		return (
-			<section className="subkit-settings__card" aria-busy="true">
-				<Skeleton className="sk-my-6 sk-h-40 sk-w-full" />
+			<section
+				className="easysubscription-settings__card"
+				aria-busy="true"
+			>
+				<Skeleton className="es-my-6 es-h-40 es-w-full" />
 			</section>
 		);
 	}
@@ -137,7 +145,9 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 		setToast( '' );
 
 		apiFetch( {
-			path: `/subkit/v1/settings/emails/${ encodeURIComponent( id ) }`,
+			path: `/easysubscription/v1/settings/emails/${ encodeURIComponent(
+				id
+			) }`,
 			method: 'POST',
 			data: { values: drafts },
 		} )
@@ -150,9 +160,7 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 					if ( result.errors?.length ) {
 						setErrors( result.errors );
 					} else {
-						setToast(
-							__( 'Email saved.', 'subkit-subscriptions' )
-						);
+						setToast( __( 'Email saved.', 'easysubscription' ) );
 					}
 				},
 				( error ) => setErrors( [ messageOf( error ) ] )
@@ -164,14 +172,14 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 	const fields = email.fields.filter( ( field ) => field.key !== 'enabled' );
 
 	return (
-		<form className="subkit-settings__main" onSubmit={ save }>
+		<form className="easysubscription-settings__main" onSubmit={ save }>
 			{ back }
-			<section className="subkit-settings__card">
-				<header className="subkit-settings__card-head">
+			<section className="easysubscription-settings__card">
+				<header className="easysubscription-settings__card-head">
 					<h2>{ email.title }</h2>
 					{ email.description ? <p>{ email.description }</p> : null }
 				</header>
-				<div className="subkit-settings__rows">
+				<div className="easysubscription-settings__rows">
 					{ fields.map( ( field ) => (
 						<Row
 							key={ field.key }
@@ -184,61 +192,64 @@ export function EmailEditor( { id, onBack, onDirty } ) {
 				</div>
 			</section>
 			{ email.preview_url ? (
-				<section className="subkit-settings__card">
-					<header className="subkit-settings__card-head">
-						<h2>{ __( 'Preview', 'subkit-subscriptions' ) }</h2>
+				<section className="easysubscription-settings__card">
+					<header className="easysubscription-settings__card-head">
+						<h2>{ __( 'Preview', 'easysubscription' ) }</h2>
 						<p>
 							{ __(
 								'The saved email, with sample details. Save to see your changes here.',
-								'subkit-subscriptions'
+								'easysubscription'
 							) }
 						</p>
 					</header>
 					<iframe
 						key={ shown }
-						className="subkit-email-preview"
+						className="easysubscription-email-preview"
 						src={ email.preview_url }
-						title={ __( 'Email preview', 'subkit-subscriptions' ) }
+						title={ __( 'Email preview', 'easysubscription' ) }
 					/>
 				</section>
 			) : null }
 			{ errors.length ? (
-				<div className="subkit-notice subkit-notice--bad" role="alert">
+				<div
+					className="easysubscription-notice easysubscription-notice--bad"
+					role="alert"
+				>
 					{ errors.map( ( error ) => (
-						<p key={ error } className="sk-m-0">
+						<p key={ error } className="es-m-0">
 							{ error }
 						</p>
 					) ) }
 				</div>
 			) : null }
-			<div className="subkit-settings__save">
+			<div className="easysubscription-settings__save">
 				{ email.woo_url ? (
 					<a
-						className="subkit-settings__save-note"
+						className="easysubscription-settings__save-note"
 						href={ email.woo_url }
 					>
-						{ __( 'Open in WooCommerce', 'subkit-subscriptions' ) }
+						{ __( 'Open in WooCommerce', 'easysubscription' ) }
 					</a>
 				) : (
 					<span />
 				) }
 				<button
 					type="submit"
-					className="button button-primary subkit-btn subkit-btn--primary"
+					className="button button-primary easysubscription-btn easysubscription-btn--primary"
 					disabled={ ! dirty || saving }
 				>
 					{ saving
-						? __( 'Saving…', 'subkit-subscriptions' )
-						: __( 'Save changes', 'subkit-subscriptions' ) }
+						? __( 'Saving…', 'easysubscription' )
+						: __( 'Save changes', 'easysubscription' ) }
 				</button>
 			</div>
 			<div
-				className="sk-fixed sk-bottom-24 sk-right-8 sk-z-50"
+				className="es-fixed es-bottom-24 es-right-8 es-z-50"
 				role="status"
 				aria-live="polite"
 			>
 				{ toast ? (
-					<div className="subkit-notice subkit-notice--good sk-m-0 sk-shadow-lg">
+					<div className="easysubscription-notice easysubscription-notice--good es-m-0 es-shadow-lg">
 						{ toast }
 					</div>
 				) : null }

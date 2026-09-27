@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,9 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Notices {
 
-	public const IMPORTANT = 'subkit-notice--important';
+	public const IMPORTANT = 'easysubscription-notice--important';
 
-	public const FEEDBACK = 'subkit-notice--feedback';
+	public const FEEDBACK = 'easysubscription-notice--feedback';
 
 	private const HOOKS = array( 'admin_notices', 'all_admin_notices', 'user_admin_notices' );
 
@@ -52,7 +52,7 @@ class Notices {
 		self::$current = $this;
 
 		add_action( 'in_admin_header', array( $this, 'collect' ), 1 );
-		// Last resort: a SubKit screen that draws no shell would otherwise swallow them.
+		// Last resort: a EasySubscription screen that draws no shell would otherwise swallow them.
 		add_action( 'admin_footer', array( $this, 'render_leftovers' ), 99 );
 	}
 
@@ -110,19 +110,19 @@ class Notices {
 
 		$label = sprintf(
 			/* translators: %d: number of notifications */
-			_n( '%d notification', '%d notifications', $notices->count, 'subkit-subscriptions' ),
+			_n( '%d notification', '%d notifications', $notices->count, 'easysubscription' ),
 			$notices->count
 		);
 
 		printf(
-			'<details class="subkit-notify" data-subkit-notify><summary class="subkit-notify__bell" aria-label="%s" title="%s">%s<span class="subkit-notify__count" aria-hidden="true">%s</span></summary>'
-				. '<div class="subkit-notify__panel" id="subkit-other-notices" role="region" aria-label="%s"><p class="subkit-notify__head">%s</p><div class="subkit-notify__list">',
+			'<details class="easysubscription-notify" data-easysubscription-notify><summary class="easysubscription-notify__bell" aria-label="%s" title="%s">%s<span class="easysubscription-notify__count" aria-hidden="true">%s</span></summary>'
+				. '<div class="easysubscription-notify__panel" id="easysubscription-other-notices" role="region" aria-label="%s"><p class="easysubscription-notify__head">%s</p><div class="easysubscription-notify__list">',
 			esc_attr( $label ),
 			esc_attr( $label ),
 			self::bell(), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
 			esc_html( number_format_i18n( $notices->count ) ),
-			esc_attr__( 'Notifications', 'subkit-subscriptions' ),
-			esc_html__( 'Notifications', 'subkit-subscriptions' )
+			esc_attr__( 'Notifications', 'easysubscription' ),
+			esc_html__( 'Notifications', 'easysubscription' )
 		);
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- other plugins' notices, printed as WordPress would have printed them.
@@ -157,7 +157,7 @@ class Notices {
 		$this->shown = true;
 
 		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- other plugins' notices, printed as WordPress would have printed them.
-		echo '<div class="subkit-other-notices">' . $this->html . '</div>';
+		echo '<div class="easysubscription-other-notices">' . $this->html . '</div>';
 	}
 
 	public static function bell(): string {

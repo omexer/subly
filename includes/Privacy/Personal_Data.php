@@ -1,11 +1,11 @@
 <?php
 
-namespace SubKit\Privacy;
+namespace EasySubscription\Privacy;
 
-use SubKit\Data\Activity_Repository;
-use SubKit\Data\Subscription_Query;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Data\Activity_Repository;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Personal_Data {
 
-	private const GROUP = 'subkit-subscriptions';
+	private const GROUP = 'easysubscription';
 
 	public function __construct( private readonly Activity_Repository $activity ) {}
 
@@ -31,7 +31,7 @@ class Personal_Data {
 
 	public function add_exporter( array $exporters ): array {
 		$exporters[ self::GROUP ] = array(
-			'exporter_friendly_name' => __( 'Subscriptions', 'subkit-subscriptions' ),
+			'exporter_friendly_name' => __( 'Subscriptions', 'easysubscription' ),
 			'callback'               => array( $this, 'export' ),
 		);
 
@@ -40,7 +40,7 @@ class Personal_Data {
 
 	public function add_eraser( array $erasers ): array {
 		$erasers[ self::GROUP ] = array(
-			'eraser_friendly_name' => __( 'Subscriptions', 'subkit-subscriptions' ),
+			'eraser_friendly_name' => __( 'Subscriptions', 'easysubscription' ),
 			'callback'             => array( $this, 'erase' ),
 		);
 
@@ -57,43 +57,43 @@ class Personal_Data {
 		foreach ( $this->subscriptions_for( $email ) as $subscription ) {
 			$items[] = array(
 				'group_id'    => self::GROUP,
-				'group_label' => __( 'Subscriptions', 'subkit-subscriptions' ),
+				'group_label' => __( 'Subscriptions', 'easysubscription' ),
 				'item_id'     => 'subscription-' . $subscription->get_id(),
 				'data'        => array(
 					array(
-						'name'  => __( 'Subscription', 'subkit-subscriptions' ),
+						'name'  => __( 'Subscription', 'easysubscription' ),
 						'value' => '#' . $subscription->get_id(),
 					),
 					array(
-						'name'  => __( 'Status', 'subkit-subscriptions' ),
+						'name'  => __( 'Status', 'easysubscription' ),
 						'value' => $subscription->get_status(),
 					),
 					array(
-						'name'  => __( 'Billing', 'subkit-subscriptions' ),
+						'name'  => __( 'Billing', 'easysubscription' ),
 						'value' => sprintf( '%d / %s', $subscription->get_billing_interval(), $subscription->get_billing_period() ),
 					),
 					array(
-						'name'  => __( 'Recurring total', 'subkit-subscriptions' ),
+						'name'  => __( 'Recurring total', 'easysubscription' ),
 						'value' => wp_strip_all_tags( $subscription->get_formatted_order_total() ),
 					),
 					array(
-						'name'  => __( 'Next payment', 'subkit-subscriptions' ),
+						'name'  => __( 'Next payment', 'easysubscription' ),
 						'value' => (string) $subscription->get_next_payment(),
 					),
 					array(
-						'name'  => __( 'Trial ends', 'subkit-subscriptions' ),
+						'name'  => __( 'Trial ends', 'easysubscription' ),
 						'value' => (string) $subscription->get_trial_end(),
 					),
 					array(
-						'name'  => __( 'Payment method', 'subkit-subscriptions' ),
+						'name'  => __( 'Payment method', 'easysubscription' ),
 						'value' => $subscription->get_payment_method_title() ?: $subscription->get_payment_method(),
 					),
 					array(
-						'name'  => __( 'Billing email', 'subkit-subscriptions' ),
+						'name'  => __( 'Billing email', 'easysubscription' ),
 						'value' => $subscription->get_billing_email(),
 					),
 					array(
-						'name'  => __( 'Billing name', 'subkit-subscriptions' ),
+						'name'  => __( 'Billing name', 'easysubscription' ),
 						'value' => trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ),
 					),
 				),
@@ -123,7 +123,7 @@ class Personal_Data {
 				$retained   = true;
 				$messages[] = sprintf(
 					/* translators: %d: subscription number */
-					__( 'Subscription #%d is still active. Cancel it before erasing, so billing stops at the payment gateway first.', 'subkit-subscriptions' ),
+					__( 'Subscription #%d is still active. Cancel it before erasing, so billing stops at the payment gateway first.', 'easysubscription' ),
 					$subscription->get_id()
 				);
 				continue;
@@ -148,7 +148,7 @@ class Personal_Data {
 		foreach ( array( 'billing', 'shipping' ) as $type ) {
 			$subscription->set_address(
 				array(
-					'first_name' => __( 'Removed', 'subkit-subscriptions' ),
+					'first_name' => __( 'Removed', 'easysubscription' ),
 					'last_name'  => '',
 					'company'    => '',
 					'address_1'  => '',

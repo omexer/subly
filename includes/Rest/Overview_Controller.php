@@ -1,10 +1,10 @@
 <?php
 
-namespace SubKit\Rest;
+namespace EasySubscription\Rest;
 
-use SubKit\Admin\Menu;
-use SubKit\Data\Stats;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Admin\Menu;
+use EasySubscription\Data\Stats;
+use EasySubscription\Domain\Subscription_Status;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Overview_Controller {
 
-	public const NAMESPACE = 'subkit/v1';
+	public const NAMESPACE = 'easysubscription/v1';
 
 	private Stats $stats;
 
@@ -119,13 +119,13 @@ class Overview_Controller {
 
 	/** Status colours, shared with the list screen's pills. */
 	private const COLOURS = array(
-		'sk-pending'        => '#dba617',
-		'sk-trialling'      => '#72aee6',
-		'sk-active'         => '#00a32a',
-		'sk-on-hold'        => '#d63638',
-		'sk-pending-cancel' => '#b26200',
-		'sk-cancelled'      => '#8c8f94',
-		'sk-expired'        => '#646970',
-		'sk-switched'       => '#a7aaad',
+		'es-pending'        => '#dba617',
+		'es-trialling'      => '#72aee6',
+		'es-active'         => '#00a32a',
+		'es-on-hold'        => '#d63638',
+		'es-pending-cancel' => '#b26200',
+		'es-cancelled'      => '#8c8f94',
+		'es-expired'        => '#646970',
+		'es-switched'       => '#a7aaad',
 	);
 }

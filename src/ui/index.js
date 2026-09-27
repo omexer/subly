@@ -1,8 +1,8 @@
 /**
- * SubKit's shared admin UI: shadcn/ui components, plus the few composites every SubKit
+ * EasySubscription's shared admin UI: shadcn/ui components, plus the few composites every EasySubscription
  * screen needs.
  *
- * Published on a global rather than as a package. SubKit Pro builds separately and cannot
+ * Published on a global rather than as a package. EasySubscription Pro builds separately and cannot
  * import from this plugin at build time, so it consumes these as an external, the same way
  * everything consumes wp.components.
  */
@@ -35,10 +35,10 @@ import { Card, CardContent } from './components/ui/card';
 
 function toneFor( delta ) {
 	if ( typeof delta !== 'number' ) {
-		return 'sk-text-muted-foreground';
+		return 'es-text-muted-foreground';
 	}
 
-	return delta < 0 ? 'sk-text-destructive' : 'sk-text-success';
+	return delta < 0 ? 'es-text-destructive' : 'es-text-success';
 }
 
 export function Stat( { label, value, meta, delta, children } ) {
@@ -46,16 +46,16 @@ export function Stat( { label, value, meta, delta, children } ) {
 
 	return (
 		<Card>
-			<CardContent className="sk-p-5">
-				<span className="sk-block sk-text-sm sk-text-muted-foreground">
+			<CardContent className="es-p-5">
+				<span className="es-block es-text-sm es-text-muted-foreground">
 					{ label }
 				</span>
-				<span className="sk-mt-1 sk-block sk-text-3xl sk-font-semibold sk-tabular-nums sk-leading-tight">
+				<span className="es-mt-1 es-block es-text-3xl es-font-semibold es-tabular-nums es-leading-tight">
 					{ value }
 				</span>
 				{ meta ? (
 					<span
-						className={ `sk-mt-1.5 sk-block sk-text-xs ${ tone }` }
+						className={ `es-mt-1.5 es-block es-text-xs ${ tone }` }
 					>
 						{ meta }
 					</span>
@@ -88,19 +88,17 @@ export function Sparkline( { points, label } ) {
 
 	return (
 		<svg
-			className="sk-mt-3 sk-block sk-h-12 sk-w-full sk-overflow-visible"
+			className="es-mt-3 es-block es-h-12 es-w-full es-overflow-visible"
 			viewBox="0 0 100 100"
 			preserveAspectRatio="none"
 			role="img"
-			aria-label={
-				label || __( 'Trend over time', 'subkit-subscriptions' )
-			}
+			aria-label={ label || __( 'Trend over time', 'easysubscription' ) }
 			focusable="false"
 		>
 			<polyline
 				points={ coords.join( ' ' ) }
 				fill="none"
-				stroke="hsl(var(--sk-primary))"
+				stroke="hsl(var(--es-primary))"
 				strokeWidth="2"
 				strokeLinecap="round"
 				strokeLinejoin="round"
@@ -117,19 +115,19 @@ export function StatusBar( { parts } ) {
 
 	if ( ! total ) {
 		return (
-			<p className="sk-text-sm sk-text-muted-foreground">
-				{ __( 'Nothing to show yet.', 'subkit-subscriptions' ) }
+			<p className="es-text-sm es-text-muted-foreground">
+				{ __( 'Nothing to show yet.', 'easysubscription' ) }
 			</p>
 		);
 	}
 
 	return (
 		<div>
-			<div className="sk-flex sk-h-2.5 sk-overflow-hidden sk-rounded-full sk-bg-muted">
+			<div className="es-flex es-h-2.5 es-overflow-hidden es-rounded-full es-bg-muted">
 				{ rows.map( ( part ) => (
 					<span
 						key={ part.key }
-						className="sk-h-full"
+						className="es-h-full"
 						style={ {
 							width: `${ ( part.count / total ) * 100 }%`,
 							background: part.colour,
@@ -138,19 +136,19 @@ export function StatusBar( { parts } ) {
 					/>
 				) ) }
 			</div>
-			<ul className="sk-mt-3.5 sk-flex sk-flex-wrap sk-gap-x-5 sk-gap-y-2 sk-text-sm">
+			<ul className="es-mt-3.5 es-flex es-flex-wrap es-gap-x-5 es-gap-y-2 es-text-sm">
 				{ rows.map( ( part ) => (
 					<li
 						key={ part.key }
-						className="sk-flex sk-items-center sk-gap-2"
+						className="es-flex es-items-center es-gap-2"
 					>
 						<span
-							className="sk-h-2.5 sk-w-2.5 sk-shrink-0 sk-rounded-sm"
+							className="es-h-2.5 es-w-2.5 es-shrink-0 es-rounded-sm"
 							style={ { background: part.colour } }
 							aria-hidden="true"
 						/>
 						<span>{ part.label }</span>
-						<span className="sk-tabular-nums sk-text-muted-foreground">
+						<span className="es-tabular-nums es-text-muted-foreground">
 							{ part.count }
 						</span>
 					</li>

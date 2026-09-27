@@ -1,12 +1,12 @@
 <?php
 
-namespace SubKit\Lifecycle;
+namespace EasySubscription\Lifecycle;
 
-use SubKit\Billing\Renewal_Processor;
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Subscription;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Gateway_Registry;
+use EasySubscription\Billing\Renewal_Processor;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Gateway_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -20,14 +20,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Early_Renewal {
 
-	public const OPTION = 'subkit_allow_early_renewal';
+	public const OPTION = 'easysubscription_allow_early_renewal';
 
 	public static function is_offered(): bool {
 		return 'yes' === get_option( self::OPTION, 'no' );
 	}
 
 	/**
-	 * Only a gateway SubKit charges itself can be asked to charge today. A gateway that
+	 * Only a gateway EasySubscription charges itself can be asked to charge today. A gateway that
 	 * bills from a plan of its own, such as PayPal, has no way to bring a payment forward.
 	 */
 	public static function is_available_for( Subscription $subscription ): bool {
@@ -41,13 +41,13 @@ final class Early_Renewal {
 			return false;
 		}
 
-		$registry = \SubKit\Plugin::instance()->get( 'gateways' );
+		$registry = \EasySubscription\Plugin::instance()->get( 'gateways' );
 
 		if ( ! $registry instanceof Gateway_Registry || Gateway_Model::Tokenized !== $registry->for_subscription( $subscription )->model() ) {
 			return false;
 		}
 
-		$slots = \SubKit\Plugin::instance()->get( 'charge_slots' );
+		$slots = \EasySubscription\Plugin::instance()->get( 'charge_slots' );
 		$open  = $slots instanceof Charge_Slot_Repository ? $slots->latest_unsettled( $subscription->get_id() ) : null;
 
 		// The pipeline resumes a submitted renewal rather than charging another, so an early payment would only fail.
@@ -58,12 +58,12 @@ final class Early_Renewal {
 	 * @return array{ok: bool, message: string}
 	 */
 	public static function charge( Subscription $subscription ): array {
-		$processor = \SubKit\Plugin::instance()->get( 'processor' );
+		$processor = \EasySubscription\Plugin::instance()->get( 'processor' );
 
 		if ( ! $processor instanceof Renewal_Processor || ! self::is_available_for( $subscription ) ) {
 			return array(
 				'ok'      => false,
-				'message' => __( 'This subscription cannot be paid early.', 'subkit-subscriptions' ),
+				'message' => __( 'This subscription cannot be paid early.', 'easysubscription' ),
 			);
 		}
 
@@ -78,13 +78,13 @@ final class Early_Renewal {
 			}
 		};
 
-		foreach ( array( 'subkit_renewal_succeeded', 'subkit_renewal_pending', 'subkit_renewal_failed', 'subkit_renewal_requires_action' ) as $hook ) {
+		foreach ( array( 'easysubscription_renewal_succeeded', 'easysubscription_renewal_pending', 'easysubscription_renewal_failed', 'easysubscription_renewal_requires_action' ) as $hook ) {
 			add_action( $hook, $watch, 1, 1 );
 		}
 
 		$processor->process( $id, true );
 
-		foreach ( array( 'subkit_renewal_succeeded', 'subkit_renewal_pending', 'subkit_renewal_failed', 'subkit_renewal_requires_action' ) as $hook ) {
+		foreach ( array( 'easysubscription_renewal_succeeded', 'easysubscription_renewal_pending', 'easysubscription_renewal_failed', 'easysubscription_renewal_requires_action' ) as $hook ) {
 			remove_action( $hook, $watch, 1 );
 		}
 
@@ -96,25 +96,25 @@ final class Early_Renewal {
 	 */
 	private static function describe( ?string $outcome ): array {
 		return match ( $outcome ) {
-			'subkit_renewal_succeeded'       => array(
+			'easysubscription_renewal_succeeded'       => array(
 				'ok'      => true,
-				'message' => __( 'Thank you — your next period is paid. Your renewal date has not changed.', 'subkit-subscriptions' ),
+				'message' => __( 'Thank you — your next period is paid. Your renewal date has not changed.', 'easysubscription' ),
 			),
-			'subkit_renewal_pending'         => array(
+			'easysubscription_renewal_pending'         => array(
 				'ok'      => true,
-				'message' => __( 'Thank you — your payment is on its way. It can take a few working days to clear, and your renewal date has not changed.', 'subkit-subscriptions' ),
+				'message' => __( 'Thank you — your payment is on its way. It can take a few working days to clear, and your renewal date has not changed.', 'easysubscription' ),
 			),
-			'subkit_renewal_requires_action' => array(
+			'easysubscription_renewal_requires_action' => array(
 				'ok'      => false,
-				'message' => __( 'Your bank needs to confirm that payment. Check your email for the link.', 'subkit-subscriptions' ),
+				'message' => __( 'Your bank needs to confirm that payment. Check your email for the link.', 'easysubscription' ),
 			),
-			'subkit_renewal_failed'          => array(
+			'easysubscription_renewal_failed'          => array(
 				'ok'      => false,
-				'message' => __( 'That payment was declined, so nothing has been charged. Your subscription is unaffected.', 'subkit-subscriptions' ),
+				'message' => __( 'That payment was declined, so nothing has been charged. Your subscription is unaffected.', 'easysubscription' ),
 			),
 			default                          => array(
 				'ok'      => false,
-				'message' => __( 'We could not take that payment just now. Nothing has been charged.', 'subkit-subscriptions' ),
+				'message' => __( 'We could not take that payment just now. Nothing has been charged.', 'easysubscription' ),
 			),
 		};
 	}

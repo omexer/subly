@@ -12,16 +12,16 @@
  * which is the question that matters: does exactly one charge reach the gateway.
  *
  * Usage, from the wp-docker directory:
- *   docker compose exec -T wordpress php /var/www/html/wp-content/plugins/subkit-subscriptions/tools/concurrency-test.php
+ *   docker compose exec -T wordpress php /var/www/html/wp-content/plugins/easysubscription/tools/concurrency-test.php
  */
 
-define( 'SUBKIT_ENABLE_TEST_GATEWAY', true );
+define( 'EASYSUBSCRIPTION_ENABLE_TEST_GATEWAY', true );
 require_once '/var/www/html/wp-load.php';
 
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Test_Gateway;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Test_Gateway;
 
 $options = getopt( '', array( 'worker::', 'mode::', 'subscription::', 'at::', 'out::' ) );
 
@@ -61,8 +61,8 @@ function run_worker( array $options ): void {
 			// been sanctioned. Without this the race is a race to fail, which proves less.
 			Test_Gateway::sanction();
 
-			SubKit\Plugin::instance()->get( 'gateways' )->add( new Test_Gateway() );
-			SubKit\Plugin::instance()->get( 'processor' )->process( $id );
+			EasySubscription\Plugin::instance()->get( 'gateways' )->add( new Test_Gateway() );
+			EasySubscription\Plugin::instance()->get( 'processor' )->process( $id );
 			$result['outcome'] = 'ran';
 		}
 	} catch ( Throwable $e ) {
@@ -120,7 +120,7 @@ function run_suite(): void {
 	$context = array(
 		'workers'  => $results,
 		'expected' => $workers,
-		'slots'    => (array) $wpdb->get_results( $wpdb->prepare( "SELECT period_index, state, attempt_group, renewal_order_id FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id = %d", $id ) ),
+		'slots'    => (array) $wpdb->get_results( $wpdb->prepare( "SELECT period_index, state, attempt_group, renewal_order_id FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id = %d", $id ) ),
 	);
 
 	$check( 'workers that reported back', count( $results ), $workers );
@@ -132,7 +132,7 @@ function run_suite(): void {
 		printf( "        %s\n", $t['error'] );
 	}
 
-	$rows = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id = %d", $id ) );
+	$rows = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id = %d", $id ) );
 	$check( 'exactly one slot row in the ledger', $rows, 1 );
 
 	cleanup( $id );
@@ -149,7 +149,7 @@ function run_suite(): void {
 	$context = array(
 		'workers'  => $results,
 		'expected' => $workers,
-		'slots'    => (array) $wpdb->get_results( $wpdb->prepare( "SELECT period_index, state, attempt_group, renewal_order_id FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id = %d", $id ) ),
+		'slots'    => (array) $wpdb->get_results( $wpdb->prepare( "SELECT period_index, state, attempt_group, renewal_order_id FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id = %d", $id ) ),
 	);
 
 	$check( 'workers that reported back', count( $results ), $workers );
@@ -159,8 +159,8 @@ function run_suite(): void {
 		printf( "        %s\n", $t['error'] );
 	}
 
-	$slots = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id = %d", $id ) );
-	$paid  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id = %d AND state = 'paid'", $id ) );
+	$slots = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id = %d", $id ) );
+	$paid  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id = %d AND state = 'paid'", $id ) );
 
 	$check( 'exactly one charge slot', $slots, 1 );
 	$check( 'exactly one of them paid', $paid, 1 );
@@ -170,7 +170,7 @@ function run_suite(): void {
 			'limit'      => -1,
 			'type'       => 'shop_order',
 			'status'     => 'any',
-			'meta_key'   => '_subkit_subscription_id',
+			'meta_key'   => '_easysubscription_subscription_id',
 			'meta_value' => $id,
 		)
 	);
@@ -179,7 +179,7 @@ function run_suite(): void {
 
 	$charges = (int) $wpdb->get_var(
 		$wpdb->prepare(
-			"SELECT COUNT(*) FROM {$wpdb->prefix}subkit_activity WHERE subscription_id = %d AND message LIKE %s",
+			"SELECT COUNT(*) FROM {$wpdb->prefix}easysubscription_activity WHERE subscription_id = %d AND message LIKE %s",
 			$id,
 			'%Charge attempt%'
 		)
@@ -189,7 +189,7 @@ function run_suite(): void {
 	$check( 'exactly one charge attempt reached the gateway', $charges, 1 );
 
 	$fresh = wc_get_order( $id );
-	$check( 'subscription is active', (string) $fresh->get_status(), 'sk-active' );
+	$check( 'subscription is active', (string) $fresh->get_status(), 'es-active' );
 	$check( 'next payment moved forward exactly once', $fresh->get_period_index(), 0 );
 
 	cleanup( $id );
@@ -203,7 +203,7 @@ function run_suite(): void {
  * Start the workers, release them together, collect what they say.
  */
 function race( int $workers, string $mode, int $subscription_id ): array {
-	$dir = sys_get_temp_dir() . '/subkit-race-' . wp_generate_password( 8, false );
+	$dir = sys_get_temp_dir() . '/easysubscription-race-' . wp_generate_password( 8, false );
 	mkdir( $dir, 0700, true );
 
 	// Far enough ahead that every process is spinning on the barrier before it lifts.
@@ -281,10 +281,10 @@ function make_subscription( bool $scripted = false ): Subscription {
 function cleanup( int $id ): void {
 	global $wpdb;
 
-	$wpdb->delete( $wpdb->prefix . 'subkit_charge_slot', array( 'subscription_id' => $id ) );
-	$wpdb->delete( $wpdb->prefix . 'subkit_activity', array( 'subscription_id' => $id ) );
+	$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $id ) );
+	$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $id ) );
 
-	foreach ( wc_get_orders( array( 'limit' => -1, 'type' => 'shop_order', 'status' => 'any', 'meta_key' => '_subkit_subscription_id', 'meta_value' => $id ) ) as $order ) {
+	foreach ( wc_get_orders( array( 'limit' => -1, 'type' => 'shop_order', 'status' => 'any', 'meta_key' => '_easysubscription_subscription_id', 'meta_value' => $id ) ) as $order ) {
 		$order->delete( true );
 	}
 

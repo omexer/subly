@@ -1,6 +1,6 @@
 {
-	"name": "subkit/subkit-subscriptions",
-	"description": "Static analysis and coding standards for SubKit.",
+	"name": "easysubscription/easysubscription",
+	"description": "Static analysis and coding standards for EasySubscription.",
 	"type": "wordpress-plugin",
 	"license": "GPL-2.0-or-later",
 	"require": {

@@ -4,19 +4,19 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Card, CardContent, Skeleton } from '@subkit/ui';
-import { registerRoute } from '@subkit/shell';
+import { Button, Card, CardContent, Skeleton } from '@easysubscription/ui';
+import { registerRoute } from '@easysubscription/shell';
 
 function Heading() {
 	return (
-		<div className="sk-mb-6">
-			<h2 className="sk-text-2xl sk-font-semibold sk-tracking-tight">
-				{ __( 'Help', 'subkit-subscriptions' ) }
+		<div className="es-mb-6">
+			<h2 className="es-text-2xl es-font-semibold es-tracking-tight">
+				{ __( 'Help', 'easysubscription' ) }
 			</h2>
-			<p className="sk-mt-1 sk-text-sm sk-text-muted-foreground">
+			<p className="es-mt-1 es-text-sm es-text-muted-foreground">
 				{ __(
 					'Where to look first, and the report to send if you still need a hand.',
-					'subkit-subscriptions'
+					'easysubscription'
 				) }
 			</p>
 		</div>
@@ -46,7 +46,7 @@ export function Help( { onFail } ) {
 	const field = useRef( null );
 
 	useEffect( () => {
-		apiFetch( { path: '/subkit/v1/help' } )
+		apiFetch( { path: '/easysubscription/v1/help' } )
 			.then( setData )
 			.catch( () => onFail() );
 		// Loaded once: onFail is a new closure on every render.
@@ -67,8 +67,8 @@ export function Help( { onFail } ) {
 		return (
 			<div>
 				<Heading />
-				<Skeleton className="sk-mb-6 sk-h-40" />
-				<Skeleton className="sk-h-64" />
+				<Skeleton className="es-mb-6 es-h-40" />
+				<Skeleton className="es-h-64" />
 			</div>
 		);
 	}
@@ -79,30 +79,30 @@ export function Help( { onFail } ) {
 		<div>
 			<Heading />
 
-			<h2 className="sk-mb-3 sk-text-base sk-font-semibold">
-				{ __( 'Check these first', 'subkit-subscriptions' ) }
+			<h2 className="es-mb-3 es-text-base es-font-semibold">
+				{ __( 'Check these first', 'easysubscription' ) }
 			</h2>
-			<div className="sk-mb-8 sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+			<div className="es-mb-8 es-grid es-gap-4 es-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
 				{ data.tiles.map( ( tile, index ) => (
 					<Card
 						key={ tile.url }
-						className="sk-flex sk-flex-col sk-gap-3 sk-p-5"
+						className="es-flex es-flex-col es-gap-3 es-p-5"
 					>
-						<div className="sk-flex sk-items-center sk-gap-3">
+						<div className="es-flex es-items-center es-gap-3">
 							<span
-								className="sk-grid sk-h-8 sk-w-8 sk-shrink-0 sk-place-items-center sk-rounded-full sk-bg-accent sk-text-sm sk-font-semibold sk-text-primary"
+								className="es-grid es-h-8 es-w-8 es-shrink-0 es-place-items-center es-rounded-full es-bg-accent es-text-sm es-font-semibold es-text-primary"
 								aria-hidden="true"
 							>
 								{ index + 1 }
 							</span>
-							<h3 className="sk-text-sm sk-font-medium">
+							<h3 className="es-text-sm es-font-medium">
 								{ tile.title }
 							</h3>
 						</div>
-						<p className="sk-text-sm sk-text-muted-foreground">
+						<p className="es-text-sm es-text-muted-foreground">
 							{ tile.body }
 						</p>
-						<div className="sk-mt-auto">
+						<div className="es-mt-auto">
 							<Button asChild variant="outline" size="sm">
 								<a href={ tile.url }>{ tile.label }</a>
 							</Button>
@@ -111,16 +111,16 @@ export function Help( { onFail } ) {
 				) ) }
 			</div>
 
-			<h2 className="sk-mb-3 sk-text-base sk-font-semibold">
-				{ __( 'System report', 'subkit-subscriptions' ) }
+			<h2 className="es-mb-3 es-text-base es-font-semibold">
+				{ __( 'System report', 'easysubscription' ) }
 			</h2>
 			<Card>
-				<CardContent className="sk-flex sk-flex-col sk-gap-3 sk-p-5">
-					<div className="sk-flex sk-flex-wrap sk-items-center sk-justify-between sk-gap-3">
-						<p className="sk-text-sm sk-text-muted-foreground">
+				<CardContent className="es-flex es-flex-col es-gap-3 es-p-5">
+					<div className="es-flex es-flex-wrap es-items-center es-justify-between es-gap-3">
+						<p className="es-text-sm es-text-muted-foreground">
 							{ __(
 								'Paste this into your support request. It contains no keys and no customer data.',
-								'subkit-subscriptions'
+								'easysubscription'
 							) }
 						</p>
 						<Button
@@ -132,20 +132,17 @@ export function Help( { onFail } ) {
 							}
 						>
 							{ copied
-								? __( 'Copied', 'subkit-subscriptions' )
-								: __( 'Copy report', 'subkit-subscriptions' ) }
+								? __( 'Copied', 'easysubscription' )
+								: __( 'Copy report', 'easysubscription' ) }
 						</Button>
 					</div>
 					<textarea
 						ref={ field }
 						readOnly
-						aria-label={ __(
-							'System report',
-							'subkit-subscriptions'
-						) }
+						aria-label={ __( 'System report', 'easysubscription' ) }
 						rows={ Math.min( 24, lines ) }
 						value={ data.report }
-						className="sk-w-full sk-rounded-md sk-border sk-border-input sk-bg-muted/40 sk-p-3 sk-font-mono sk-text-xs"
+						className="es-w-full es-rounded-md es-border es-border-input es-bg-muted/40 es-p-3 es-font-mono es-text-xs"
 					/>
 				</CardContent>
 			</Card>
@@ -154,7 +151,7 @@ export function Help( { onFail } ) {
 }
 
 registerRoute( {
-	page: 'subkit-subscriptions-help',
-	title: __( 'Help', 'subkit-subscriptions' ),
+	page: 'easysubscription-help',
+	title: __( 'Help', 'easysubscription' ),
 	render: ( ctx ) => <Help onFail={ ctx.fail } />,
 } );

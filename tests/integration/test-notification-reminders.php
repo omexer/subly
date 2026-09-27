@@ -7,35 +7,35 @@
  * @package EasySubscription
  */
 
-use SubKit\Billing\Renewal_Scheduler;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Emails\Mailer;
-use SubKit\Gateways\Test_Gateway;
+use EasySubscription\Billing\Renewal_Scheduler;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Emails\Mailer;
+use EasySubscription\Gateways\Test_Gateway;
 
 require __DIR__ . '/bootstrap.php';
 
-\SubKit\Plugin::instance()->get( 'gateways' )->add(
-	new class() implements \SubKit\Gateways\Recurring_Gateway {
+\EasySubscription\Plugin::instance()->get( 'gateways' )->add(
+	new class() implements \EasySubscription\Gateways\Recurring_Gateway {
 		public function id(): string { return Test_Gateway::ID; }
 		public function title(): string { return 'Harness approver'; }
-		public function model(): \SubKit\Gateways\Gateway_Model { return \SubKit\Gateways\Gateway_Model::Tokenized; }
+		public function model(): \EasySubscription\Gateways\Gateway_Model { return \EasySubscription\Gateways\Gateway_Model::Tokenized; }
 		public function supports( string $f ): bool { return true; }
-		public function create_mandate( Subscription $s, \WC_Order $o ): \SubKit\Gateways\Charge_Result { return \SubKit\Gateways\Charge_Result::success( 'mandate-' . $s->get_id() ); }
-		public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): \SubKit\Gateways\Charge_Result { return \SubKit\Gateways\Charge_Result::success( 'charge-' . $r->get_id() ); }
-		public function reconcile( Subscription $s, string $k ): ?\SubKit\Gateways\Charge_Result { return null; }
+		public function create_mandate( Subscription $s, \WC_Order $o ): \EasySubscription\Gateways\Charge_Result { return \EasySubscription\Gateways\Charge_Result::success( 'mandate-' . $s->get_id() ); }
+		public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): \EasySubscription\Gateways\Charge_Result { return \EasySubscription\Gateways\Charge_Result::success( 'charge-' . $r->get_id() ); }
+		public function reconcile( Subscription $s, string $k ): ?\EasySubscription\Gateways\Charge_Result { return null; }
 		public function cancel_mandate( Subscription $s ): bool { return true; }
 		public function update_payment_method( Subscription $s, string $t ): bool { return true; }
 	}
 );
 
-$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
+$scheduler = \EasySubscription\Plugin::instance()->get( 'scheduler' );
 $mailer    = WC()->mailer();
 $emails    = $mailer->get_emails();
 
 $absent  = new stdClass();
 $options = array( Renewal_Scheduler::OPTION_REMINDER_HOURS, Renewal_Scheduler::OPTION_EXPIRY_HOURS );
-foreach ( array( 'SubKit_Trial_Ending', 'SubKit_Expiring_Soon', 'SubKit_Subscription_Reactivated', 'SubKit_Renewal_Reminder' ) as $key ) {
+foreach ( array( 'EasySubscription_Trial_Ending', 'EasySubscription_Expiring_Soon', 'EasySubscription_Subscription_Reactivated', 'EasySubscription_Renewal_Reminder' ) as $key ) {
 	$options[] = $emails[ $key ]->get_option_key();
 }
 $was = array();
@@ -51,7 +51,7 @@ $switch = static function ( string $key, string $on ) use ( $emails ): void {
 	update_option( $option, array_merge( (array) get_option( $option, array() ), array( 'enabled' => $on ) ) );
 	WC()->mailer()->init();
 };
-foreach ( array( 'SubKit_Trial_Ending', 'SubKit_Expiring_Soon', 'SubKit_Subscription_Reactivated', 'SubKit_Renewal_Reminder' ) as $key ) {
+foreach ( array( 'EasySubscription_Trial_Ending', 'EasySubscription_Expiring_Soon', 'EasySubscription_Subscription_Reactivated', 'EasySubscription_Renewal_Reminder' ) as $key ) {
 	$switch( $key, 'yes' );
 }
 
@@ -70,7 +70,7 @@ $to = static function ( Subscription $s ) use ( &$mail ): array {
 	return array_values( array_filter( $mail, static fn( $m ) => $m['to'] === $s->get_billing_email() ) );
 };
 
-$product = subkit_test_product();
+$product = easysubscription_test_product();
 $made    = array();
 $make    = static function ( Subscription_Status $status, array $dates ) use ( $product, &$made ): Subscription {
 	$s = new Subscription();
@@ -80,7 +80,7 @@ $make    = static function ( Subscription_Status $status, array $dates ) use ( $
 	$s->set_billing_interval( 1 );
 	$s->set_payment_method( Test_Gateway::ID );
 	$s->set_address( array( 'first_name' => 'Notify', 'email' => 'sub' . wp_generate_password( 6, false, false ) . '@notify.example.test', 'country' => 'US' ), 'billing' );
-	$s->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
+	$s->update_meta_data( '_easysubscription_site_url', get_option( 'siteurl' ) );
 	$i = new WC_Order_Item_Product();
 	$i->set_props( array( 'name' => 'Harness', 'product_id' => $product->get_id(), 'quantity' => 1, 'subtotal' => '20', 'total' => '20' ) );
 	$s->add_item( $i );
@@ -111,7 +111,7 @@ $pending = static function ( string $hook, ?int $subscription_id = null ): array
 };
 $run = static function ( array $actions ): void {
 	foreach ( array_keys( $actions ) as $id ) {
-		ActionScheduler_QueueRunner::instance()->process_action( $id, 'subkit-test' );
+		ActionScheduler_QueueRunner::instance()->process_action( $id, 'easysubscription-test' );
 	}
 };
 $near = static fn( $at, int $want ): bool => is_int( $at ) && abs( $at - $want ) < 120;
@@ -132,10 +132,10 @@ $again = $pending( Renewal_Scheduler::ACTION_TRIAL_REMINDER, $long->get_id() );
 $check( 'run early, it sends nothing and waits for its time', array() === $mail && 1 === count( $again ) && $near( reset( $again )->get_schedule()->get_date()->getTimestamp(), time() + 10 * $day - 72 * $hour ), $mail );
 
 $mail = array();
-$due  = did_action( 'subkit_renewal_due_soon' );
+$due  = did_action( 'easysubscription_renewal_due_soon' );
 $scheduler->remind( $long->get_id() );
 $check( 'the renewal reminder leaves a trial to the trial reminder', array() === $to( $long ), $to( $long ) );
-$check( 'while the renewal still announces itself, for a pay-by-link gateway\'s own email', $due + 1 === did_action( 'subkit_renewal_due_soon' ) );
+$check( 'while the renewal still announces itself, for a pay-by-link gateway\'s own email', $due + 1 === did_action( 'easysubscription_renewal_due_soon' ) );
 
 $soon = $make( Subscription_Status::Trialling, array( 'trial_end' => 2 * $day, 'next_payment' => 2 * $day ) );
 $mail = array();
@@ -161,14 +161,14 @@ $mail      = array();
 $scheduler->remind( $in_flight->get_id() );
 $check( 'a trial with no trial reminder coming, such as one begun before this release, still gets the renewal reminder', 1 === count( $to( $in_flight ) ), $to( $in_flight ) );
 
-$switch( 'SubKit_Trial_Ending', 'no' );
+$switch( 'EasySubscription_Trial_Ending', 'no' );
 $off  = $make( Subscription_Status::Trialling, array( 'trial_end' => 2 * $day, 'next_payment' => 2 * $day ) );
 $mail = array();
 $scheduler->remind_trial( $off->get_id() );
 $check( 'switched off, nothing is sent', array() === $to( $off ), $to( $off ) );
 $scheduler->remind( $long->get_id() );
 $check( 'and the renewal reminder tells the trial instead', 1 === count( $to( $long ) ) && str_contains( $to( $long )[0]['body'], 'free trial ends' ), $to( $long ) );
-$switch( 'SubKit_Trial_Ending', 'yes' );
+$switch( 'EasySubscription_Trial_Ending', 'yes' );
 
 $converted = $make( Subscription_Status::Trialling, array( 'trial_end' => 2 * $day, 'next_payment' => 2 * $day ) );
 $converted->transition_to( Subscription_Status::Active );
@@ -219,12 +219,12 @@ $scheduler->remind_expiry( $not_last->get_id() );
 $scheduler->remind_expiry( $leaving->get_id() );
 $check( 'an end date moved later, or a cancellation, sends nothing', array() === $mail, $mail );
 
-$switch( 'SubKit_Expiring_Soon', 'no' );
+$switch( 'EasySubscription_Expiring_Soon', 'no' );
 $quiet = $make( Subscription_Status::Active, array( 'next_payment' => 10 * $hour, 'end_date' => 5 * $hour ) );
 $mail  = array();
 $scheduler->remind_expiry( $quiet->get_id() );
 $check( 'switched off, nothing is sent', array() === $mail, $mail );
-$switch( 'SubKit_Expiring_Soon', 'yes' );
+$switch( 'EasySubscription_Expiring_Soon', 'yes' );
 
 echo "\n3. Reactivated\n";
 $reactivations = static fn( Subscription $s ): array => $pending( Mailer::ACTION_REACTIVATED, $s->get_id() );
@@ -232,7 +232,7 @@ $reactivations = static fn( Subscription $s ): array => $pending( Mailer::ACTION
 $undone = $make( Subscription_Status::Active, array( 'next_payment' => 10 * $day ) );
 $undone->transition_to( Subscription_Status::PendingCancel );
 $undone->save();
-$request = new WP_REST_Request( 'POST', '/subkit/v1/subscriptions/' . $undone->get_id() . '/actions' );
+$request = new WP_REST_Request( 'POST', '/easysubscription/v1/subscriptions/' . $undone->get_id() . '/actions' );
 $request->set_param( 'action', 'reactivate' );
 $check( 'fixture: the store reactivates a cancelling subscription', 200 === rest_do_request( $request )->get_status() );
 $queued = $reactivations( $undone );
@@ -243,7 +243,7 @@ $run( $queued );
 $got = $to( $undone );
 $check( 'the customer is told once', 1 === count( $got ) && 'Your subscription is active again' === $got[0]['subject'], $got );
 $again = reset( $queued );
-$mailer_service = \SubKit\Plugin::instance()->get( 'mailer' );
+$mailer_service = \EasySubscription\Plugin::instance()->get( 'mailer' );
 $mailer_service->send_reactivated( $again->get_args()['subscription_id'], $again->get_args()['at'] );
 $check( 'running it again sends nothing', 1 === count( $to( $undone ) ) );
 
@@ -270,12 +270,12 @@ $run( $queued );
 $check( 'withdrawn and then switched away in the same request: nothing is sent', 1 === count( $queued ) && array() === $mail, array( count( $queued ), $mail ) );
 
 $resumed = $make( Subscription_Status::Active, array( 'next_payment' => 10 * $day ) );
-do_action( 'subkit_subscription_resumed', $resumed );
+do_action( 'easysubscription_subscription_resumed', $resumed );
 $mail = array();
 $run( $reactivations( $resumed ) );
 $check( 'a paused subscription resuming is told', 1 === count( $to( $resumed ) ), $to( $resumed ) );
 
-$switch( 'SubKit_Subscription_Reactivated', 'no' );
+$switch( 'EasySubscription_Subscription_Reactivated', 'no' );
 $muted = $make( Subscription_Status::Active, array( 'next_payment' => 10 * $day ) );
 $muted->transition_to( Subscription_Status::PendingCancel );
 $muted->save();
@@ -285,14 +285,14 @@ $mail   = array();
 $queued = $reactivations( $muted );
 $run( $queued );
 $check( 'switched off, nothing is sent', 1 === count( $queued ) && array() === $mail, array( count( $queued ), $mail ) );
-$switch( 'SubKit_Subscription_Reactivated', 'yes' );
+$switch( 'EasySubscription_Subscription_Reactivated', 'yes' );
 
 echo "\n4. Renewals are not reactivations\n";
 $trial = $make( Subscription_Status::Trialling, array( 'trial_end' => -60, 'next_payment' => -60 ) );
-\SubKit\Plugin::instance()->get( 'processor' )->process( $trial->get_id() );
+\EasySubscription\Plugin::instance()->get( 'processor' )->process( $trial->get_id() );
 $check( 'fixture: the trial converted by renewing', Subscription_Status::Active === wc_get_order( $trial->get_id() )->get_status_enum(), wc_get_order( $trial->get_id() )->get_status() );
 $active = $make( Subscription_Status::Active, array( 'next_payment' => -60 ) );
-\SubKit\Plugin::instance()->get( 'processor' )->process( $active->get_id() );
+\EasySubscription\Plugin::instance()->get( 'processor' )->process( $active->get_id() );
 $check( 'fixture: an active subscription renewed', strtotime( (string) wc_get_order( $active->get_id() )->get_next_payment() . ' UTC' ) > time() );
 $held = $make( Subscription_Status::OnHold, array( 'next_payment' => -60 ) );
 $held->transition_to( Subscription_Status::Active, 'Retrying the failed payment.' );
@@ -321,7 +321,7 @@ foreach ( $made as $id ) {
 	}
 }
 global $wpdb;
-$wpdb->query( "DELETE FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id IN (" . implode( ',', array_map( 'intval', $made ) ) . ')' );
+$wpdb->query( "DELETE FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id IN (" . implode( ',', array_map( 'intval', $made ) ) . ')' );
 foreach ( $was as $name => $value ) {
 	if ( $absent === $value ) {
 		delete_option( $name );
@@ -330,4 +330,4 @@ foreach ( $was as $name => $value ) {
 	}
 }
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

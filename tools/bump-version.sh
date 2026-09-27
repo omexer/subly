@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Sets SubKit's version everywhere it is written.
+# Sets EasySubscription's version everywhere it is written.
 # Usage: tools/bump-version.sh MAJOR.MINOR.PATCH
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
@@ -11,7 +11,7 @@ if len(sys.argv) != 2 or not re.fullmatch(r'\d+\.\d+\.\d+', sys.argv[1]):
     sys.exit('usage: tools/bump-version.sh MAJOR.MINOR.PATCH')
 
 new = sys.argv[1]
-old = re.search(r'^ \* Version:\s+(\S+)', open('subkit-subscriptions.php').read(), re.M).group(1)
+old = re.search(r'^ \* Version:\s+(\S+)', open('easysubscription.php').read(), re.M).group(1)
 
 if new == old:
     print(f'already {new}')
@@ -21,20 +21,20 @@ if tuple(map(int, new.split('.'))) < tuple(map(int, old.split('.'))):
 
 o = re.escape(old)
 required = {
-    'subkit-subscriptions.php': [
+    'easysubscription.php': [
         (rf'^( \* Version:\s+){o}$', rf'\g<1>{new}'),
-        (rf"^define\( 'SUBKIT_VERSION', '{o}' \);$", f"define( 'SUBKIT_VERSION', '{new}' );"),
+        (rf"^define\( 'EASYSUBSCRIPTION_VERSION', '{o}' \);$", f"define( 'EASYSUBSCRIPTION_VERSION', '{new}' );"),
     ],
     'tools/phpstan-bootstrap.php': [
-        (rf"^define\( 'SUBKIT_VERSION', '{o}' \);$", f"define( 'SUBKIT_VERSION', '{new}' );"),
+        (rf"^define\( 'EASYSUBSCRIPTION_VERSION', '{o}' \);$", f"define( 'EASYSUBSCRIPTION_VERSION', '{new}' );"),
     ],
     'readme.txt': [
         (rf'^Stable tag: {o}$', f'Stable tag: {new}'),
     ],
 }
-# Documentation lines that name the free version; "SubKit Pro" versions are left alone.
+# Documentation lines that name the free version; "EasySubscription Pro" versions are left alone.
 optional = {
-    path: [(rf'(?<!Pro )\bSubKit {o}\b', f'SubKit {new}'), (rf'\*\*Free {o} ·', f'**Free {new} ·')]
+    path: [(rf'(?<!Pro )\bEasySubscription {o}\b', f'EasySubscription {new}'), (rf'\*\*Free {o} ·', f'**Free {new} ·')]
     for path in ('docs/USER-GUIDE.md', 'docs/HANDOVER.md', 'docs/FEATURES.md')
 }
 

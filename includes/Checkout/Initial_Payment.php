@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Checkout;
+namespace EasySubscription\Checkout;
 
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -41,7 +41,7 @@ final class Initial_Payment {
 
 			// A line bought once is not on a trial and owes no sign-up fee, whatever the
 			// product's own schedule says. Documented on Subscription_Product.
-			if ( ! apply_filters( 'subkit_cart_item_is_subscription', true, $item, $key ) ) {
+			if ( ! apply_filters( 'easysubscription_cart_item_is_subscription', true, $item, $key ) ) {
 				continue;
 			}
 
@@ -58,7 +58,7 @@ final class Initial_Payment {
 				 * @param string      $key     Its cart key.
 				 */
 				$this->base_prices[ $key ] = (float) apply_filters(
-					'subkit_cart_recurring_price',
+					'easysubscription_cart_recurring_price',
 					(float) $product->get_price( 'edit' ),
 					$product,
 					$item,

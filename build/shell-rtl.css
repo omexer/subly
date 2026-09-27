@@ -1,23 +1,23 @@
 /* Until the shell moves them: nothing but important notices shows on a page it draws. */
-body.subkit-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):not(.subkit-notice--important, .inline, .below-h2, .subkit-notify__list *, .subkit-app__route *) {
+body.easysubscription-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):not(.easysubscription-notice--important, .inline, .below-h2, .easysubscription-notify__list *, .easysubscription-app__route *) {
 	display: none;
 }
 
-.subkit-app__landing {
+.easysubscription-app__landing {
 	display: contents;
 }
 
-.subkit-alerts:empty {
+.easysubscription-alerts:empty {
 	display: none;
 }
 
-.subkit-alerts {
+.easysubscription-alerts {
 	display: grid;
 	gap: 8px;
-	margin: 0 0 var(--subkit-gap);
+	margin: 0 0 var(--easysubscription-gap);
 }
 
-.subkit-shell .notice.subkit-alert {
+.easysubscription-shell .notice.easysubscription-alert {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -25,37 +25,37 @@ body.subkit-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):
 	min-width: 0;
 	margin: 0;
 	padding: 8px 12px 8px 10px;
-	border: 1px solid var(--subkit-line);
-	border-right: 3px solid var(--subkit-alert-tone, var(--subkit-accent));
-	border-radius: var(--subkit-radius-sm);
-	background: var(--subkit-bg);
-	box-shadow: var(--subkit-shadow);
+	border: 1px solid var(--easysubscription-line);
+	border-right: 3px solid var(--easysubscription-alert-tone, var(--easysubscription-accent));
+	border-radius: var(--easysubscription-radius-sm);
+	background: var(--easysubscription-bg);
+	box-shadow: var(--easysubscription-shadow);
 	font-size: 13px;
 	line-height: 1.45;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-shell .subkit-alert--error { --subkit-alert-tone: var(--subkit-bad); }
-.subkit-shell .subkit-alert--warning { --subkit-alert-tone: var(--subkit-warn); }
-.subkit-shell .subkit-alert--success { --subkit-alert-tone: var(--subkit-good); }
+.easysubscription-shell .easysubscription-alert--error { --easysubscription-alert-tone: var(--easysubscription-bad); }
+.easysubscription-shell .easysubscription-alert--warning { --easysubscription-alert-tone: var(--easysubscription-warn); }
+.easysubscription-shell .easysubscription-alert--success { --easysubscription-alert-tone: var(--easysubscription-good); }
 
-.subkit-shell .subkit-alert.is-open {
+.easysubscription-shell .easysubscription-alert.is-open {
 	align-items: flex-start;
 }
 
-.subkit-alert__icon {
+.easysubscription-alert__icon {
 	display: grid;
 	flex: none;
 	place-items: center;
-	color: var(--subkit-alert-tone, var(--subkit-accent));
+	color: var(--easysubscription-alert-tone, var(--easysubscription-accent));
 }
 
-.subkit-alert__text {
+.easysubscription-alert__text {
 	flex: 1;
 	min-width: 0;
 }
 
-.subkit-shell .subkit-alert p.subkit-alert__title {
+.easysubscription-shell .easysubscription-alert p.easysubscription-alert__title {
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
@@ -64,53 +64,53 @@ body.subkit-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):
 	text-overflow: ellipsis;
 }
 
-.subkit-alert__detail {
+.easysubscription-alert__detail {
 	overflow: hidden;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
 
-.subkit-shell .subkit-alert__detail :is(p, ul, ol, li) {
+.easysubscription-shell .easysubscription-alert__detail :is(p, ul, ol, li) {
 	display: inline;
 	margin: 0 !important; /* Beats the inline list styles some notices carry. */
 	padding: 0;
 }
 
-.subkit-alert__detail li + li::before {
+.easysubscription-alert__detail li + li::before {
 	content: " ";
 }
 
-.subkit-shell .subkit-alert.is-open :is(.subkit-alert__title, .subkit-alert__detail) {
+.easysubscription-shell .easysubscription-alert.is-open :is(.easysubscription-alert__title, .easysubscription-alert__detail) {
 	white-space: normal;
 }
 
-.subkit-shell .subkit-alert.is-open .subkit-alert__detail :is(p, ul, ol) {
+.easysubscription-shell .easysubscription-alert.is-open .easysubscription-alert__detail :is(p, ul, ol) {
 	display: block;
 	margin: 4px 0 0 !important;
 }
 
-.subkit-shell .subkit-alert.is-open .subkit-alert__detail ul {
+.easysubscription-shell .easysubscription-alert.is-open .easysubscription-alert__detail ul {
 	padding-right: 18px;
 	list-style: disc;
 }
 
-.subkit-shell .subkit-alert.is-open .subkit-alert__detail li {
+.easysubscription-shell .easysubscription-alert.is-open .easysubscription-alert__detail li {
 	display: list-item;
 }
 
-.subkit-alert.is-open .subkit-alert__detail li + li::before {
+.easysubscription-alert.is-open .easysubscription-alert__detail li + li::before {
 	content: none;
 }
 
-.subkit-alert__actions {
+.easysubscription-alert__actions {
 	display: flex;
 	flex: none;
 	align-items: center;
 	gap: 6px;
 }
 
-.subkit-shell .subkit-alert__actions .button {
+.easysubscription-shell .easysubscription-alert__actions .button {
 	min-height: 28px;
 	margin: 0;
 	padding: 0 10px;
@@ -118,54 +118,54 @@ body.subkit-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):
 	line-height: 26px;
 }
 
-.subkit-alert__more,
-.subkit-alerts__more {
+.easysubscription-alert__more,
+.easysubscription-alerts__more {
 	padding: 4px 6px;
 	border: 0;
 	border-radius: 6px;
 	background: none;
-	color: var(--subkit-accent);
+	color: var(--easysubscription-accent);
 	font: inherit;
 	font-size: 12px;
 	font-weight: 500;
 	cursor: pointer;
 }
 
-.subkit-alert__more:hover,
-.subkit-alerts__more:hover {
-	background: var(--subkit-accent-soft);
+.easysubscription-alert__more:hover,
+.easysubscription-alerts__more:hover {
+	background: var(--easysubscription-accent-soft);
 }
 
-.subkit-alert__more[aria-expanded="true"] {
-	background: var(--subkit-accent-soft);
+.easysubscription-alert__more[aria-expanded="true"] {
+	background: var(--easysubscription-accent-soft);
 }
 
-.subkit-alerts__more {
-	margin: -8px 0 var(--subkit-gap);
+.easysubscription-alerts__more {
+	margin: -8px 0 var(--easysubscription-gap);
 	padding-right: 0;
 }
 
-.subkit-alert__dismiss {
+.easysubscription-alert__dismiss {
 	display: grid;
 	place-items: center;
 	width: 28px;
 	height: 28px;
 	border-radius: 6px;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 }
 
-.subkit-alert__dismiss:hover,
-.subkit-alert__dismiss:focus {
-	background: var(--subkit-line-soft);
-	color: var(--subkit-ink);
+.easysubscription-alert__dismiss:hover,
+.easysubscription-alert__dismiss:focus {
+	background: var(--easysubscription-line-soft);
+	color: var(--easysubscription-ink);
 }
 
 /* WordPress adds its own close button to dismissible notices, positioned for its layout. */
-.subkit-shell .subkit-alert.is-dismissible {
+.easysubscription-shell .easysubscription-alert.is-dismissible {
 	padding-left: 10px;
 }
 
-.subkit-shell .subkit-alert > .notice-dismiss {
+.easysubscription-shell .easysubscription-alert > .notice-dismiss {
 	position: static;
 	flex: none;
 	width: 28px;
@@ -174,36 +174,36 @@ body.subkit-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):
 	border-radius: 6px;
 }
 
-.subkit-shell .subkit-alert > .notice-dismiss::before {
+.easysubscription-shell .easysubscription-alert > .notice-dismiss::before {
 	font-size: 18px;
 	line-height: 28px;
 }
 
-.subkit-alert :is(.subkit-alert__more, .subkit-alert__dismiss, .notice-dismiss):focus-visible,
-.subkit-alerts__more:focus-visible {
-	outline: 2px solid var(--subkit-accent);
+.easysubscription-alert :is(.easysubscription-alert__more, .easysubscription-alert__dismiss, .notice-dismiss):focus-visible,
+.easysubscription-alerts__more:focus-visible {
+	outline: 2px solid var(--easysubscription-accent);
 	outline-offset: 1px;
 	box-shadow: none;
 }
 
 /* An important notice past the first few sits in the notification centre like any other. */
-.subkit-shell .subkit-notify__list .notice.subkit-alert {
+.easysubscription-shell .easysubscription-notify__list .notice.easysubscription-alert {
 	border-width: 0 3px 0 0;
-	border-bottom: 1px solid var(--subkit-line-soft);
+	border-bottom: 1px solid var(--easysubscription-line-soft);
 	border-radius: 0;
 	box-shadow: none;
 }
 
 @media screen and (max-width: 600px) {
-	.subkit-shell .notice.subkit-alert {
+	.easysubscription-shell .notice.easysubscription-alert {
 		flex-wrap: wrap;
 	}
 
-	.subkit-alert__text {
+	.easysubscription-alert__text {
 		flex-basis: calc(100% - 40px);
 	}
 
-	.subkit-alert__actions {
+	.easysubscription-alert__actions {
 		margin-right: 28px;
 	}
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<ruleset name="SubKit">
-	<description>WordPress coding standards for SubKit.</description>
+<ruleset name="EasySubscription">
+	<description>WordPress coding standards for EasySubscription.</description>
 
-	<file>subkit-subscriptions.php</file>
+	<file>easysubscription.php</file>
 	<file>includes</file>
 	<file>templates</file>
 
@@ -50,7 +50,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="subkit-subscriptions"/>
+				<element value="easysubscription"/>
 			</property>
 		</properties>
 	</rule>

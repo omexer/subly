@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Emails;
+namespace EasySubscription\Emails;
 
-use SubKit\Billing\Renewal_Scheduler;
+use EasySubscription\Billing\Renewal_Scheduler;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -15,11 +15,11 @@ final class Notification_Settings {
 
 	public const SECTION = 'notifications';
 
-	public const CARD_MAIN  = 'subkit_notifications_title';
-	public const CARD_OTHER = 'subkit_other_emails_title';
+	public const CARD_MAIN  = 'easysubscription_notifications_title';
+	public const CARD_OTHER = 'easysubscription_other_emails_title';
 
 	/** Stored in days before 0.27; read once to set the hours, then removed. */
-	private const LEGACY_DAYS = 'subkit_renewal_reminder_days';
+	private const LEGACY_DAYS = 'easysubscription_renewal_reminder_days';
 
 	public function register(): void {
 		add_action( 'init', array( $this, 'migrate' ), 6 );
@@ -47,8 +47,8 @@ final class Notification_Settings {
 		$days = get_option( self::LEGACY_DAYS, false );
 
 		if ( false !== $days && (int) $days < 1 ) {
-			$email = self::email( 'subkit_renewal_reminder' );
-			$key   = $email ? $email->get_option_key() : 'woocommerce_subkit_renewal_reminder_settings';
+			$email = self::email( 'easysubscription_renewal_reminder' );
+			$key   = $email ? $email->get_option_key() : 'woocommerce_easysubscription_renewal_reminder_settings';
 			$saved = (array) get_option( $key, array() );
 
 			$saved['enabled'] = 'no';
@@ -63,33 +63,33 @@ final class Notification_Settings {
 	 * @return array<int, array<string, mixed>>
 	 */
 	public static function fields(): array {
-		$renewal = self::email_row( 'subkit_renewal_reminder', __( 'Renewal reminder', 'subkit-subscriptions' ), __( 'Send customers a reminder email before their next renewal payment.', 'subkit-subscriptions' ) );
-		$expiry  = self::email_row( 'subkit_expiring_soon', __( 'Expiring soon reminder', 'subkit-subscriptions' ), __( 'Send customers a reminder email before their subscription expires.', 'subkit-subscriptions' ) );
+		$renewal = self::email_row( 'easysubscription_renewal_reminder', __( 'Renewal reminder', 'easysubscription' ), __( 'Send customers a reminder email before their next renewal payment.', 'easysubscription' ) );
+		$expiry  = self::email_row( 'easysubscription_expiring_soon', __( 'Expiring soon reminder', 'easysubscription' ), __( 'Send customers a reminder email before their subscription expires.', 'easysubscription' ) );
 
 		$main = array(
 			$renewal,
-			$renewal ? self::hours_row( Renewal_Scheduler::OPTION_REMINDER_HOURS, __( 'Send renewal reminder before (Hours)', 'subkit-subscriptions' ), __( 'Choose how many hours before the renewal date the reminder email is sent.', 'subkit-subscriptions' ), $renewal['id'] ) : null,
+			$renewal ? self::hours_row( Renewal_Scheduler::OPTION_REMINDER_HOURS, __( 'Send renewal reminder before (Hours)', 'easysubscription' ), __( 'Choose how many hours before the renewal date the reminder email is sent.', 'easysubscription' ), $renewal['id'] ) : null,
 			$expiry,
-			$expiry ? self::hours_row( Renewal_Scheduler::OPTION_EXPIRY_HOURS, __( 'Send expiry reminder before (Hours)', 'subkit-subscriptions' ), __( 'Choose how many hours before the expiry date the reminder email is sent.', 'subkit-subscriptions' ), $expiry['id'] ) : null,
-			self::email_row( 'subkit_payment_failed', __( 'Payment failure emails', 'subkit-subscriptions' ), __( 'Notify customers when a renewal payment fails.', 'subkit-subscriptions' ) ),
-			self::email_row( 'subkit_trial_ending', __( 'Trial ending reminder', 'subkit-subscriptions' ), __( 'Send customers a reminder before their free trial ends.', 'subkit-subscriptions' ) ),
-			self::email_row( 'subkit_renewal_receipt', __( 'Renewal success email', 'subkit-subscriptions' ), __( 'Send customers a confirmation email after a subscription renewal payment is completed successfully.', 'subkit-subscriptions' ) ),
-			self::email_row( 'subkit_subscription_cancelled', __( 'Subscription cancelled email', 'subkit-subscriptions' ), __( 'Send customers a confirmation email when their subscription is cancelled.', 'subkit-subscriptions' ) ),
-			self::email_row( 'subkit_subscription_reactivated', __( 'Subscription reactivated email', 'subkit-subscriptions' ), __( 'Send customers a confirmation email when their paused or cancelled subscription is reactivated.', 'subkit-subscriptions' ) ),
+			$expiry ? self::hours_row( Renewal_Scheduler::OPTION_EXPIRY_HOURS, __( 'Send expiry reminder before (Hours)', 'easysubscription' ), __( 'Choose how many hours before the expiry date the reminder email is sent.', 'easysubscription' ), $expiry['id'] ) : null,
+			self::email_row( 'easysubscription_payment_failed', __( 'Payment failure emails', 'easysubscription' ), __( 'Notify customers when a renewal payment fails.', 'easysubscription' ) ),
+			self::email_row( 'easysubscription_trial_ending', __( 'Trial ending reminder', 'easysubscription' ), __( 'Send customers a reminder before their free trial ends.', 'easysubscription' ) ),
+			self::email_row( 'easysubscription_renewal_receipt', __( 'Renewal success email', 'easysubscription' ), __( 'Send customers a confirmation email after a subscription renewal payment is completed successfully.', 'easysubscription' ) ),
+			self::email_row( 'easysubscription_subscription_cancelled', __( 'Subscription cancelled email', 'easysubscription' ), __( 'Send customers a confirmation email when their subscription is cancelled.', 'easysubscription' ) ),
+			self::email_row( 'easysubscription_subscription_reactivated', __( 'Subscription reactivated email', 'easysubscription' ), __( 'Send customers a confirmation email when their paused or cancelled subscription is reactivated.', 'easysubscription' ) ),
 		);
 
 		$other = array(
-			self::email_row( 'subkit_subscription_started' ),
-			self::email_row( 'subkit_confirm_payment' ),
-			self::email_row( 'subkit_merchant_new_subscription' ),
-			self::email_row( 'subkit_merchant_subscription_cancelled' ),
-			self::email_row( 'subkit_merchant_subscription_ended' ),
+			self::email_row( 'easysubscription_subscription_started' ),
+			self::email_row( 'easysubscription_confirm_payment' ),
+			self::email_row( 'easysubscription_merchant_new_subscription' ),
+			self::email_row( 'easysubscription_merchant_subscription_cancelled' ),
+			self::email_row( 'easysubscription_merchant_subscription_ended' ),
 		);
 
 		return array_merge(
 			array(
 				array(
-					'title' => __( 'Notifications', 'subkit-subscriptions' ),
+					'title' => __( 'Notifications', 'easysubscription' ),
 					'type'  => 'title',
 					'id'    => self::CARD_MAIN,
 				),
@@ -101,7 +101,7 @@ final class Notification_Settings {
 					'id'   => self::CARD_MAIN,
 				),
 				array(
-					'title' => __( 'Other emails', 'subkit-subscriptions' ),
+					'title' => __( 'Other emails', 'easysubscription' ),
 					'type'  => 'title',
 					'id'    => self::CARD_OTHER,
 				),
@@ -134,7 +134,7 @@ final class Notification_Settings {
 			'id'           => $email->get_option_key() . '[enabled]',
 			'type'         => 'checkbox',
 			'default'      => (string) ( $email->get_form_fields()['enabled']['default'] ?? 'yes' ),
-			'subkit_email' => $email_id,
+			'easysubscription_email' => $email_id,
 		);
 	}
 
@@ -194,7 +194,7 @@ final class Notification_Settings {
 				'min'  => '1',
 				'step' => '1',
 			),
-			'subkit_show_if'    => $parent,
+			'easysubscription_show_if'    => $parent,
 		);
 	}
 

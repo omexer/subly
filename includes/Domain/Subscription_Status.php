@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Domain;
+namespace EasySubscription\Domain;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -9,33 +9,33 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The subscription lifecycle.
  *
- * Slugs are prefixed `sk-` so they never collide with WooCommerce Subscriptions'
+ * Slugs are prefixed `es-` so they never collide with WooCommerce Subscriptions'
  * statuses if both plugins are ever active on the same store.
  */
 enum Subscription_Status: string {
 
-	case Pending       = 'sk-pending';
-	case Trialling     = 'sk-trialling';
-	case Active        = 'sk-active';
-	case OnHold        = 'sk-on-hold';
-	case PendingCancel = 'sk-pending-cancel';
-	case Cancelled     = 'sk-cancelled';
-	case Expired       = 'sk-expired';
-	case Switched      = 'sk-switched';
+	case Pending       = 'es-pending';
+	case Trialling     = 'es-trialling';
+	case Active        = 'es-active';
+	case OnHold        = 'es-on-hold';
+	case PendingCancel = 'es-pending-cancel';
+	case Cancelled     = 'es-cancelled';
+	case Expired       = 'es-expired';
+	case Switched      = 'es-switched';
 
 	/**
 	 * Human label, translated at call time rather than at file scope.
 	 */
 	public function label(): string {
 		return match ( $this ) {
-			self::Pending       => __( 'Pending', 'subkit-subscriptions' ),
-			self::Trialling     => __( 'Free trial', 'subkit-subscriptions' ),
-			self::Active        => __( 'Active', 'subkit-subscriptions' ),
-			self::OnHold        => __( 'On hold', 'subkit-subscriptions' ),
-			self::PendingCancel => __( 'Cancelling', 'subkit-subscriptions' ),
-			self::Cancelled     => __( 'Cancelled', 'subkit-subscriptions' ),
-			self::Expired       => __( 'Ended', 'subkit-subscriptions' ),
-			self::Switched      => __( 'Switched', 'subkit-subscriptions' ),
+			self::Pending       => __( 'Pending', 'easysubscription' ),
+			self::Trialling     => __( 'Free trial', 'easysubscription' ),
+			self::Active        => __( 'Active', 'easysubscription' ),
+			self::OnHold        => __( 'On hold', 'easysubscription' ),
+			self::PendingCancel => __( 'Cancelling', 'easysubscription' ),
+			self::Cancelled     => __( 'Cancelled', 'easysubscription' ),
+			self::Expired       => __( 'Ended', 'easysubscription' ),
+			self::Switched      => __( 'Switched', 'easysubscription' ),
 		};
 	}
 

@@ -213,7 +213,7 @@ same events). Sold commercially, so the screen links out.
 | | |
 |---|---|
 | Triggers | Subscription created, status changed (from/to), renewal payment complete, renewal payment failed, cancellation scheduled, cancelled, expired; daily **Before renewal** and **Before trial end** (days before) |
-| Data type | `subkit_subscription`, with variables: id, status, next payment date, total, products, view URL, payment method |
+| Data type | `easysubscription_subscription`, with variables: id, status, next payment date, total, products, view URL, payment method |
 | Actions | **Change Status** (schedule or confirm a cancellation, or withdraw one — never reactivate) and **Add Note** |
 
 Every run is a background job about a minute later, held back while a charge is in flight or
@@ -251,7 +251,7 @@ licence key every month.
 > implementation we compared against never changes state, so there was nothing to copy, and
 > the plugin is not installed here to check against. It is guarded: if the method is not
 > what we expect, the integration does nothing rather than failing loudly, and fires
-> `subkit_integration_unsupported`. **Verify this one against a real install before relying
+> `easysubscription_integration_unsupported`. **Verify this one against a real install before relying
 > on it.**
 
 ---

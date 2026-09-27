@@ -1,12 +1,12 @@
-/* global jQuery, subkitProductFields */
+/* global jQuery, easysubscriptionProductFields */
 jQuery( function ( $ ) {
-	var config = window.subkitProductFields || {},
+	var config = window.easysubscriptionProductFields || {},
 		$panel = $( '#woocommerce-product-data' ),
-		$options = $panel.find( '.subkit-product-options' ),
-		$pricingSection = $panel.find( '.subkit-section--pricing' ),
+		$options = $panel.find( '.easysubscription-product-options' ),
+		$pricingSection = $panel.find( '.easysubscription-section--pricing' ),
 		$pricingRows = $pricingSection.find( '.form-field' ),
 		$wooPricing = $panel.find( '#general_product_data .options_group.pricing' ).first(),
-		$pricingTitle = $( '<h4 class="subkit-section__title subkit-pricing-title"></h4>' ).text( config.pricingTitle || '' );
+		$pricingTitle = $( '<h4 class="easysubscription-section__title easysubscription-pricing-title"></h4>' ).text( config.pricingTitle || '' );
 
 	function paymentType() {
 		var $select = $panel.find( '.' + config.paymentTypeClass + ' select' );
@@ -14,12 +14,12 @@ jQuery( function ( $ ) {
 		return $select.length ? $select.val() : config.defaultType;
 	}
 
-	// data-subkit-when="field_id=a|b" on any input in a row shows the row only for those values.
+	// data-easysubscription-when="field_id=a|b" on any input in a row shows the row only for those values.
 	function conditionsMet( $row ) {
 		var met = true;
 
-		$row.find( '[data-subkit-when]' ).each( function () {
-			var rule = String( $( this ).attr( 'data-subkit-when' ) ).split( '=' ),
+		$row.find( '[data-easysubscription-when]' ).each( function () {
+			var rule = String( $( this ).attr( 'data-easysubscription-when' ) ).split( '=' ),
 				$field = $( '#' + rule[ 0 ] ),
 				allowed = ( rule[ 1 ] || '' ).split( '|' );
 
@@ -33,21 +33,21 @@ jQuery( function ( $ ) {
 
 	// Hidden rows are disabled as well, so a value the merchant cannot see is never saved.
 	function syncRows() {
-		var current = 'subkit-for-' + paymentType();
+		var current = 'easysubscription-for-' + paymentType();
 
 		$options.find( '.form-field' ).each( function () {
 			var $row = $( this ),
-				typed = /(^|\s)subkit-for-/.test( this.className ),
+				typed = /(^|\s)easysubscription-for-/.test( this.className ),
 				shown = ( ! typed || $row.hasClass( current ) ) && conditionsMet( $row );
 
-			$row.toggleClass( 'subkit-type-hidden', ! shown );
+			$row.toggleClass( 'easysubscription-type-hidden', ! shown );
 			$row.find( 'input, select, textarea' ).each( function () {
 				var $input = $( this );
 
 				if ( ! shown && ! $input.prop( 'disabled' ) ) {
-					$input.prop( 'disabled', true ).attr( 'data-subkit-disabled', '1' );
-				} else if ( shown && $input.attr( 'data-subkit-disabled' ) ) {
-					$input.prop( 'disabled', false ).removeAttr( 'data-subkit-disabled' );
+					$input.prop( 'disabled', true ).attr( 'data-easysubscription-disabled', '1' );
+				} else if ( shown && $input.attr( 'data-easysubscription-disabled' ) ) {
+					$input.prop( 'disabled', false ).removeAttr( 'data-easysubscription-disabled' );
 				}
 			} );
 		} );
@@ -66,19 +66,19 @@ jQuery( function ( $ ) {
 	}
 
 	function syncSections() {
-		$panel.find( '.subkit-section' ).each( function () {
+		$panel.find( '.easysubscription-section' ).each( function () {
 			var $section = $( this ),
 				visible = $section.find( '.form-field' ).filter( function () {
 					return $( this ).css( 'display' ) !== 'none';
 				} );
 
-			$section.toggleClass( 'subkit-section--empty', ! visible.length );
+			$section.toggleClass( 'easysubscription-section--empty', ! visible.length );
 		} );
 	}
 
 	function syncShipping() {
-		var $mirror = $panel.find( '[data-subkit-mirrors]' ),
-			$virtual = $( '#' + $mirror.data( 'subkit-mirrors' ) );
+		var $mirror = $panel.find( '[data-easysubscription-mirrors]' ),
+			$virtual = $( '#' + $mirror.data( 'easysubscription-mirrors' ) );
 
 		if ( $mirror.length && $virtual.length ) {
 			$mirror.val( $virtual.is( ':checked' ) ? 'no' : 'yes' );
@@ -92,16 +92,16 @@ jQuery( function ( $ ) {
 		syncSections();
 	}
 
-	$panel.on( 'click', '.subkit-section__toggle', function () {
+	$panel.on( 'click', '.easysubscription-section__toggle', function () {
 		var $button = $( this ),
 			open = $button.attr( 'aria-expanded' ) !== 'true';
 
 		$button.attr( 'aria-expanded', open ? 'true' : 'false' );
-		$button.closest( '.subkit-section' ).find( '.subkit-section__body' ).prop( 'hidden', ! open );
+		$button.closest( '.easysubscription-section' ).find( '.easysubscription-section__body' ).prop( 'hidden', ! open );
 	} );
 
-	$panel.on( 'change', '[data-subkit-mirrors]', function () {
-		$( '#' + $( this ).data( 'subkit-mirrors' ) )
+	$panel.on( 'change', '[data-easysubscription-mirrors]', function () {
+		$( '#' + $( this ).data( 'easysubscription-mirrors' ) )
 			.prop( 'checked', $( this ).val() === 'no' )
 			.trigger( 'change' );
 	} );

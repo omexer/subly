@@ -1,9 +1,9 @@
 <?php
 
-namespace SubKit\Checkout;
+namespace EasySubscription\Checkout;
 
-use SubKit\Admin\Notices;
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Admin\Notices;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Guest_Checkout {
 
-	private const OPTION = 'subkit_guest_checkout';
+	private const OPTION = 'easysubscription_guest_checkout';
 
 	public const ALLOW   = 'create_account';
 	public const REQUIRE = 'require_login';
@@ -59,7 +59,7 @@ class Guest_Checkout {
 		$error = $this->blocking_error( $this->customer_email() );
 
 		if ( $error && $errors instanceof \WP_Error ) {
-			$errors->add( 'subkit_login_required', $error );
+			$errors->add( 'easysubscription_login_required', $error );
 		}
 
 		return $errors;
@@ -103,7 +103,7 @@ class Guest_Checkout {
 
 		echo '<div class="' . esc_attr( Notices::important( 'warning', true ) ) . '"><p>' . esc_html__(
 			'EasySubscription requires customers to log in before buying a subscription, but WooCommerce is not offering a login or sign-up on the checkout page. Customers will be turned away with no way forward.',
-			'subkit-subscriptions'
+			'easysubscription'
 		) . '</p></div>';
 	}
 
@@ -113,13 +113,13 @@ class Guest_Checkout {
 		}
 
 		if ( self::REQUIRE === self::mode() ) {
-			return __( 'Please log in or create an account to buy a subscription. You will need one to manage or cancel it later.', 'subkit-subscriptions' );
+			return __( 'Please log in or create an account to buy a subscription. You will need one to manage or cancel it later.', 'easysubscription' );
 		}
 
 		// Letting this through would create a subscription owned by nobody, which the
 		// customer could never see or cancel. Better to stop here than to sell that.
 		if ( '' !== $email && email_exists( $email ) ) {
-			return __( 'You already have an account with this email address. Please log in to buy a subscription.', 'subkit-subscriptions' );
+			return __( 'You already have an account with this email address. Please log in to buy a subscription.', 'easysubscription' );
 		}
 
 		return '';
@@ -172,7 +172,7 @@ class Guest_Checkout {
 			return 0;
 		}
 
-		$order->add_order_note( __( 'An account was created for this customer so they can manage their subscription.', 'subkit-subscriptions' ) );
+		$order->add_order_note( __( 'An account was created for this customer so they can manage their subscription.', 'easysubscription' ) );
 
 		return (int) $user_id;
 	}

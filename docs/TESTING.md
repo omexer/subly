@@ -9,18 +9,18 @@ Five kinds of check. **Static analysis** runs anywhere and catches type and stan
 Both plugins have a suite in `tests/integration/`: one PHP file per behaviour (22 in free, 47 in
 Pro as of 0.26.0 / 0.45.0), each run through `wp eval-file` inside a WordPress with WooCommerce
 and the plugin active. Every file requires `tests/integration/bootstrap.php`, prints `PASS` /
-`FAIL` per check and ends with `subkit_test_done( $fail )`.
+`FAIL` per check and ends with `easysubscription_test_done( $fail )`.
 
 ```bash
 tools/test.sh              # every file
 tools/test.sh renewal      # only files whose name contains "renewal"
 ```
 
-`SUBKIT_WP` is the command that runs WP-CLI in the target site. It defaults to wp-env
+`EASYSUBSCRIPTION_WP` is the command that runs WP-CLI in the target site. It defaults to wp-env
 (`npx wp-env run cli wp`, configured by `.wp-env.json`); point it at your own stack instead:
 
 ```bash
-SUBKIT_WP="docker compose -f ~/wp-docker/docker-compose.yml exec -T wordpress wp --allow-root" tools/test.sh
+EASYSUBSCRIPTION_WP="docker compose -f ~/wp-docker/docker-compose.yml exec -T wordpress wp --allow-root" tools/test.sh
 ```
 
 Pro's suite needs the free plugin active beside it.
@@ -36,7 +36,7 @@ Rules the suite depends on:
   file holding one very long string literal once did exactly that and counted as a pass with
   zero checks. `tools/test.sh` now fails any file that exits 0 without printing the
   bootstrap's `all checks passed` line. A test that cannot continue calls
-  `subkit_test_abort()`, never a bare `exit`, which would report success.
+  `easysubscription_test_abort()`, never a bare `exit`, which would report success.
 - **Pin the site settings a test depends on, and restore them.** A test that asserts a
   formatted amount, a role or a tax figure must set the option it relies on first and put the
   site's value back at the end: `woocommerce_currency_pos` (Pro's WhatsApp test pins `left`),
@@ -115,7 +115,7 @@ npm ci
 
 `build/` is committed, because a plugin installed from a zip has no build step. `.github/workflows/admin-ui.yml` runs lint, tests and a build on every push, then **fails if `build/` differs from what was committed** — the check for source changed and assets not rebuilt.
 
-Pro's tests stand in for the free plugin's UI kit with `tools/subkit-ui-stub.js`. At runtime that kit is a global the free plugin puts on the page, not a package Pro can import, so the stub is what makes Pro's screens testable on their own.
+Pro's tests stand in for the free plugin's UI kit with `tools/easysubscription-ui-stub.js`. At runtime that kit is a global the free plugin puts on the page, not a package Pro can import, so the stub is what makes Pro's screens testable on their own.
 
 A few assertions are mutation-checked — broken on purpose to prove the test notices — noted in the commit that added them.
 
@@ -149,7 +149,7 @@ real ones, holds them on a wall-clock barrier until they are all spinning, and r
 them against the same subscription.
 
 ```bash
-docker compose exec -T wordpress php /var/www/html/wp-content/plugins/subkit-subscriptions/tools/concurrency-test.php
+docker compose exec -T wordpress php /var/www/html/wp-content/plugins/easysubscription/tools/concurrency-test.php
 ```
 
 Two rounds. The first asks the narrow question - eight workers call `claim_next()` on the
@@ -172,7 +172,7 @@ If you have run older builds, they left orphan rows behind — deleting a subscr
 to leave its ledger and activity rows in place forever. Clear them once with:
 
 ```bash
-docker compose exec -T wordpress php -r 'require "/var/www/html/wp-load.php"; printf("removed %d\n", SubKit\Data\Cleanup::purge_orphans());'
+docker compose exec -T wordpress php -r 'require "/var/www/html/wp-load.php"; printf("removed %d\n", EasySubscription\Data\Cleanup::purge_orphans());'
 ```
 
 ---
@@ -194,7 +194,7 @@ Never use a live key. The harness refuses anything that is not `sk_test_`, becau
 From the `wp-docker` directory:
 
 ```bash
-SUBKIT_STRIPE_TEST_KEY='sk_test_your_key_here' docker compose exec -T -e SUBKIT_STRIPE_TEST_KEY wordpress php /var/www/html/wp-content/plugins/subkit-subscriptions/tools/sandbox-stripe.php
+EASYSUBSCRIPTION_STRIPE_TEST_KEY='sk_test_your_key_here' docker compose exec -T -e EASYSUBSCRIPTION_STRIPE_TEST_KEY wordpress php /var/www/html/wp-content/plugins/easysubscription/tools/sandbox-stripe.php
 ```
 
 The key is read from the environment. It is never written to the database beyond the run, never printed, and never logged.
@@ -234,7 +234,7 @@ this build"* and the licence screens cannot be reached at all. To click through 
 this to `wp-config.php`:
 
 ```php
-define( 'SUBKIT_PRO_TEST_LICENCE', true );
+define( 'EASYSUBSCRIPTION_PRO_TEST_LICENCE', true );
 ```
 
 Then **EasySubscription → Settings → Licence** gains a **Use a test licence** button. No store is

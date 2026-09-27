@@ -4,19 +4,25 @@
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Badge, Button, Card, CardContent, Skeleton } from '@subkit/ui';
-import { registerRoute } from '@subkit/shell';
+import {
+	Badge,
+	Button,
+	Card,
+	CardContent,
+	Skeleton,
+} from '@easysubscription/ui';
+import { registerRoute } from '@easysubscription/shell';
 
 function Heading() {
 	return (
-		<div className="sk-mb-6">
-			<h2 className="sk-text-2xl sk-font-semibold sk-tracking-tight">
-				{ __( 'Integrations', 'subkit-subscriptions' ) }
+		<div className="es-mb-6">
+			<h2 className="es-text-2xl es-font-semibold es-tracking-tight">
+				{ __( 'Integrations', 'easysubscription' ) }
 			</h2>
-			<p className="sk-mt-1 sk-text-sm sk-text-muted-foreground">
+			<p className="es-mt-1 es-text-sm es-text-muted-foreground">
 				{ __(
 					'Hand a subscription to the plugin that delivers what it pays for, and take it back when it ends.',
-					'subkit-subscriptions'
+					'easysubscription'
 				) }
 			</p>
 		</div>
@@ -29,7 +35,7 @@ function TileIcon( { title, icon } ) {
 
 	return (
 		<span
-			className="sk-grid sk-h-10 sk-w-10 sk-shrink-0 sk-place-items-center sk-overflow-hidden sk-rounded-md sk-bg-accent sk-font-semibold sk-text-primary"
+			className="es-grid es-h-10 es-w-10 es-shrink-0 es-place-items-center es-overflow-hidden es-rounded-md es-bg-accent es-font-semibold es-text-primary"
 			aria-hidden="true"
 		>
 			{ icon && ! broken ? (
@@ -88,27 +94,27 @@ function Tile( { item, installer, onInstalled } ) {
 				setBusy( false );
 				setError(
 					result?.data?.message ||
-						__( 'That did not work.', 'subkit-subscriptions' )
+						__( 'That did not work.', 'easysubscription' )
 				);
 			} )
 			.catch( () => {
 				setBusy( false );
-				setError( __( 'That did not work.', 'subkit-subscriptions' ) );
+				setError( __( 'That did not work.', 'easysubscription' ) );
 			} );
 	};
 
 	return (
-		<Card className="sk-flex sk-flex-col sk-gap-3 sk-p-5">
-			<div className="sk-flex sk-items-center sk-gap-3">
+		<Card className="es-flex es-flex-col es-gap-3 es-p-5">
+			<div className="es-flex es-items-center es-gap-3">
 				<TileIcon title={ item.title } icon={ item.icon } />
-				<div className="sk-min-w-0">
-					<h3 className="sk-text-sm sk-font-medium">
+				<div className="es-min-w-0">
+					<h3 className="es-text-sm es-font-medium">
 						{ item.title }
 					</h3>
-					<p className="sk-text-xs sk-text-muted-foreground">
+					<p className="es-text-xs es-text-muted-foreground">
 						{ sprintf(
 							/* translators: %s: the plugin an integration needs */
-							__( 'Needs %s', 'subkit-subscriptions' ),
+							__( 'Needs %s', 'easysubscription' ),
 							item.requires
 						) }
 					</p>
@@ -116,37 +122,37 @@ function Tile( { item, installer, onInstalled } ) {
 			</div>
 
 			{ item.description ? (
-				<p className="sk-text-sm sk-text-muted-foreground">
+				<p className="es-text-sm es-text-muted-foreground">
 					{ item.description }
 				</p>
 			) : null }
 
 			{ item.hint ? (
-				<p className="sk-text-xs sk-text-muted-foreground">
+				<p className="es-text-xs es-text-muted-foreground">
 					{ item.hint }
 				</p>
 			) : null }
 
-			<div className="sk-mt-auto sk-flex sk-flex-wrap sk-items-center sk-justify-between sk-gap-2">
+			<div className="es-mt-auto es-flex es-flex-wrap es-items-center es-justify-between es-gap-2">
 				<Badge variant={ item.active ? 'success' : 'secondary' }>
 					{ item.active
-						? __( 'Connected', 'subkit-subscriptions' )
-						: __( 'Not active', 'subkit-subscriptions' ) }
+						? __( 'Connected', 'easysubscription' )
+						: __( 'Not active', 'easysubscription' ) }
 				</Badge>
-				<span className="sk-flex sk-flex-wrap sk-gap-2">
+				<span className="es-flex es-flex-wrap es-gap-2">
 					{ item.configure_url ? (
 						<Button asChild variant="outline" size="sm">
 							<a href={ item.configure_url }>
 								{ item.configure_label ||
-									__( 'Settings', 'subkit-subscriptions' ) }
+									__( 'Settings', 'easysubscription' ) }
 							</a>
 						</Button>
 					) : null }
 					{ item.install && installer ? (
 						<Button size="sm" disabled={ busy } onClick={ run }>
 							{ busy
-								? __( 'Installing…', 'subkit-subscriptions' )
-								: __( 'Install', 'subkit-subscriptions' ) }
+								? __( 'Installing…', 'easysubscription' )
+								: __( 'Install', 'easysubscription' ) }
 						</Button>
 					) : null }
 					{ ! item.install && item.get_url ? (
@@ -156,7 +162,7 @@ function Tile( { item, installer, onInstalled } ) {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								{ __( 'Get it', 'subkit-subscriptions' ) }{ ' ' }
+								{ __( 'Get it', 'easysubscription' ) }{ ' ' }
 								<span aria-hidden="true">↗</span>
 							</a>
 						</Button>
@@ -165,7 +171,7 @@ function Tile( { item, installer, onInstalled } ) {
 			</div>
 
 			{ error ? (
-				<p className="sk-text-xs sk-text-destructive" role="alert">
+				<p className="es-text-xs es-text-destructive" role="alert">
 					{ error }
 				</p>
 			) : null }
@@ -177,7 +183,10 @@ export function Integrations( { onFail } ) {
 	const [ data, setData ] = useState( null );
 
 	const load = useCallback(
-		() => apiFetch( { path: '/subkit/v1/integrations' } ).then( setData ),
+		() =>
+			apiFetch( { path: '/easysubscription/v1/integrations' } ).then(
+				setData
+			),
 		[]
 	);
 
@@ -191,10 +200,10 @@ export function Integrations( { onFail } ) {
 		return (
 			<div>
 				<Heading />
-				<div className="sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
-					<Skeleton className="sk-h-40" />
-					<Skeleton className="sk-h-40" />
-					<Skeleton className="sk-h-40" />
+				<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+					<Skeleton className="es-h-40" />
+					<Skeleton className="es-h-40" />
+					<Skeleton className="es-h-40" />
 				</div>
 			</div>
 		);
@@ -205,17 +214,17 @@ export function Integrations( { onFail } ) {
 			<div>
 				<Heading />
 				<Card>
-					<CardContent className="sk-flex sk-flex-col sk-items-center sk-gap-2 sk-p-10 sk-text-center">
-						<p className="sk-font-medium">
+					<CardContent className="es-flex es-flex-col es-items-center es-gap-2 es-p-10 es-text-center">
+						<p className="es-font-medium">
 							{ __(
 								'Nothing to connect yet',
-								'subkit-subscriptions'
+								'easysubscription'
 							) }
 						</p>
-						<p className="sk-max-w-md sk-text-sm sk-text-muted-foreground">
+						<p className="es-max-w-md es-text-sm es-text-muted-foreground">
 							{ __(
 								'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. EasySubscription Pro adds them.',
-								'subkit-subscriptions'
+								'easysubscription'
 							) }
 						</p>
 					</CardContent>
@@ -237,11 +246,11 @@ export function Integrations( { onFail } ) {
 		<div>
 			<Heading />
 			{ [ ...groups ].map( ( [ category, items ] ) => (
-				<section key={ category } className="sk-mb-8">
-					<h2 className="sk-mb-3 sk-text-base sk-font-semibold">
+				<section key={ category } className="es-mb-8">
+					<h2 className="es-mb-3 es-text-base es-font-semibold">
 						{ category }
 					</h2>
-					<div className="sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+					<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
 						{ items.map( ( item ) => (
 							<Tile
 								key={ item.title }
@@ -253,10 +262,10 @@ export function Integrations( { onFail } ) {
 					</div>
 				</section>
 			) ) }
-			<p className="sk-text-sm sk-text-muted-foreground">
+			<p className="es-text-sm es-text-muted-foreground">
 				{ __(
 					'An integration only does anything while the plugin it connects to is active, and only for products you have configured it on.',
-					'subkit-subscriptions'
+					'easysubscription'
 				) }
 			</p>
 		</div>
@@ -264,7 +273,7 @@ export function Integrations( { onFail } ) {
 }
 
 registerRoute( {
-	page: 'subkit-subscriptions-integrations',
-	title: __( 'Integrations', 'subkit-subscriptions' ),
+	page: 'easysubscription-integrations',
+	title: __( 'Integrations', 'easysubscription' ),
 	render: ( ctx ) => <Integrations onFail={ ctx.fail } />,
 } );

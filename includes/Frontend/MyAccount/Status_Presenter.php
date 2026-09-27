@@ -1,12 +1,12 @@
 <?php
 
-namespace SubKit\Frontend\MyAccount;
+namespace EasySubscription\Frontend\MyAccount;
 
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Gateway_Registry;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Gateway_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -32,10 +32,10 @@ class Status_Presenter {
 
 			if ( $order ) {
 				return array(
-					'label'  => __( 'Renewal due', 'subkit-subscriptions' ),
+					'label'  => __( 'Renewal due', 'easysubscription' ),
 					'tone'   => 'warning',
 					/* translators: %s: amount of the renewal */
-					'detail' => sprintf( __( 'Your renewal of %s is ready to pay.', 'subkit-subscriptions' ), self::amount( $order ) ),
+					'detail' => sprintf( __( 'Your renewal of %s is ready to pay.', 'easysubscription' ), self::amount( $order ) ),
 				);
 			}
 		}
@@ -46,11 +46,11 @@ class Status_Presenter {
 		if ( $pending ) {
 			return array(
 				/* translators: %s: subscription status, such as Active */
-				'label'  => sprintf( __( '%s · Payment processing', 'subkit-subscriptions' ), $state['label'] ),
+				'label'  => sprintf( __( '%s · Payment processing', 'easysubscription' ), $state['label'] ),
 				'tone'   => 'neutral',
 				'detail' => sprintf(
 					/* translators: 1: amount of the renewal, 2: date the payment was submitted */
-					__( 'Your renewal payment of %1$s was submitted on %2$s and is waiting for your bank or payment provider to confirm it. There is nothing you need to do.', 'subkit-subscriptions' ),
+					__( 'Your renewal payment of %1$s was submitted on %2$s and is waiting for your bank or payment provider to confirm it. There is nothing you need to do.', 'easysubscription' ),
 					self::amount( $pending['order'] ),
 					wp_date( (string) get_option( 'date_format' ), $pending['since'] )
 				),
@@ -70,47 +70,47 @@ class Status_Presenter {
 
 		return match ( $status ) {
 			Subscription_Status::Trialling => array(
-				'label'  => __( 'Free trial', 'subkit-subscriptions' ),
+				'label'  => __( 'Free trial', 'easysubscription' ),
 				'tone'   => 'neutral',
 				/* translators: %s: date of first payment */
-				'detail' => $when ? sprintf( __( 'First payment on %s.', 'subkit-subscriptions' ), $when ) : '',
+				'detail' => $when ? sprintf( __( 'First payment on %s.', 'easysubscription' ), $when ) : '',
 			),
 			Subscription_Status::Active => array(
-				'label'  => __( 'Active', 'subkit-subscriptions' ),
+				'label'  => __( 'Active', 'easysubscription' ),
 				'tone'   => 'positive',
 				/* translators: %s: date of next payment */
-				'detail' => $when ? sprintf( __( 'Next payment on %s.', 'subkit-subscriptions' ), $when ) : '',
+				'detail' => $when ? sprintf( __( 'Next payment on %s.', 'easysubscription' ), $when ) : '',
 			),
 			Subscription_Status::OnHold => array(
-				'label'  => __( 'Payment needed', 'subkit-subscriptions' ),
+				'label'  => __( 'Payment needed', 'easysubscription' ),
 				'tone'   => 'warning',
 				'detail' => self::payment_needed( $subscription ),
 			),
 			Subscription_Status::PendingCancel => array(
-				'label'  => __( 'Cancelling', 'subkit-subscriptions' ),
+				'label'  => __( 'Cancelling', 'easysubscription' ),
 				'tone'   => 'neutral',
 				/* translators: %s: date access ends */
-				'detail' => $when ? sprintf( __( 'Active until %s. You will not be charged again.', 'subkit-subscriptions' ), $when ) : '',
+				'detail' => $when ? sprintf( __( 'Active until %s. You will not be charged again.', 'easysubscription' ), $when ) : '',
 			),
 			Subscription_Status::Cancelled => array(
-				'label'  => __( 'Cancelled', 'subkit-subscriptions' ),
+				'label'  => __( 'Cancelled', 'easysubscription' ),
 				'tone'   => 'muted',
 				'detail' => '',
 			),
 			Subscription_Status::Expired => array(
-				'label'  => __( 'Ended', 'subkit-subscriptions' ),
+				'label'  => __( 'Ended', 'easysubscription' ),
 				'tone'   => 'muted',
 				'detail' => '',
 			),
 			Subscription_Status::Switched => array(
-				'label'  => __( 'Changed plan', 'subkit-subscriptions' ),
+				'label'  => __( 'Changed plan', 'easysubscription' ),
 				'tone'   => 'muted',
 				'detail' => '',
 			),
 			default => array(
-				'label'  => __( 'Pending', 'subkit-subscriptions' ),
+				'label'  => __( 'Pending', 'easysubscription' ),
 				'tone'   => 'neutral',
-				'detail' => __( 'Waiting for the first payment to clear.', 'subkit-subscriptions' ),
+				'detail' => __( 'Waiting for the first payment to clear.', 'easysubscription' ),
 			),
 		};
 	}
@@ -119,11 +119,11 @@ class Status_Presenter {
 		$ends = $subscription->in_grace() ? $subscription->grace_ends_at() : null;
 
 		if ( null === $ends ) {
-			return __( "We couldn't take your last payment.", 'subkit-subscriptions' );
+			return __( "We couldn't take your last payment.", 'easysubscription' );
 		}
 
 		/* translators: %s: date the grace period ends */
-		return sprintf( __( "We couldn't take your last payment. You keep access until %s.", 'subkit-subscriptions' ), wp_date( (string) get_option( 'date_format' ), $ends ) );
+		return sprintf( __( "We couldn't take your last payment. You keep access until %s.", 'easysubscription' ), wp_date( (string) get_option( 'date_format' ), $ends ) );
 	}
 
 	/**
@@ -146,21 +146,21 @@ class Status_Presenter {
 
 		if ( self::pays_by_link( $subscription ) ) {
 			return array(
-				'label' => __( 'Pay renewal', 'subkit-subscriptions' ),
+				'label' => __( 'Pay renewal', 'easysubscription' ),
 				'url'   => $order->get_checkout_payment_url(),
 			);
 		}
 
 		// A 3DS challenge is not a failure, so it gets its own wording and its own link.
-		$authenticate = (string) $order->get_meta( '_subkit_action_url' );
+		$authenticate = (string) $order->get_meta( '_easysubscription_action_url' );
 
 		return $authenticate
 			? array(
-				'label' => __( 'Confirm payment', 'subkit-subscriptions' ),
+				'label' => __( 'Confirm payment', 'easysubscription' ),
 				'url'   => $authenticate,
 			)
 			: array(
-				'label' => __( 'Pay now', 'subkit-subscriptions' ),
+				'label' => __( 'Pay now', 'easysubscription' ),
 				'url'   => $order->get_checkout_payment_url(),
 			);
 	}
@@ -175,7 +175,7 @@ class Status_Presenter {
 				'orderby'    => 'date',
 				'order'      => 'DESC',
 				'status'     => array( 'pending', 'failed', 'on-hold' ),
-				'meta_key'   => '_subkit_subscription_id',
+				'meta_key'   => '_easysubscription_subscription_id',
 				'meta_value' => $subscription->get_id(),
 			)
 		);
@@ -191,7 +191,7 @@ class Status_Presenter {
 	 * @return array{order: \WC_Order, since: int}|null
 	 */
 	public static function pending_charge( Subscription $subscription ): ?array {
-		$slots = \SubKit\Plugin::instance()->get( 'charge_slots' );
+		$slots = \EasySubscription\Plugin::instance()->get( 'charge_slots' );
 		$slot  = $slots instanceof Charge_Slot_Repository ? $slots->latest_unsettled( $subscription->get_id() ) : null;
 		$order = $slot && Charge_Slot_Repository::STATE_PENDING === $slot->state && $slot->renewal_order_id ? wc_get_order( (int) $slot->renewal_order_id ) : null;
 
@@ -209,7 +209,7 @@ class Status_Presenter {
 	 * Nothing charges these renewals: the customer pays each one from a link.
 	 */
 	public static function pays_by_link( Subscription $subscription ): bool {
-		$registry = \SubKit\Plugin::instance()->get( 'gateways' );
+		$registry = \EasySubscription\Plugin::instance()->get( 'gateways' );
 
 		return $registry instanceof Gateway_Registry && Gateway_Model::Manual === $registry->for_subscription( $subscription )->model();
 	}
@@ -230,7 +230,7 @@ class Status_Presenter {
 
 		if ( empty( $names ) ) {
 			/* translators: %s: subscription number */
-			return sprintf( __( 'Subscription #%s', 'subkit-subscriptions' ), $subscription->get_id() );
+			return sprintf( __( 'Subscription #%s', 'easysubscription' ), $subscription->get_id() );
 		}
 
 		return implode( ', ', $names );

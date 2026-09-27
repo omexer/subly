@@ -5,21 +5,21 @@
  * @package EasySubscription
  */
 
-use SubKit\Billing\Renewal_Processor;
-use SubKit\Billing\Renewal_Scheduler;
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Test_Gateway;
-use SubKit\Lifecycle\Early_Renewal;
+use EasySubscription\Billing\Renewal_Processor;
+use EasySubscription\Billing\Renewal_Scheduler;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Test_Gateway;
+use EasySubscription\Lifecycle\Early_Renewal;
 
 require __DIR__ . '/bootstrap.php';
 
 global $wpdb;
 
-$harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
+$harness = new class() implements \EasySubscription\Gateways\Recurring_Gateway {
 	public string $next       = 'pending';
 	public int $charges       = 0;
 	public int $reconciles    = 0;
@@ -35,7 +35,7 @@ $harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
 		++$this->charges;
 		$this->keys[] = $k;
 		if ( 'stale-link' === $this->next ) {
-			$r->update_meta_data( '_subkit_action_url', 'https://bank.example.test/confirm' );
+			$r->update_meta_data( '_easysubscription_action_url', 'https://bank.example.test/confirm' );
 			$r->save();
 		}
 		return match ( $this->next ) {
@@ -52,18 +52,18 @@ $harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
 	public function update_payment_method( Subscription $s, string $t ): bool { return true; }
 };
 
-$free = \SubKit\Plugin::instance();
+$free = \EasySubscription\Plugin::instance();
 $free->get( 'gateways' )->add( $harness );
 
 $processor = $free->get( 'processor' );
 $slots     = $free->get( 'charge_slots' );
 $lock      = $free->get( 'lock' );
-$product   = subkit_test_product();
+$product   = easysubscription_test_product();
 $made      = array();
 $extra     = array();
 
 $fired = array();
-foreach ( array( 'subkit_renewal_pending', 'subkit_renewal_succeeded', 'subkit_renewal_failed' ) as $hook ) {
+foreach ( array( 'easysubscription_renewal_pending', 'easysubscription_renewal_succeeded', 'easysubscription_renewal_failed' ) as $hook ) {
 	add_action(
 		$hook,
 		function ( $s ) use ( &$fired, $hook ) {
@@ -101,7 +101,7 @@ $make = function ( string $email, int $due_offset = -HOUR_IN_SECONDS ) use ( $pr
 	$item->set_props( array( 'name' => 'Pending probe', 'product_id' => $product->get_id(), 'quantity' => 1, 'subtotal' => '20', 'total' => '20' ) );
 	$s->add_item( $item );
 	$s->set_next_payment( gmdate( 'Y-m-d H:i:s', time() + $due_offset ) );
-	$s->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
+	$s->update_meta_data( '_easysubscription_site_url', get_option( 'siteurl' ) );
 	$s->transition_to( Subscription_Status::Pending );
 	$s->calculate_totals( false );
 	$s->save();
@@ -118,7 +118,7 @@ $submit = function ( Subscription $s ) use ( $processor, $slots, $harness ): arr
 	$slot  = $slots->latest_unsettled( $s->get_id() );
 	$order = $slot ? wc_get_order( (int) $slot->renewal_order_id ) : null;
 	if ( ! $slot || ! $order instanceof WC_Order || Charge_Slot_Repository::STATE_PENDING !== $slot->state ) {
-		subkit_test_abort( 'a pending charge did not leave a pending slot with a renewal order: ' . wp_json_encode( $slot ) );
+		easysubscription_test_abort( 'a pending charge did not leave a pending slot with a renewal order: ' . wp_json_encode( $slot ) );
 	}
 	return array( $slot, $order );
 };
@@ -136,17 +136,17 @@ $check( 'the gateway was asked once', 1 === $harness->charges, $harness->charges
 $check( 'the renewal order waits on hold, carrying the payment reference', 'on-hold' === $order1->get_status() && 'dd_1' === $order1->get_transaction_id(), array( $order1->get_status(), $order1->get_transaction_id() ) );
 $check( 'the subscription keeps its status, and so its access', Subscription_Status::Active === $s1->get_status_enum(), $s1->get_status() );
 $check( 'the next payment date does not move until the money is confirmed', $due1 === $s1->get_next_payment(), array( $due1, $s1->get_next_payment() ) );
-$check( 'subkit_renewal_pending fired once, and nothing else did', 1 === $count( 'subkit_renewal_pending', $s1->get_id() ) && 0 === $count( 'subkit_renewal_succeeded', $s1->get_id() ) && 0 === $count( 'subkit_renewal_failed', $s1->get_id() ), $fired );
-$check( 'no unknown-outcome retry is queued', ! $renewal_queued( $s1->get_id() ) && '' === $s1->get_meta( '_subkit_unknown_retry' ), $s1->get_meta( '_subkit_unknown_retry' ) );
+$check( 'easysubscription_renewal_pending fired once, and nothing else did', 1 === $count( 'easysubscription_renewal_pending', $s1->get_id() ) && 0 === $count( 'easysubscription_renewal_succeeded', $s1->get_id() ) && 0 === $count( 'easysubscription_renewal_failed', $s1->get_id() ), $fired );
+$check( 'no unknown-outcome retry is queued', ! $renewal_queued( $s1->get_id() ) && '' === $s1->get_meta( '_easysubscription_unknown_retry' ), $s1->get_meta( '_easysubscription_unknown_retry' ) );
 $check( 'the customer cannot pay the order a second time', ! $order1->needs_payment() );
-$wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
+$wpdb->update( $wpdb->prefix . 'easysubscription_charge_slot', array( 'created_gmt' => gmdate( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
 $check( 'a day later it is not reported as a charge of unknown outcome', ! in_array( (int) $slot1->id, array_map( 'intval', wp_list_pluck( $slots->stuck_charging( 60 ), 'id' ) ), true ) );
 $check( 'nor yet as waiting too long for its confirmation', ! in_array( (int) $slot1->id, array_map( 'intval', wp_list_pluck( $slots->stale_pending( 10 ), 'id' ) ), true ) );
-$wpdb->update( $wpdb->prefix . 'subkit_charge_slot', array( 'pending_gmt' => gmdate( 'Y-m-d H:i:s', time() - 11 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
+$wpdb->update( $wpdb->prefix . 'easysubscription_charge_slot', array( 'pending_gmt' => gmdate( 'Y-m-d H:i:s', time() - 11 * DAY_IN_SECONDS ) ), array( 'id' => (int) $slot1->id ) );
 if ( ! class_exists( 'WC_Settings_Page' ) ) {
 	include_once WC_ABSPATH . 'includes/admin/settings/class-wc-settings-page.php';
 }
-$card = array_values( array_filter( \SubKit\Admin\Settings::status_checks(), static fn( $c ) => 'Payments awaiting confirmation' === $c['label'] ) )[0] ?? null;
+$card = array_values( array_filter( \EasySubscription\Admin\Settings::status_checks(), static fn( $c ) => 'Payments awaiting confirmation' === $c['label'] ) )[0] ?? null;
 $check( 'eleven days on, the status card flags it', $card && ! $card['ok'] && str_contains( $card['bad'], 'more than 10 days' ), $card );
 
 $overdue = $make( 'pending-overdue@example.test' );
@@ -172,7 +172,7 @@ $settled = $slots->find( $s1->get_id(), (int) $slot1->period_index );
 $check( 'the slot is paid', Charge_Slot_Repository::STATE_PAID === $settled->state && 0 === (int) $settled->attempt_group, $settled );
 $check( 'the order is paid', wc_get_order( $order1->get_id() )->is_paid(), wc_get_order( $order1->get_id() )->get_status() );
 $check( 'the next payment is the end of the period just paid for', strtotime( (string) $s1->get_next_payment() . ' UTC' ) === strtotime( $slot1->covers_to_gmt . ' UTC' ), array( $s1->get_next_payment(), $slot1->covers_to_gmt ) );
-$check( 'subkit_renewal_succeeded fired once, with one receipt', 1 === $count( 'subkit_renewal_succeeded', $s1->get_id() ) && array( 'pending-1@example.test' ) === $receipts, array( $fired, $receipts ) );
+$check( 'easysubscription_renewal_succeeded fired once, with one receipt', 1 === $count( 'easysubscription_renewal_succeeded', $s1->get_id() ) && array( 'pending-1@example.test' ) === $receipts, array( $fired, $receipts ) );
 $check( 'the next renewal is queued at the new date, not left to the sweep', strtotime( $slot1->covers_to_gmt . ' UTC' ) === as_next_scheduled_action( Renewal_Scheduler::ACTION_RENEWAL, array( 'subscription_id' => $s1->get_id() ), Renewal_Scheduler::GROUP ), array( as_next_scheduled_action( Renewal_Scheduler::ACTION_RENEWAL, array( 'subscription_id' => $s1->get_id() ), Renewal_Scheduler::GROUP ), $slot1->covers_to_gmt ) );
 
 $check( 'a repeated confirmation changes nothing', ! $processor->resolve_pending( wc_get_order( $order1->get_id() ), Charge_Result::success( 'dd_1' ) ) );
@@ -180,7 +180,7 @@ $check( 'nor does a late failure for the same payment', ! $processor->resolve_pe
 do_action( 'woocommerce_payment_complete', $order1->get_id() );
 $processor->settle_paid_order( $order1->get_id() );
 $processor->process( $s1->get_id() );
-$check( 'nothing settles, announces or charges twice', 1 === $count( 'subkit_renewal_succeeded', $s1->get_id() ) && 1 === count( $receipts ) && 1 === $harness->charges && 'processing' === wc_get_order( $order1->get_id() )->get_status(), array( $fired, $receipts, $harness->charges ) );
+$check( 'nothing settles, announces or charges twice', 1 === $count( 'easysubscription_renewal_succeeded', $s1->get_id() ) && 1 === count( $receipts ) && 1 === $harness->charges && 'processing' === wc_get_order( $order1->get_id() )->get_status(), array( $fired, $receipts, $harness->charges ) );
 
 echo "\n3. Declined, it fails once and takes the normal failure path\n";
 $s3                   = $make( 'pending-3@example.test' );
@@ -190,8 +190,8 @@ $s3     = wc_get_order( $s3->get_id() );
 $failed = $slots->find( $s3->get_id(), (int) $slot3->period_index );
 $check( 'the slot failed, with a fresh key for the next attempt', Charge_Slot_Repository::STATE_FAILED === $failed->state && 1 === (int) $failed->attempt_group, $failed );
 $check( 'the order failed and the subscription is on hold', 'failed' === wc_get_order( $order3->get_id() )->get_status() && Subscription_Status::OnHold === $s3->get_status_enum(), array( wc_get_order( $order3->get_id() )->get_status(), $s3->get_status() ) );
-$check( 'subkit_renewal_failed fired once', 1 === $count( 'subkit_renewal_failed', $s3->get_id() ) );
-$check( 'a repeated failure changes nothing', ! $processor->resolve_pending( wc_get_order( $order3->get_id() ), Charge_Result::hard_decline( 'mandate_cancelled' ) ) && 1 === $count( 'subkit_renewal_failed', $s3->get_id() ) );
+$check( 'easysubscription_renewal_failed fired once', 1 === $count( 'easysubscription_renewal_failed', $s3->get_id() ) );
+$check( 'a repeated failure changes nothing', ! $processor->resolve_pending( wc_get_order( $order3->get_id() ), Charge_Result::hard_decline( 'mandate_cancelled' ) ) && 1 === $count( 'easysubscription_renewal_failed', $s3->get_id() ) );
 
 $charges_before = $harness->charges;
 $s3->transition_to( Subscription_Status::Active, 'Retrying, as the harness.' );
@@ -213,7 +213,7 @@ $processor->process( $s4->get_id() );
 $slot4          = $slots->latest_unsettled( $s4->get_id() );
 $order4         = $slot4 ? wc_get_order( (int) $slot4->renewal_order_id ) : null;
 if ( ! $order4 instanceof WC_Order || Charge_Slot_Repository::STATE_CHARGING !== $slot4->state ) {
-	subkit_test_abort( 'the unknown outcome did not leave a charging slot' );
+	easysubscription_test_abort( 'the unknown outcome did not leave a charging slot' );
 }
 $check( 'a charge of unknown outcome is not settled by a webhook', ! $processor->resolve_pending( $order4, Charge_Result::success( 'dd_x' ) ) && Charge_Slot_Repository::STATE_CHARGING === $slots->find( $s4->get_id(), (int) $slot4->period_index )->state );
 
@@ -237,13 +237,13 @@ $queued = array(
 	'code'      => 'mandate_cancelled',
 	'message'   => 'The customer cancelled the mandate.',
 );
-$check( 'settling is queued for later', (bool) as_next_scheduled_action( Renewal_Processor::ACTION_RESOLVE, $queued, 'subkit' ) );
+$check( 'settling is queued for later', (bool) as_next_scheduled_action( Renewal_Processor::ACTION_RESOLVE, $queued, 'easysubscription' ) );
 $lock->release( $s4->get_id() );
 $processor->resolve_queued( ...array_values( $queued ) );
-as_unschedule_all_actions( Renewal_Processor::ACTION_RESOLVE, $queued, 'subkit' );
-$check( 'the queued answer settles it once', Charge_Slot_Repository::STATE_FAILED === $slots->find( $s4->get_id(), (int) $slot4->period_index )->state && 1 === $count( 'subkit_renewal_failed', $s4->get_id() ) );
+as_unschedule_all_actions( Renewal_Processor::ACTION_RESOLVE, $queued, 'easysubscription' );
+$check( 'the queued answer settles it once', Charge_Slot_Repository::STATE_FAILED === $slots->find( $s4->get_id(), (int) $slot4->period_index )->state && 1 === $count( 'easysubscription_renewal_failed', $s4->get_id() ) );
 $processor->resolve_queued( ...array_values( $queued ) );
-$check( 'and running it twice fails nothing twice', 1 === $count( 'subkit_renewal_failed', $s4->get_id() ) );
+$check( 'and running it twice fails nothing twice', 1 === $count( 'easysubscription_renewal_failed', $s4->get_id() ) );
 
 echo "\n6. A subscription ending while its renewal is pending\n";
 $s6                   = $make( 'pending-6@example.test' );
@@ -254,7 +254,7 @@ $s6->save();
 $processor->process( $s6->get_id() );
 $check( 'the period-end run waits for the gateway\'s answer', Subscription_Status::PendingCancel === wc_get_order( $s6->get_id() )->get_status_enum() && Charge_Slot_Repository::STATE_PENDING === $slots->find( $s6->get_id(), (int) $slot6->period_index )->state );
 $processor->resolve_pending( wc_get_order( $order6->get_id() ), Charge_Result::soft_decline( 'insufficient_funds', 'Not enough in the account.' ) );
-$check( 'declined, the ending customer is not chased', 0 === $count( 'subkit_renewal_failed', $s6->get_id() ) && 'failed' === wc_get_order( $order6->get_id() )->get_status() );
+$check( 'declined, the ending customer is not chased', 0 === $count( 'easysubscription_renewal_failed', $s6->get_id() ) && 'failed' === wc_get_order( $order6->get_id() )->get_status() );
 $check( 'and the run it queues', $renewal_queued( $s6->get_id() ) );
 $processor->process( $s6->get_id() );
 $check( 'ends the subscription', Subscription_Status::Cancelled === wc_get_order( $s6->get_id() )->get_status_enum(), wc_get_order( $s6->get_id() )->get_status() );
@@ -266,7 +266,7 @@ $s7->transition_to( Subscription_Status::PendingCancel, 'Cancelled at period end
 $s7->save();
 $processor->resolve_pending( wc_get_order( $order7->get_id() ), Charge_Result::success( 'dd_7' ) );
 $s7 = wc_get_order( $s7->get_id() );
-$check( 'confirmed, an ending subscription keeps the period it paid for', Subscription_Status::PendingCancel === $s7->get_status_enum() && strtotime( (string) $s7->get_next_payment() . ' UTC' ) === strtotime( $slot7->covers_to_gmt . ' UTC' ) && 1 === $count( 'subkit_renewal_succeeded', $s7->get_id() ), array( $s7->get_status(), $s7->get_next_payment() ) );
+$check( 'confirmed, an ending subscription keeps the period it paid for', Subscription_Status::PendingCancel === $s7->get_status_enum() && strtotime( (string) $s7->get_next_payment() . ' UTC' ) === strtotime( $slot7->covers_to_gmt . ' UTC' ) && 1 === $count( 'easysubscription_renewal_succeeded', $s7->get_id() ), array( $s7->get_status(), $s7->get_next_payment() ) );
 
 $s8             = $make( 'pending-8@example.test' );
 $harness->next  = 'unknown';
@@ -321,27 +321,27 @@ $processor->process( $s11->get_id() );
 $slot11  = $slots->latest_unsettled( $s11->get_id() );
 $order11 = $slot11 ? wc_get_order( (int) $slot11->renewal_order_id ) : null;
 $check( 'the slot is pending', $slot11 && Charge_Slot_Repository::STATE_PENDING === $slot11->state, $slot11 );
-$check( 'the old confirmation link is cleared', $order11 && '' === (string) $order11->get_meta( '_subkit_action_url' ), $order11 ? $order11->get_meta( '_subkit_action_url' ) : null );
+$check( 'the old confirmation link is cleared', $order11 && '' === (string) $order11->get_meta( '_easysubscription_action_url' ), $order11 ? $order11->get_meta( '_easysubscription_action_url' ) : null );
 $check( 'so the order cannot be paid while the provider collects', $order11 && ! $order11->needs_payment() );
 
 // ---- clean up -----------------------------------------------------------------------
 global $wpdb;
 foreach ( $made as $id ) {
-	$renewals = $wpdb->get_col( $wpdb->prepare( 'SELECT renewal_order_id FROM %i WHERE subscription_id = %d AND renewal_order_id IS NOT NULL', $wpdb->prefix . 'subkit_charge_slot', $id ) );
+	$renewals = $wpdb->get_col( $wpdb->prepare( 'SELECT renewal_order_id FROM %i WHERE subscription_id = %d AND renewal_order_id IS NOT NULL', $wpdb->prefix . 'easysubscription_charge_slot', $id ) );
 	foreach ( $renewals as $renewal_id ) {
 		$r = wc_get_order( (int) $renewal_id );
 		$r && $r->delete( true );
 	}
 	$free->get( 'scheduler' )->unschedule( $id );
 	// Pro's retry ladder, when it is active, answers the declines above.
-	as_unschedule_all_actions( 'subkit_dunning_retry', array( 'subscription_id' => $id ), 'subkit' );
+	as_unschedule_all_actions( 'easysubscription_dunning_retry', array( 'subscription_id' => $id ), 'easysubscription' );
 	$s = wc_get_order( $id );
 	$s && $s->delete( true );
-	$wpdb->delete( $wpdb->prefix . 'subkit_charge_slot', array( 'subscription_id' => $id ) );
+	$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $id ) );
 }
 foreach ( $extra as $id ) {
 	$o = wc_get_order( $id );
 	$o && $o->delete( true );
 }
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

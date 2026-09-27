@@ -1,9 +1,9 @@
 <?php
 
-namespace SubKit\Product;
+namespace EasySubscription\Product;
 
-use SubKit\Domain\Billing_Schedule;
-use SubKit\Domain\Money;
+use EasySubscription\Domain\Billing_Schedule;
+use EasySubscription\Domain\Money;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,13 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Subscription_Product {
 
-	public const META_ENABLED  = '_subkit_enabled';
-	public const META_PERIOD   = '_subkit_period';
-	public const META_INTERVAL = '_subkit_interval';
+	public const META_ENABLED  = '_easysubscription_enabled';
+	public const META_PERIOD   = '_easysubscription_period';
+	public const META_INTERVAL = '_easysubscription_interval';
 	// The trial length in META_TRIAL_PERIOD units; named from when trials were days only.
-	public const META_TRIAL_DAYS   = '_subkit_trial_days';
-	public const META_TRIAL_PERIOD = '_subkit_trial_period';
-	public const META_SIGNUP_FEE   = '_subkit_signup_fee';
+	public const META_TRIAL_DAYS   = '_easysubscription_trial_days';
+	public const META_TRIAL_PERIOD = '_easysubscription_trial_period';
+	public const META_SIGNUP_FEE   = '_easysubscription_signup_fee';
 
 	public static function is_subscription( $product ): bool {
 		$product = self::resolve( $product );
@@ -77,7 +77,7 @@ class Subscription_Product {
 		 * @param \WC_Product|null $product
 		 * @param string           $key
 		 */
-		$value = apply_filters( 'subkit_product_meta', $value, $product, $key );
+		$value = apply_filters( 'easysubscription_product_meta', $value, $product, $key );
 
 		return '' === $value || null === $value ? $default : $value;
 	}
@@ -128,7 +128,7 @@ class Subscription_Product {
 			 * @param array  $item
 			 * @param string $key
 			 */
-			if ( apply_filters( 'subkit_cart_item_is_subscription', true, $item, $key ) ) {
+			if ( apply_filters( 'easysubscription_cart_item_is_subscription', true, $item, $key ) ) {
 				return true;
 			}
 		}

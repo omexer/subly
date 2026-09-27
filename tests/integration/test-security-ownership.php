@@ -5,19 +5,19 @@
  * @package EasySubscription
  */
 
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 require __DIR__ . '/bootstrap.php';
 
-if ( ! class_exists( 'SubKit_Test_Redirected' ) ) {
+if ( ! class_exists( 'EasySubscription_Test_Redirected' ) ) {
 	// Handlers redirect and exit once they act; stop at the redirect and read the state.
-	final class SubKit_Test_Redirected extends Exception {}
+	final class EasySubscription_Test_Redirected extends Exception {}
 }
 add_filter(
 	'wp_redirect',
 	static function ( $to ) {
-		throw new SubKit_Test_Redirected( (string) $to );
+		throw new EasySubscription_Test_Redirected( (string) $to );
 	},
 	1
 );
@@ -27,7 +27,7 @@ $user = static function ( string $name ): int {
 		array(
 			'user_login' => 'sk_' . $name . '_' . wp_generate_password( 5, false, false ),
 			'user_pass'  => wp_generate_password( 32 ),
-			'user_email' => 'sk-' . $name . '-' . wp_generate_password( 5, false, false ) . '@example.test',
+			'user_email' => 'es-' . $name . '-' . wp_generate_password( 5, false, false ) . '@example.test',
 			'role'       => 'customer',
 		)
 	);
@@ -53,7 +53,7 @@ $subscription_for = static function ( int $owner ): Subscription {
 $state = static function ( int $id ): array {
 	$s = wc_get_order( $id );
 
-	return array( $s->get_status(), $s->get_next_payment(), $s->get_meta( '_subkit_cancel_reason' ), $s->get_meta( '_subkit_auto_renew' ) );
+	return array( $s->get_status(), $s->get_next_payment(), $s->get_meta( '_easysubscription_cancel_reason' ), $s->get_meta( '_easysubscription_auto_renew' ) );
 };
 
 $attempt = static function ( callable $handler, array $post ): void {
@@ -62,7 +62,7 @@ $attempt = static function ( callable $handler, array $post ): void {
 
 	try {
 		$handler();
-	} catch ( SubKit_Test_Redirected $e ) {
+	} catch ( EasySubscription_Test_Redirected $e ) {
 		unset( $e );
 	}
 
@@ -70,17 +70,17 @@ $attempt = static function ( callable $handler, array $post ): void {
 	$_REQUEST = array();
 };
 
-$account = \SubKit\Plugin::instance()->get( 'account' );
-$survey  = \SubKit\Plugin::instance()->get( 'survey' );
+$account = \EasySubscription\Plugin::instance()->get( 'account' );
+$survey  = \EasySubscription\Plugin::instance()->get( 'survey' );
 
-update_option( 'subkit_allow_early_renewal', 'yes' );
-update_option( 'subkit_allow_auto_renew_toggle', 'yes' );
+update_option( 'easysubscription_allow_early_renewal', 'yes' );
+update_option( 'easysubscription_allow_auto_renew_toggle', 'yes' );
 
 $actions = static function ( int $id ): array {
 	return array(
-		'cancel'              => array( 'subkit_action' => 'cancel', 'subkit_when' => 'immediate', 'subkit_subscription' => $id, '_wpnonce' => wp_create_nonce( "subkit_cancel_{$id}" ) ),
-		'turn off auto-renew' => array( 'subkit_action' => 'auto_renew', 'subkit_auto_renew' => 'off', 'subkit_subscription' => $id, '_wpnonce' => wp_create_nonce( "subkit_auto_renew_{$id}" ) ),
-		'pay a period early'  => array( 'subkit_action' => 'renew_early', 'subkit_subscription' => $id, '_wpnonce' => wp_create_nonce( "subkit_renew_early_{$id}" ) ),
+		'cancel'              => array( 'easysubscription_action' => 'cancel', 'easysubscription_when' => 'immediate', 'easysubscription_subscription' => $id, '_wpnonce' => wp_create_nonce( "easysubscription_cancel_{$id}" ) ),
+		'turn off auto-renew' => array( 'easysubscription_action' => 'auto_renew', 'easysubscription_auto_renew' => 'off', 'easysubscription_subscription' => $id, '_wpnonce' => wp_create_nonce( "easysubscription_auto_renew_{$id}" ) ),
+		'pay a period early'  => array( 'easysubscription_action' => 'renew_early', 'easysubscription_subscription' => $id, '_wpnonce' => wp_create_nonce( "easysubscription_renew_early_{$id}" ) ),
 	);
 };
 
@@ -96,7 +96,7 @@ foreach ( array( 'another customer' => $bob, 'a logged-out visitor' => 0 ) as $w
 	}
 
 	$before = $state( $id );
-	$attempt( array( $survey, 'handle_submission' ), array( 'subkit_action' => 'cancel_survey', 'subkit_reason' => 'too_expensive', 'subkit_subscription' => $id, '_wpnonce' => wp_create_nonce( "subkit_survey_{$id}" ) ) );
+	$attempt( array( $survey, 'handle_submission' ), array( 'easysubscription_action' => 'cancel_survey', 'easysubscription_reason' => 'too_expensive', 'easysubscription_subscription' => $id, '_wpnonce' => wp_create_nonce( "easysubscription_survey_{$id}" ) ) );
 	$check( "{$who} cannot write somebody else's cancellation reason", $before === $state( $id ), array( $before, $state( $id ) ) );
 
 	$target->delete( true );
@@ -104,17 +104,17 @@ foreach ( array( 'another customer' => $bob, 'a logged-out visitor' => 0 ) as $w
 
 // And the owner still can: a check that refuses everybody would pass everything above.
 $own  = $subscription_for( $alice );
-$when = get_option( 'subkit_cancellation_effective', null );
-update_option( 'subkit_cancellation_effective', 'immediate' );
+$when = get_option( 'easysubscription_cancellation_effective', null );
+update_option( 'easysubscription_cancellation_effective', 'immediate' );
 wp_set_current_user( $alice );
 $attempt( array( $account, 'handle_actions' ), $actions( $own->get_id() )['cancel'] );
 $check( 'the owner can cancel their own subscription', str_contains( wc_get_order( $own->get_id() )->get_status(), 'cancelled' ), wc_get_order( $own->get_id() )->get_status() );
 $own->delete( true );
-null === $when ? delete_option( 'subkit_cancellation_effective' ) : update_option( 'subkit_cancellation_effective', $when );
+null === $when ? delete_option( 'easysubscription_cancellation_effective' ) : update_option( 'easysubscription_cancellation_effective', $when );
 
-delete_option( 'subkit_allow_early_renewal' );
-delete_option( 'subkit_allow_auto_renew_toggle' );
+delete_option( 'easysubscription_allow_early_renewal' );
+delete_option( 'easysubscription_allow_auto_renew_toggle' );
 wp_delete_user( $alice );
 wp_delete_user( $bob );
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

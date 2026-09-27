@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds the admin preview into a folder ready to serve. Run from inside a WordPress install,
-# with SubKit Pro checked out beside SubKit, since the preview includes Pro's screens.
+# with EasySubscription Pro checked out beside EasySubscription, since the preview includes Pro's screens.
 set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
@@ -8,13 +8,13 @@ plugin="$(cd "$here/../.." && pwd)"
 wp="$(cd "$plugin/../../.." && pwd)"
 out="${1:-$plugin/.preview}"
 
-for f in "$wp/wp-admin/css/common.min.css" "$plugin/../subkit-subscriptions-pro/src"; do
-	[ -e "$f" ] || { echo "Missing $f - run this inside a WordPress install with SubKit Pro beside SubKit." >&2; exit 1; }
+for f in "$wp/wp-admin/css/common.min.css" "$plugin/../easysubscription-pro/src"; do
+	[ -e "$f" ] || { echo "Missing $f - run this inside a WordPress install with EasySubscription Pro beside EasySubscription." >&2; exit 1; }
 done
 
 mkdir -p "$out/css"
 
-( cd "$plugin" && SUBKIT_PREVIEW_OUT="$out" npx wp-scripts build --config "$here/webpack.config.js" )
+( cd "$plugin" && EASYSUBSCRIPTION_PREVIEW_OUT="$out" npx wp-scripts build --config "$here/webpack.config.js" )
 
 cp "$wp/wp-admin/css/common.min.css" "$wp/wp-admin/css/forms.min.css" "$wp/wp-includes/css/buttons.min.css" "$plugin/assets/css/admin.css" "$out/css/"
 
@@ -24,7 +24,7 @@ template, plugin, target = sys.argv[1:4]
 shell = open(plugin + '/includes/Admin/Page_Shell.php').read()
 mark = '<svg' + re.search(r"return '<svg(.*?)</svg>';", shell, re.S).group(1) + '</svg>'
 mark = re.sub(r"'\s*\.\s*'", '', mark)
-version = re.search(r"define\( 'SUBKIT_VERSION', '([^']+)' \)", open(plugin + '/subkit-subscriptions.php').read()).group(1)
+version = re.search(r"define\( 'EASYSUBSCRIPTION_VERSION', '([^']+)' \)", open(plugin + '/easysubscription.php').read()).group(1)
 html = open(template).read().replace('{{MARK}}', mark).replace('{{VERSION}}', version)
 left = re.findall(r'\{\{[A-Z]+\}\}', html)
 if left:

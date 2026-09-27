@@ -1,10 +1,10 @@
 ( function () {
 	'use strict';
 
-	var config = window.subkitAdmin || {};
+	var config = window.easysubscriptionAdmin || {};
 
 	document.addEventListener( 'click', function ( event ) {
-		var button = event.target.closest( '.subkit-install' );
+		var button = event.target.closest( '.easysubscription-install' );
 
 		if ( ! button || ! config.installAction ) {
 			return;
@@ -47,9 +47,9 @@
 	 * an ordinary submit and the page reloads, which is what happens with no JavaScript.
 	 */
 	document.addEventListener( 'click', function ( event ) {
-		var button = event.target.closest( '.subkit-row-action' );
+		var button = event.target.closest( '.easysubscription-row-action' );
 
-		if ( ! button || ! config.rowAction || ! button.dataset.subkitAction ) {
+		if ( ! button || ! config.rowAction || ! button.dataset.easysubscriptionAction ) {
 			return;
 		}
 
@@ -60,8 +60,8 @@
 
 		body.append( 'action', config.rowAction );
 		body.append( '_wpnonce', config.rowNonce );
-		body.append( 'health_action', button.dataset.subkitAction );
-		body.append( 'subscription', button.dataset.subkitId );
+		body.append( 'health_action', button.dataset.easysubscriptionAction );
+		body.append( 'subscription', button.dataset.easysubscriptionId );
 
 		setBusy( row, true );
 
@@ -88,7 +88,7 @@
 			return;
 		}
 
-		row.classList.toggle( 'subkit-row--busy', busy );
+		row.classList.toggle( 'easysubscription-row--busy', busy );
 		row.querySelectorAll( 'button' ).forEach( function ( b ) { b.disabled = busy; } );
 	}
 
@@ -98,7 +98,7 @@
 		}
 
 		var cell = row.querySelector( 'td:last-child' ) || row;
-		var existing = cell.querySelector( '.subkit-row-result' );
+		var existing = cell.querySelector( '.easysubscription-row-result' );
 
 		if ( existing ) {
 			existing.remove();
@@ -106,17 +106,17 @@
 
 		var span = document.createElement( 'span' );
 
-		span.className = 'subkit-row-result ' + ( good ? 'is-good' : 'is-bad' );
+		span.className = 'easysubscription-row-result ' + ( good ? 'is-good' : 'is-bad' );
 		span.textContent = message;
 		cell.appendChild( span );
 
-		row.classList.toggle( 'subkit-row--done', !! good );
+		row.classList.toggle( 'easysubscription-row--done', !! good );
 	}
 
 	function notice( message ) {
 		var span = document.createElement( 'span' );
 
-		span.className = 'subkit-inline-error';
+		span.className = 'easysubscription-inline-error';
 		span.textContent = ' ' + message;
 
 		return span;
@@ -124,10 +124,10 @@
 }() );
 
 
-// Copy buttons: data-subkit-copy names the field to copy from.
+// Copy buttons: data-easysubscription-copy names the field to copy from.
 document.addEventListener( 'click', function ( event ) {
-	var button = event.target.closest( '[data-subkit-copy]' );
-	var field = button && document.getElementById( button.getAttribute( 'data-subkit-copy' ) );
+	var button = event.target.closest( '[data-easysubscription-copy]' );
+	var field = button && document.getElementById( button.getAttribute( 'data-easysubscription-copy' ) );
 
 	if ( ! field ) {
 		return;
@@ -135,7 +135,7 @@ document.addEventListener( 'click', function ( event ) {
 
 	var done = function () {
 		var label = button.textContent;
-		button.textContent = button.getAttribute( 'data-subkit-copied' ) || label;
+		button.textContent = button.getAttribute( 'data-easysubscription-copied' ) || label;
 		setTimeout( function () {
 			button.textContent = label;
 		}, 1600 );
@@ -155,7 +155,7 @@ document.addEventListener( 'click', function ( event ) {
 // The server header's notification centre opens without script; this only closes it like a menu.
 ( function () {
 	function close( keepFocus ) {
-		document.querySelectorAll( 'details[data-subkit-notify][open]' ).forEach( function ( details ) {
+		document.querySelectorAll( 'details[data-easysubscription-notify][open]' ).forEach( function ( details ) {
 			details.open = false;
 
 			if ( keepFocus ) {
@@ -165,34 +165,34 @@ document.addEventListener( 'click', function ( event ) {
 	}
 
 	document.addEventListener( 'mousedown', function ( event ) {
-		if ( ! event.target.closest( 'details[data-subkit-notify]' ) ) {
+		if ( ! event.target.closest( 'details[data-easysubscription-notify]' ) ) {
 			close( false );
 		}
 	} );
 
 	document.addEventListener( 'keydown', function ( event ) {
-		if ( 'Escape' === event.key && document.querySelector( 'details[data-subkit-notify][open]' ) ) {
+		if ( 'Escape' === event.key && document.querySelector( 'details[data-easysubscription-notify][open]' ) ) {
 			close( true );
 		}
 	} );
 } )();
 
-// Settings rows marked data-subkit-show-if="<switch id>" show only while that switch, and its own parent, is on.
+// Settings rows marked data-easysubscription-show-if="<switch id>" show only while that switch, and its own parent, is on.
 ( function () {
-	var rows = document.querySelectorAll( '[data-subkit-show-if]' );
+	var rows = document.querySelectorAll( '[data-easysubscription-show-if]' );
 
 	if ( ! rows.length ) {
 		return;
 	}
 
 	function shown( row, depth ) {
-		var parent = document.getElementById( row.getAttribute( 'data-subkit-show-if' ) );
+		var parent = document.getElementById( row.getAttribute( 'data-easysubscription-show-if' ) );
 
 		if ( ! parent || 'checkbox' !== parent.type || depth > 10 ) {
 			return true;
 		}
 
-		var parentRow = parent.closest( '[data-subkit-show-if]' );
+		var parentRow = parent.closest( '[data-easysubscription-show-if]' );
 
 		return parent.checked && ( ! parentRow || shown( parentRow, depth + 1 ) );
 	}

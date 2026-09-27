@@ -5,22 +5,22 @@
  * @package EasySubscription
  */
 
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Recurring_Gateway;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Recurring_Gateway;
 
 require __DIR__ . '/bootstrap.php';
 
-$plugin = \SubKit\Plugin::instance();
+$plugin = \EasySubscription\Plugin::instance();
 
 $gateway = new class() implements Recurring_Gateway {
 	/** @var string[] */
 	public array $charged = array();
 	/** @var string[] */
 	public array $taxes = array();
-	public function id(): string { return 'subkit_test_renewal_tax'; }
+	public function id(): string { return 'easysubscription_test_renewal_tax'; }
 	public function title(): string { return 'Renewal tax harness'; }
 	public function model(): Gateway_Model { return Gateway_Model::Tokenized; }
 	public function supports( string $f ): bool { return true; }
@@ -38,7 +38,7 @@ $plugin->get( 'gateways' )->add( $gateway );
 
 foreach ( array( 'GB', 'DE', 'CH' ) as $country ) {
 	if ( WC_Tax::find_rates( array( 'country' => $country ) ) ) {
-		subkit_test_abort( "this site already has tax rates for {$country}; the expected totals would be wrong" );
+		easysubscription_test_abort( "this site already has tax rates for {$country}; the expected totals would be wrong" );
 	}
 }
 
@@ -64,13 +64,13 @@ WC_Cache_Helper::invalidate_cache_group( 'taxes' );
 
 $products = array();
 $product  = static function ( string $price, bool $taxable ) use ( &$products ): WC_Product {
-	$p = new \SubKit\Product\Simple_Subscription();
+	$p = new \EasySubscription\Product\Simple_Subscription();
 	$p->set_name( 'SK renewal tax probe' );
 	$p->set_status( 'publish' );
 	$p->set_regular_price( $price );
 	$p->set_tax_status( $taxable ? 'taxable' : 'none' );
-	$p->update_meta_data( \SubKit\Product\Subscription_Product::META_PERIOD, 'month' );
-	$p->update_meta_data( \SubKit\Product\Subscription_Product::META_INTERVAL, 1 );
+	$p->update_meta_data( \EasySubscription\Product\Subscription_Product::META_PERIOD, 'month' );
+	$p->update_meta_data( \EasySubscription\Product\Subscription_Product::META_INTERVAL, 1 );
 	$p->save();
 	$products[] = $p->get_id();
 	return wc_get_product( $p->get_id() );
@@ -102,7 +102,7 @@ $buy_and_renew = static function ( WC_Product $p, string $country, int $qty = 1,
 	WC()->customer->set_is_vat_exempt( false );
 
 	if ( is_wp_error( $order_id ) ) {
-		subkit_test_abort( 'checkout failed: ' . $order_id->get_error_message() );
+		easysubscription_test_abort( 'checkout failed: ' . $order_id->get_error_message() );
 	}
 
 	$order = wc_get_order( $order_id );
@@ -112,10 +112,10 @@ $buy_and_renew = static function ( WC_Product $p, string $country, int $qty = 1,
 
 	$plugin->get( 'subscription_factory' )->from_checkout( $order_id );
 	$order = wc_get_order( $order_id );
-	$sub   = wc_get_order( (int) $order->get_meta( '_subkit_subscription_id' ) );
+	$sub   = wc_get_order( (int) $order->get_meta( '_easysubscription_subscription_id' ) );
 
 	if ( ! $sub instanceof Subscription ) {
-		subkit_test_abort( 'no subscription was created from the checkout' );
+		easysubscription_test_abort( 'no subscription was created from the checkout' );
 	}
 
 	$shows = wc_format_decimal( $sub->get_total(), 2 );
@@ -133,7 +133,7 @@ $buy_and_renew = static function ( WC_Product $p, string $country, int $qty = 1,
 
 	global $wpdb;
 	$hpos = \Automattic\WooCommerce\Utilities\OrderUtil::custom_orders_table_usage_is_enabled();
-	foreach ( $wpdb->get_col( $wpdb->prepare( $hpos ? "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key = '_subkit_subscription_id' AND meta_value = %d" : "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_subkit_subscription_id' AND meta_value = %d", $sub->get_id() ) ) as $id ) {
+	foreach ( $wpdb->get_col( $wpdb->prepare( $hpos ? "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key = '_easysubscription_subscription_id' AND meta_value = %d" : "SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key = '_easysubscription_subscription_id' AND meta_value = %d", $sub->get_id() ) ) as $id ) {
 		$orders[] = (int) $id;
 	}
 	$orders[] = $sub->get_id();
@@ -230,4 +230,4 @@ foreach ( $saved as $name => $value ) {
 }
 WC_Cache_Helper::invalidate_cache_group( 'taxes' );
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

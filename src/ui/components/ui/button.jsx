@@ -4,25 +4,25 @@ import { cva } from 'class-variance-authority';
 import { cn } from '../../lib/utils';
 
 const buttonVariants = cva(
-	'sk-inline-flex sk-items-center sk-justify-center sk-gap-2 sk-whitespace-nowrap sk-rounded-md sk-text-sm sk-font-medium sk-transition-colors focus-visible:sk-outline-none focus-visible:sk-ring-2 focus-visible:sk-ring-ring focus-visible:sk-ring-offset-2 disabled:sk-pointer-events-none disabled:sk-opacity-50',
+	'es-inline-flex es-items-center es-justify-center es-gap-2 es-whitespace-nowrap es-rounded-md es-text-sm es-font-medium es-transition-colors focus-visible:es-outline-none focus-visible:es-ring-2 focus-visible:es-ring-ring focus-visible:es-ring-offset-2 disabled:es-pointer-events-none disabled:es-opacity-50',
 	{
 		variants: {
 			variant: {
 				default:
-					'sk-bg-primary sk-text-primary-foreground hover:sk-bg-primary/90',
+					'es-bg-primary es-text-primary-foreground hover:es-bg-primary/90',
 				secondary:
-					'sk-bg-secondary sk-text-secondary-foreground hover:sk-bg-secondary/80',
+					'es-bg-secondary es-text-secondary-foreground hover:es-bg-secondary/80',
 				outline:
-					'sk-border sk-border-input sk-bg-background hover:sk-bg-accent',
+					'es-border es-border-input es-bg-background hover:es-bg-accent',
 				destructive:
-					'sk-border sk-border-destructive/30 sk-bg-background sk-text-destructive hover:sk-bg-destructive/10',
-				ghost: 'hover:sk-bg-accent hover:sk-text-accent-foreground',
-				link: 'sk-text-primary sk-underline-offset-4 hover:sk-underline',
+					'es-border es-border-destructive/30 es-bg-background es-text-destructive hover:es-bg-destructive/10',
+				ghost: 'hover:es-bg-accent hover:es-text-accent-foreground',
+				link: 'es-text-primary es-underline-offset-4 hover:es-underline',
 			},
 			size: {
-				default: 'sk-h-9 sk-px-4 sk-py-2',
-				sm: 'sk-h-8 sk-px-3 sk-text-xs',
-				lg: 'sk-h-10 sk-px-6',
+				default: 'es-h-9 es-px-4 es-py-2',
+				sm: 'es-h-8 es-px-3 es-text-xs',
+				lg: 'es-h-10 es-px-6',
 			},
 		},
 		defaultVariants: { variant: 'default', size: 'default' },

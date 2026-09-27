@@ -10,7 +10,7 @@ let act;
 let added;
 
 const important = ( id, text, extra = '' ) =>
-	`<div id="${ id }" class="notice notice-warning subkit-notice--important ${ extra }"><p><strong>${ text }</strong></p><ul><li>Why it matters, at some length so the card needs its details to show the whole story of what went wrong.</li><li>Second reason.</li></ul><p><a class="button" href="admin.php?page=elsewhere">Fix ${ id }</a></p></div>`;
+	`<div id="${ id }" class="notice notice-warning easysubscription-notice--important ${ extra }"><p><strong>${ text }</strong></p><ul><li>Why it matters, at some length so the card needs its details to show the whole story of what went wrong.</li><li>Second reason.</li></ul><p><a class="button" href="admin.php?page=elsewhere">Fix ${ id }</a></p></div>`;
 
 const SERVER = `
 	<ul id="adminmenu"><li><ul class="wp-submenu">
@@ -19,9 +19,9 @@ const SERVER = `
 	</ul></li></ul>
 	<div id="wpbody-content">
 		<div class="notice notice-info" id="top-other"><p>Another plugin, printed at the top.</p></div>
-		<div id="subkit-app" class="subkit-ui" data-page="first"></div><div id="subkit-fallback">
-			<header><details class="subkit-notify" data-subkit-notify><summary class="subkit-notify__bell">1</summary>
-				<div class="subkit-notify__panel"><div class="subkit-notify__list"><div class="notice notice-warning" id="tucked"><p>EasySubscription Pro is in test licence mode.</p></div><script>window.ranTucked = true;</script></div></div>
+		<div id="easysubscription-app" class="easysubscription-ui" data-page="first"></div><div id="easysubscription-fallback">
+			<header><details class="easysubscription-notify" data-easysubscription-notify><summary class="easysubscription-notify__bell">1</summary>
+				<div class="easysubscription-notify__panel"><div class="easysubscription-notify__list"><div class="notice notice-warning" id="tucked"><p>EasySubscription Pro is in test licence mode.</p></div><script>window.ranTucked = true;</script></div></div>
 			</details></header>
 			<div class="wrap">
 				<h1>First</h1>
@@ -30,7 +30,7 @@ const SERVER = `
 				${ important( 'b', 'Tax added twice.' ) }
 				${ important( 'c', 'WooPayments cannot renew.' ) }
 				${ important( 'd', 'Unapplied plans.' ) }
-				<div id="saved" class="notice notice-success is-dismissible subkit-notice--important subkit-notice--feedback"><p>3 subscriptions updated.</p></div>
+				<div id="saved" class="notice notice-success is-dismissible easysubscription-notice--important easysubscription-notice--feedback"><p>3 subscriptions updated.</p></div>
 				<p>Server first</p>
 			</div>
 		</div>
@@ -94,8 +94,8 @@ const ids = ( selector ) =>
 	[ ...document.querySelectorAll( `${ selector } > [id]` ) ].map(
 		( node ) => node.id
 	);
-const bell = () => $( '.subkit-notify__bell' );
-const panel = () => $( '#subkit-notify-panel' );
+const bell = () => $( '.easysubscription-notify__bell' );
+const panel = () => $( '#easysubscription-notify-panel' );
 
 beforeEach( () => {
 	added = [];
@@ -108,8 +108,8 @@ beforeEach( () => {
 	);
 	window.history.replaceState( {}, '', `${ ADMIN }?page=first` );
 	document.body.innerHTML = SERVER;
-	document.body.className = 'js subkit-app-page';
-	window.subkitShellData = { links: {} };
+	document.body.className = 'js easysubscription-app-page';
+	window.easysubscriptionShellData = { links: {} };
 	window.scrollTo = jest.fn();
 } );
 
@@ -128,8 +128,12 @@ describe( 'notices on an app page', () => {
 	it( 'keeps three important notices under the header and puts the rest in the bell', async () => {
 		await boot();
 
-		expect( ids( '.subkit-alerts' ) ).toEqual( [ 'a', 'b', 'c' ] );
-		expect( ids( '.subkit-notify__list' ) ).toEqual( [
+		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+			'a',
+			'b',
+			'c',
+		] );
+		expect( ids( '.easysubscription-notify__list' ) ).toEqual( [
 			'd',
 			'saved',
 			'tucked',
@@ -137,8 +141,10 @@ describe( 'notices on an app page', () => {
 		] );
 		expect( bell().textContent ).toBe( '4' );
 		expect( bell().getAttribute( 'aria-label' ) ).toBe( '4 notifications' );
-		expect( $( '.subkit-alerts__more' ).textContent ).toBe( 'and 2 more' );
-		expect( $( '#subkit-fallback' ).hidden ).toBe( true );
+		expect( $( '.easysubscription-alerts__more' ).textContent ).toBe(
+			'and 2 more'
+		);
+		expect( $( '#easysubscription-fallback' ).hidden ).toBe( true );
 	} );
 
 	it( 'draws each important notice as one compact card, with its action on the row and its details a click away', async () => {
@@ -146,24 +152,27 @@ describe( 'notices on an app page', () => {
 
 		const card = $( '#a' );
 
-		expect( card.classList.contains( 'subkit-alert' ) ).toBe( true );
-		expect( card.classList.contains( 'subkit-alert--warning' ) ).toBe(
+		expect( card.classList.contains( 'easysubscription-alert' ) ).toBe(
 			true
 		);
 		expect(
-			card.querySelector( '.subkit-alert__icon svg' )
-		).not.toBeNull();
-		expect( card.querySelector( '.subkit-alert__title' ).textContent ).toBe(
-			'PayPal renewals will not be recorded.'
-		);
+			card.classList.contains( 'easysubscription-alert--warning' )
+		).toBe( true );
 		expect(
-			card.querySelector( '.subkit-alert__detail' ).textContent
+			card.querySelector( '.easysubscription-alert__icon svg' )
+		).not.toBeNull();
+		expect(
+			card.querySelector( '.easysubscription-alert__title' ).textContent
+		).toBe( 'PayPal renewals will not be recorded.' );
+		expect(
+			card.querySelector( '.easysubscription-alert__detail' ).textContent
 		).toContain( 'Why it matters' );
 		expect(
-			card.querySelector( '.subkit-alert__actions a.button' ).textContent
+			card.querySelector( '.easysubscription-alert__actions a.button' )
+				.textContent
 		).toBe( 'Fix a' );
 
-		const more = card.querySelector( '.subkit-alert__more' );
+		const more = card.querySelector( '.easysubscription-alert__more' );
 		expect( more.getAttribute( 'aria-expanded' ) ).toBe( 'false' );
 
 		await fire( more, 'click' );
@@ -174,24 +183,34 @@ describe( 'notices on an app page', () => {
 
 	it( 'takes the first sentence as the title when a notice has no bold lead, and keeps its own dismiss link as the close button', async () => {
 		document.querySelector( '#b' ).outerHTML =
-			'<div id="b" class="notice notice-error subkit-notice--important"><p>EasySubscription: 2 subscriptions renew with tax added twice. Customers may be owed refunds.</p><p><a class="button button-primary" href="#review">Review and repair</a> <a class="button" href="admin-post.php?action=subkit_dismiss_notice&amp;notice=x">Dismiss</a></p></div>';
+			'<div id="b" class="notice notice-error easysubscription-notice--important"><p>EasySubscription: 2 subscriptions renew with tax added twice. Customers may be owed refunds.</p><p><a class="button button-primary" href="#review">Review and repair</a> <a class="button" href="admin-post.php?action=easysubscription_dismiss_notice&amp;notice=x">Dismiss</a></p></div>';
 
 		await boot();
 
 		const card = $( '#b' );
 
-		expect( card.querySelector( '.subkit-alert__title' ).textContent ).toBe(
+		expect(
+			card.querySelector( '.easysubscription-alert__title' ).textContent
+		).toBe(
 			'EasySubscription: 2 subscriptions renew with tax added twice.'
 		);
 		expect(
-			card.querySelector( '.subkit-alert__detail' ).textContent.trim()
+			card
+				.querySelector( '.easysubscription-alert__detail' )
+				.textContent.trim()
 		).toBe( 'Customers may be owed refunds.' );
-		expect( card.querySelector( '.subkit-alert__more' ) ).toBeNull();
-		expect( card.classList.contains( 'subkit-alert--error' ) ).toBe( true );
+		expect(
+			card.querySelector( '.easysubscription-alert__more' )
+		).toBeNull();
+		expect(
+			card.classList.contains( 'easysubscription-alert--error' )
+		).toBe( true );
 
-		const dismiss = card.querySelector( '.subkit-alert__dismiss' );
+		const dismiss = card.querySelector(
+			'.easysubscription-alert__dismiss'
+		);
 		expect( dismiss.getAttribute( 'href' ) ).toContain(
-			'action=subkit_dismiss_notice'
+			'action=easysubscription_dismiss_notice'
 		);
 		expect( dismiss.textContent ).toBe( 'Dismiss' );
 	} );
@@ -208,33 +227,39 @@ describe( 'notices on an app page', () => {
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.subkit-notify__list' ) ).toContain( 'late' );
+		expect( ids( '.easysubscription-notify__list' ) ).toContain( 'late' );
 		expect( bell().textContent ).toBe( '5' );
 
 		// What WordPress does on ready: every notice, ours too, under the header marker.
 		await act( async () => {
-			const marker = $( '.subkit-app__landing .wp-header-end' );
+			const marker = $( '.easysubscription-app__landing .wp-header-end' );
 			[ ...document.querySelectorAll( 'div.notice' ) ].forEach(
 				( node ) => marker.after( node )
 			);
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.subkit-alerts' ) ).toEqual( [ 'a', 'b', 'c' ] );
-		expect( ids( '.subkit-notify__list' ) ).toEqual( [
+		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+			'a',
+			'b',
+			'c',
+		] );
+		expect( ids( '.easysubscription-notify__list' ) ).toEqual( [
 			'd',
 			'saved',
 			'tucked',
 			'top-other',
 			'late',
 		] );
-		expect( ids( '.subkit-app__landing' ) ).toEqual( [] );
+		expect( ids( '.easysubscription-app__landing' ) ).toEqual( [] );
 
 		await fire( $( 'a[href="admin.php?page=second"]' ), 'click' );
 		await act( async () => Promise.resolve() );
 
-		expect( $( '.subkit-app__route #route-own' ) ).not.toBeNull();
-		expect( ids( '.subkit-notify__list' ) ).not.toContain( 'route-own' );
+		expect( $( '.easysubscription-app__route #route-own' ) ).not.toBeNull();
+		expect( ids( '.easysubscription-notify__list' ) ).not.toContain(
+			'route-own'
+		);
 	} );
 
 	it( 'counts a notice that is dismissed away', async () => {
@@ -252,8 +277,14 @@ describe( 'notices on an app page', () => {
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.subkit-alerts' ) ).toEqual( [ 'b', 'c', 'd' ] );
-		expect( $( '.subkit-alerts__more' ).textContent ).toBe( 'and 1 more' );
+		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+			'b',
+			'c',
+			'd',
+		] );
+		expect( $( '.easysubscription-alerts__more' ).textContent ).toBe(
+			'and 1 more'
+		);
 		expect( bell().textContent ).toBe( '2' );
 	} );
 
@@ -262,7 +293,7 @@ describe( 'notices on an app page', () => {
 
 		expect( bell().getAttribute( 'aria-expanded' ) ).toBe( 'false' );
 		expect( bell().getAttribute( 'aria-controls' ) ).toBe(
-			'subkit-notify-panel'
+			'easysubscription-notify-panel'
 		);
 		expect( panel().hidden ).toBe( true );
 
@@ -311,7 +342,7 @@ describe( 'notices on an app page', () => {
 
 	it( 'opens the centre from “and N more”', async () => {
 		await boot();
-		await fire( $( '.subkit-alerts__more' ), 'click' );
+		await fire( $( '.easysubscription-alerts__more' ), 'click' );
 
 		expect( panel().hidden ).toBe( false );
 		expect( panel().contains( $( '#d' ) ) ).toBe( true );
@@ -322,17 +353,21 @@ describe( 'notices on an app page', () => {
 		await fire( $( 'a[href="admin.php?page=second"]' ), 'click' );
 
 		expect( $( '#saved' ) ).toBeNull();
-		expect( ids( '.subkit-alerts' ) ).toEqual( [ 'a', 'b', 'c' ] );
-		expect( ids( '.subkit-notify__list' ) ).toEqual( [
+		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+			'a',
+			'b',
+			'c',
+		] );
+		expect( ids( '.easysubscription-notify__list' ) ).toEqual( [
 			'd',
 			'tucked',
 			'top-other',
 		] );
-		expect( $( '#subkit-fallback' ) ).toBeNull();
+		expect( $( '#easysubscription-fallback' ) ).toBeNull();
 	} );
 
 	it( 'shows no bell when there is nothing to put in it', async () => {
-		document.body.innerHTML = `<div id="wpbody-content"><div id="subkit-app" data-page="first"></div><div id="subkit-fallback"><div class="wrap"><hr class="wp-header-end">${ important(
+		document.body.innerHTML = `<div id="wpbody-content"><div id="easysubscription-app" data-page="first"></div><div id="easysubscription-fallback"><div class="wrap"><hr class="wp-header-end">${ important(
 			'a',
 			'Only one.'
 		) }</div></div></div>`;
@@ -340,8 +375,8 @@ describe( 'notices on an app page', () => {
 		await boot();
 
 		expect( bell() ).toBeNull();
-		expect( ids( '.subkit-alerts' ) ).toEqual( [ 'a' ] );
-		expect( $( '.subkit-alerts__more' ) ).toBeNull();
+		expect( ids( '.easysubscription-alerts' ) ).toEqual( [ 'a' ] );
+		expect( $( '.easysubscription-alerts__more' ) ).toBeNull();
 	} );
 
 	it( 'puts every notice back where the server printed it when the first route fails', async () => {
@@ -365,12 +400,12 @@ describe( 'notices on an app page', () => {
 			root = app.boot();
 		} );
 
-		expect( $( '#subkit-fallback' ).hidden ).toBe( false );
-		expect( document.body.classList.contains( 'subkit-app-page' ) ).toBe(
-			false
-		);
-		expect( $( '.subkit-notify__list #tucked' ) ).not.toBeNull();
+		expect( $( '#easysubscription-fallback' ).hidden ).toBe( false );
+		expect(
+			document.body.classList.contains( 'easysubscription-app-page' )
+		).toBe( false );
+		expect( $( '.easysubscription-notify__list #tucked' ) ).not.toBeNull();
 		expect( $( '#wpbody-content > #top-other' ) ).not.toBeNull();
-		expect( $( '#subkit-fallback .wrap > #a' ) ).not.toBeNull();
+		expect( $( '#easysubscription-fallback .wrap > #a' ) ).not.toBeNull();
 	} );
 } );

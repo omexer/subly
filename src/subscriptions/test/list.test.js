@@ -12,20 +12,20 @@ jest.mock( '@wordpress/api-fetch' );
 const ROWS = [
 	{
 		id: 812,
-		status: 'sk-active',
+		status: 'es-active',
 		status_label: 'Active',
 		customer_name: 'Ada Lovelace',
 		customer_email: 'ada@example.com',
 		total_formatted: '£24.00',
 		next_payment_formatted: '12 September 2026',
 		payment_method_title: 'Stripe',
-		payment_method: 'subkit_stripe',
+		payment_method: 'easysubscription_stripe',
 		billable: true,
 		edit_url: 'http://example.test/?subscription=812',
 	},
 	{
 		id: 813,
-		status: 'sk-cancelled',
+		status: 'es-cancelled',
 		status_label: 'Cancelled',
 		customer_name: '',
 		customer_email: 'bob@example.com',
@@ -39,18 +39,24 @@ const ROWS = [
 ];
 
 const STATUSES = [
-	{ key: 'sk-active', label: 'Active', count: 1 },
-	{ key: 'sk-cancelled', label: 'Cancelled', count: 1 },
-	{ key: 'sk-expired', label: 'Ended', count: 0 },
+	{ key: 'es-active', label: 'Active', count: 1 },
+	{ key: 'es-cancelled', label: 'Cancelled', count: 1 },
+	{ key: 'es-expired', label: 'Ended', count: 0 },
 ];
 
 function respond( { rows = ROWS, total = rows.length } = {} ) {
 	apiFetch.mockImplementation( ( options ) => {
-		if ( options.path.startsWith( '/subkit/v1/subscriptions/statuses' ) ) {
+		if (
+			options.path.startsWith(
+				'/easysubscription/v1/subscriptions/statuses'
+			)
+		) {
 			return Promise.resolve( STATUSES );
 		}
 
-		if ( options.path.startsWith( '/subkit/v1/subscriptions?' ) ) {
+		if (
+			options.path.startsWith( '/easysubscription/v1/subscriptions?' )
+		) {
 			return Promise.resolve( {
 				json: () => Promise.resolve( rows ),
 				headers: { get: () => String( total ) },
@@ -88,7 +94,7 @@ const byText = ( text, tag = 'button' ) =>
 
 const listCalls = () =>
 	apiFetch.mock.calls.filter( ( call ) =>
-		call[ 0 ].path.startsWith( '/subkit/v1/subscriptions?' )
+		call[ 0 ].path.startsWith( '/easysubscription/v1/subscriptions?' )
 	);
 
 describe( 'the subscriptions list', () => {
@@ -153,7 +159,8 @@ describe( 'the subscriptions list', () => {
 		} );
 
 		const bulk = apiFetch.mock.calls.find(
-			( call ) => '/subkit/v1/subscriptions/actions' === call[ 0 ].path
+			( call ) =>
+				'/easysubscription/v1/subscriptions/actions' === call[ 0 ].path
 		);
 
 		expect( bulk[ 0 ].data ).toEqual( {

@@ -1,10 +1,10 @@
 <?php
 
-namespace SubKit\Rest;
+namespace EasySubscription\Rest;
 
-use SubKit\Admin\Menu;
-use SubKit\Admin\Settings_Page;
-use SubKit\Emails\Notification_Settings;
+use EasySubscription\Admin\Menu;
+use EasySubscription\Admin\Settings_Page;
+use EasySubscription\Emails\Notification_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -80,9 +80,9 @@ final class Email_Settings_Controller {
 
 		if ( $unknown ) {
 			return new \WP_Error(
-				'subkit_unknown_email_setting',
+				'easysubscription_unknown_email_setting',
 				/* translators: %s: comma-separated setting names */
-				sprintf( __( 'Not saved: %s is not a setting of this email.', 'subkit-subscriptions' ), implode( ', ', array_map( 'strval', $unknown ) ) ),
+				sprintf( __( 'Not saved: %s is not a setting of this email.', 'easysubscription' ), implode( ', ', array_map( 'strval', $unknown ) ) ),
 				array( 'status' => 400 )
 			);
 		}
@@ -92,9 +92,9 @@ final class Email_Settings_Controller {
 
 			if ( ! is_scalar( $value ) || ( 'select' === $editable[ $key ]['type'] && ! array_key_exists( (string) $value, $options ) ) ) {
 				return new \WP_Error(
-					'subkit_invalid_email_setting',
+					'easysubscription_invalid_email_setting',
 					/* translators: %s: setting name */
-					sprintf( __( 'Not saved: %s has a value it cannot take.', 'subkit-subscriptions' ), (string) $key ),
+					sprintf( __( 'Not saved: %s has a value it cannot take.', 'easysubscription' ), (string) $key ),
 					array( 'status' => 400 )
 				);
 			}
@@ -218,7 +218,7 @@ final class Email_Settings_Controller {
 	 * @return \WC_Email|\WP_Error
 	 */
 	private function find( string $email_id ) {
-		$listed = array_filter( array_column( $this->page->settings_for( Notification_Settings::SECTION ), 'subkit_email' ) );
+		$listed = array_filter( array_column( $this->page->settings_for( Notification_Settings::SECTION ), 'easysubscription_email' ) );
 		$email  = in_array( $email_id, $listed, true ) ? Notification_Settings::email( $email_id ) : null;
 
 		if ( $email ) {
@@ -229,8 +229,8 @@ final class Email_Settings_Controller {
 		}
 
 		return new \WP_Error(
-			'subkit_unknown_email',
-			__( 'There is no such EasySubscription email.', 'subkit-subscriptions' ),
+			'easysubscription_unknown_email',
+			__( 'There is no such EasySubscription email.', 'easysubscription' ),
 			array( 'status' => 404 )
 		);
 	}

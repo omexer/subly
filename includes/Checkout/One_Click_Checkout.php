@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Checkout;
+namespace EasySubscription\Checkout;
 
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class One_Click_Checkout {
 
-	public const OPTION = 'subkit_one_click_checkout';
+	public const OPTION = 'easysubscription_one_click_checkout';
 
 	public function register(): void {
 		add_filter( 'woocommerce_add_to_cart_redirect', array( $this, 'redirect' ), 10, 2 );

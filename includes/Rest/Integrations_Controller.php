@@ -1,10 +1,10 @@
 <?php
 
-namespace SubKit\Rest;
+namespace EasySubscription\Rest;
 
-use SubKit\Admin\Integration_Installer;
-use SubKit\Admin\Integrations_Page;
-use SubKit\Admin\Menu;
+use EasySubscription\Admin\Integration_Installer;
+use EasySubscription\Admin\Integrations_Page;
+use EasySubscription\Admin\Menu;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Integrations_Controller {
 
-	public const NAMESPACE = 'subkit/v1';
+	public const NAMESPACE = 'easysubscription/v1';
 
 	public function __construct( private readonly Integrations_Page $page ) {}
 
@@ -52,7 +52,7 @@ class Integrations_Controller {
 				'requires'        => (string) ( $integration['requires'] ?? $title ),
 				'description'     => (string) ( $integration['description'] ?? '' ),
 				'hint'            => (string) ( $integration['hint'] ?? '' ),
-				'category'        => '' !== $category ? $category : __( 'Other', 'subkit-subscriptions' ),
+				'category'        => '' !== $category ? $category : __( 'Other', 'easysubscription' ),
 				'icon'            => esc_url_raw( (string) ( $integration['icon'] ?? '' ) ),
 				'active'          => $active,
 				'configure_url'   => esc_url_raw( (string) ( $integration['configure_url'] ?? '' ) ),

@@ -13,7 +13,7 @@ import {
 	useState,
 } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { Button, Card, CardContent, Skeleton } from '@subkit/ui';
+import { Button, Card, CardContent, Skeleton } from '@easysubscription/ui';
 import {
 	browser,
 	current,
@@ -27,7 +27,7 @@ import { highlightMenu, interceptLinks } from './links';
 import { createNotices } from './notices';
 
 // Set by the server on pages the shell draws; the stylesheet hides their notices until they are moved.
-const APP_PAGE = 'subkit-app-page';
+const APP_PAGE = 'easysubscription-app-page';
 const FOCUSABLE =
 	'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
 
@@ -56,9 +56,9 @@ function RouteView( { route, ctx } ) {
 
 function Loading() {
 	return (
-		<div className="sk-grid sk-gap-4">
-			<Skeleton className="sk-h-10 sk-w-72" />
-			<Skeleton className="sk-h-48" />
+		<div className="es-grid es-gap-4">
+			<Skeleton className="es-h-10 es-w-72" />
+			<Skeleton className="es-h-48" />
 		</div>
 	);
 }
@@ -66,9 +66,9 @@ function Loading() {
 function Failed() {
 	return (
 		<Card>
-			<CardContent className="sk-flex sk-flex-col sk-items-start sk-gap-3 sk-p-6">
-				<p className="sk-font-medium">
-					{ __( 'This page did not load.', 'subkit-subscriptions' ) }
+			<CardContent className="es-flex es-flex-col es-items-start es-gap-3 es-p-6">
+				<p className="es-font-medium">
+					{ __( 'This page did not load.', 'easysubscription' ) }
 				</p>
 				<Button asChild variant="outline" size="sm">
 					<a
@@ -78,7 +78,7 @@ function Failed() {
 							browser.reload();
 						} }
 					>
-						{ __( 'Reload', 'subkit-subscriptions' ) }
+						{ __( 'Reload', 'easysubscription' ) }
 					</a>
 				</Button>
 			</CardContent>
@@ -167,26 +167,21 @@ function NoticeCentre( { count, open, setOpen, listRef } ) {
 
 	const label = sprintf(
 		/* translators: %d: number of notifications */
-		_n(
-			'%d notification',
-			'%d notifications',
-			count,
-			'subkit-subscriptions'
-		),
+		_n( '%d notification', '%d notifications', count, 'easysubscription' ),
 		count
 	);
 
 	return (
-		<div ref={ wrapRef } className="subkit-notify">
+		<div ref={ wrapRef } className="easysubscription-notify">
 			{ count > 0 ? (
 				<button
 					ref={ bellRef }
 					type="button"
-					className="subkit-notify__bell"
+					className="easysubscription-notify__bell"
 					aria-label={ label }
 					title={ label }
 					aria-expanded={ shown }
-					aria-controls="subkit-notify-panel"
+					aria-controls="easysubscription-notify-panel"
 					onClick={ () => setOpen( ! open ) }
 				>
 					<svg
@@ -203,7 +198,10 @@ function NoticeCentre( { count, open, setOpen, listRef } ) {
 					>
 						<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" />
 					</svg>
-					<span className="subkit-notify__count" aria-hidden="true">
+					<span
+						className="easysubscription-notify__count"
+						aria-hidden="true"
+					>
 						{ count }
 					</span>
 				</button>
@@ -211,17 +209,20 @@ function NoticeCentre( { count, open, setOpen, listRef } ) {
 			{ /* Always mounted: the notices live in the list whether or not it is open. */ }
 			<div
 				ref={ panelRef }
-				id="subkit-notify-panel"
-				className="subkit-notify__panel"
+				id="easysubscription-notify-panel"
+				className="easysubscription-notify__panel"
 				role="dialog"
-				aria-label={ __( 'Notifications', 'subkit-subscriptions' ) }
+				aria-label={ __( 'Notifications', 'easysubscription' ) }
 				tabIndex={ -1 }
 				hidden={ ! shown }
 			>
-				<p className="subkit-notify__head">
-					{ __( 'Notifications', 'subkit-subscriptions' ) }
+				<p className="easysubscription-notify__head">
+					{ __( 'Notifications', 'easysubscription' ) }
 				</p>
-				<div ref={ listRef } className="subkit-notify__list" />
+				<div
+					ref={ listRef }
+					className="easysubscription-notify__list"
+				/>
 			</div>
 		</div>
 	);
@@ -289,7 +290,7 @@ export function Shell( { fallback, links } ) {
 				notices.current = null;
 				document.body.classList.remove( APP_PAGE );
 				fallback
-					.querySelectorAll( '[data-subkit-header-end]' )
+					.querySelectorAll( '[data-easysubscription-header-end]' )
 					.forEach( ( marker ) =>
 						marker.classList.add( 'wp-header-end' )
 					);
@@ -373,39 +374,42 @@ export function Shell( { fallback, links } ) {
 	}
 
 	return (
-		<div className="subkit-shell">
-			<header className="subkit-shell__bar">
-				<div className="subkit-shell__inner">
+		<div className="easysubscription-shell">
+			<header className="easysubscription-shell__bar">
+				<div className="easysubscription-shell__inner">
 					<nav
-						className="subkit-crumbs"
-						aria-label={ __(
-							'Breadcrumb',
-							'subkit-subscriptions'
-						) }
+						className="easysubscription-crumbs"
+						aria-label={ __( 'Breadcrumb', 'easysubscription' ) }
 					>
-						<a className="subkit-crumbs__home" href={ links.home }>
+						<a
+							className="easysubscription-crumbs__home"
+							href={ links.home }
+						>
 							<img
-								className="subkit-logo"
+								className="easysubscription-logo"
 								src={ links.logo }
 								width="178"
 								height="28"
 								alt={ __(
 									'EasySubscription',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							/>
 						</a>
-						<span className="subkit-crumbs__sep" aria-hidden="true">
+						<span
+							className="easysubscription-crumbs__sep"
+							aria-hidden="true"
+						>
 							/
 						</span>
 						<span
-							className="subkit-crumbs__current"
+							className="easysubscription-crumbs__current"
 							aria-current="page"
 						>
 							{ route.title }
 						</span>
 					</nav>
-					<div className="subkit-shell__meta">
+					<div className="easysubscription-shell__meta">
 						<NoticeCentre
 							count={ counts.centre }
 							open={ centreOpen }
@@ -423,18 +427,18 @@ export function Shell( { fallback, links } ) {
 								/>
 								<path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.6h.01" />
 							</Icon>
-							{ __( 'Help', 'subkit-subscriptions' ) }
+							{ __( 'Help', 'easysubscription' ) }
 						</a>
 						<a href={ links.settings }>
 							<Icon>
 								<circle cx="12" cy="12" r="3" />
 								<path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z" />
 							</Icon>
-							{ __( 'Settings', 'subkit-subscriptions' ) }
+							{ __( 'Settings', 'easysubscription' ) }
 						</a>
 						{ links.upgrade ? (
 							<a
-								className="subkit-shell__upgrade"
+								className="easysubscription-shell__upgrade"
 								href={ links.upgrade }
 								target="_blank"
 								rel="noopener noreferrer"
@@ -442,15 +446,12 @@ export function Shell( { fallback, links } ) {
 								<Icon>
 									<path d="M3 8l4.5 4L12 6l4.5 6L21 8l-2 10H5z" />
 								</Icon>
-								{ __(
-									'Upgrade to Pro',
-									'subkit-subscriptions'
-								) }
+								{ __( 'Upgrade to Pro', 'easysubscription' ) }
 								<span className="screen-reader-text">
 									{ ' ' }
 									{ __(
 										'(opens in a new tab)',
-										'subkit-subscriptions'
+										'easysubscription'
 									) }
 								</span>
 							</a>
@@ -458,17 +459,17 @@ export function Shell( { fallback, links } ) {
 					</div>
 				</div>
 			</header>
-			<div className="wrap subkit-shell__body">
+			<div className="wrap easysubscription-shell__body">
 				<h1 className="screen-reader-text">{ route.title }</h1>
-				<div className="subkit-app__landing">
+				<div className="easysubscription-app__landing">
 					<hr className="wp-header-end" />
 				</div>
-				<div ref={ alertsRef } className="subkit-alerts" />
+				<div ref={ alertsRef } className="easysubscription-alerts" />
 				{ counts.more > 0 ? (
 					<button
 						type="button"
-						className="subkit-alerts__more"
-						aria-controls="subkit-notify-panel"
+						className="easysubscription-alerts__more"
+						aria-controls="easysubscription-notify-panel"
 						onClick={ () => setCentreOpen( true ) }
 					>
 						{ sprintf(
@@ -477,13 +478,13 @@ export function Shell( { fallback, links } ) {
 								'and %d more',
 								'and %d more',
 								counts.more,
-								'subkit-subscriptions'
+								'easysubscription'
 							),
 							counts.more
 						) }
 					</button>
 				) : null }
-				<div ref={ routeRef } className="subkit-app__route">
+				<div ref={ routeRef } className="easysubscription-app__route">
 					{ failedAt === loc.nav ? (
 						<Failed />
 					) : (
@@ -503,13 +504,13 @@ export function Shell( { fallback, links } ) {
  * Draws the route the server named, and takes over navigation between routes.
  */
 export function boot() {
-	const host = document.getElementById( 'subkit-app' );
+	const host = document.getElementById( 'easysubscription-app' );
 
 	if ( ! host ) {
 		return null;
 	}
 
-	const fallback = document.getElementById( 'subkit-fallback' );
+	const fallback = document.getElementById( 'easysubscription-fallback' );
 
 	if ( ! getRoute( host.dataset.page ) ) {
 		document.body.classList.remove( APP_PAGE );
@@ -517,7 +518,7 @@ export function boot() {
 		// WordPress moves notices under this marker; ours sits under the app's header instead.
 		fallback.querySelectorAll( '.wp-header-end' ).forEach( ( marker ) => {
 			marker.classList.remove( 'wp-header-end' );
-			marker.setAttribute( 'data-subkit-header-end', '' );
+			marker.setAttribute( 'data-easysubscription-header-end', '' );
 		} );
 	}
 
@@ -529,7 +530,7 @@ export function boot() {
 	root.render(
 		<Shell
 			fallback={ fallback }
-			links={ window.subkitShellData?.links || {} }
+			links={ window.easysubscriptionShellData?.links || {} }
 		/>
 	);
 

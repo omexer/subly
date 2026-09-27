@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,9 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Notice_Dismissals {
 
-	public const ACTION = 'subkit_dismiss_notice';
+	public const ACTION = 'easysubscription_dismiss_notice';
 
-	private const META = 'subkit_dismissed_notices';
+	private const META = 'easysubscription_dismissed_notices';
 
 	public function register(): void {
 		add_action( 'admin_post_' . self::ACTION, array( $this, 'handle' ) );
@@ -55,7 +55,7 @@ final class Notice_Dismissals {
 		$notice = sanitize_key( wp_unslash( $_GET['notice'] ?? '' ) );
 
 		if ( '' === $notice || ! current_user_can( Menu::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), self::ACTION . '_' . $notice ) ) {
-			wp_die( esc_html__( 'That request could not be verified.', 'subkit-subscriptions' ) );
+			wp_die( esc_html__( 'That request could not be verified.', 'easysubscription' ) );
 		}
 
 		$user_id              = get_current_user_id();

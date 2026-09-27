@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Billing;
+namespace EasySubscription\Billing;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -101,6 +101,6 @@ class Lock {
 	}
 
 	private function name( int $subscription_id ): string {
-		return 'subkit_lock_' . $subscription_id;
+		return 'easysubscription_lock_' . $subscription_id;
 	}
 }

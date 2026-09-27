@@ -5,8 +5,8 @@ module.exports = {
 	moduleNameMapper: {
 		...preset.moduleNameMapper,
 		// The shared UI is a build-time external; tests read the source it is built from.
-		'^@subkit/ui$': '<rootDir>/src/ui/index.js',
-		'^@subkit/shell$': '<rootDir>/src/shell/index.js',
+		'^@easysubscription/ui$': '<rootDir>/src/ui/index.js',
+		'^@easysubscription/shell$': '<rootDir>/src/shell/index.js',
 	},
 	setupFiles: [ ...preset.setupFiles, require.resolve( './tools/jest-setup.js' ) ],
 };

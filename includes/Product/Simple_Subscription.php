@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Product;
+namespace EasySubscription\Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

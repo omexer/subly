@@ -1,5 +1,5 @@
 /**
- * The SubKit home screen.
+ * The EasySubscription home screen.
  *
  * What a merchant needs on arrival, in the order they need it: finish setting up, see
  * how the business is doing, see what needs them, and get to everything else.
@@ -18,21 +18,21 @@ import {
 	Select,
 	Skeleton,
 	Stat,
-} from '@subkit/ui';
-import { registerRoute } from '@subkit/shell';
+} from '@easysubscription/ui';
+import { registerRoute } from '@easysubscription/shell';
 
 const TONE = {
-	bad: 'sk-bg-destructive',
-	warn: 'sk-bg-amber-500',
-	good: 'sk-bg-success',
+	bad: 'es-bg-destructive',
+	warn: 'es-bg-amber-500',
+	good: 'es-bg-success',
 };
 
 function statusVariant( status ) {
-	if ( 'sk-active' === status || 'sk-trialling' === status ) {
+	if ( 'es-active' === status || 'es-trialling' === status ) {
 		return 'success';
 	}
 
-	return 'sk-on-hold' === status ? 'destructive' : 'secondary';
+	return 'es-on-hold' === status ? 'destructive' : 'secondary';
 }
 
 function initials( name ) {
@@ -52,90 +52,94 @@ function CreateProduct( { create } ) {
 		<form
 			method="post"
 			action={ create.url }
-			className="sk-mt-3 sk-flex sk-flex-wrap sk-items-end sk-gap-2"
+			className="es-mt-3 es-flex es-flex-wrap es-items-end es-gap-2"
 		>
 			<input type="hidden" name="_wpnonce" value={ create.nonce } />
-			<input type="hidden" name="action" value="subkit_create_product" />
+			<input
+				type="hidden"
+				name="action"
+				value="easysubscription_create_product"
+			/>
 			<label
-				htmlFor="subkit-new-name"
-				className="sk-flex sk-flex-col sk-gap-1 sk-text-xs sk-text-muted-foreground"
+				htmlFor="easysubscription-new-name"
+				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
 			>
-				{ __( 'Name', 'subkit-subscriptions' ) }
+				{ __( 'Name', 'easysubscription' ) }
 				<Input
-					id="subkit-new-name"
-					name="subkit_name"
+					id="easysubscription-new-name"
+					name="easysubscription_name"
 					required
-					className="sk-w-48"
+					className="es-w-48"
 				/>
 			</label>
 			<label
-				htmlFor="subkit-new-price"
-				className="sk-flex sk-flex-col sk-gap-1 sk-text-xs sk-text-muted-foreground"
+				htmlFor="easysubscription-new-price"
+				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
 			>
-				{ __( 'Price', 'subkit-subscriptions' ) }
+				{ __( 'Price', 'easysubscription' ) }
 				<Input
-					id="subkit-new-price"
-					name="subkit_price"
+					id="easysubscription-new-price"
+					name="easysubscription_price"
 					required
 					inputMode="decimal"
-					className="sk-w-24"
+					className="es-w-24"
 				/>
 			</label>
 			<label
-				htmlFor="subkit-new-interval"
-				className="sk-flex sk-flex-col sk-gap-1 sk-text-xs sk-text-muted-foreground"
+				htmlFor="easysubscription-new-interval"
+				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
 			>
-				{ __( 'Every', 'subkit-subscriptions' ) }
-				<span className="sk-flex sk-gap-1">
+				{ __( 'Every', 'easysubscription' ) }
+				<span className="es-flex es-gap-1">
 					<Input
-						id="subkit-new-interval"
-						name="subkit_interval"
+						id="easysubscription-new-interval"
+						name="easysubscription_interval"
 						type="number"
 						min="1"
 						max="365"
 						defaultValue="1"
-						className="sk-w-16"
+						className="es-w-16"
 					/>
 					<Select
-						name="subkit_period"
+						name="easysubscription_period"
 						defaultValue="month"
 						aria-label={ __(
 							'Billing period',
-							'subkit-subscriptions'
+							'easysubscription'
 						) }
 					>
 						<option value="day">
-							{ __( 'Days', 'subkit-subscriptions' ) }
+							{ __( 'Days', 'easysubscription' ) }
 						</option>
 						<option value="week">
-							{ __( 'Weeks', 'subkit-subscriptions' ) }
+							{ __( 'Weeks', 'easysubscription' ) }
 						</option>
 						<option value="month">
-							{ __( 'Months', 'subkit-subscriptions' ) }
+							{ __( 'Months', 'easysubscription' ) }
 						</option>
 						<option value="year">
-							{ __( 'Years', 'subkit-subscriptions' ) }
+							{ __( 'Years', 'easysubscription' ) }
 						</option>
 					</Select>
 				</span>
 			</label>
 			<label
-				htmlFor="subkit-new-trial"
-				className="sk-flex sk-flex-col sk-gap-1 sk-text-xs sk-text-muted-foreground"
+				htmlFor="easysubscription-new-trial"
+				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
 			>
-				{ __( 'Free trial (days)', 'subkit-subscriptions' ) }
+				{ __( 'Free trial (days)', 'easysubscription' ) }
 				<Input
-					id="subkit-new-trial"
-					name="subkit_trial"
+					id="easysubscription-new-trial"
+					name="easysubscription_trial"
 					type="number"
 					min="0"
 					max="365"
 					defaultValue="0"
-					className="sk-w-24"
+					className="es-w-24"
 				/>
 			</label>
 			<Button type="submit" size="sm">
-				{ __( 'Create it', 'subkit-subscriptions' ) }
+				{ __( 'Create it', 'easysubscription' ) }
 			</Button>
 		</form>
 	);
@@ -148,77 +152,72 @@ function Setup( { setup, create } ) {
 	const next = setup.steps.findIndex( ( step ) => ! step.done );
 
 	return (
-		<Card className="sk-mb-6 sk-overflow-hidden">
-			<div className="sk-flex sk-flex-wrap sk-items-center sk-justify-between sk-gap-4 sk-border-b sk-border-border sk-bg-accent/40 sk-px-5 sk-py-4">
+		<Card className="es-mb-6 es-overflow-hidden">
+			<div className="es-flex es-flex-wrap es-items-center es-justify-between es-gap-4 es-border-b es-border-border es-bg-accent/40 es-px-5 es-py-4">
 				<div>
-					<h2 className="sk-text-base sk-font-semibold">
+					<h2 className="es-text-base es-font-semibold">
 						{ __(
 							'Get your first subscription running',
-							'subkit-subscriptions'
+							'easysubscription'
 						) }
 					</h2>
-					<p className="sk-mt-1 sk-text-sm sk-text-muted-foreground">
+					<p className="es-mt-1 es-text-sm es-text-muted-foreground">
 						{ sprintf(
 							/* translators: 1: steps done, 2: steps in total. */
-							__( '%1$d of %2$d done', 'subkit-subscriptions' ),
+							__( '%1$d of %2$d done', 'easysubscription' ),
 							setup.done,
 							setup.total
 						) }
 					</p>
 				</div>
 				<div
-					className="sk-h-2 sk-w-48 sk-overflow-hidden sk-rounded-full sk-bg-muted"
+					className="es-h-2 es-w-48 es-overflow-hidden es-rounded-full es-bg-muted"
 					role="progressbar"
 					aria-valuenow={ percent }
 					aria-valuemin="0"
 					aria-valuemax="100"
-					aria-label={ __(
-						'Setup progress',
-						'subkit-subscriptions'
-					) }
+					aria-label={ __( 'Setup progress', 'easysubscription' ) }
 				>
 					<div
-						className="sk-h-full sk-rounded-full sk-bg-primary sk-transition-all"
+						className="es-h-full es-rounded-full es-bg-primary es-transition-all"
 						style={ { width: `${ percent }%` } }
 					/>
 				</div>
 			</div>
 
-			<ol className="sk-divide-y sk-divide-border">
+			<ol className="es-divide-y es-divide-border">
 				{ setup.steps.map( ( step, index ) => (
 					<li
 						key={ step.title }
-						className={ `sk-flex sk-gap-4 sk-px-5 sk-py-4 ${
-							index === next ? 'sk-bg-background' : ''
+						className={ `es-flex es-gap-4 es-px-5 es-py-4 ${
+							index === next ? 'es-bg-background' : ''
 						}` }
 					>
 						<span
-							className={ `sk-mt-0.5 sk-grid sk-h-6 sk-w-6 sk-shrink-0 sk-place-items-center sk-rounded-full sk-text-xs sk-font-semibold ${
+							className={ `es-mt-0.5 es-grid es-h-6 es-w-6 es-shrink-0 es-place-items-center es-rounded-full es-text-xs es-font-semibold ${
 								step.done
-									? 'sk-bg-primary sk-text-primary-foreground'
-									: 'sk-border sk-border-border sk-text-muted-foreground'
+									? 'es-bg-primary es-text-primary-foreground'
+									: 'es-border es-border-border es-text-muted-foreground'
 							}` }
 							aria-hidden="true"
 						>
 							{ step.done ? '✓' : index + 1 }
 						</span>
-						<div className="sk-min-w-0 sk-flex-1">
+						<div className="es-min-w-0 es-flex-1">
 							<p
-								className={ `sk-text-sm sk-font-medium ${
-									step.done ? 'sk-text-muted-foreground' : ''
+								className={ `es-text-sm es-font-medium ${
+									step.done ? 'es-text-muted-foreground' : ''
 								}` }
 							>
 								{ step.title }
 								{ step.done ? (
-									<span className="sk-sr-only">
+									<span className="es-sr-only">
 										{ ' ' }
-										(
-										{ __( 'done', 'subkit-subscriptions' ) }
-										)
+										({ __( 'done', 'easysubscription' ) })
 									</span>
 								) : null }
 							</p>
-							<p className="sk-mt-0.5 sk-text-sm sk-text-muted-foreground">
+							<p className="es-mt-0.5 es-text-sm es-text-muted-foreground">
 								{ step.detail }
 							</p>
 							{ 'create_product' === step.form && ! step.done ? (
@@ -232,7 +231,7 @@ function Setup( { setup, create } ) {
 									index === next ? 'default' : 'outline'
 								}
 								size="sm"
-								className="sk-self-start"
+								className="es-self-start"
 							>
 								<a href={ step.action.url }>
 									{ step.action.label }
@@ -252,7 +251,7 @@ export function Dashboard( { onFail } ) {
 	useEffect( () => {
 		let live = true;
 
-		apiFetch( { path: '/subkit/v1/dashboard' } )
+		apiFetch( { path: '/easysubscription/v1/dashboard' } )
 			.then( ( result ) => {
 				if ( live ) {
 					setData( result );
@@ -269,13 +268,13 @@ export function Dashboard( { onFail } ) {
 
 	if ( ! data ) {
 		return (
-			<div className="sk-grid sk-gap-4">
-				<Skeleton className="sk-h-10 sk-w-72" />
-				<Skeleton className="sk-h-48" />
-				<div className="sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-					<Skeleton className="sk-h-24" />
-					<Skeleton className="sk-h-24" />
-					<Skeleton className="sk-h-24" />
+			<div className="es-grid es-gap-4">
+				<Skeleton className="es-h-10 es-w-72" />
+				<Skeleton className="es-h-48" />
+				<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+					<Skeleton className="es-h-24" />
+					<Skeleton className="es-h-24" />
+					<Skeleton className="es-h-24" />
 				</div>
 			</div>
 		);
@@ -286,32 +285,29 @@ export function Dashboard( { onFail } ) {
 
 	return (
 		<div>
-			<div className="sk-mb-6 sk-flex sk-flex-wrap sk-items-end sk-justify-between sk-gap-4">
+			<div className="es-mb-6 es-flex es-flex-wrap es-items-end es-justify-between es-gap-4">
 				<div>
-					<h2 className="sk-text-2xl sk-font-semibold sk-tracking-tight">
+					<h2 className="es-text-2xl es-font-semibold es-tracking-tight">
 						{ data.greeting }
 					</h2>
-					<p className="sk-mt-1 sk-text-sm sk-text-muted-foreground">
+					<p className="es-mt-1 es-text-sm es-text-muted-foreground">
 						{ __(
 							'Here is how your subscriptions are doing.',
-							'subkit-subscriptions'
+							'easysubscription'
 						) }
 					</p>
 				</div>
-				<div className="sk-flex sk-flex-wrap sk-gap-2">
+				<div className="es-flex es-flex-wrap es-gap-2">
 					<Button asChild variant="outline">
 						<a href={ links.list }>
-							{ __(
-								'All subscriptions',
-								'subkit-subscriptions'
-							) }
+							{ __( 'All subscriptions', 'easysubscription' ) }
 						</a>
 					</Button>
 					<Button asChild>
 						<a href={ links.new_product }>
 							{ __(
 								'New subscription product',
-								'subkit-subscriptions'
+								'easysubscription'
 							) }
 						</a>
 					</Button>
@@ -320,69 +316,63 @@ export function Dashboard( { onFail } ) {
 
 			{ setupDone ? null : <Setup setup={ setup } create={ create } /> }
 
-			<div className="sk-mb-6 sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+			<div className="es-mb-6 es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 				<Stat
 					label={ __(
 						'Monthly recurring revenue',
-						'subkit-subscriptions'
+						'easysubscription'
 					) }
 					value={ stats.mrr }
 				/>
 				<Stat
-					label={ __(
-						'Active subscriptions',
-						'subkit-subscriptions'
-					) }
+					label={ __( 'Active subscriptions', 'easysubscription' ) }
 					value={ stats.active }
 				/>
 				<Stat
-					label={ __( 'On a free trial', 'subkit-subscriptions' ) }
+					label={ __( 'On a free trial', 'easysubscription' ) }
 					value={ stats.trialling }
 				/>
 				<Stat
-					label={ __( 'On hold', 'subkit-subscriptions' ) }
+					label={ __( 'On hold', 'easysubscription' ) }
 					value={ stats.on_hold }
 					meta={
 						stats.on_hold
-							? __( 'Payments failed', 'subkit-subscriptions' )
-							: __( 'Nothing failing', 'subkit-subscriptions' )
+							? __( 'Payments failed', 'easysubscription' )
+							: __( 'Nothing failing', 'easysubscription' )
 					}
 					delta={ stats.on_hold ? -1 : undefined }
 				/>
 			</div>
 
-			<div className="sk-mb-6 sk-grid sk-gap-4 lg:sk-grid-cols-[2fr_3fr]">
+			<div className="es-mb-6 es-grid es-gap-4 lg:es-grid-cols-[2fr_3fr]">
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{ __(
-								'Needs your attention',
-								'subkit-subscriptions'
-							) }
+							{ __( 'Needs your attention', 'easysubscription' ) }
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
 						{ attention.length ? (
-							<ul className="sk-flex sk-flex-col sk-gap-2">
+							<ul className="es-flex es-flex-col es-gap-2">
 								{ attention.map( ( item ) => (
 									<li key={ item.key }>
 										<a
 											href={ item.url }
-											className="sk-flex sk-items-center sk-gap-3 sk-rounded-md sk-border sk-border-border sk-px-3 sk-py-2.5 sk-text-sm sk-text-foreground sk-no-underline hover:sk-bg-muted/60"
+											className="es-flex es-items-center es-gap-3 es-rounded-md es-border es-border-border es-px-3 es-py-2.5 es-text-sm es-text-foreground es-no-underline hover:es-bg-muted/60"
 										>
 											<span
-												className={ `sk-h-2 sk-w-2 sk-shrink-0 sk-rounded-full ${
+												className={ `es-h-2 es-w-2 es-shrink-0 es-rounded-full ${
 													TONE[ item.tone ] ||
-													'sk-bg-muted-foreground'
+													'es-bg-muted-foreground'
 												}` }
 												aria-hidden="true"
 											/>
-											<span className="sk-flex-1">
+											<span className="es-flex-1">
 												{ item.label }
 											</span>
 											<span
 												aria-hidden="true"
-												className="sk-text-muted-foreground"
+												className="es-text-muted-foreground"
 											>
 												→
 											</span>
@@ -391,23 +381,23 @@ export function Dashboard( { onFail } ) {
 								) ) }
 							</ul>
 						) : (
-							<div className="sk-flex sk-flex-col sk-items-center sk-py-6 sk-text-center">
+							<div className="es-flex es-flex-col es-items-center es-py-6 es-text-center">
 								<span
-									className="sk-mb-2 sk-grid sk-h-10 sk-w-10 sk-place-items-center sk-rounded-full sk-bg-success/10 sk-text-success"
+									className="es-mb-2 es-grid es-h-10 es-w-10 es-place-items-center es-rounded-full es-bg-success/10 es-text-success"
 									aria-hidden="true"
 								>
 									✓
 								</span>
-								<p className="sk-text-sm sk-font-medium">
+								<p className="es-text-sm es-font-medium">
 									{ __(
 										'Nothing needs you right now',
-										'subkit-subscriptions'
+										'easysubscription'
 									) }
 								</p>
-								<p className="sk-mt-1 sk-text-sm sk-text-muted-foreground">
+								<p className="es-mt-1 es-text-sm es-text-muted-foreground">
 									{ __(
 										'Failed payments and subscriptions about to end will show up here.',
-										'subkit-subscriptions'
+										'easysubscription'
 									) }
 								</p>
 							</div>
@@ -416,41 +406,38 @@ export function Dashboard( { onFail } ) {
 				</Card>
 
 				<Card>
-					<CardHeader className="sk-flex-row sk-items-center sk-justify-between sk-space-y-0">
+					<CardHeader className="es-flex-row es-items-center es-justify-between es-space-y-0">
 						<CardTitle>
-							{ __(
-								'Recent subscriptions',
-								'subkit-subscriptions'
-							) }
+							{ __( 'Recent subscriptions', 'easysubscription' ) }
 						</CardTitle>
 						<a
 							href={ links.list }
-							className="sk-text-sm sk-font-medium sk-text-primary sk-no-underline hover:sk-underline"
+							className="es-text-sm es-font-medium es-text-primary es-no-underline hover:es-underline"
 						>
-							{ __( 'View all', 'subkit-subscriptions' ) }
+							{ __( 'View all', 'easysubscription' ) }
 						</a>
 					</CardHeader>
-					<CardContent className="sk-px-2">
+					<CardContent className="es-px-2">
 						{ recent.length ? (
-							<ul className="sk-flex sk-flex-col">
+							<ul className="es-flex es-flex-col">
 								{ recent.map( ( row ) => (
 									<li key={ row.id }>
 										<a
 											href={ row.url }
-											className="sk-flex sk-items-center sk-gap-3 sk-rounded-md sk-px-3 sk-py-2.5 sk-text-foreground sk-no-underline hover:sk-bg-muted/60"
+											className="es-flex es-items-center es-gap-3 es-rounded-md es-px-3 es-py-2.5 es-text-foreground es-no-underline hover:es-bg-muted/60"
 										>
 											<span
-												className="sk-grid sk-h-9 sk-w-9 sk-shrink-0 sk-place-items-center sk-rounded-full sk-bg-accent sk-text-xs sk-font-semibold sk-text-primary"
+												className="es-grid es-h-9 es-w-9 es-shrink-0 es-place-items-center es-rounded-full es-bg-accent es-text-xs es-font-semibold es-text-primary"
 												aria-hidden="true"
 											>
 												{ initials( row.customer ) }
 											</span>
-											<span className="sk-min-w-0 sk-flex-1">
-												<span className="sk-block sk-truncate sk-text-sm sk-font-medium">
+											<span className="es-min-w-0 es-flex-1">
+												<span className="es-block es-truncate es-text-sm es-font-medium">
 													{ row.customer ||
 														`#${ row.id }` }
 												</span>
-												<span className="sk-block sk-truncate sk-text-xs sk-text-muted-foreground">
+												<span className="es-block es-truncate es-text-xs es-text-muted-foreground">
 													{ row.product } ·{ ' ' }
 													{ row.created }
 												</span>
@@ -462,7 +449,7 @@ export function Dashboard( { onFail } ) {
 											>
 												{ row.status_label }
 											</Badge>
-											<span className="sk-w-24 sk-text-right sk-text-sm sk-tabular-nums">
+											<span className="es-w-24 es-text-right es-text-sm es-tabular-nums">
 												{ row.total }
 											</span>
 										</a>
@@ -470,10 +457,10 @@ export function Dashboard( { onFail } ) {
 								) ) }
 							</ul>
 						) : (
-							<p className="sk-px-3 sk-py-6 sk-text-center sk-text-sm sk-text-muted-foreground">
+							<p className="es-px-3 es-py-6 es-text-center es-text-sm es-text-muted-foreground">
 								{ __(
 									'Your first subscription will appear here the moment someone buys one.',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</p>
 						) }
@@ -481,48 +468,48 @@ export function Dashboard( { onFail } ) {
 				</Card>
 			</div>
 
-			<div className="sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+			<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
 				{ [
 					{
 						href: links.integrations,
-						title: __( 'Integrations', 'subkit-subscriptions' ),
+						title: __( 'Integrations', 'easysubscription' ),
 						body: __(
 							'Connect courses, mailing lists and licence keys to a subscription.',
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 					},
 					{
 						href: links.settings,
-						title: __( 'Settings', 'subkit-subscriptions' ),
+						title: __( 'Settings', 'easysubscription' ),
 						body: __(
 							'Payment methods, renewals, grace periods and customer access.',
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 					},
 					{
 						href: links.help,
-						title: __( 'Help', 'subkit-subscriptions' ),
+						title: __( 'Help', 'easysubscription' ),
 						body: __(
 							'Guides, the system report, and what to check before you ask.',
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 					},
 				].map( ( link ) => (
 					<a
 						key={ link.title }
 						href={ link.href }
-						className="sk-group sk-rounded-lg sk-border sk-border-border sk-bg-card sk-p-5 sk-text-foreground sk-no-underline sk-transition-shadow hover:sk-shadow-md"
+						className="es-group es-rounded-lg es-border es-border-border es-bg-card es-p-5 es-text-foreground es-no-underline es-transition-shadow hover:es-shadow-md"
 					>
-						<span className="sk-flex sk-items-center sk-justify-between sk-text-sm sk-font-semibold">
+						<span className="es-flex es-items-center es-justify-between es-text-sm es-font-semibold">
 							{ link.title }
 							<span
 								aria-hidden="true"
-								className="sk-text-muted-foreground group-hover:sk-text-primary"
+								className="es-text-muted-foreground group-hover:es-text-primary"
 							>
 								→
 							</span>
 						</span>
-						<span className="sk-mt-1 sk-block sk-text-sm sk-text-muted-foreground">
+						<span className="es-mt-1 es-block es-text-sm es-text-muted-foreground">
 							{ link.body }
 						</span>
 					</a>
@@ -533,7 +520,7 @@ export function Dashboard( { onFail } ) {
 }
 
 registerRoute( {
-	page: 'subkit-subscriptions',
-	title: __( 'Home', 'subkit-subscriptions' ),
+	page: 'easysubscription',
+	title: __( 'Home', 'easysubscription' ),
 	render: ( ctx ) => <Dashboard onFail={ ctx.fail } />,
 } );

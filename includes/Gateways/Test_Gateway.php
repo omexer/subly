@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Gateways;
+namespace EasySubscription\Gateways;
 
-use SubKit\Domain\Subscription;
+use EasySubscription\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -15,23 +15,23 @@ if ( ! defined( 'ABSPATH' ) ) {
  * timeout, then a soft decline, then a success on demand, and PayPal cannot be
  * time-travelled because it owns its own schedule. See Developer Guide 8.1.
  *
- * Registered only when SUBKIT_ENABLE_TEST_GATEWAY is defined, and it refuses to charge
+ * Registered only when EASYSUBSCRIPTION_ENABLE_TEST_GATEWAY is defined, and it refuses to charge
  * when WP_DEBUG is off so it cannot be turned on quietly in production.
  */
 class Test_Gateway implements Recurring_Gateway {
 
-	public const ID = 'subkit_test';
+	public const ID = 'easysubscription_test';
 
-	private const SCRIPT_META    = '_subkit_test_script';
-	private const CURSOR_META    = '_subkit_test_cursor';
-	private const RECONCILE_META = '_subkit_test_reconcile';
+	private const SCRIPT_META    = '_easysubscription_test_script';
+	private const CURSOR_META    = '_easysubscription_test_cursor';
+	private const RECONCILE_META = '_easysubscription_test_reconcile';
 
 	public function id(): string {
 		return self::ID;
 	}
 
 	public function title(): string {
-		return __( 'EasySubscription test gateway (development only)', 'subkit-subscriptions' );
+		return __( 'EasySubscription test gateway (development only)', 'easysubscription' );
 	}
 
 	public function model(): Gateway_Model {

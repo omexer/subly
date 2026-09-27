@@ -1,9 +1,9 @@
 <?php
 
-namespace SubKit\Gateways\PayPal;
+namespace EasySubscription\Gateways\PayPal;
 
-use SubKit\Domain\Billing_Schedule;
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Domain\Billing_Schedule;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,9 +18,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class PayPal_Plans {
 
-	private const META_PRODUCT = '_subkit_paypal_product_id';
-	private const META_PLAN    = '_subkit_paypal_plan_id';
-	private const META_HASH    = '_subkit_paypal_plan_hash';
+	private const META_PRODUCT = '_easysubscription_paypal_product_id';
+	private const META_PLAN    = '_easysubscription_paypal_plan_id';
+	private const META_HASH    = '_easysubscription_paypal_plan_hash';
 
 	public function __construct( private readonly PayPal_Client $client ) {}
 
@@ -147,13 +147,13 @@ class PayPal_Plans {
 		/**
 		 * How many payments PayPal should take before it stops on its own.
 		 *
-		 * PayPal owns this schedule, so a limit SubKit knows about — a payment cap, an
+		 * PayPal owns this schedule, so a limit EasySubscription knows about — a payment cap, an
 		 * instalment plan — has to be built into the plan or PayPal bills past the end.
 		 *
 		 * @param int          $total_cycles 0 bills forever.
 		 * @param \WC_Product  $product
 		 */
-		$total_cycles = max( 0, (int) apply_filters( 'subkit_paypal_total_cycles', 0, $product ) );
+		$total_cycles = max( 0, (int) apply_filters( 'easysubscription_paypal_total_cycles', 0, $product ) );
 
 		$cycles[] = array(
 			'tenure_type'    => 'REGULAR',

@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Product;
+namespace EasySubscription\Product;
 
-use SubKit\Admin\Notices;
+use EasySubscription\Admin\Notices;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -21,8 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Product_Types {
 
-	public const SIMPLE   = 'subkit_subscription';
-	public const VARIABLE = 'subkit_variable_subscription';
+	public const SIMPLE   = 'easysubscription_subscription';
+	public const VARIABLE = 'easysubscription_variable_subscription';
 
 	public function register(): void {
 		add_filter( 'product_type_selector', array( $this, 'add_to_selector' ) );
@@ -58,14 +58,14 @@ class Product_Types {
 		// The default covers a Pro older than the filter: its resolver is only loaded when
 		// the module actually booted, so it answers the same question. Never autoloaded -
 		// that would say yes merely because the file is on disk.
-		$supported = class_exists( '\SubKitPro\Product\Variation_Subscription', false );
+		$supported = class_exists( '\EasySubscriptionPro\Product\Variation_Subscription', false );
 
 		/**
 		 * Filter whether variable subscriptions can be billed.
 		 *
 		 * @param bool $supported
 		 */
-		return (bool) apply_filters( 'subkit_variable_subscriptions_supported', $supported );
+		return (bool) apply_filters( 'easysubscription_variable_subscriptions_supported', $supported );
 	}
 
 	/**
@@ -111,12 +111,12 @@ class Product_Types {
 	 * @param array $types
 	 */
 	public function add_to_selector( $types ): array {
-		$types[ self::SIMPLE ] = __( 'Subscription', 'subkit-subscriptions' );
+		$types[ self::SIMPLE ] = __( 'Subscription', 'easysubscription' );
 
 		// Offered only when something can bill it - but never taken away from a product
 		// that is already one, or saving the product would silently change its type.
 		if ( self::variable_supported() || self::VARIABLE === self::editing_type() ) {
-			$types[ self::VARIABLE ] = __( 'Variable subscription', 'subkit-subscriptions' );
+			$types[ self::VARIABLE ] = __( 'Variable subscription', 'easysubscription' );
 		}
 
 		return (array) $types;
@@ -132,7 +132,7 @@ class Product_Types {
 
 		echo '<div class="' . esc_attr( Notices::important( 'error', true ) ) . '"><p>' . esc_html__(
 			'This is a variable subscription, but EasySubscription Pro is not active, so nothing gives its variations a billing schedule. A customer buying one is charged once and never again. Activate EasySubscription Pro, or change the product type to Subscription.',
-			'subkit-subscriptions'
+			'easysubscription'
 		) . '</p></div>';
 	}
 
@@ -206,7 +206,7 @@ class Product_Types {
 				variable = <?php echo wp_json_encode( self::VARIABLE ); ?>;
 
 			$( '.pricing' ).addClass( 'show_if_' + simple );
-			$( '.show_if_simple' ).not( '.subkit-product-options' ).addClass( 'show_if_' + simple );
+			$( '.show_if_simple' ).not( '.easysubscription-product-options' ).addClass( 'show_if_' + simple );
 			$( '.show_if_variable' ).addClass( 'show_if_' + variable );
 
 			$( 'body' ).trigger( 'woocommerce-product-type-change', $( '#product-type' ).val() );

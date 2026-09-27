@@ -1,13 +1,13 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * SubKit → Settings.
+ * EasySubscription → Settings.
  *
  * The fields are WooCommerce's own definitions, read from the settings tab and its filters,
  * so free and Pro declare a setting once and it appears here, saved by Woo's own handler.
@@ -17,7 +17,7 @@ class Settings_Page {
 
 	public const SLUG = Menu::SLUG . '-settings';
 
-	private const NONCE = 'subkit_save_settings';
+	private const NONCE = 'easysubscription_save_settings';
 
 	/**
 	 * A section missing from every group's list lands in Integrations.
@@ -26,14 +26,14 @@ class Settings_Page {
 
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_page' ), 95 );
-		add_action( 'subkit_app_enqueue', array( $this, 'enqueue_route' ) );
+		add_action( 'easysubscription_app_enqueue', array( $this, 'enqueue_route' ) );
 	}
 
 	/**
 	 * On every app page, not just this one: the shell swaps screens without a page load.
 	 */
 	public function enqueue_route(): void {
-		$asset = SUBKIT_PATH . 'build/settings.asset.php';
+		$asset = EASYSUBSCRIPTION_PATH . 'build/settings.asset.php';
 
 		if ( ! is_readable( $asset ) ) {
 			return;
@@ -42,21 +42,21 @@ class Settings_Page {
 		$asset = require $asset;
 
 		wp_enqueue_script(
-			'subkit-settings',
-			SUBKIT_URL . 'build/settings.js',
-			array_merge( $asset['dependencies'], array( 'subkit-ui', 'subkit-shell' ) ),
+			'easysubscription-settings',
+			EASYSUBSCRIPTION_URL . 'build/settings.js',
+			array_merge( $asset['dependencies'], array( 'easysubscription-ui', 'easysubscription-shell' ) ),
 			$asset['version'],
 			true
 		);
 
-		wp_set_script_translations( 'subkit-settings', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
+		wp_set_script_translations( 'easysubscription-settings', 'easysubscription', EASYSUBSCRIPTION_PATH . 'languages' );
 	}
 
 	public function add_page(): void {
 		$hook = add_submenu_page(
 			Menu::PARENT,
-			__( 'Settings', 'subkit-subscriptions' ),
-			__( 'Settings', 'subkit-subscriptions' ),
+			__( 'Settings', 'easysubscription' ),
+			__( 'Settings', 'easysubscription' ),
 			Menu::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
@@ -75,13 +75,13 @@ class Settings_Page {
 	 * page is saved, since a group stacks several into one form.
 	 */
 	public function maybe_save(): void {
-		if ( ! isset( $_POST['subkit_settings_nonce'] ) || ! current_user_can( Menu::CAPABILITY ) ) {
+		if ( ! isset( $_POST['easysubscription_settings_nonce'] ) || ! current_user_can( Menu::CAPABILITY ) ) {
 			return;
 		}
 
-		check_admin_referer( self::NONCE, 'subkit_settings_nonce' );
+		check_admin_referer( self::NONCE, 'easysubscription_settings_nonce' );
 
-		$section  = isset( $_POST['subkit_section'] ) ? sanitize_key( wp_unslash( $_POST['subkit_section'] ) ) : '';
+		$section  = isset( $_POST['easysubscription_section'] ) ? sanitize_key( wp_unslash( $_POST['easysubscription_section'] ) ) : '';
 		$sections = $this->sections();
 
 		if ( ! isset( $sections[ $section ] ) ) {
@@ -92,7 +92,7 @@ class Settings_Page {
 			return;
 		}
 
-		wp_safe_redirect( add_query_arg( 'subkit_saved', '1', self::section_url( $section ) ) );
+		wp_safe_redirect( add_query_arg( 'easysubscription_saved', '1', self::section_url( $section ) ) );
 		exit;
 	}
 
@@ -120,7 +120,7 @@ class Settings_Page {
 
 		// After the whole stack is written: a section's checks may read another's settings.
 		foreach ( array_filter( $saved, static fn( string $id ): bool => '' !== $id ) as $id ) {
-			do_action( 'woocommerce_update_options_subkit_' . $id );
+			do_action( 'woocommerce_update_options_easysubscription_' . $id );
 		}
 
 		return (bool) $saved;
@@ -156,35 +156,35 @@ class Settings_Page {
 		$sections = $this->sections();
 		$current  = $this->current_section( $sections );
 
-		Page_Shell::open( __( 'Settings', 'subkit-subscriptions' ), '', array( array( 'label' => __( 'Settings', 'subkit-subscriptions' ) ) ), '', false );
+		Page_Shell::open( __( 'Settings', 'easysubscription' ), '', array( array( 'label' => __( 'Settings', 'easysubscription' ) ) ), '', false );
 
 		$this->render_notices();
 
 		if ( ! $sections ) {
 			printf(
-				'<div class="subkit-notice subkit-notice--bad">%s</div>',
-				esc_html__( "WooCommerce's settings could not be loaded, so EasySubscription's settings cannot be shown. Check that WooCommerce is active.", 'subkit-subscriptions' )
+				'<div class="easysubscription-notice easysubscription-notice--bad">%s</div>',
+				esc_html__( "WooCommerce's settings could not be loaded, so EasySubscription's settings cannot be shown. Check that WooCommerce is active.", 'easysubscription' )
 			);
 			Page_Shell::close();
 
 			return;
 		}
 
-		echo '<div class="subkit-settings">';
+		echo '<div class="easysubscription-settings">';
 
 		$this->render_nav( $sections, $current );
 
-		echo '<form class="subkit-settings__main" method="post" action="">';
-		wp_nonce_field( self::NONCE, 'subkit_settings_nonce' );
-		printf( '<input type="hidden" name="subkit_section" value="%s" />', esc_attr( $current ) );
+		echo '<form class="easysubscription-settings__main" method="post" action="">';
+		wp_nonce_field( self::NONCE, 'easysubscription_settings_nonce' );
+		printf( '<input type="hidden" name="easysubscription_section" value="%s" />', esc_attr( $current ) );
 
 		$this->render_cards( $this->page_fields( $current, $sections ) );
 
 		printf(
-			'<div class="subkit-settings__save"><span class="subkit-settings__save-note">%s</span>'
-				. '<button type="submit" class="button button-primary subkit-btn subkit-btn--primary">%s</button></div>',
-			esc_html__( 'Changes apply to new renewals and purchases from the moment you save.', 'subkit-subscriptions' ),
-			esc_html__( 'Save changes', 'subkit-subscriptions' )
+			'<div class="easysubscription-settings__save"><span class="easysubscription-settings__save-note">%s</span>'
+				. '<button type="submit" class="button button-primary easysubscription-btn easysubscription-btn--primary">%s</button></div>',
+			esc_html__( 'Changes apply to new renewals and purchases from the moment you save.', 'easysubscription' ),
+			esc_html__( 'Save changes', 'easysubscription' )
 		);
 
 		echo '</form></div>';
@@ -201,53 +201,53 @@ class Settings_Page {
 	public static function groups(): array {
 		return array(
 			'general'            => array(
-				'label'    => __( 'General', 'subkit-subscriptions' ),
+				'label'    => __( 'General', 'easysubscription' ),
 				'icon'     => '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
 				'sections' => array( '', 'license' ),
 			),
 			'customers'          => array(
-				'label'    => __( 'Customer Controls', 'subkit-subscriptions' ),
+				'label'    => __( 'Customer Controls', 'easysubscription' ),
 				'icon'     => '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="10" r="3"/><path d="M6.2 18.4a6.5 6.5 0 0 1 11.6 0"/>',
 				'sections' => array( 'customer_controls' ),
 			),
 			'billing'            => array(
-				'label'    => __( 'Renewal & Billing', 'subkit-subscriptions' ),
+				'label'    => __( 'Renewal & Billing', 'easysubscription' ),
 				'icon'     => '<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><path d="M14.5 8h-3.2a1.3 1.3 0 0 0 0 2.6h1.4a1.3 1.3 0 0 1 0 2.6H9.5M12 6.5V8m0 5.2v1.5"/>',
 				'sections' => array( 'recovery', 'renewal' ),
 			),
 			'switching'          => array(
-				'label'    => __( 'Upgrade & Downgrade', 'subkit-subscriptions' ),
+				'label'    => __( 'Upgrade & Downgrade', 'easysubscription' ),
 				'icon'     => '<path d="M7 20V4m0 0L3.5 7.5M7 4l3.5 3.5M17 4v16m0 0 3.5-3.5M17 20l-3.5-3.5"/>',
 				'sections' => array( 'switching', 'upsell' ),
 			),
 			'checkout'           => array(
-				'label'    => __( 'Cart & Checkout', 'subkit-subscriptions' ),
+				'label'    => __( 'Cart & Checkout', 'easysubscription' ),
 				'icon'     => '<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2 3h3l2.7 12.2a1 1 0 0 0 1 .8h9.6a1 1 0 0 0 1-.8L21 7H6"/>',
 				'sections' => array( 'checkout' ),
 			),
 			'shipping'           => array(
-				'label'    => __( 'Shipping', 'subkit-subscriptions' ),
+				'label'    => __( 'Shipping', 'easysubscription' ),
 				'icon'     => '<path d="M2.5 6h11v10h-11zM13.5 9.5h4l3 3V16h-7"/><circle cx="6.5" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/>',
 				'sections' => array( 'live-qr' ),
 			),
 			'notifications'      => array(
-				'label'    => __( 'Notifications', 'subkit-subscriptions' ),
+				'label'    => __( 'Notifications', 'easysubscription' ),
 				'icon'     => '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
 				'sections' => array( 'notifications', 'payment_methods' ),
 			),
 			'api'                => array(
-				'label'    => __( 'API Settings', 'subkit-subscriptions' ),
+				'label'    => __( 'API Settings', 'easysubscription' ),
 				'icon'     => '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m9.5 10-2.5 2 2.5 2M14.5 10l2.5 2-2.5 2"/>',
 				'sections' => array( 'api' ),
 			),
 			'payments'           => array(
-				'label'    => __( 'Payments', 'subkit-subscriptions' ),
+				'label'    => __( 'Payments', 'easysubscription' ),
 				'icon'     => '<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="M2.5 10h19M6.5 15h3"/>',
 				'sections' => array( 'stripe', 'paypal', 'mollie', 'razorpay', 'xendit', 'square', 'authorize_net', 'braintree', 'adyen', 'gocardless', 'woopayments', 'paddle', 'bkash', 'sslcommerz' ),
 				'list'     => true,
 			),
 			self::FALLBACK_GROUP => array(
-				'label'    => __( 'Integrations', 'subkit-subscriptions' ),
+				'label'    => __( 'Integrations', 'easysubscription' ),
 				'icon'     => '<path d="M9 2.5V7m6-4.5V7M6 7h12v4.5a6 6 0 0 1-12 0zM12 17.5v4"/>',
 				'sections' => array( 'whatsapp', 'affiliatewp', 'anniversary', 'winback', 'content' ),
 				'list'     => true,
@@ -358,23 +358,23 @@ class Settings_Page {
 	public function notices( array $query ): array {
 		$notices = array();
 
-		if ( isset( $query['subkit_saved'] ) ) {
+		if ( isset( $query['easysubscription_saved'] ) ) {
 			$notices[] = array(
 				'type'    => 'good',
-				'message' => __( 'Settings saved.', 'subkit-subscriptions' ),
+				'message' => __( 'Settings saved.', 'easysubscription' ),
 			);
 		}
 
-		$licence = isset( $query['subkit_license_notice'] ) ? sanitize_text_field( wp_unslash( (string) $query['subkit_license_notice'] ) ) : '';
+		$licence = isset( $query['easysubscription_license_notice'] ) ? sanitize_text_field( wp_unslash( (string) $query['easysubscription_license_notice'] ) ) : '';
 
 		if ( '' === $licence ) {
 			return $notices;
 		}
 
 		$known = array(
-			'activated'   => __( 'Licence activated.', 'subkit-subscriptions' ),
-			'deactivated' => __( 'Licence deactivated.', 'subkit-subscriptions' ),
-			'ok'          => __( 'Licence updated.', 'subkit-subscriptions' ),
+			'activated'   => __( 'Licence activated.', 'easysubscription' ),
+			'deactivated' => __( 'Licence deactivated.', 'easysubscription' ),
+			'ok'          => __( 'Licence updated.', 'easysubscription' ),
 		);
 
 		$notices[] = array(
@@ -388,7 +388,7 @@ class Settings_Page {
 	private function render_notices(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- redirect flags, not actions.
 		foreach ( $this->notices( $_GET ) as $notice ) {
-			printf( '<div class="subkit-notice subkit-notice--%s">%s</div>', esc_attr( $notice['type'] ), esc_html( $notice['message'] ) );
+			printf( '<div class="easysubscription-notice easysubscription-notice--%s">%s</div>', esc_attr( $notice['type'] ), esc_html( $notice['message'] ) );
 		}
 	}
 
@@ -398,14 +398,14 @@ class Settings_Page {
 	private function render_nav( array $sections, string $current ): void {
 		$active = self::group_of( $current );
 
-		echo '<nav class="subkit-settings__nav" aria-label="' . esc_attr__( 'Settings sections', 'subkit-subscriptions' ) . '"><ul>';
+		echo '<nav class="easysubscription-settings__nav" aria-label="' . esc_attr__( 'Settings sections', 'easysubscription' ) . '"><ul>';
 
 		foreach ( $this->menu( $sections ) as $group ) {
 			$here    = $group['id'] === $active;
 			$members = array_column( $group['sections'], 'id' );
 
 			printf(
-				'<li><a class="subkit-settings__tab%s" href="%s"%s><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">%s</svg><span>%s</span></a>',
+				'<li><a class="easysubscription-settings__tab%s" href="%s"%s><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">%s</svg><span>%s</span></a>',
 				$here ? ' is-current' : '',
 				esc_url( self::section_url( $members[0] ) ),
 				$here && ! $group['list'] ? ' aria-current="page"' : '',
@@ -414,11 +414,11 @@ class Settings_Page {
 			);
 
 			if ( $here && $group['list'] ) {
-				echo '<ul class="subkit-settings__subnav">';
+				echo '<ul class="easysubscription-settings__subnav">';
 
 				foreach ( $group['sections'] as $section ) {
 					printf(
-						'<li><a class="subkit-settings__subtab%s" href="%s"%s>%s</a></li>',
+						'<li><a class="easysubscription-settings__subtab%s" href="%s"%s>%s</a></li>',
 						$section['id'] === $current ? ' is-current' : '',
 						esc_url( self::section_url( $section['id'] ) ),
 						$section['id'] === $current ? ' aria-current="page"' : '',
@@ -469,7 +469,7 @@ class Settings_Page {
 					continue;
 				}
 
-				if ( isset( $field['subkit_joins'] ) ) {
+				if ( isset( $field['easysubscription_joins'] ) ) {
 					continue;
 				}
 
@@ -512,10 +512,10 @@ class Settings_Page {
 		$toggles = $this->toggle_states( $by_section ? array_merge( ...array_values( $by_section ) ) : array() );
 
 		foreach ( $this->cards( $by_section ) as $card ) {
-			printf( '<section class="subkit-settings__card"%s>', null === $card['anchor'] ? '' : ' id="' . esc_attr( 'subkit-section-' . ( '' === $card['anchor'] ? 'general' : $card['anchor'] ) ) . '"' );
+			printf( '<section class="easysubscription-settings__card"%s>', null === $card['anchor'] ? '' : ' id="' . esc_attr( 'easysubscription-section-' . ( '' === $card['anchor'] ? 'general' : $card['anchor'] ) ) . '"' );
 
 			if ( '' !== $card['title'] || '' !== $card['desc'] ) {
-				echo '<header class="subkit-settings__card-head">';
+				echo '<header class="easysubscription-settings__card-head">';
 				if ( '' !== $card['title'] ) {
 					printf( '<h2>%s</h2>', esc_html( $card['title'] ) );
 				}
@@ -525,13 +525,13 @@ class Settings_Page {
 				echo '</header>';
 			}
 
-			echo '<div class="subkit-settings__rows">';
+			echo '<div class="easysubscription-settings__rows">';
 
 			foreach ( $card['rows'] as $row ) {
 				if ( null === $row['html'] ) {
 					$this->render_row( $row['field'], $toggles, $row['joined'] );
 				} else {
-					echo '<div class="subkit-settings__row subkit-settings__row--wide">' . $row['html'] . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where it was built.
+					echo '<div class="easysubscription-settings__row easysubscription-settings__row--wide">' . $row['html'] . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where it was built.
 				}
 			}
 
@@ -553,7 +553,7 @@ class Settings_Page {
 			if ( 'checkbox' === ( $field['type'] ?? '' ) && ! empty( $field['id'] ) ) {
 				$toggles[ (string) $field['id'] ] = array(
 					'on'     => 'yes' === \WC_Admin_Settings::get_option( (string) $field['id'], $field['default'] ?? '' ),
-					'parent' => (string) ( $field['subkit_show_if'] ?? '' ),
+					'parent' => (string) ( $field['easysubscription_show_if'] ?? '' ),
 				);
 			}
 		}
@@ -572,8 +572,8 @@ class Settings_Page {
 		$joined = array();
 
 		foreach ( $fields as $field ) {
-			if ( isset( $field['subkit_joins'] ) ) {
-				$joined[ (string) $field['subkit_joins'] ][] = $field;
+			if ( isset( $field['easysubscription_joins'] ) ) {
+				$joined[ (string) $field['easysubscription_joins'] ][] = $field;
 			}
 		}
 
@@ -599,18 +599,18 @@ class Settings_Page {
 	private function render_row( array $field, array $toggles, array $joined ): void {
 		$id     = (string) ( $field['id'] ?? '' );
 		$help   = $this->help_text( $field );
-		$parent = (string) ( $field['subkit_show_if'] ?? '' );
+		$parent = (string) ( $field['easysubscription_show_if'] ?? '' );
 
 		printf(
-			'<div class="subkit-settings__row%s"%s>',
+			'<div class="easysubscription-settings__row%s"%s>',
 			$this->is_shown( $parent, $toggles ) ? '' : ' is-hidden',
-			'' === $parent ? '' : ' data-subkit-show-if="' . esc_attr( $parent ) . '"'
+			'' === $parent ? '' : ' data-easysubscription-show-if="' . esc_attr( $parent ) . '"'
 		);
-		printf( '<div class="subkit-settings__label"><label class="subkit-settings__title" for="%s">%s</label>', esc_attr( $id ), esc_html( (string) ( $field['title'] ?? '' ) ) );
+		printf( '<div class="easysubscription-settings__label"><label class="easysubscription-settings__title" for="%s">%s</label>', esc_attr( $id ), esc_html( (string) ( $field['title'] ?? '' ) ) );
 		if ( '' !== $help ) {
-			printf( '<p class="subkit-settings__help" id="%s">%s</p>', esc_attr( $id . '-help' ), wp_kses_post( $help ) );
+			printf( '<p class="easysubscription-settings__help" id="%s">%s</p>', esc_attr( $id . '-help' ), wp_kses_post( $help ) );
 		}
-		echo '</div><div class="subkit-settings__control">';
+		echo '</div><div class="easysubscription-settings__control">';
 
 		$this->render_control( $field, '' !== $help );
 
@@ -620,7 +620,7 @@ class Settings_Page {
 		}
 
 		if ( '' !== $this->suffix( $field ) ) {
-			printf( '<span class="subkit-settings__suffix">%s</span>', wp_kses_post( $this->suffix( $field ) ) );
+			printf( '<span class="easysubscription-settings__suffix">%s</span>', wp_kses_post( $this->suffix( $field ) ) );
 		}
 
 		echo '</div></div>';
@@ -638,7 +638,7 @@ class Settings_Page {
 		switch ( $type ) {
 			case 'checkbox':
 				printf(
-					'<span class="subkit-switch"><input type="checkbox" role="switch" name="%1$s" id="%1$s" value="1"%2$s%3$s /><span class="subkit-switch__track" aria-hidden="true"></span></span>',
+					'<span class="easysubscription-switch"><input type="checkbox" role="switch" name="%1$s" id="%1$s" value="1"%2$s%3$s /><span class="easysubscription-switch__track" aria-hidden="true"></span></span>',
 					esc_attr( $id ),
 					checked( $value, 'yes', false ),
 					$aria // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
@@ -646,7 +646,7 @@ class Settings_Page {
 				break;
 
 			case 'select':
-				printf( '<select name="%1$s" id="%1$s" class="subkit-input"%2$s>', esc_attr( $id ), $aria ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
+				printf( '<select name="%1$s" id="%1$s" class="easysubscription-input"%2$s>', esc_attr( $id ), $aria ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
 				foreach ( (array) ( $field['options'] ?? array() ) as $option => $option_label ) {
 					printf(
 						'<option value="%s"%s>%s</option>',
@@ -660,7 +660,7 @@ class Settings_Page {
 
 			case 'textarea':
 				printf(
-					'<textarea name="%1$s" id="%1$s" class="subkit-input subkit-input--wide" rows="4"%2$s%3$s>%4$s</textarea>',
+					'<textarea name="%1$s" id="%1$s" class="easysubscription-input easysubscription-input--wide" rows="4"%2$s%3$s>%4$s</textarea>',
 					esc_attr( $id ),
 					$aria, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
 					$this->attributes( $field ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in attributes().
@@ -674,10 +674,10 @@ class Settings_Page {
 			case 'email':
 			case 'url':
 				printf(
-					'<input type="%1$s" name="%2$s" id="%2$s" class="subkit-input%3$s" value="%4$s"%5$s%6$s />',
+					'<input type="%1$s" name="%2$s" id="%2$s" class="easysubscription-input%3$s" value="%4$s"%5$s%6$s />',
 					esc_attr( $type ),
 					esc_attr( $id ),
-					'number' === $type ? ' subkit-input--short' : ' subkit-input--wide',
+					'number' === $type ? ' easysubscription-input--short' : ' easysubscription-input--wide',
 					esc_attr( $value ),
 					$aria, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
 					$this->attributes( $field ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in attributes().
@@ -707,7 +707,7 @@ class Settings_Page {
 	 * @param array<string, mixed> $field
 	 */
 	public function wide_markup( array $field ): string {
-		if ( 'subkit_status' !== ( $field['type'] ?? '' ) ) {
+		if ( 'easysubscription_status' !== ( $field['type'] ?? '' ) ) {
 			return $this->woo_markup( $field );
 		}
 
@@ -717,7 +717,7 @@ class Settings_Page {
 			Settings::render_check( $check );
 		}
 
-		return '<div class="subkit-checks">' . ob_get_clean() . '</div>';
+		return '<div class="easysubscription-checks">' . ob_get_clean() . '</div>';
 	}
 
 	/**
@@ -731,7 +731,7 @@ class Settings_Page {
 		\WC_Admin_Settings::output_fields( array( $field ) );
 		$markup = trim( (string) ob_get_clean() );
 
-		return '' === $markup ? '' : '<table class="form-table subkit-settings__woo">' . $markup . '</table>';
+		return '' === $markup ? '' : '<table class="form-table easysubscription-settings__woo">' . $markup . '</table>';
 	}
 
 	/**
@@ -812,7 +812,7 @@ class Settings_Page {
 		}
 
 		foreach ( \WC_Admin_Settings::get_settings_pages() as $page ) {
-			if ( $page instanceof \WC_Settings_Page && 'subkit' === $page->get_id() ) {
+			if ( $page instanceof \WC_Settings_Page && 'easysubscription' === $page->get_id() ) {
 				return $page;
 			}
 		}

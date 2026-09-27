@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Emails;
+namespace EasySubscription\Emails;
 
-use SubKit\Domain\Subscription;
+use EasySubscription\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,20 +17,20 @@ class Merchant_Subscription_Ended extends Subscription_Email {
 	private string $reason = '';
 
 	public function __construct() {
-		$this->id             = 'subkit_merchant_subscription_ended';
-		$this->title          = __( 'Subscription ended (merchant)', 'subkit-subscriptions' );
-		$this->description    = __( 'Sent to the store when a subscription reaches its end and stops billing by itself.', 'subkit-subscriptions' );
+		$this->id             = 'easysubscription_merchant_subscription_ended';
+		$this->title          = __( 'Subscription ended (merchant)', 'easysubscription' );
+		$this->description    = __( 'Sent to the store when a subscription reaches its end and stops billing by itself.', 'easysubscription' );
 		$this->customer_email = false;
 
 		parent::__construct();
 	}
 
 	public function get_default_subject(): string {
-		return __( 'A subscription has ended', 'subkit-subscriptions' );
+		return __( 'A subscription has ended', 'easysubscription' );
 	}
 
 	public function get_default_heading(): string {
-		return __( 'Subscription ended', 'subkit-subscriptions' );
+		return __( 'Subscription ended', 'easysubscription' );
 	}
 
 	public function trigger( Subscription $subscription, string $reason = '' ): void {
@@ -44,7 +44,7 @@ class Merchant_Subscription_Ended extends Subscription_Email {
 	protected function intro(): string {
 		return sprintf(
 			/* translators: 1: customer, 2: recurring amount */
-			__( "%1\$s's subscription worth %2\$s has run its course and will not be charged again.", 'subkit-subscriptions' ),
+			__( "%1\$s's subscription worth %2\$s has run its course and will not be charged again.", 'easysubscription' ),
 			trim( $this->subscription->get_billing_first_name() . ' ' . $this->subscription->get_billing_last_name() ) ?: $this->subscription->get_billing_email(),
 			$this->amount( $this->subscription->get_total() )
 		);
@@ -52,18 +52,18 @@ class Merchant_Subscription_Ended extends Subscription_Email {
 
 	protected function facts(): array {
 		$facts = array(
-			__( 'Subscription', 'subkit-subscriptions' ) => '#' . $this->subscription->get_id(),
-			__( 'Customer', 'subkit-subscriptions' )     => (string) $this->subscription->get_billing_email(),
+			__( 'Subscription', 'easysubscription' ) => '#' . $this->subscription->get_id(),
+			__( 'Customer', 'easysubscription' )     => (string) $this->subscription->get_billing_email(),
 		);
 
 		if ( '' !== $this->reason ) {
-			$facts[ __( 'Why it ended', 'subkit-subscriptions' ) ] = $this->reason;
+			$facts[ __( 'Why it ended', 'easysubscription' ) ] = $this->reason;
 		}
 
 		return $facts;
 	}
 
 	protected function outro(): string {
-		return __( 'This customer is a good candidate to invite back.', 'subkit-subscriptions' );
+		return __( 'This customer is a good candidate to invite back.', 'easysubscription' );
 	}
 }

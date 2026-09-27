@@ -1,19 +1,19 @@
 <?php
 
-namespace SubKit\Gateways\Stripe;
+namespace EasySubscription\Gateways\Stripe;
 
-use SubKit\Domain\Money;
-use SubKit\Domain\Subscription;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Recurring_Gateway;
+use EasySubscription\Domain\Money;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Recurring_Gateway;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Stripe as a Model A gateway: SubKit owns the schedule and charges a stored payment
+ * Stripe as a Model A gateway: EasySubscription owns the schedule and charges a stored payment
  * method off-session when a renewal falls due.
  *
  * Deliberately not Stripe Billing. Letting Stripe own the schedule would make it a second
@@ -22,10 +22,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Stripe_Gateway implements Recurring_Gateway {
 
-	public const ID = 'subkit_stripe';
+	public const ID = 'easysubscription_stripe';
 
-	public const META_CUSTOMER = '_subkit_stripe_customer';
-	public const META_METHOD   = '_subkit_stripe_payment_method';
+	public const META_CUSTOMER = '_easysubscription_stripe_customer';
+	public const META_METHOD   = '_easysubscription_stripe_payment_method';
 
 	/** Codes Stripe considers permanent; retrying these only annoys the customer. */
 	private const HARD_DECLINES = array(
@@ -46,7 +46,7 @@ class Stripe_Gateway implements Recurring_Gateway {
 	}
 
 	public function title(): string {
-		return __( 'Stripe', 'subkit-subscriptions' );
+		return __( 'Stripe', 'easysubscription' );
 	}
 
 	public function model(): Gateway_Model {
@@ -112,8 +112,8 @@ class Stripe_Gateway implements Recurring_Gateway {
 				'confirm'        => 'true',
 				'description'    => sprintf( 'Renewal for subscription #%d', $subscription->get_id() ),
 				'metadata'       => array(
-					'subkit_subscription' => (string) $subscription->get_id(),
-					'subkit_order'        => (string) $renewal->get_id(),
+					'easysubscription_subscription' => (string) $subscription->get_id(),
+					'easysubscription_order'        => (string) $renewal->get_id(),
 				),
 			),
 			$idempotency_key
@@ -130,7 +130,7 @@ class Stripe_Gateway implements Recurring_Gateway {
 	 */
 	public function reconcile( Subscription $subscription, string $idempotency_key ): ?Charge_Result {
 		$search = $this->client->get(
-			'/v1/payment_intents/search?query=' . rawurlencode( sprintf( 'metadata["subkit_subscription"]:"%d"', $subscription->get_id() ) ) . '&limit=5'
+			'/v1/payment_intents/search?query=' . rawurlencode( sprintf( 'metadata["easysubscription_subscription"]:"%d"', $subscription->get_id() ) ) . '&limit=5'
 		);
 
 		if ( ! $search['ok'] ) {
@@ -184,10 +184,10 @@ class Stripe_Gateway implements Recurring_Gateway {
 				array(
 					'email'    => $first->get_billing_email(),
 					'name'     => trim( $first->get_formatted_billing_full_name() ),
-					'metadata' => array( 'subkit_subscription' => (string) $subscription->get_id() ),
+					'metadata' => array( 'easysubscription_subscription' => (string) $subscription->get_id() ),
 				),
 				// Reused by a retry after a failed attach; the site keeps stores sharing an account apart.
-				'subkit_customer_' . substr( md5( (string) get_option( 'siteurl' ) ), 0, 8 ) . '_' . $subscription->get_id()
+				'easysubscription_customer_' . substr( md5( (string) get_option( 'siteurl' ) ), 0, 8 ) . '_' . $subscription->get_id()
 			);
 			$customer = $created['ok'] ? (string) ( $created['body']['id'] ?? '' ) : '';
 

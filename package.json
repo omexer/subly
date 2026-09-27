@@ -1,7 +1,7 @@
 {
-  "name": "subkit-subscriptions",
+  "name": "easysubscription",
   "private": true,
-  "description": "Admin interface for SubKit.",
+  "description": "Admin interface for EasySubscription.",
   "scripts": {
     "build": "wp-scripts build",
     "start": "wp-scripts start",

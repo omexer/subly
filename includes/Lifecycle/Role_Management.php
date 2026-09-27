@@ -1,10 +1,10 @@
 <?php
 
-namespace SubKit\Lifecycle;
+namespace EasySubscription\Lifecycle;
 
-use SubKit\Data\Subscription_Query;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,8 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Role_Management {
 
-	private const OPTION_ACTIVE   = 'subkit_active_role';
-	private const OPTION_INACTIVE = 'subkit_inactive_role';
+	private const OPTION_ACTIVE   = 'easysubscription_active_role';
+	private const OPTION_INACTIVE = 'easysubscription_inactive_role';
 
 	/** Capabilities that mean a role can run the site or the store; no subscription grants them. */
 	public const ADMINISTRATIVE = array(
@@ -47,8 +47,8 @@ class Role_Management {
 	);
 
 	public function register(): void {
-		add_action( 'subkit_subscription_status_changed', array( $this, 'on_status_change' ), 10, 3 );
-		add_action( 'subkit_subscription_grace_ended', array( $this, 'demote' ) );
+		add_action( 'easysubscription_subscription_status_changed', array( $this, 'on_status_change' ), 10, 3 );
+		add_action( 'easysubscription_subscription_grace_ended', array( $this, 'demote' ) );
 	}
 
 	/**

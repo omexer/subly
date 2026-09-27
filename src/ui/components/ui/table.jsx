@@ -2,11 +2,11 @@ import { forwardRef } from '@wordpress/element';
 import { cn } from '../../lib/utils';
 
 export const Table = forwardRef( ( { className, ...props }, ref ) => (
-	<div className="sk-w-full sk-overflow-x-auto">
+	<div className="es-w-full es-overflow-x-auto">
 		<table
 			ref={ ref }
 			className={ cn(
-				'sk-w-full sk-caption-bottom sk-text-sm',
+				'es-w-full es-caption-bottom es-text-sm',
 				className
 			) }
 			{ ...props }
@@ -19,7 +19,7 @@ export const TableHeader = forwardRef( ( { className, ...props }, ref ) => (
 	<thead
 		ref={ ref }
 		className={ cn(
-			'[&_tr]:sk-border-b [&_tr]:sk-border-border',
+			'[&_tr]:es-border-b [&_tr]:es-border-border',
 			className
 		) }
 		{ ...props }
@@ -30,7 +30,7 @@ TableHeader.displayName = 'TableHeader';
 export const TableBody = forwardRef( ( { className, ...props }, ref ) => (
 	<tbody
 		ref={ ref }
-		className={ cn( '[&_tr:last-child]:sk-border-0', className ) }
+		className={ cn( '[&_tr:last-child]:es-border-0', className ) }
 		{ ...props }
 	/>
 ) );
@@ -40,7 +40,7 @@ export const TableRow = forwardRef( ( { className, ...props }, ref ) => (
 	<tr
 		ref={ ref }
 		className={ cn(
-			'sk-border-b sk-border-border sk-transition-colors hover:sk-bg-muted/50',
+			'es-border-b es-border-border es-transition-colors hover:es-bg-muted/50',
 			className
 		) }
 		{ ...props }
@@ -52,7 +52,7 @@ export const TableHead = forwardRef( ( { className, ...props }, ref ) => (
 	<th
 		ref={ ref }
 		className={ cn(
-			'sk-h-10 sk-px-3 sk-text-left sk-align-middle sk-text-xs sk-font-medium sk-text-muted-foreground',
+			'es-h-10 es-px-3 es-text-left es-align-middle es-text-xs es-font-medium es-text-muted-foreground',
 			className
 		) }
 		{ ...props }
@@ -63,7 +63,7 @@ TableHead.displayName = 'TableHead';
 export const TableCell = forwardRef( ( { className, ...props }, ref ) => (
 	<td
 		ref={ ref }
-		className={ cn( 'sk-px-3 sk-py-3 sk-align-middle', className ) }
+		className={ cn( 'es-px-3 es-py-3 es-align-middle', className ) }
 		{ ...props }
 	/>
 ) );

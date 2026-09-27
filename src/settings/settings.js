@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Skeleton, cn } from '@subkit/ui';
+import { Skeleton, cn } from '@easysubscription/ui';
 import { Row } from './field';
 import { EmailEditor } from './email';
 import { fieldsOf, isShown } from './visibility';
 
-export const PAGE = 'subkit-subscriptions-settings';
+export const PAGE = 'easysubscription-settings';
 
 const GENERAL = 'general';
 const SAVED_FOR = 4000;
@@ -45,7 +45,7 @@ function isPlainClick( event ) {
 function messageOf( error ) {
 	return (
 		error?.message ||
-		__( 'That did not work. Try again.', 'subkit-subscriptions' )
+		__( 'That did not work. Try again.', 'easysubscription' )
 	);
 }
 
@@ -63,8 +63,8 @@ function Nav( { groups, section, group, onPick } ) {
 
 	return (
 		<nav
-			className="subkit-settings__nav"
-			aria-label={ __( 'Settings sections', 'subkit-subscriptions' ) }
+			className="easysubscription-settings__nav"
+			aria-label={ __( 'Settings sections', 'easysubscription' ) }
 		>
 			<ul>
 				{ groups.map( ( item ) => {
@@ -74,7 +74,7 @@ function Nav( { groups, section, group, onPick } ) {
 						<li key={ item.id }>
 							<a
 								className={ cn(
-									'subkit-settings__tab',
+									'easysubscription-settings__tab',
 									here && 'is-current'
 								) }
 								href={ sectionUrl( item.sections[ 0 ].id ) }
@@ -102,12 +102,12 @@ function Nav( { groups, section, group, onPick } ) {
 								<span>{ item.label }</span>
 							</a>
 							{ here && item.list ? (
-								<ul className="subkit-settings__subnav">
+								<ul className="easysubscription-settings__subnav">
 									{ item.sections.map( ( entry ) => (
 										<li key={ entry.id }>
 											<a
 												className={ cn(
-													'subkit-settings__subtab',
+													'easysubscription-settings__subtab',
 													entry.id === section &&
 														'is-current'
 												) }
@@ -139,24 +139,28 @@ function Cards( { page, valueOf, onChange, onEdit } ) {
 	return page.cards.map( ( card, index ) => (
 		<section
 			key={ `${ card.anchor }-${ index }` }
-			className="subkit-settings__card"
-			id={ card.anchor ? `subkit-section-${ card.anchor }` : undefined }
+			className="easysubscription-settings__card"
+			id={
+				card.anchor
+					? `easysubscription-section-${ card.anchor }`
+					: undefined
+			}
 		>
 			{ card.title || card.desc ? (
-				<header className="subkit-settings__card-head">
+				<header className="easysubscription-settings__card-head">
 					{ card.title ? <h2>{ card.title }</h2> : null }
 					{ card.desc ? (
 						<p dangerouslySetInnerHTML={ { __html: card.desc } } />
 					) : null }
 				</header>
 			) : null }
-			<div className="subkit-settings__rows">
+			<div className="easysubscription-settings__rows">
 				{ card.rows.map( ( row, at ) => {
 					if ( ! row.id ) {
 						return (
 							<div
 								key={ `html-${ at }` }
-								className="subkit-settings__row subkit-settings__row--wide"
+								className="easysubscription-settings__row easysubscription-settings__row--wide"
 								// Drawn and escaped by the same PHP callbacks as the PHP page.
 								dangerouslySetInnerHTML={ { __html: row.html } }
 							/>
@@ -180,11 +184,11 @@ function Cards( { page, valueOf, onChange, onEdit } ) {
 
 function Loading() {
 	return (
-		<section className="subkit-settings__card" aria-busy="true">
+		<section className="easysubscription-settings__card" aria-busy="true">
 			{ [ 0, 1, 2 ].map( ( key ) => (
-				<div key={ key } className="subkit-settings__row">
-					<Skeleton className="sk-h-10 sk-w-3/5" />
-					<Skeleton className="sk-h-6 sk-w-10" />
+				<div key={ key } className="easysubscription-settings__row">
+					<Skeleton className="es-h-10 es-w-3/5" />
+					<Skeleton className="es-h-6 es-w-10" />
 				</div>
 			) ) }
 		</section>
@@ -208,7 +212,7 @@ export function Settings( { params, setParams } ) {
 
 	useEffect( () => {
 		apiFetch( {
-			path: withQuery( '/subkit/v1/settings', query.current ),
+			path: withQuery( '/easysubscription/v1/settings', query.current ),
 		} ).then( setMenu, ( error ) => setFailure( messageOf( error ) ) );
 	}, [] );
 
@@ -221,7 +225,9 @@ export function Settings( { params, setParams } ) {
 
 		apiFetch( {
 			path: withQuery(
-				`/subkit/v1/settings/${ encodeURIComponent( section ) }`,
+				`/easysubscription/v1/settings/${ encodeURIComponent(
+					section
+				) }`,
 				query.current
 			),
 		} ).then(
@@ -287,7 +293,7 @@ export function Settings( { params, setParams } ) {
 		! window.confirm(
 			__(
 				'You have unsaved changes to this email. Leave without saving them?',
-				'subkit-subscriptions'
+				'easysubscription'
 			)
 		);
 
@@ -323,7 +329,9 @@ export function Settings( { params, setParams } ) {
 		setToast( '' );
 
 		apiFetch( {
-			path: `/subkit/v1/settings/${ encodeURIComponent( section ) }`,
+			path: `/easysubscription/v1/settings/${ encodeURIComponent(
+				section
+			) }`,
 			method: 'POST',
 			data: { values: changed },
 		} )
@@ -341,9 +349,7 @@ export function Settings( { params, setParams } ) {
 					if ( result.errors?.length ) {
 						setErrors( result.errors );
 					} else {
-						setToast(
-							__( 'Settings saved.', 'subkit-subscriptions' )
-						);
+						setToast( __( 'Settings saved.', 'easysubscription' ) );
 					}
 				},
 				( error ) => setErrors( [ messageOf( error ) ] )
@@ -363,7 +369,10 @@ export function Settings( { params, setParams } ) {
 
 	if ( failure ) {
 		return (
-			<div className="subkit-notice subkit-notice--bad" role="alert">
+			<div
+				className="easysubscription-notice easysubscription-notice--bad"
+				role="alert"
+			>
 				{ failure }
 			</div>
 		);
@@ -381,12 +390,12 @@ export function Settings( { params, setParams } ) {
 			{ ( menu?.notices || [] ).map( ( notice ) => (
 				<div
 					key={ notice.message }
-					className={ `subkit-notice subkit-notice--${ notice.type }` }
+					className={ `easysubscription-notice easysubscription-notice--${ notice.type }` }
 				>
 					{ notice.message }
 				</div>
 			) ) }
-			<div className="subkit-settings">
+			<div className="easysubscription-settings">
 				{ menu ? (
 					<Nav
 						groups={ menu.groups }
@@ -395,8 +404,11 @@ export function Settings( { params, setParams } ) {
 						onPick={ pick }
 					/>
 				) : (
-					<nav className="subkit-settings__nav" aria-busy="true">
-						<Skeleton className="sk-h-64 sk-w-full" />
+					<nav
+						className="easysubscription-settings__nav"
+						aria-busy="true"
+					>
+						<Skeleton className="es-h-64 es-w-full" />
 					</nav>
 				) }
 				{ email ? (
@@ -407,7 +419,7 @@ export function Settings( { params, setParams } ) {
 					/>
 				) : (
 					<form
-						className="subkit-settings__main"
+						className="easysubscription-settings__main"
 						method="post"
 						action=""
 						onSubmit={ onSubmit }
@@ -424,51 +436,48 @@ export function Settings( { params, setParams } ) {
 						) }
 						{ errors.length ? (
 							<div
-								className="subkit-notice subkit-notice--bad"
+								className="easysubscription-notice easysubscription-notice--bad"
 								role="alert"
 							>
 								{ errors.map( ( error ) => (
-									<p key={ error } className="sk-m-0">
+									<p key={ error } className="es-m-0">
 										{ error }
 									</p>
 								) ) }
 							</div>
 						) : null }
-						<div className="subkit-settings__save">
-							<span className="subkit-settings__save-note">
+						<div className="easysubscription-settings__save">
+							<span className="easysubscription-settings__save-note">
 								{ dirty
 									? __(
 											'You have unsaved changes.',
-											'subkit-subscriptions'
+											'easysubscription'
 									  )
 									: __(
 											'Changes apply to new renewals and purchases from the moment you save.',
-											'subkit-subscriptions'
+											'easysubscription'
 									  ) }
 							</span>
 							<button
 								type="submit"
-								className="button button-primary subkit-btn subkit-btn--primary"
+								className="button button-primary easysubscription-btn easysubscription-btn--primary"
 								disabled={ ! pending || saving }
 							>
 								{ saving
-									? __( 'Saving…', 'subkit-subscriptions' )
-									: __(
-											'Save changes',
-											'subkit-subscriptions'
-									  ) }
+									? __( 'Saving…', 'easysubscription' )
+									: __( 'Save changes', 'easysubscription' ) }
 							</button>
 						</div>
 					</form>
 				) }
 			</div>
 			<div
-				className="sk-fixed sk-bottom-24 sk-right-8 sk-z-50"
+				className="es-fixed es-bottom-24 es-right-8 es-z-50"
 				role="status"
 				aria-live="polite"
 			>
 				{ toast ? (
-					<div className="subkit-notice subkit-notice--good sk-m-0 sk-shadow-lg">
+					<div className="easysubscription-notice easysubscription-notice--good es-m-0 es-shadow-lg">
 						{ toast }
 					</div>
 				) : null }
@@ -509,7 +518,7 @@ function useLeaveGuard( dirty ) {
 			const leave = window.confirm(
 				__(
 					'You have unsaved changes. Leave without saving them?',
-					'subkit-subscriptions'
+					'easysubscription'
 				)
 			);
 

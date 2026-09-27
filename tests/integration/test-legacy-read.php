@@ -7,8 +7,8 @@
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore;
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -119,4 +119,4 @@ if ( get_post( $id ) ) {
 }
 $parent->delete( true );
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

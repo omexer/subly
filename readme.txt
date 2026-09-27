@@ -72,7 +72,7 @@ None of Pro's gateways has been run against a real sandbox yet either.
 == Installation ==
 
 1. Install and activate WooCommerce 8.0 or newer.
-2. Upload the `subkit-subscriptions` folder to `/wp-content/plugins/`, or upload the ZIP from **Plugins → Add New → Upload Plugin**.
+2. Upload the `easysubscription` folder to `/wp-content/plugins/`, or upload the ZIP from **Plugins → Add New → Upload Plugin**.
 3. Activate EasySubscription.
 4. Open **EasySubscription → Home** and follow the setup checklist: connect a payment method, create a subscription product, and run a test renewal.
 
@@ -185,7 +185,7 @@ included in the plugin.
 * The dashboard's "needs attention" links now open the subscription list already filtered.
 
 = 0.24.0 =
-* **SubKit is now EasySubscription.** The plugin, its menus, screens, notices and emails use the new name. Nothing else changes: settings, subscriptions, data and URLs stay exactly as they were.
+* **EasySubscription is now EasySubscription.** The plugin, its menus, screens, notices and emails use the new name. Nothing else changes: settings, subscriptions, data and URLs stay exactly as they were.
 
 = 0.23.0 =
 * **Customers keep access during the grace period.** When a renewal payment fails, the subscription waits on hold but the customer keeps their role, downloads and members-only content until the grace period ends. If it is still unpaid then, access ends. My Account and the payment-failed email say until when.
@@ -264,7 +264,7 @@ included in the plugin.
 * **Fixed: the "Missed renewals" setting did nothing.** Its default — charge once and move the schedule forward — was saved and shown but never applied, so a subscription whose site had stopped running its scheduler was charged once for every missed period when it came back: three months down meant three charges within three hours. It now takes one charge covering the whole gap and resumes on the original day of the month. Choosing "Charge for every missed period" keeps the old behaviour.
 
 = 0.18.0 =
-* New filter `subkit_gateway_for_subscription`, so an extension can answer for a subscription whose WooCommerce payment method is not the id of the thing that renews it. EasySubscription Pro needs this to charge Mollie, Razorpay, Xendit, Square, Authorize.net or Braintree at all.
+* New filter `easysubscription_gateway_for_subscription`, so an extension can answer for a subscription whose WooCommerce payment method is not the id of the thing that renews it. EasySubscription Pro needs this to charge Mollie, Razorpay, Xendit, Square, Authorize.net or Braintree at all.
 
 = 0.17.0 =
 * **Fixed: every renewal was skipping a billing period.** A monthly subscription charged on 20 September was next charged on 20 November. Every store was billing half as often as it sold.
@@ -296,7 +296,7 @@ included in the plugin.
 * "Shipping required" in the panel is the same setting as WooCommerce's Virtual box, from the other side.
 * Fixed: a subscription's end date was stored but never enforced, so renewals carried on past it. No renewal is now charged on or after the end date; the period already paid for runs to its end, and the subscription then expires.
 * Fixed: on the classic checkout, the sentence beside Place order showed "<bdi>" tags around the amounts.
-* When a subscription cannot be cancelled online, My Account now says so and why, in place of a Cancel button that only refused once pressed. For developers: the `subkit_cancel_refused_message` and `subkit_disclosure_sentence` filters are new, and the product panel's sections are actions extensions can add rows to.
+* When a subscription cannot be cancelled online, My Account now says so and why, in place of a Cancel button that only refused once pressed. For developers: the `easysubscription_cancel_refused_message` and `easysubscription_disclosure_sentence` filters are new, and the product panel's sections are actions extensions can add rows to.
 * EasySubscription Pro 0.13.0 needs this version.
 
 = 0.13.2 =
@@ -338,7 +338,7 @@ included in the plugin.
 = 0.10.0 =
 * The figures above the subscriptions list are now a live panel: monthly recurring revenue with a 30-day trend line, live subscriptions, and a bar showing where every subscription stands. Built with React and shadcn/ui.
 * The panel is drawn beside the old one and only replaces it once real figures arrive, so a failed request leaves the working summary on screen rather than an error.
-* New for developers: a read-only /subkit/v1/overview endpoint, and the shared admin components EasySubscription Pro's screens will be rebuilt on.
+* New for developers: a read-only /easysubscription/v1/overview endpoint, and the shared admin components EasySubscription Pro's screens will be rebuilt on.
 
 = 0.9.2 =
 * The plugin is now called EasySubscription – Subscriptions for WooCommerce. Nothing else changes; the same plugin, updated in place.
@@ -372,7 +372,7 @@ included in the plugin.
 
 = 0.6.1 =
 * The admin menu is now called EasySubscription rather than Subscriptions.
-* EasySubscription Pro can be activated whatever folder the free plugin sits in, including the subkit-subscriptions-main that a GitHub ZIP produces.
+* EasySubscription Pro can be activated whatever folder the free plugin sits in, including the easysubscription-main that a GitHub ZIP produces.
 * Developers can exercise the licence screens without a store; see docs/TESTING.md.
 
 = 0.6.0 =

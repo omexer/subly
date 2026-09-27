@@ -1,9 +1,9 @@
 <?php
 
-namespace SubKit\Rest;
+namespace EasySubscription\Rest;
 
-use SubKit\Admin\Help_Page;
-use SubKit\Admin\Menu;
+use EasySubscription\Admin\Help_Page;
+use EasySubscription\Admin\Menu;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Help_Controller {
 
-	public const NAMESPACE = 'subkit/v1';
+	public const NAMESPACE = 'easysubscription/v1';
 
 	public function __construct( private readonly Help_Page $page ) {}
 

@@ -5,19 +5,19 @@
  * @package EasySubscription
  */
 
-use SubKit\Billing\Renewal_Processor;
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Stripe\Stripe_Checkout_Gateway;
-use SubKit\Gateways\Stripe\Stripe_Client;
-use SubKit\Gateways\Test_Gateway;
+use EasySubscription\Billing\Renewal_Processor;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Stripe\Stripe_Checkout_Gateway;
+use EasySubscription\Gateways\Stripe\Stripe_Client;
+use EasySubscription\Gateways\Test_Gateway;
 
 require __DIR__ . '/bootstrap.php';
 
-$harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
+$harness = new class() implements \EasySubscription\Gateways\Recurring_Gateway {
 	public string $next     = 'hard_decline';
 	public int $charges     = 0;
 	public array $mandates  = array();
@@ -29,7 +29,7 @@ $harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
 	public function supports( string $f ): bool { return true; }
 	public function create_mandate( Subscription $s, \WC_Order $o ): Charge_Result {
 		$this->mandates[] = $o->get_id();
-		$s->update_meta_data( '_subkit_harness_card', $this->keeps_card ? 'card-from-' . $o->get_id() : 'half-written' );
+		$s->update_meta_data( '_easysubscription_harness_card', $this->keeps_card ? 'card-from-' . $o->get_id() : 'half-written' );
 		if ( ! $this->keeps_card ) { return Charge_Result::error( 'That order carries no reusable card.' ); }
 		$s->save();
 		return Charge_Result::success( 'card-from-' . $o->get_id() );
@@ -43,8 +43,8 @@ $harness = new class() implements \SubKit\Gateways\Recurring_Gateway {
 	public function update_payment_method( Subscription $s, string $t ): bool { return true; }
 };
 
-$plan_billed = new class() implements \SubKit\Gateways\Recurring_Gateway {
-	public function id(): string { return 'subkit_harness_plan'; }
+$plan_billed = new class() implements \EasySubscription\Gateways\Recurring_Gateway {
+	public function id(): string { return 'easysubscription_harness_plan'; }
 	public function title(): string { return 'Plan-billed harness'; }
 	public function model(): Gateway_Model { return Gateway_Model::GatewayManaged; }
 	public function supports( string $f ): bool { return false; }
@@ -55,18 +55,18 @@ $plan_billed = new class() implements \SubKit\Gateways\Recurring_Gateway {
 	public function update_payment_method( Subscription $s, string $t ): bool { return false; }
 };
 
-$free = \SubKit\Plugin::instance();
+$free = \EasySubscription\Plugin::instance();
 $free->get( 'gateways' )->add( $harness );
 $free->get( 'gateways' )->add( $plan_billed );
 
 $processor = $free->get( 'processor' );
 $slots     = $free->get( 'charge_slots' );
 $lock      = $free->get( 'lock' );
-$product   = subkit_test_product();
+$product   = easysubscription_test_product();
 $made      = array();
 
 $succeeded = array();
-add_action( 'subkit_renewal_succeeded', function ( $s ) use ( &$succeeded ) { $succeeded[ $s->get_id() ] = ( $succeeded[ $s->get_id() ] ?? 0 ) + 1; }, 10, 1 );
+add_action( 'easysubscription_renewal_succeeded', function ( $s ) use ( &$succeeded ) { $succeeded[ $s->get_id() ] = ( $succeeded[ $s->get_id() ] ?? 0 ) + 1; }, 10, 1 );
 
 $receipts = array();
 add_filter( 'wp_mail', function ( $args ) use ( &$receipts ) {
@@ -86,7 +86,7 @@ $make = function ( string $email, string $method = Test_Gateway::ID ) use ( $pro
 	$item->set_props( array( 'name' => 'Pay link probe', 'product_id' => $product->get_id(), 'quantity' => 1, 'subtotal' => '20', 'total' => '20' ) );
 	$s->add_item( $item );
 	$s->set_next_payment( gmdate( 'Y-m-d H:i:s', time() - HOUR_IN_SECONDS ) );
-	$s->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
+	$s->update_meta_data( '_easysubscription_site_url', get_option( 'siteurl' ) );
 	$s->transition_to( Subscription_Status::Pending );
 	$s->calculate_totals( false );
 	$s->save();
@@ -103,7 +103,7 @@ $decline = function ( Subscription $s ) use ( $processor, $slots, $harness ): ar
 	$slot  = $slots->latest_unsettled( $s->get_id() );
 	$order = $slot ? wc_get_order( (int) $slot->renewal_order_id ) : null;
 	if ( ! $slot || ! $order instanceof WC_Order || Charge_Slot_Repository::STATE_FAILED !== $slot->state ) {
-		subkit_test_abort( 'the harness decline did not leave a failed slot with a renewal order' );
+		easysubscription_test_abort( 'the harness decline did not leave a failed slot with a renewal order' );
 	}
 	return array( $slot, $order );
 };
@@ -132,9 +132,9 @@ $settled = $slots->find( $s1->get_id(), (int) $slot->period_index );
 $check( 'the slot is paid', Charge_Slot_Repository::STATE_PAID === $settled->state && (int) $settled->renewal_order_id === $order->get_id(), $settled );
 $check( 'the subscription is active again', Subscription_Status::Active === $s1->get_status_enum(), $s1->get_status() );
 $check( 'the next payment is the end of the period just paid for', strtotime( (string) $s1->get_next_payment() . ' UTC' ) === strtotime( $slot->covers_to_gmt . ' UTC' ), array( $s1->get_next_payment(), $slot->covers_to_gmt ) );
-$check( 'subkit_renewal_succeeded fired once', 1 === ( $succeeded[ $s1->get_id() ] ?? 0 ), $succeeded );
+$check( 'easysubscription_renewal_succeeded fired once', 1 === ( $succeeded[ $s1->get_id() ] ?? 0 ), $succeeded );
 $check( 'one receipt was sent', array( 'paylink-1@example.test' ) === $receipts, $receipts );
-$check( 'the card it was paid with is kept for renewals', array( $order->get_id() ) === $harness->mandates && 'card-from-' . $order->get_id() === $s1->get_meta( '_subkit_harness_card' ), $harness->mandates );
+$check( 'the card it was paid with is kept for renewals', array( $order->get_id() ) === $harness->mandates && 'card-from-' . $order->get_id() === $s1->get_meta( '_easysubscription_harness_card' ), $harness->mandates );
 
 $next_before = $s1->get_next_payment();
 $retry( $s1->get_id() );
@@ -153,7 +153,7 @@ $charges_before       = $harness->charges;
 $lock->acquire( $s2->get_id() );
 wc_get_order( $order2->get_id() )->payment_complete( 'paylink_txn_2' );
 $check( 'nothing is settled under somebody else\'s lock', Charge_Slot_Repository::STATE_FAILED === $slots->find( $s2->get_id(), (int) $slot2->period_index )->state );
-$check( 'settling is queued for later', (bool) as_next_scheduled_action( Renewal_Processor::ACTION_SETTLE, array( 'order_id' => $order2->get_id() ), 'subkit' ) );
+$check( 'settling is queued for later', (bool) as_next_scheduled_action( Renewal_Processor::ACTION_SETTLE, array( 'order_id' => $order2->get_id() ), 'easysubscription' ) );
 $lock->release( $s2->get_id() );
 
 $retry( $s2->get_id() );
@@ -163,26 +163,26 @@ $check( 'and restarts the subscription once', Subscription_Status::Active === $s
 
 $processor->settle_paid_order( $order2->get_id() );
 $check( 'the queued settle then finds nothing to do', 1 === $succeeded[ $s2->get_id() ] );
-as_unschedule_all_actions( Renewal_Processor::ACTION_SETTLE, array( 'order_id' => $order2->get_id() ), 'subkit' );
+as_unschedule_all_actions( Renewal_Processor::ACTION_SETTLE, array( 'order_id' => $order2->get_id() ), 'easysubscription' );
 
 echo "\n3. A renewal the pipeline charges itself\n";
 $s3             = $make( 'paylink-3@example.test' );
 $receipts       = array();
 $harness->next  = 'success';
 $processor->process( $s3->get_id() );
-$check( 'still fires subkit_renewal_succeeded exactly once', 1 === ( $succeeded[ $s3->get_id() ] ?? 0 ), $succeeded );
+$check( 'still fires easysubscription_renewal_succeeded exactly once', 1 === ( $succeeded[ $s3->get_id() ] ?? 0 ), $succeeded );
 $check( 'and sends one receipt', array( 'paylink-3@example.test' ) === $receipts, $receipts );
 $paid3 = $slots->find( $s3->get_id(), 0 );
-$check( 'without queueing a settle of its own order', $paid3 && ! as_next_scheduled_action( Renewal_Processor::ACTION_SETTLE, array( 'order_id' => (int) $paid3->renewal_order_id ), 'subkit' ) );
+$check( 'without queueing a settle of its own order', $paid3 && ! as_next_scheduled_action( Renewal_Processor::ACTION_SETTLE, array( 'order_id' => (int) $paid3->renewal_order_id ), 'easysubscription' ) );
 
-$pp            = $make( 'paylink-pp@example.test', 'subkit_harness_plan' );
-$pp->update_meta_data( \SubKit\Gateways\PayPal\PayPal_Gateway::META_SUBSCRIPTION_ID, 'I-HARNESS-' . $pp->get_id() );
+$pp            = $make( 'paylink-pp@example.test', 'easysubscription_harness_plan' );
+$pp->update_meta_data( \EasySubscription\Gateways\PayPal\PayPal_Gateway::META_SUBSCRIPTION_ID, 'I-HARNESS-' . $pp->get_id() );
 $pp->save();
 $pp_event      = 'WH-HARNESS-' . $pp->get_id();
 $receipts      = array();
-set_transient( 'subkit_pp_evt_body_' . md5( $pp_event ), array( 'id' => $pp_event, 'event_type' => 'PAYMENT.SALE.COMPLETED', 'resource' => array( 'id' => 'SALE-' . $pp->get_id(), 'billing_agreement_id' => 'I-HARNESS-' . $pp->get_id() ) ), HOUR_IN_SECONDS );
+set_transient( 'easysubscription_pp_evt_body_' . md5( $pp_event ), array( 'id' => $pp_event, 'event_type' => 'PAYMENT.SALE.COMPLETED', 'resource' => array( 'id' => 'SALE-' . $pp->get_id(), 'billing_agreement_id' => 'I-HARNESS-' . $pp->get_id() ) ), HOUR_IN_SECONDS );
 $free->get( 'paypal_webhooks' )->process( $pp_event );
-delete_transient( 'subkit_pp_evt_body_' . md5( $pp_event ) );
+delete_transient( 'easysubscription_pp_evt_body_' . md5( $pp_event ) );
 $check( 'a PayPal sale is recorded once', 1 === ( $succeeded[ $pp->get_id() ] ?? 0 ) && array( 'paylink-pp@example.test' ) === $receipts, array( $succeeded, $receipts ) );
 
 echo "\n4. Refusals\n";
@@ -199,7 +199,7 @@ $harness->keeps_card  = false;
 wc_get_order( $order5->get_id() )->payment_complete( 'paylink_txn_5' );
 $harness->keeps_card  = true;
 $s5                   = wc_get_order( $s5->get_id() );
-$check( 'a gateway that will not keep the card leaves the old one alone', '' === (string) $s5->get_meta( '_subkit_harness_card' ), $s5->get_meta( '_subkit_harness_card' ) );
+$check( 'a gateway that will not keep the card leaves the old one alone', '' === (string) $s5->get_meta( '_easysubscription_harness_card' ), $s5->get_meta( '_easysubscription_harness_card' ) );
 $check( 'and the payment still settles', Subscription_Status::Active === $s5->get_status_enum() );
 
 $s6                   = $make( 'paylink-6@example.test' );
@@ -226,8 +226,8 @@ $woo        = WC()->payment_gateways()->payment_gateways();
 $stand_in   = reset( $woo );
 $offered    = array(
 	Test_Gateway::ID      => $stand_in,
-	'subkit_paypal'       => $stand_in,
-	'subkit_harness_plan' => $stand_in,
+	'easysubscription_paypal'       => $stand_in,
+	'easysubscription_harness_plan' => $stand_in,
 	'bacs'                => $stand_in,
 );
 
@@ -237,7 +237,7 @@ $wp->query_vars['order-pay'] = $order7->get_id();
 $filtered = apply_filters( 'woocommerce_available_payment_gateways', $offered );
 $check( 'only the gateway that renews the subscription is offered', array( Test_Gateway::ID ) === array_keys( (array) $filtered ), array_keys( (array) $filtered ) );
 
-$s8 = $make( 'paylink-8@example.test', 'subkit_harness_plan' );
+$s8 = $make( 'paylink-8@example.test', 'easysubscription_harness_plan' );
 $s8->transition_to( Subscription_Status::OnHold, 'Held by the harness.' );
 $s8->save();
 $claimed = $slots->claim_next( $s8->get_id(), new DateTimeImmutable(), new DateTimeImmutable(), new DateTimeImmutable( '+1 month' ) );
@@ -279,11 +279,11 @@ $processor->process( $bacs->get_id() );
 $bacs_slot             = $slots->latest_unsettled( $bacs->get_id() );
 $bacs_order            = $bacs_slot ? wc_get_order( (int) $bacs_slot->renewal_order_id ) : null;
 if ( ! $bacs_order instanceof WC_Order || 'on-hold' !== $bacs_order->get_status() ) {
-	subkit_test_abort( 'the manual fallback did not leave an on-hold renewal order' );
+	easysubscription_test_abort( 'the manual fallback did not leave an on-hold renewal order' );
 }
 $check( 'an invoice renewal held for the customer can be paid', $bacs_order->needs_payment() );
 $wp->query_vars['order-pay'] = $bacs_order->get_id();
-$check( 'with the subscription\'s own method', array( 'bacs' ) === array_keys( (array) apply_filters( 'woocommerce_available_payment_gateways', array( 'bacs' => $stand_in, 'subkit_paypal' => $stand_in ) ) ) );
+$check( 'with the subscription\'s own method', array( 'bacs' ) === array_keys( (array) apply_filters( 'woocommerce_available_payment_gateways', array( 'bacs' => $stand_in, 'easysubscription_paypal' => $stand_in ) ) ) );
 $wp->query_vars = $query_vars;
 wc_get_order( $bacs_order->get_id() )->update_status( 'processing', 'Bank transfer received.' );
 wc_get_order( $bacs_order->get_id() )->update_status( 'completed' );
@@ -306,9 +306,9 @@ $stripe_api = new class( 'sk_test_harness' ) extends Stripe_Client {
 	}
 };
 $to_stripe = static function ( $gateway, $subscription ) use ( $stripe_api ) {
-	return \SubKit\Gateways\Stripe\Stripe_Gateway::ID === $subscription->get_payment_method() ? new \SubKit\Gateways\Stripe\Stripe_Gateway( $stripe_api ) : $gateway;
+	return \EasySubscription\Gateways\Stripe\Stripe_Gateway::ID === $subscription->get_payment_method() ? new \EasySubscription\Gateways\Stripe\Stripe_Gateway( $stripe_api ) : $gateway;
 };
-add_filter( 'subkit_gateway_for_subscription', $to_stripe, 10, 2 );
+add_filter( 'easysubscription_gateway_for_subscription', $to_stripe, 10, 2 );
 
 $secret             = 'pi_3ds_secret_harness';
 $stripe_api->routes = array(
@@ -320,37 +320,37 @@ $stripe_api->routes = array(
 		'body'   => array( 'error' => array( 'code' => 'authentication_required', 'payment_intent' => array( 'id' => 'pi_3ds', 'client_secret' => $secret ) ) ),
 	),
 );
-$sca = $make( 'paylink-3ds@example.test', \SubKit\Gateways\Stripe\Stripe_Gateway::ID );
-$sca->update_meta_data( \SubKit\Gateways\Stripe\Stripe_Gateway::META_CUSTOMER, 'cus_3ds' );
-$sca->update_meta_data( \SubKit\Gateways\Stripe\Stripe_Gateway::META_METHOD, 'pm_3ds' );
+$sca = $make( 'paylink-3ds@example.test', \EasySubscription\Gateways\Stripe\Stripe_Gateway::ID );
+$sca->update_meta_data( \EasySubscription\Gateways\Stripe\Stripe_Gateway::META_CUSTOMER, 'cus_3ds' );
+$sca->update_meta_data( \EasySubscription\Gateways\Stripe\Stripe_Gateway::META_METHOD, 'pm_3ds' );
 $sca->save();
 $confirmations = array();
 $processor->process( $sca->get_id() );
 $sca_slot  = $slots->latest_unsettled( $sca->get_id() );
 $sca_order = $sca_slot ? wc_get_order( (int) $sca_slot->renewal_order_id ) : null;
 if ( ! $sca_order instanceof WC_Order ) {
-	subkit_test_abort( 'the 3-D Secure renewal left no order' );
+	easysubscription_test_abort( 'the 3-D Secure renewal left no order' );
 }
-$action = (string) $sca_order->get_meta( '_subkit_action_url' );
+$action = (string) $sca_order->get_meta( '_easysubscription_action_url' );
 $check( 'a bank challenge sends the customer to the renewal\'s pay page', $sca_order->get_checkout_payment_url() === $action, $action );
 $check( 'the link carries no client secret', ! str_contains( $action, $secret ) && ! str_contains( implode( '', $confirmations ), $secret ), $action );
-$check( 'the confirmation email and My Account both use it', 1 === count( $confirmations ) && str_contains( html_entity_decode( $confirmations[0] ), $action ) && $action === ( \SubKit\Frontend\MyAccount\Status_Presenter::primary_action( wc_get_order( $sca->get_id() ) )['url'] ?? '' ) );
+$check( 'the confirmation email and My Account both use it', 1 === count( $confirmations ) && str_contains( html_entity_decode( $confirmations[0] ), $action ) && $action === ( \EasySubscription\Frontend\MyAccount\Status_Presenter::primary_action( wc_get_order( $sca->get_id() ) )['url'] ?? '' ) );
 $check( 'and it can be paid there', $sca_order->needs_payment() );
 wc_get_order( $sca_order->get_id() )->payment_complete( 'pi_checkout_3ds' );
 wc_get_order( $sca_order->get_id() )->update_status( 'completed' );
 $check( 'paying it settles once', Subscription_Status::Active === wc_get_order( $sca->get_id() )->get_status_enum() && 1 === ( $succeeded[ $sca->get_id() ] ?? 0 ), $succeeded[ $sca->get_id() ] ?? 0 );
 
 echo "\n7. Money that arrives the wrong way\n";
-$paypal = WC()->payment_gateways()->payment_gateways()['subkit_paypal'] ?? null;
+$paypal = WC()->payment_gateways()->payment_gateways()['easysubscription_paypal'] ?? null;
 if ( ! $paypal instanceof WC_Payment_Gateway ) {
-	subkit_test_abort( 'PayPal checkout is not registered' );
+	easysubscription_test_abort( 'PayPal checkout is not registered' );
 }
 $refused_pp = $paypal->process_payment( $order7->get_id() );
 $pp_notes   = implode( ' | ', wp_list_pluck( wc_get_order_notes( array( 'order_id' => $order7->get_id() ) ), 'content' ) );
 $check( 'PayPal refuses to pay a renewal, whatever route reached it', 'failure' === ( $refused_pp['result'] ?? '' ) && str_contains( $pp_notes, 'cannot be paid with PayPal' ), $pp_notes );
 
 $paid_twice = wc_get_order( $order->get_id() );
-$paid_twice->update_meta_data( '_subkit_stripe_session', 'cs_second' );
+$paid_twice->update_meta_data( '_easysubscription_stripe_session', 'cs_second' );
 $paid_twice->save();
 $stripe_api->routes = array(
 	'GET /v1/checkout/sessions/cs_second' => array( 'ok' => true, 'status' => 200, 'error' => '', 'code' => '', 'body' => array( 'id' => 'cs_second', 'mode' => 'payment', 'payment_status' => 'paid', 'customer' => 'cus_twice', 'payment_intent' => array( 'id' => 'pi_second_capture', 'payment_method' => 'pm_twice' ) ) ),
@@ -371,7 +371,7 @@ $check( 'a subscription that is ending keeps what it paid for', strtotime( (stri
 // Receipts, licence extensions, webhooks and Dunning all hang off this; the money was taken.
 $check( 'and the payment is announced once, like any other renewal', 1 === ( $succeeded[ $ending->get_id() ] ?? 0 ) && Subscription_Status::PendingCancel === wc_get_order( $ending->get_id() )->get_status_enum(), $succeeded[ $ending->get_id() ] ?? 0 );
 
-remove_filter( 'subkit_gateway_for_subscription', $to_stripe, 10 );
+remove_filter( 'easysubscription_gateway_for_subscription', $to_stripe, 10 );
 
 // ---- clean up -----------------------------------------------------------------------
 $wp->query_vars = $query_vars;
@@ -381,7 +381,7 @@ $shop->delete( true );
 
 global $wpdb;
 foreach ( $made as $id ) {
-	$renewals = $wpdb->get_col( $wpdb->prepare( 'SELECT renewal_order_id FROM %i WHERE subscription_id = %d AND renewal_order_id IS NOT NULL', $wpdb->prefix . 'subkit_charge_slot', $id ) );
+	$renewals = $wpdb->get_col( $wpdb->prepare( 'SELECT renewal_order_id FROM %i WHERE subscription_id = %d AND renewal_order_id IS NOT NULL', $wpdb->prefix . 'easysubscription_charge_slot', $id ) );
 	foreach ( $renewals as $renewal_id ) {
 		$r = wc_get_order( (int) $renewal_id );
 		$r && $r->delete( true );
@@ -391,4 +391,4 @@ foreach ( $made as $id ) {
 	$s && $s->delete( true );
 }
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

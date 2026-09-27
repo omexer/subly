@@ -1,13 +1,13 @@
 <?php
 
-namespace SubKit\Rest;
+namespace EasySubscription\Rest;
 
-use SubKit\Data\Activity_Repository;
-use SubKit\Billing\Renewal_Processor;
-use SubKit\Data\Subscription_Query;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Frontend\MyAccount\Status_Presenter;
+use EasySubscription\Data\Activity_Repository;
+use EasySubscription\Billing\Renewal_Processor;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Frontend\MyAccount\Status_Presenter;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -27,7 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Subscriptions_Controller {
 
-	public const NAMESPACE = 'subkit/v1';
+	public const NAMESPACE = 'easysubscription/v1';
 
 	private const REST_BASE = 'subscriptions';
 
@@ -176,12 +176,12 @@ class Subscriptions_Controller {
 		/**
 		 * Filter the actions the subscriptions endpoint accepts.
 		 *
-		 * An action named here must also be handled on subkit_rest_subscription_action,
+		 * An action named here must also be handled on easysubscription_rest_subscription_action,
 		 * or it will be accepted by the schema and then refused as unknown.
 		 *
 		 * @param string[] $actions
 		 */
-		return array_values( array_unique( (array) apply_filters( 'subkit_rest_subscription_actions', $actions ) ) );
+		return array_values( array_unique( (array) apply_filters( 'easysubscription_rest_subscription_actions', $actions ) ) );
 	}
 
 	public function can_read(): bool {
@@ -271,9 +271,9 @@ class Subscriptions_Controller {
 
 			if ( ! $date ) {
 				return new \WP_Error(
-					'subkit_invalid_date',
+					'easysubscription_invalid_date',
 					/* translators: %s: the field that could not be read. */
-					sprintf( __( 'Could not read %s as a date.', 'subkit-subscriptions' ), $field ),
+					sprintf( __( 'Could not read %s as a date.', 'easysubscription' ), $field ),
 					array( 'status' => 400 )
 				);
 			}
@@ -327,7 +327,7 @@ class Subscriptions_Controller {
 			 * @param Subscription        $subscription
 			 * @param string              $reason
 			 */
-			$done = apply_filters( 'subkit_rest_subscription_action', null, $action, $subscription, $reason );
+			$done = apply_filters( 'easysubscription_rest_subscription_action', null, $action, $subscription, $reason );
 		}
 
 		if ( $done instanceof \WP_Error ) {
@@ -336,19 +336,19 @@ class Subscriptions_Controller {
 
 		if ( null === $done ) {
 			return new \WP_Error(
-				'subkit_unknown_action',
+				'easysubscription_unknown_action',
 				/* translators: %s: the action that was asked for. */
-				sprintf( __( 'Nothing on this site can %s a subscription.', 'subkit-subscriptions' ), $action ),
+				sprintf( __( 'Nothing on this site can %s a subscription.', 'easysubscription' ), $action ),
 				array( 'status' => 400 )
 			);
 		}
 
 		if ( ! $done ) {
 			return new \WP_Error(
-				'subkit_action_refused',
+				'easysubscription_action_refused',
 				sprintf(
 					/* translators: 1: subscription id, 2: action, 3: current status. */
-					__( 'Subscription %1$d cannot %2$s from %3$s.', 'subkit-subscriptions' ),
+					__( 'Subscription %1$d cannot %2$s from %3$s.', 'easysubscription' ),
 					$subscription->get_id(),
 					$action,
 					(string) $subscription->get_status()
@@ -400,7 +400,7 @@ class Subscriptions_Controller {
 		ob_start();
 
 		/** This action is documented in includes/Admin/Menu.php */
-		do_action( 'subkit_admin_subscription_detail', $subscription );
+		do_action( 'easysubscription_admin_subscription_detail', $subscription );
 
 		return new \WP_REST_Response( array( 'html' => (string) ob_get_clean() ) );
 	}
@@ -455,8 +455,8 @@ class Subscriptions_Controller {
 	private function renew_now( Subscription $subscription ) {
 		if ( ! $this->processor instanceof Renewal_Processor ) {
 			return new \WP_Error(
-				'subkit_no_processor',
-				__( 'Renewals are not available on this site.', 'subkit-subscriptions' ),
+				'easysubscription_no_processor',
+				__( 'Renewals are not available on this site.', 'easysubscription' ),
 				array( 'status' => 503 )
 			);
 		}
@@ -504,17 +504,17 @@ class Subscriptions_Controller {
 		// is not a disclosure, and 404 is what makes a typo debuggable.
 		return $subscription instanceof Subscription
 			? $subscription
-			: new \WP_Error( 'subkit_not_found', __( 'No subscription with that id.', 'subkit-subscriptions' ), array( 'status' => 404 ) );
+			: new \WP_Error( 'easysubscription_not_found', __( 'No subscription with that id.', 'easysubscription' ), array( 'status' => 404 ) );
 	}
 
 	/**
 	 * @return bool|\WP_Error
 	 */
 	private function change_status( Subscription $subscription, string $status, string $reason ) {
-		$target = Subscription_Status::tryFrom( $status ) ?? Subscription_Status::tryFrom( 'sk-' . ltrim( $status, 'sk-' ) );
+		$target = Subscription_Status::tryFrom( $status ) ?? Subscription_Status::tryFrom( 'es-' . ltrim( $status, 'es-' ) );
 
 		if ( ! $target ) {
-			return new \WP_Error( 'subkit_unknown_status', __( 'Unknown subscription status.', 'subkit-subscriptions' ), array( 'status' => 400 ) );
+			return new \WP_Error( 'easysubscription_unknown_status', __( 'Unknown subscription status.', 'easysubscription' ), array( 'status' => 400 ) );
 		}
 
 		return $this->transition( $subscription, $target, $reason );
@@ -539,7 +539,7 @@ class Subscriptions_Controller {
 		// Only the My Account route announced a cancellation, so a store cancelling for a
 		// customer sent them nothing at all.
 		if ( Subscription_Status::Cancelled === $to || Subscription_Status::PendingCancel === $to ) {
-			do_action( 'subkit_subscription_cancelled', $subscription, 'store' );
+			do_action( 'easysubscription_subscription_cancelled', $subscription, 'store' );
 		}
 
 		return true;
@@ -590,7 +590,7 @@ class Subscriptions_Controller {
 				: null,
 			'parent_order_id'        => $subscription->get_parent_order_id(),
 			'date_created'           => $subscription->get_date_created() ? $subscription->get_date_created()->date( 'c' ) : null,
-			'edit_url'               => admin_url( 'admin.php?page=' . \SubKit\Admin\Menu::LIST_SLUG . '&subscription=' . $subscription->get_id() ),
+			'edit_url'               => admin_url( 'admin.php?page=' . \EasySubscription\Admin\Menu::LIST_SLUG . '&subscription=' . $subscription->get_id() ),
 		);
 
 		/**
@@ -599,7 +599,7 @@ class Subscriptions_Controller {
 		 * @param array<string, mixed> $data
 		 * @param Subscription         $subscription
 		 */
-		return (array) apply_filters( 'subkit_rest_subscription_data', $data, $subscription );
+		return (array) apply_filters( 'easysubscription_rest_subscription_data', $data, $subscription );
 	}
 
 	/**

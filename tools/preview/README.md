@@ -17,7 +17,7 @@ Open `http://localhost:8765/#dashboard`. The other screens are `#list`, `#detail
 and `#health`; add `?setup=done` before the hash to see Home once setup is finished.
 
 It must run inside a WordPress install, because it borrows wp-admin's stylesheets, and with
-SubKit Pro checked out beside SubKit, because Pro's screens are included.
+EasySubscription Pro checked out beside EasySubscription, because Pro's screens are included.
 
 What it does not show: WordPress's own sidebar and admin bar. Look at the real admin once before
 a release — in particular the header bar sitting under the admin bar, and where notices land.

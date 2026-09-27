@@ -5,7 +5,7 @@ export const Card = forwardRef( ( { className, ...props }, ref ) => (
 	<div
 		ref={ ref }
 		className={ cn(
-			'sk-rounded-lg sk-border sk-border-border sk-bg-card sk-text-card-foreground sk-shadow-sm',
+			'es-rounded-lg es-border es-border-border es-bg-card es-text-card-foreground es-shadow-sm',
 			className
 		) }
 		{ ...props }
@@ -17,7 +17,7 @@ export const CardHeader = forwardRef( ( { className, ...props }, ref ) => (
 	<div
 		ref={ ref }
 		className={ cn(
-			'sk-flex sk-flex-col sk-space-y-1.5 sk-p-5 sk-pb-3',
+			'es-flex es-flex-col es-space-y-1.5 es-p-5 es-pb-3',
 			className
 		) }
 		{ ...props }
@@ -30,7 +30,7 @@ export const CardTitle = forwardRef( ( { className, ...props }, ref ) => (
 	<h3
 		ref={ ref }
 		className={ cn(
-			'sk-text-sm sk-font-medium sk-text-muted-foreground',
+			'es-text-sm es-font-medium es-text-muted-foreground',
 			className
 		) }
 		{ ...props }
@@ -41,7 +41,7 @@ CardTitle.displayName = 'CardTitle';
 export const CardContent = forwardRef( ( { className, ...props }, ref ) => (
 	<div
 		ref={ ref }
-		className={ cn( 'sk-p-5 sk-pt-0', className ) }
+		className={ cn( 'es-p-5 es-pt-0', className ) }
 		{ ...props }
 	/>
 ) );
@@ -50,7 +50,7 @@ CardContent.displayName = 'CardContent';
 export const CardFooter = forwardRef( ( { className, ...props }, ref ) => (
 	<div
 		ref={ ref }
-		className={ cn( 'sk-flex sk-items-center sk-p-5 sk-pt-0', className ) }
+		className={ cn( 'es-flex es-items-center es-p-5 es-pt-0', className ) }
 		{ ...props }
 	/>
 ) );

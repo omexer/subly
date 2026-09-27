@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Gateways\Stripe;
+namespace EasySubscription\Gateways\Stripe;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,9 +19,9 @@ class Stripe_Client {
 	public function __construct( private readonly string $secret_key ) {}
 
 	public static function from_settings(): self {
-		$test = 'yes' !== get_option( 'subkit_stripe_live', 'no' );
+		$test = 'yes' !== get_option( 'easysubscription_stripe_live', 'no' );
 
-		return new self( (string) get_option( $test ? 'subkit_stripe_test_secret' : 'subkit_stripe_secret', '' ) );
+		return new self( (string) get_option( $test ? 'easysubscription_stripe_test_secret' : 'easysubscription_stripe_secret', '' ) );
 	}
 
 	public function is_configured(): bool {
@@ -29,7 +29,7 @@ class Stripe_Client {
 	}
 
 	public function is_enabled(): bool {
-		return 'yes' === get_option( 'subkit_stripe_enabled', 'no' ) && $this->is_configured();
+		return 'yes' === get_option( 'easysubscription_stripe_enabled', 'no' ) && $this->is_configured();
 	}
 
 	/**

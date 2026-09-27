@@ -1,5 +1,5 @@
 /**
- * SubKit admin.
+ * EasySubscription admin.
  *
  * Built on WordPress's own palette rather than a brand of its own, so the screens read as
  * part of wp-admin instead of a widget embedded in it. Everything is a token first, which
@@ -7,111 +7,111 @@
  */
 
 :root,
-.subkit-shell {
-	--subkit-bg: #fff;
-	--subkit-line: #e5e7eb;
-	--subkit-line-soft: #f3f4f6;
-	--subkit-ink: #111827;
-	--subkit-ink-soft: #6b7280;
-	--subkit-accent: #4f46e5;
-	--subkit-accent-dark: #4338ca;
-	--subkit-accent-soft: #eef2ff;
-	--subkit-good: #1a7f37;
-	--subkit-warn: #bd8600;
-	--subkit-bad: #b32d2e;
-	--subkit-radius: 12px;
-	--subkit-radius-sm: 8px;
-	--subkit-gap: 16px;
-	--subkit-gap-lg: 24px;
-	--subkit-shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .04);
-	--subkit-shadow-lg: 0 10px 30px rgba(16, 24, 40, .08);
+.easysubscription-shell {
+	--easysubscription-bg: #fff;
+	--easysubscription-line: #e5e7eb;
+	--easysubscription-line-soft: #f3f4f6;
+	--easysubscription-ink: #111827;
+	--easysubscription-ink-soft: #6b7280;
+	--easysubscription-accent: #4f46e5;
+	--easysubscription-accent-dark: #4338ca;
+	--easysubscription-accent-soft: #eef2ff;
+	--easysubscription-good: #1a7f37;
+	--easysubscription-warn: #bd8600;
+	--easysubscription-bad: #b32d2e;
+	--easysubscription-radius: 12px;
+	--easysubscription-radius-sm: 8px;
+	--easysubscription-gap: 16px;
+	--easysubscription-gap-lg: 24px;
+	--easysubscription-shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .04);
+	--easysubscription-shadow-lg: 0 10px 30px rgba(16, 24, 40, .08);
 }
 
 /* ------------------------------------------------------------------ layout */
 
-.subkit-page > h1 {
+.easysubscription-page > h1 {
 	margin-bottom: 4px;
 }
 
-.subkit-lede {
-	margin: 0 0 var(--subkit-gap);
-	color: var(--subkit-ink-soft);
+.easysubscription-lede {
+	margin: 0 0 var(--easysubscription-gap);
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 	max-width: 46rem;
 }
 
-.subkit-card {
-	background: var(--subkit-bg);
-	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius);
+.easysubscription-card {
+	background: var(--easysubscription-bg);
+	border: 1px solid var(--easysubscription-line);
+	border-radius: var(--easysubscription-radius);
 	padding: 20px 22px;
-	margin: 0 0 var(--subkit-gap);
+	margin: 0 0 var(--easysubscription-gap);
 	max-width: 46rem;
-	box-shadow: var(--subkit-shadow);
+	box-shadow: var(--easysubscription-shadow);
 }
 
-.subkit-card--wide {
+.easysubscription-card--wide {
 	max-width: none;
 }
 
-.subkit-card > h2:first-child,
-.subkit-card > h3:first-child {
+.easysubscription-card > h2:first-child,
+.easysubscription-card > h3:first-child {
 	margin-top: 0;
 }
 
 /* ------------------------------------------------------------- stat tiles */
 
-.subkit-stats {
+.easysubscription-stats {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	gap: var(--subkit-gap);
-	margin: 0 0 var(--subkit-gap);
+	gap: var(--easysubscription-gap);
+	margin: 0 0 var(--easysubscription-gap);
 	max-width: 60rem;
 }
 
-.subkit-stat {
-	background: var(--subkit-bg);
-	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius);
+.easysubscription-stat {
+	background: var(--easysubscription-bg);
+	border: 1px solid var(--easysubscription-line);
+	border-radius: var(--easysubscription-radius);
 	padding: 16px 18px;
 	box-shadow: 0 1px 1px rgba(0, 0, 0, .04);
 }
 
-.subkit-stat__label {
+.easysubscription-stat__label {
 	display: block;
 	font-size: 12px;
 	font-weight: 500;
 	text-transform: uppercase;
 	letter-spacing: .04em;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	margin-bottom: 6px;
 }
 
-.subkit-stat__value {
+.easysubscription-stat__value {
 	display: block;
 	font-size: 26px;
 	line-height: 1.2;
 	font-weight: 400;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-stat__value .woocommerce-Price-currencySymbol {
+.easysubscription-stat__value .woocommerce-Price-currencySymbol {
 	font-size: .7em;
 }
 
-.subkit-stat__meta {
+.easysubscription-stat__meta {
 	display: block;
 	margin-top: 4px;
 	font-size: 12px;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 }
 
-.subkit-delta--up { color: var(--subkit-good); }
-.subkit-delta--down { color: var(--subkit-bad); }
+.easysubscription-delta--up { color: var(--easysubscription-good); }
+.easysubscription-delta--down { color: var(--easysubscription-bad); }
 
 /* --------------------------------------------------------------- status */
 
-.subkit-pill {
+.easysubscription-pill {
 	display: inline-block;
 	padding: 2px 10px;
 	border-radius: 999px;
@@ -122,38 +122,38 @@
 	border: 1px solid transparent;
 }
 
-.subkit-pill--active,
-.subkit-pill--sk-active { background: #edfaef; color: #14663a; border-color: #b8e6c4; }
-.subkit-pill--sk-trialling { background: #eef4fb; color: #1c5d99; border-color: #bcd8f0; }
-.subkit-pill--sk-on-hold,
-.subkit-pill--sk-pending,
-.subkit-pill--sk-pending-cancel { background: #fdf6e6; color: #8a6300; border-color: #f0dca8; }
-.subkit-pill--sk-cancelled,
-.subkit-pill--sk-expired { background: #f6f7f7; color: #50575e; border-color: #dcdcde; }
-.subkit-pill--sk-switched { background: #f4f0fa; color: #5f3dc4; border-color: #d9cdf0; }
+.easysubscription-pill--active,
+.easysubscription-pill--es-active { background: #edfaef; color: #14663a; border-color: #b8e6c4; }
+.easysubscription-pill--es-trialling { background: #eef4fb; color: #1c5d99; border-color: #bcd8f0; }
+.easysubscription-pill--es-on-hold,
+.easysubscription-pill--es-pending,
+.easysubscription-pill--es-pending-cancel { background: #fdf6e6; color: #8a6300; border-color: #f0dca8; }
+.easysubscription-pill--es-cancelled,
+.easysubscription-pill--es-expired { background: #f6f7f7; color: #50575e; border-color: #dcdcde; }
+.easysubscription-pill--es-switched { background: #f4f0fa; color: #5f3dc4; border-color: #d9cdf0; }
 
 /* -------------------------------------------------------------- checklist */
 
-.subkit-steps {
+.easysubscription-steps {
 	list-style: none;
 	margin: 0;
 	padding: 0;
-	counter-reset: subkit-step;
+	counter-reset: easysubscription-step;
 }
 
-.subkit-steps li {
+.easysubscription-steps li {
 	display: flex;
 	gap: 12px;
 	padding: 14px 0;
-	border-top: 1px solid var(--subkit-line-soft);
+	border-top: 1px solid var(--easysubscription-line-soft);
 }
 
-.subkit-steps li:first-child {
+.easysubscription-steps li:first-child {
 	border-top: 0;
 	padding-top: 4px;
 }
 
-.subkit-step__mark {
+.easysubscription-step__mark {
 	flex: 0 0 24px;
 	height: 24px;
 	border-radius: 50%;
@@ -163,50 +163,50 @@
 	font-size: 13px;
 	font-weight: 600;
 	background: #f0f0f1;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 }
 
-.subkit-step--done .subkit-step__mark {
-	background: var(--subkit-good);
+.easysubscription-step--done .easysubscription-step__mark {
+	background: var(--easysubscription-good);
 	color: #fff;
 }
 
-.subkit-step__body { flex: 1 1 auto; }
+.easysubscription-step__body { flex: 1 1 auto; }
 
-.subkit-step__title {
+.easysubscription-step__title {
 	font-weight: 600;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-step--done .subkit-step__title {
-	color: var(--subkit-ink-soft);
+.easysubscription-step--done .easysubscription-step__title {
+	color: var(--easysubscription-ink-soft);
 	font-weight: 500;
 }
 
-.subkit-step__detail {
+.easysubscription-step__detail {
 	display: block;
 	margin-top: 2px;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 }
 
-.subkit-step__action { margin-top: 8px; }
+.easysubscription-step__action { margin-top: 8px; }
 
 /* ----------------------------------------------------------- status list */
 
-.subkit-checks {
+.easysubscription-checks {
 	margin: 0;
 	display: grid;
 	gap: 10px;
 }
 
-.subkit-check {
+.easysubscription-check {
 	display: flex;
 	gap: 10px;
 	align-items: flex-start;
 }
 
-.subkit-check__dot {
+.easysubscription-check__dot {
 	flex: 0 0 8px;
 	width: 8px;
 	height: 8px;
@@ -214,59 +214,59 @@
 	margin-top: 7px;
 }
 
-.subkit-check--ok .subkit-check__dot { background: var(--subkit-good); }
-.subkit-check--bad .subkit-check__dot { background: var(--subkit-bad); }
+.easysubscription-check--ok .easysubscription-check__dot { background: var(--easysubscription-good); }
+.easysubscription-check--bad .easysubscription-check__dot { background: var(--easysubscription-bad); }
 
-.subkit-check__label { font-weight: 600; }
+.easysubscription-check__label { font-weight: 600; }
 
-.subkit-check__detail {
+.easysubscription-check__detail {
 	display: block;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 }
 
-.subkit-check--bad .subkit-check__detail { color: var(--subkit-bad); }
+.easysubscription-check--bad .easysubscription-check__detail { color: var(--easysubscription-bad); }
 
-.subkit-check__items {
+.easysubscription-check__items {
 	margin: 4px 0 0;
 	font-size: 13px;
 }
 
-.subkit-check__items li { margin: 2px 0; }
+.easysubscription-check__items li { margin: 2px 0; }
 
 /* ---------------------------------------------------------------- tables */
 
-.subkit-table { border-radius: var(--subkit-radius); overflow: hidden; }
-.subkit-table th { font-weight: 600; }
-.subkit-table td { vertical-align: middle; }
+.easysubscription-table { border-radius: var(--easysubscription-radius); overflow: hidden; }
+.easysubscription-table th { font-weight: 600; }
+.easysubscription-table td { vertical-align: middle; }
 
-.subkit-facts { max-width: 46rem; }
-.subkit-facts th {
+.easysubscription-facts { max-width: 46rem; }
+.easysubscription-facts th {
 	width: 12rem;
 	font-weight: 600;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 }
 
 /* ----------------------------------------------------------- empty state */
 
-.subkit-empty {
+.easysubscription-empty {
 	text-align: center;
 	padding: 40px 24px;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 }
 
-.subkit-empty__title {
+.easysubscription-empty__title {
 	font-size: 15px;
 	font-weight: 600;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 	margin: 0 0 6px;
 }
 
-.subkit-empty p { margin: 0 auto; max-width: 30rem; }
+.easysubscription-empty p { margin: 0 auto; max-width: 30rem; }
 
 /* ---------------------------------------------------------------- forms */
 
-.subkit-inline-form {
+.easysubscription-inline-form {
 	display: flex;
 	flex-wrap: wrap;
 	gap: 12px;
@@ -274,16 +274,16 @@
 	margin-top: 12px;
 }
 
-.subkit-field { display: block; }
+.easysubscription-field { display: block; }
 
-.subkit-field > span {
+.easysubscription-field > span {
 	display: block;
 	font-size: 12px;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	margin-bottom: 2px;
 }
 
-.subkit-report {
+.easysubscription-report {
 	width: 100%;
 	max-width: 46rem;
 	font-family: Consolas, Monaco, monospace;
@@ -292,36 +292,36 @@
 }
 
 @media screen and (max-width: 782px) {
-	.subkit-stats { grid-template-columns: 1fr; }
-	.subkit-facts th { width: auto; }
+	.easysubscription-stats { grid-template-columns: 1fr; }
+	.easysubscription-facts th { width: auto; }
 }
 
 /* --------------------------------------------------------------- sparkline */
 
-.subkit-spark {
+.easysubscription-spark {
 	display: flex;
 	align-items: flex-end;
 	gap: 3px;
 	height: 120px;
 	max-width: 42rem;
-	border-bottom: 1px solid var(--subkit-line);
+	border-bottom: 1px solid var(--easysubscription-line);
 	padding-bottom: 2px;
 }
 
-.subkit-spark__bar {
+.easysubscription-spark__bar {
 	flex: 1;
 	min-width: 6px;
 	border-radius: 2px 2px 0 0;
 }
 
-.subkit-muted {
-	color: var(--subkit-ink-soft);
+.easysubscription-muted {
+	color: var(--easysubscription-ink-soft);
 	font-size: 12px;
 }
 
 /* ---------------------------------------------------------------- charts */
 
-.subkit-chart {
+.easysubscription-chart {
 	display: block;
 	width: 100%;
 	height: auto;
@@ -329,26 +329,26 @@
 	overflow: visible;
 }
 
-.subkit-chart__empty {
+.easysubscription-chart__empty {
 	margin: 0;
 	padding: 28px 0;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	text-align: center;
 }
 
-.subkit-ring {
+.easysubscription-ring {
 	display: flex;
 	gap: 28px;
 	align-items: center;
 	flex-wrap: wrap;
 }
 
-.subkit-ring .subkit-chart {
+.easysubscription-ring .easysubscription-chart {
 	flex: 0 0 180px;
 	width: 180px;
 }
 
-.subkit-legend {
+.easysubscription-legend {
 	flex: 1 1 16rem;
 	margin: 0;
 	display: grid;
@@ -356,81 +356,81 @@
 	min-width: 14rem;
 }
 
-.subkit-legend li {
+.easysubscription-legend li {
 	display: grid;
 	grid-template-columns: 12px 1fr auto auto;
 	gap: 10px;
 	align-items: center;
 	margin: 0;
 	padding: 4px 0;
-	border-bottom: 1px solid var(--subkit-line-soft);
+	border-bottom: 1px solid var(--easysubscription-line-soft);
 	font-size: 13px;
 }
 
-.subkit-legend li:last-child { border-bottom: 0; }
+.easysubscription-legend li:last-child { border-bottom: 0; }
 
-.subkit-legend__swatch {
+.easysubscription-legend__swatch {
 	width: 12px;
 	height: 12px;
 	border-radius: 3px;
 }
 
-.subkit-legend__value { font-variant-numeric: tabular-nums; font-weight: 600; }
+.easysubscription-legend__value { font-variant-numeric: tabular-nums; font-weight: 600; }
 
-.subkit-legend__share {
+.easysubscription-legend__share {
 	font-variant-numeric: tabular-nums;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	min-width: 3.2em;
 	text-align: right;
 }
 
-.subkit-inline-error {
+.easysubscription-inline-error {
 	display: inline-block;
 	margin-left: 8px;
-	color: var(--subkit-bad);
+	color: var(--easysubscription-bad);
 	font-size: 12px;
 }
 
 /* ------------------------------------------------------------ row actions */
 
-.subkit-row--busy { opacity: .55; }
+.easysubscription-row--busy { opacity: .55; }
 
-.subkit-row--done > * { background: #f6fbf7; }
+.easysubscription-row--done > * { background: #f6fbf7; }
 
-.subkit-row-result {
+.easysubscription-row-result {
 	display: inline-block;
 	margin-left: 8px;
 	font-size: 12px;
 }
 
-.subkit-row-result.is-good { color: var(--subkit-good); }
-.subkit-row-result.is-bad { color: var(--subkit-bad); }
+.easysubscription-row-result.is-good { color: var(--easysubscription-good); }
+.easysubscription-row-result.is-bad { color: var(--easysubscription-bad); }
 
 
 /* ---------------------------------------------------------------------------
- * The frame every SubKit screen sits in.
+ * The frame every EasySubscription screen sits in.
  * ------------------------------------------------------------------------ */
 
-body.subkit-admin #wpwrap { background: #f6f7fb; }
-body.subkit-admin #wpcontent { padding-left: 0; }
+body.easysubscription-admin #wpwrap { background: #f6f7fb; }
+body.easysubscription-admin #wpcontent { padding-left: 0; }
 
-.subkit-shell__bar {
+.easysubscription-shell__bar {
 	position: sticky;
 	top: 32px;
 	z-index: 99;
 	background: #fff;
-	border-bottom: 1px solid var(--subkit-line);
+	border-bottom: 1px solid var(--easysubscription-line);
 }
 
 @media screen and (max-width: 782px) {
-	.subkit-shell__bar { top: 46px; }
+	.easysubscription-shell__bar { top: 46px; }
 }
 
 @media screen and (max-width: 600px) {
-	.subkit-shell__bar { position: static; }
+	.easysubscription-shell__bar { position: static; }
 }
 
-.subkit-shell__inner {
+.easysubscription-shell__inner {
 	max-width: 1240px;
 	min-height: 64px;
 	margin: 0 auto;
@@ -442,91 +442,91 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	box-sizing: border-box;
 }
 
-.subkit-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
-.subkit-crumbs__home { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; color: var(--subkit-ink); text-decoration: none; }
-.subkit-crumbs__home:hover, .subkit-crumbs__home:focus { color: var(--subkit-ink); }
-.subkit-logo { display: block; flex: none; width: auto; height: 28px; }
-.subkit-crumbs__sep { color: #d1d5db; }
-.subkit-crumbs__link { color: var(--subkit-ink-soft); text-decoration: none; }
-.subkit-crumbs__link:hover { color: var(--subkit-accent); }
-.subkit-crumbs__current { overflow: hidden; color: var(--subkit-ink); font-weight: 500; white-space: nowrap; text-overflow: ellipsis; }
+.easysubscription-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 14px; }
+.easysubscription-crumbs__home { display: inline-flex; align-items: center; gap: 8px; font-weight: 650; color: var(--easysubscription-ink); text-decoration: none; }
+.easysubscription-crumbs__home:hover, .easysubscription-crumbs__home:focus { color: var(--easysubscription-ink); }
+.easysubscription-logo { display: block; flex: none; width: auto; height: 28px; }
+.easysubscription-crumbs__sep { color: #d1d5db; }
+.easysubscription-crumbs__link { color: var(--easysubscription-ink-soft); text-decoration: none; }
+.easysubscription-crumbs__link:hover { color: var(--easysubscription-accent); }
+.easysubscription-crumbs__current { overflow: hidden; color: var(--easysubscription-ink); font-weight: 500; white-space: nowrap; text-overflow: ellipsis; }
 
-.subkit-shell__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; font-size: 14px; }
-.subkit-shell__meta a { display: inline-flex; align-items: center; gap: 6px; color: #3c434a; text-decoration: none; }
-.subkit-shell__meta a:hover { color: var(--subkit-accent); }
-.subkit-shell__meta a.subkit-shell__upgrade { padding: 7px 14px; border-radius: 6px; background: #fff4e8; color: var(--subkit-ink); font-weight: 500; }
-.subkit-shell__meta a.subkit-shell__upgrade:hover, .subkit-shell__meta a.subkit-shell__upgrade:focus { background: #ffe7cc; color: var(--subkit-ink); }
-.subkit-shell__upgrade svg { width: 20px; height: 20px; color: #f0801a; }
+.easysubscription-shell__meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; font-size: 14px; }
+.easysubscription-shell__meta a { display: inline-flex; align-items: center; gap: 6px; color: #3c434a; text-decoration: none; }
+.easysubscription-shell__meta a:hover { color: var(--easysubscription-accent); }
+.easysubscription-shell__meta a.easysubscription-shell__upgrade { padding: 7px 14px; border-radius: 6px; background: #fff4e8; color: var(--easysubscription-ink); font-weight: 500; }
+.easysubscription-shell__meta a.easysubscription-shell__upgrade:hover, .easysubscription-shell__meta a.easysubscription-shell__upgrade:focus { background: #ffe7cc; color: var(--easysubscription-ink); }
+.easysubscription-shell__upgrade svg { width: 20px; height: 20px; color: #f0801a; }
 
-.subkit-shell__body.wrap { max-width: 1240px; margin: 0 auto; padding: 28px 24px 0; box-sizing: border-box; }
-.subkit-shell .wp-header-end { visibility: hidden; margin: 0; border: 0; }
+.easysubscription-shell__body.wrap { max-width: 1240px; margin: 0 auto; padding: 28px 24px 0; box-sizing: border-box; }
+.easysubscription-shell .wp-header-end { visibility: hidden; margin: 0; border: 0; }
 
-.subkit-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 0 0 24px; }
-.wrap .subkit-head__title { margin: 0; padding: 0; font-size: 24px; font-weight: 650; line-height: 1.25; color: var(--subkit-ink); }
-.subkit-head__subtitle { margin: 6px 0 0; font-size: 14px; color: var(--subkit-ink-soft); }
-.subkit-head__actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.easysubscription-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin: 0 0 24px; }
+.wrap .easysubscription-head__title { margin: 0; padding: 0; font-size: 24px; font-weight: 650; line-height: 1.25; color: var(--easysubscription-ink); }
+.easysubscription-head__subtitle { margin: 6px 0 0; font-size: 14px; color: var(--easysubscription-ink-soft); }
+.easysubscription-head__actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.subkit-shell__foot { max-width: 1240px; margin: 48px auto 0; padding: 0 24px 8px; font-size: 13px; text-align: center; color: var(--subkit-ink-soft); box-sizing: border-box; }
-.subkit-shell__foot a { color: var(--subkit-ink-soft); }
+.easysubscription-shell__foot { max-width: 1240px; margin: 48px auto 0; padding: 0 24px 8px; font-size: 13px; text-align: center; color: var(--easysubscription-ink-soft); box-sizing: border-box; }
+.easysubscription-shell__foot a { color: var(--easysubscription-ink-soft); }
 
 /* ---------------------------------------------------------------------------
  * Components the server-rendered screens share with the React ones.
  * ------------------------------------------------------------------------ */
 
-.subkit-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid var(--subkit-line); border-radius: 8px; background: #fff; color: var(--subkit-ink); font-size: 13px; font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background .12s, border-color .12s, color .12s; }
-.subkit-btn:hover, .subkit-btn:focus { border-color: #d1d5db; background: #f9fafb; color: var(--subkit-ink); }
-.subkit-btn:focus-visible { outline: 2px solid var(--subkit-accent); outline-offset: 2px; }
-.subkit-btn--primary { border-color: var(--subkit-accent); background: var(--subkit-accent); color: #fff; }
-.subkit-btn--primary:hover, .subkit-btn--primary:focus { border-color: var(--subkit-accent-dark); background: var(--subkit-accent-dark); color: #fff; }
-.subkit-btn--sm { height: 30px; padding: 0 10px; font-size: 12px; }
-.subkit-btn[disabled] { opacity: .55; cursor: default; }
+.easysubscription-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 14px; border: 1px solid var(--easysubscription-line); border-radius: 8px; background: #fff; color: var(--easysubscription-ink); font-size: 13px; font-weight: 500; line-height: 1; text-decoration: none; white-space: nowrap; cursor: pointer; transition: background .12s, border-color .12s, color .12s; }
+.easysubscription-btn:hover, .easysubscription-btn:focus { border-color: #d1d5db; background: #f9fafb; color: var(--easysubscription-ink); }
+.easysubscription-btn:focus-visible { outline: 2px solid var(--easysubscription-accent); outline-offset: 2px; }
+.easysubscription-btn--primary { border-color: var(--easysubscription-accent); background: var(--easysubscription-accent); color: #fff; }
+.easysubscription-btn--primary:hover, .easysubscription-btn--primary:focus { border-color: var(--easysubscription-accent-dark); background: var(--easysubscription-accent-dark); color: #fff; }
+.easysubscription-btn--sm { height: 30px; padding: 0 10px; font-size: 12px; }
+.easysubscription-btn[disabled] { opacity: .55; cursor: default; }
 
-.subkit-section-title { margin: 32px 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--subkit-ink-soft); }
-.subkit-section-title:first-child { margin-top: 0; }
+.easysubscription-section-title { margin: 32px 0 12px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--easysubscription-ink-soft); }
+.easysubscription-section-title:first-child { margin-top: 0; }
 
-.subkit-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.easysubscription-grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 
-.subkit-tile { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--subkit-line); border-radius: var(--subkit-radius); background: #fff; transition: border-color .15s, box-shadow .15s; }
-.subkit-tile:hover { border-color: #d1d5db; box-shadow: 0 4px 16px rgba(17, 24, 39, .06); }
-.subkit-tile__top { display: flex; align-items: center; gap: 12px; }
-.subkit-tile__icon { display: grid; flex: none; place-items: center; width: 40px; height: 40px; overflow: hidden; border-radius: 10px; background: var(--subkit-accent-soft); color: var(--subkit-accent); font-size: 15px; font-weight: 700; }
-.subkit-tile__icon img { width: 100%; height: 100%; object-fit: cover; }
-.subkit-tile__title { margin: 0; font-size: 14px; font-weight: 600; color: var(--subkit-ink); }
-.subkit-tile__meta { margin: 2px 0 0; font-size: 12px; color: var(--subkit-ink-soft); }
-.subkit-tile__body { flex: 1; margin: 0; font-size: 13px; line-height: 1.55; color: var(--subkit-ink-soft); }
-.subkit-tile__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
+.easysubscription-tile { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--easysubscription-line); border-radius: var(--easysubscription-radius); background: #fff; transition: border-color .15s, box-shadow .15s; }
+.easysubscription-tile:hover { border-color: #d1d5db; box-shadow: 0 4px 16px rgba(17, 24, 39, .06); }
+.easysubscription-tile__top { display: flex; align-items: center; gap: 12px; }
+.easysubscription-tile__icon { display: grid; flex: none; place-items: center; width: 40px; height: 40px; overflow: hidden; border-radius: 10px; background: var(--easysubscription-accent-soft); color: var(--easysubscription-accent); font-size: 15px; font-weight: 700; }
+.easysubscription-tile__icon img { width: 100%; height: 100%; object-fit: cover; }
+.easysubscription-tile__title { margin: 0; font-size: 14px; font-weight: 600; color: var(--easysubscription-ink); }
+.easysubscription-tile__meta { margin: 2px 0 0; font-size: 12px; color: var(--easysubscription-ink-soft); }
+.easysubscription-tile__body { flex: 1; margin: 0; font-size: 13px; line-height: 1.55; color: var(--easysubscription-ink-soft); }
+.easysubscription-tile__foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: auto; padding-top: 4px; }
 
-.subkit-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: #f3f4f6; color: #4b5563; font-size: 12px; font-weight: 500; line-height: 1.6; white-space: nowrap; }
-.subkit-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-.subkit-badge--good { background: #ecfdf5; color: #047857; }
-.subkit-badge--warn { background: #fffbeb; color: #b45309; }
-.subkit-badge--bad { background: #fef2f2; color: #b91c1c; }
-.subkit-badge--brand { background: var(--subkit-accent-soft); color: var(--subkit-accent-dark); }
+.easysubscription-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; border-radius: 999px; background: #f3f4f6; color: #4b5563; font-size: 12px; font-weight: 500; line-height: 1.6; white-space: nowrap; }
+.easysubscription-badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.easysubscription-badge--good { background: #ecfdf5; color: #047857; }
+.easysubscription-badge--warn { background: #fffbeb; color: #b45309; }
+.easysubscription-badge--bad { background: #fef2f2; color: #b91c1c; }
+.easysubscription-badge--brand { background: var(--easysubscription-accent-soft); color: var(--easysubscription-accent-dark); }
 
-.subkit-report-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
-.subkit-report-card__head .subkit-lede { margin: 0; }
-.subkit-tile__action { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
-.subkit-tile__action .button { margin: 0; }
+.easysubscription-report-card__head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.easysubscription-report-card__head .easysubscription-lede { margin: 0; }
+.easysubscription-tile__action { display: inline-flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.easysubscription-tile__action .button { margin: 0; }
 
 /* ------------------------------------------------------------------ settings */
 
-.subkit-settings {
+.easysubscription-settings {
 	display: grid;
 	grid-template-columns: 250px minmax(0, 1fr);
 	align-items: start;
-	gap: var(--subkit-gap-lg);
+	gap: var(--easysubscription-gap-lg);
 }
 
-.subkit-settings__nav {
+.easysubscription-settings__nav {
 	position: sticky;
 	top: 120px;
 	padding: 24px 15px;
-	background: var(--subkit-bg);
-	border-radius: var(--subkit-radius-sm);
-	box-shadow: var(--subkit-shadow);
+	background: var(--easysubscription-bg);
+	border-radius: var(--easysubscription-radius-sm);
+	box-shadow: var(--easysubscription-shadow);
 }
 
-.subkit-settings__nav ul {
+.easysubscription-settings__nav ul {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -535,189 +535,189 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	list-style: none;
 }
 
-.subkit-settings__nav li {
+.easysubscription-settings__nav li {
 	margin: 0;
 }
 
-.subkit-settings__tab {
+.easysubscription-settings__tab {
 	display: flex;
 	align-items: center;
 	gap: 10px;
 	padding: 8px 12px;
 	border-radius: 6px;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 	font-size: 14px;
 	line-height: 1.3;
 	text-decoration: none;
 }
 
-.subkit-settings__tab svg {
+.easysubscription-settings__tab svg {
 	flex: none;
 	color: #3c434a;
 }
 
-.subkit-settings__tab:hover,
-.subkit-settings__tab:focus {
-	background: var(--subkit-line-soft);
-	color: var(--subkit-ink);
+.easysubscription-settings__tab:hover,
+.easysubscription-settings__tab:focus {
+	background: var(--easysubscription-line-soft);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-settings__tab:focus-visible,
-.subkit-settings__subtab:focus-visible {
-	outline: 2px solid var(--subkit-accent);
+.easysubscription-settings__tab:focus-visible,
+.easysubscription-settings__subtab:focus-visible {
+	outline: 2px solid var(--easysubscription-accent);
 	outline-offset: 1px;
 	box-shadow: none;
 }
 
-.subkit-settings__tab.is-current {
-	background: var(--subkit-accent-soft);
-	color: var(--subkit-accent);
+.easysubscription-settings__tab.is-current {
+	background: var(--easysubscription-accent-soft);
+	color: var(--easysubscription-accent);
 }
 
-.subkit-settings__tab.is-current svg {
-	color: var(--subkit-accent);
+.easysubscription-settings__tab.is-current svg {
+	color: var(--easysubscription-accent);
 }
 
-.subkit-settings__nav .subkit-settings__subnav {
+.easysubscription-settings__nav .easysubscription-settings__subnav {
 	gap: 2px;
 	margin: 4px 0 8px 32px;
 	padding-left: 10px;
-	border-left: 1px solid var(--subkit-line);
+	border-left: 1px solid var(--easysubscription-line);
 }
 
-.subkit-settings__subtab {
+.easysubscription-settings__subtab {
 	display: block;
 	padding: 5px 10px;
 	border-radius: 6px;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 	text-decoration: none;
 }
 
-.subkit-settings__subtab:hover,
-.subkit-settings__subtab:focus {
-	background: var(--subkit-line-soft);
-	color: var(--subkit-ink);
+.easysubscription-settings__subtab:hover,
+.easysubscription-settings__subtab:focus {
+	background: var(--easysubscription-line-soft);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-settings__subtab.is-current {
-	color: var(--subkit-accent);
+.easysubscription-settings__subtab.is-current {
+	color: var(--easysubscription-accent);
 	font-weight: 600;
 }
 
-.subkit-settings__main {
+.easysubscription-settings__main {
 	display: flex;
 	flex-direction: column;
-	gap: var(--subkit-gap);
+	gap: var(--easysubscription-gap);
 	min-width: 0;
 }
 
-.subkit-settings__card {
+.easysubscription-settings__card {
 	padding: 12px 30px;
-	background: var(--subkit-bg);
-	border-radius: var(--subkit-radius-sm);
-	box-shadow: var(--subkit-shadow);
+	background: var(--easysubscription-bg);
+	border-radius: var(--easysubscription-radius-sm);
+	box-shadow: var(--easysubscription-shadow);
 	scroll-margin-top: 120px;
 }
 
-.subkit-settings__card-head {
+.easysubscription-settings__card-head {
 	padding: 22px 0 4px;
 }
 
-.subkit-settings__card-head h2 {
+.easysubscription-settings__card-head h2 {
 	margin: 0;
 	font-size: 18px;
 	font-weight: 600;
 	line-height: 1.4;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-settings__card-head p {
+.easysubscription-settings__card-head p {
 	margin: 6px 0 0;
 	max-width: 60%;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 	line-height: 1.7;
 }
 
-.subkit-settings__rows {
+.easysubscription-settings__rows {
 	display: flex;
 	flex-direction: column;
 }
 
-.subkit-settings__row {
+.easysubscription-settings__row {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--subkit-gap-lg);
+	gap: var(--easysubscription-gap-lg);
 	padding: 22px 0;
-	border-bottom: 1px solid var(--subkit-line);
+	border-bottom: 1px solid var(--easysubscription-line);
 }
 
-.subkit-settings__row:last-child {
+.easysubscription-settings__row:last-child {
 	border-bottom: 0;
 }
 
 /* Hidden only once scripts run, so without them every setting stays reachable. */
-.js .subkit-settings__row.is-hidden {
+.js .easysubscription-settings__row.is-hidden {
 	display: none;
 }
 
-.subkit-settings__row--wide {
+.easysubscription-settings__row--wide {
 	display: block;
 }
 
-.subkit-settings__row--stacked {
+.easysubscription-settings__row--stacked {
 	flex-direction: column;
 	align-items: stretch;
 	gap: 10px;
 }
 
-.subkit-settings__row--stacked .subkit-settings__label {
+.easysubscription-settings__row--stacked .easysubscription-settings__label {
 	flex: none;
 }
 
-.subkit-settings__row--stacked .subkit-settings__control {
+.easysubscription-settings__row--stacked .easysubscription-settings__control {
 	justify-content: flex-start;
 	max-width: none;
 }
 
-.subkit-settings .subkit-settings__row--stacked .subkit-input--wide {
+.easysubscription-settings .easysubscription-settings__row--stacked .easysubscription-input--wide {
 	width: 100%;
 	max-width: 640px;
 }
 
-.subkit-email-preview {
+.easysubscription-email-preview {
 	display: block;
 	width: 100%;
 	height: 640px;
 	margin: 16px 0 18px;
-	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius-sm);
+	border: 1px solid var(--easysubscription-line);
+	border-radius: var(--easysubscription-radius-sm);
 	background: #fff;
 }
 
-.subkit-settings__label {
+.easysubscription-settings__label {
 	flex: 0 1 60%;
 	min-width: 0;
 }
 
-.subkit-settings__title {
+.easysubscription-settings__title {
 	display: block;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 	font-size: 14px;
 	font-weight: 500;
 	line-height: 1.5;
 }
 
-.subkit-settings__help {
+.easysubscription-settings__help {
 	margin: 4px 0 0;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 	line-height: 1.7;
 }
 
-.subkit-settings__control {
+.easysubscription-settings__control {
 	display: flex;
 	flex: none;
 	flex-wrap: wrap;
@@ -727,66 +727,66 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	max-width: 40%;
 }
 
-.subkit-settings__suffix {
-	color: var(--subkit-ink-soft);
+.easysubscription-settings__suffix {
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 }
 
-.subkit-settings .subkit-input {
+.easysubscription-settings .easysubscription-input {
 	min-height: 40px;
 	padding: 0 12px;
 	border: 1px solid #c3c4c7;
 	border-radius: 4px;
 	background-color: #fff;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 	font-size: 14px;
 	box-shadow: none;
 }
 
-.subkit-settings select.subkit-input {
+.easysubscription-settings select.easysubscription-input {
 	min-width: 110px;
 	max-width: 260px;
 	padding-right: 32px;
 }
 
-.subkit-settings .subkit-input--short {
+.easysubscription-settings .easysubscription-input--short {
 	width: 70px;
 	text-align: center;
 }
 
-.subkit-settings .subkit-input--wide {
+.easysubscription-settings .easysubscription-input--wide {
 	width: 300px;
 	max-width: 100%;
 }
 
-.subkit-settings textarea.subkit-input {
+.easysubscription-settings textarea.easysubscription-input {
 	padding: 8px 12px;
 }
 
-.subkit-settings .subkit-input:focus {
-	border-color: var(--subkit-accent);
+.easysubscription-settings .easysubscription-input:focus {
+	border-color: var(--easysubscription-accent);
 	outline: 0;
-	box-shadow: 0 0 0 1px var(--subkit-accent);
+	box-shadow: 0 0 0 1px var(--easysubscription-accent);
 }
 
-.subkit-settings .subkit-checks {
+.easysubscription-settings .easysubscription-checks {
 	padding: 0;
 }
 
-.subkit-settings__woo {
+.easysubscription-settings__woo {
 	margin: 0;
 }
 
-.subkit-settings__woo th {
+.easysubscription-settings__woo th {
 	display: none;
 }
 
-.subkit-settings__woo td {
+.easysubscription-settings__woo td {
 	padding: 0;
 }
 
 /* A checkbox drawn as a switch; the input stays the control that is read and saved. */
-.subkit-switch {
+.easysubscription-switch {
 	position: relative;
 	display: inline-block;
 	flex: none;
@@ -794,7 +794,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	height: 22px;
 }
 
-.subkit-switch input[type="checkbox"] {
+.easysubscription-switch input[type="checkbox"] {
 	position: absolute;
 	inset: 0;
 	z-index: 1;
@@ -805,7 +805,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	cursor: pointer;
 }
 
-.subkit-switch__track {
+.easysubscription-switch__track {
 	position: absolute;
 	inset: 0;
 	border-radius: 999px;
@@ -814,7 +814,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	pointer-events: none;
 }
 
-.subkit-switch__track::after {
+.easysubscription-switch__track::after {
 	content: "";
 	position: absolute;
 	top: 3px;
@@ -826,105 +826,105 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	transition: transform 120ms ease;
 }
 
-.subkit-switch input:checked + .subkit-switch__track {
-	background: var(--subkit-accent);
+.easysubscription-switch input:checked + .easysubscription-switch__track {
+	background: var(--easysubscription-accent);
 }
 
-.subkit-switch input:checked + .subkit-switch__track::after {
+.easysubscription-switch input:checked + .easysubscription-switch__track::after {
 	transform: translateX(18px);
 }
 
-.subkit-switch input:focus-visible + .subkit-switch__track {
-	outline: 2px solid var(--subkit-accent);
+.easysubscription-switch input:focus-visible + .easysubscription-switch__track {
+	outline: 2px solid var(--easysubscription-accent);
 	outline-offset: 2px;
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.subkit-switch__track,
-	.subkit-switch__track::after {
+	.easysubscription-switch__track,
+	.easysubscription-switch__track::after {
 		transition: none;
 	}
 }
 
-.subkit-settings__save {
+.easysubscription-settings__save {
 	position: sticky;
 	bottom: 12px;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--subkit-gap);
+	gap: var(--easysubscription-gap);
 	padding: 12px 16px;
-	background: var(--subkit-bg);
-	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius-sm);
-	box-shadow: var(--subkit-shadow-lg);
+	background: var(--easysubscription-bg);
+	border: 1px solid var(--easysubscription-line);
+	border-radius: var(--easysubscription-radius-sm);
+	box-shadow: var(--easysubscription-shadow-lg);
 }
 
-.subkit-settings__save-note {
-	color: var(--subkit-ink-soft);
+.easysubscription-settings__save-note {
+	color: var(--easysubscription-ink-soft);
 	font-size: 12px;
 }
 
 @media screen and (max-width: 960px) {
-	.subkit-settings {
+	.easysubscription-settings {
 		grid-template-columns: minmax(0, 1fr);
 	}
 
-	.subkit-settings__nav {
+	.easysubscription-settings__nav {
 		position: static;
 	}
 }
 
 @media screen and (max-width: 782px) {
-	.subkit-settings__card {
+	.easysubscription-settings__card {
 		padding: 8px 18px;
 	}
 
-	.subkit-settings__row {
+	.easysubscription-settings__row {
 		flex-direction: column;
 		align-items: flex-start;
 		gap: 12px;
 	}
 
-	.subkit-settings__label,
-	.subkit-settings__card-head p {
+	.easysubscription-settings__label,
+	.easysubscription-settings__card-head p {
 		max-width: none;
 	}
 
-	.subkit-settings__control {
+	.easysubscription-settings__control {
 		justify-content: flex-start;
 		max-width: 100%;
 	}
 }
 
-.subkit-notice {
-	margin: 0 0 var(--subkit-gap);
+.easysubscription-notice {
+	margin: 0 0 var(--easysubscription-gap);
 	padding: 10px 14px;
-	border-radius: var(--subkit-radius);
-	border: 1px solid var(--subkit-line);
-	background: var(--subkit-bg);
+	border-radius: var(--easysubscription-radius);
+	border: 1px solid var(--easysubscription-line);
+	background: var(--easysubscription-bg);
 }
 
-.subkit-notice--good {
+.easysubscription-notice--good {
 	border-color: #bbf7d0;
 	background: #f0fdf4;
-	color: var(--subkit-good);
+	color: var(--easysubscription-good);
 }
 
-.subkit-notice--bad {
+.easysubscription-notice--bad {
 	border-color: #fecaca;
 	background: #fef2f2;
-	color: var(--subkit-bad);
+	color: var(--easysubscription-bad);
 }
 
 /* ------------------------------------------------ the notification centre */
 
-.subkit-notify {
+.easysubscription-notify {
 	position: relative;
 	display: inline-flex;
 }
 
-.subkit-notify__bell {
+.easysubscription-notify__bell {
 	position: relative;
 	display: inline-grid;
 	place-items: center;
@@ -939,23 +939,23 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	list-style: none;
 }
 
-.subkit-notify__bell::-webkit-details-marker {
+.easysubscription-notify__bell::-webkit-details-marker {
 	display: none;
 }
 
-.subkit-notify__bell:hover,
-.subkit-notify__bell[aria-expanded="true"],
-.subkit-notify[open] > .subkit-notify__bell {
-	background: var(--subkit-line-soft);
-	color: var(--subkit-ink);
+.easysubscription-notify__bell:hover,
+.easysubscription-notify__bell[aria-expanded="true"],
+.easysubscription-notify[open] > .easysubscription-notify__bell {
+	background: var(--easysubscription-line-soft);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-notify__bell:focus-visible {
-	outline: 2px solid var(--subkit-accent);
+.easysubscription-notify__bell:focus-visible {
+	outline: 2px solid var(--easysubscription-accent);
 	outline-offset: 1px;
 }
 
-.subkit-notify__count {
+.easysubscription-notify__count {
 	position: absolute;
 	top: 1px;
 	right: 0;
@@ -964,7 +964,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	padding: 0 4px;
 	border: 2px solid #fff;
 	border-radius: 999px;
-	background: var(--subkit-bad);
+	background: var(--easysubscription-bad);
 	color: #fff;
 	font-size: 10px;
 	font-weight: 600;
@@ -973,7 +973,7 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	box-sizing: content-box;
 }
 
-.subkit-notify__panel {
+.easysubscription-notify__panel {
 	position: absolute;
 	top: calc(100% + 8px);
 	right: 0;
@@ -981,28 +981,28 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	width: min(440px, calc(100vw - 32px));
 	max-height: min(70vh, 560px);
 	overflow-y: auto;
-	border: 1px solid var(--subkit-line);
-	border-radius: var(--subkit-radius);
-	background: var(--subkit-bg);
-	box-shadow: var(--subkit-shadow-lg);
+	border: 1px solid var(--easysubscription-line);
+	border-radius: var(--easysubscription-radius);
+	background: var(--easysubscription-bg);
+	box-shadow: var(--easysubscription-shadow-lg);
 	text-align: left;
 }
 
-.subkit-notify__panel[hidden] {
+.easysubscription-notify__panel[hidden] {
 	display: none;
 }
 
 /* On a phone the bell is not at the edge, so the panel spans the bar instead of hanging off-screen. */
 @media screen and (max-width: 600px) {
-	.subkit-shell__inner {
+	.easysubscription-shell__inner {
 		position: relative;
 	}
 
-	.subkit-notify {
+	.easysubscription-notify {
 		position: static;
 	}
 
-	.subkit-notify__panel {
+	.easysubscription-notify__panel {
 		top: 100%;
 		right: 16px;
 		left: 16px;
@@ -1010,33 +1010,33 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	}
 }
 
-.subkit-notify__panel:focus {
+.easysubscription-notify__panel:focus {
 	outline: none;
 }
 
-.subkit-notify__head {
+.easysubscription-notify__head {
 	position: sticky;
 	top: 0;
 	z-index: 1;
 	margin: 0;
 	padding: 10px 14px;
-	border-bottom: 1px solid var(--subkit-line);
-	background: var(--subkit-bg);
+	border-bottom: 1px solid var(--easysubscription-line);
+	background: var(--easysubscription-bg);
 	font-size: 13px;
 	font-weight: 600;
-	color: var(--subkit-ink);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-notify__list > * {
+.easysubscription-notify__list > * {
 	margin: 0;
-	border-bottom: 1px solid var(--subkit-line-soft);
+	border-bottom: 1px solid var(--easysubscription-line-soft);
 }
 
-.subkit-notify__list > *:last-child {
+.easysubscription-notify__list > *:last-child {
 	border-bottom: 0;
 }
 
-.subkit-notify__list :is(div.notice, div.error, div.updated) {
+.easysubscription-notify__list :is(div.notice, div.error, div.updated) {
 	margin: 0;
 	padding: 8px 14px 8px 12px;
 	border-width: 0 0 0 3px;
@@ -1046,22 +1046,22 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	line-height: 1.45;
 }
 
-.subkit-notify__list :is(div.notice, div.error, div.updated).is-dismissible {
+.easysubscription-notify__list :is(div.notice, div.error, div.updated).is-dismissible {
 	padding-right: 36px;
 }
 
-.subkit-notify__list :is(p, li, h1, h2, h3, h4) {
+.easysubscription-notify__list :is(p, li, h1, h2, h3, h4) {
 	margin: 2px 0;
 	padding: 0;
 	font-size: 13px;
 	line-height: 1.45;
 }
 
-.subkit-notify__list :is(h1, h2, h3, h4) {
+.easysubscription-notify__list :is(h1, h2, h3, h4) {
 	font-weight: 600;
 }
 
-.subkit-notify__list .button {
+.easysubscription-notify__list .button {
 	min-height: 28px;
 	margin: 4px 4px 2px 0;
 	padding: 0 10px;
@@ -1069,11 +1069,11 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 	line-height: 26px;
 }
 
-.subkit-notify__list .notice-dismiss {
+.easysubscription-notify__list .notice-dismiss {
 	padding: 6px;
 }
 
-.subkit-other-notices {
+.easysubscription-other-notices {
 	max-width: 1240px;
 	margin: 0 auto;
 	padding: 8px 24px;
@@ -1082,126 +1082,126 @@ body.subkit-admin #wpcontent { padding-left: 0; }
 
 /* Important notices before the shell compacts them, and on screens it does not draw. */
 
-.subkit-shell .notice.subkit-notice--important {
+.easysubscription-shell .notice.easysubscription-notice--important {
 	margin: 0 0 8px;
 	padding: 8px 12px;
-	border: 1px solid var(--subkit-line);
+	border: 1px solid var(--easysubscription-line);
 	border-left-width: 3px;
-	border-radius: var(--subkit-radius-sm);
-	box-shadow: var(--subkit-shadow);
+	border-radius: var(--easysubscription-radius-sm);
+	box-shadow: var(--easysubscription-shadow);
 	font-size: 13px;
 }
 
-.subkit-shell .notice.subkit-notice--important p {
+.easysubscription-shell .notice.easysubscription-notice--important p {
 	margin: 2px 0;
 	padding: 0;
 }
 
 /* WordPress's own notices, on our screens only, so they sit with the cards rather than on top of them. */
 
-body.subkit-admin #wpbody-content > .notice,
-body.subkit-admin #wpbody-content > .updated,
-body.subkit-admin #wpbody-content > .error {
-	margin: 0 0 var(--subkit-gap);
+body.easysubscription-admin #wpbody-content > .notice,
+body.easysubscription-admin #wpbody-content > .updated,
+body.easysubscription-admin #wpbody-content > .error {
+	margin: 0 0 var(--easysubscription-gap);
 	padding: 12px 14px;
-	border: 1px solid var(--subkit-line);
+	border: 1px solid var(--easysubscription-line);
 	border-left-width: 3px;
-	border-radius: var(--subkit-radius);
-	box-shadow: var(--subkit-shadow);
+	border-radius: var(--easysubscription-radius);
+	box-shadow: var(--easysubscription-shadow);
 	font-size: 13px;
 }
 
-body.subkit-admin #wpbody-content > .notice p,
-body.subkit-admin #wpbody-content > .updated p,
-body.subkit-admin #wpbody-content > .error p {
+body.easysubscription-admin #wpbody-content > .notice p,
+body.easysubscription-admin #wpbody-content > .updated p,
+body.easysubscription-admin #wpbody-content > .error p {
 	margin: 0;
 	padding: 0;
 }
 
-body.subkit-admin #wpbody-content > .notice + .notice {
+body.easysubscription-admin #wpbody-content > .notice + .notice {
 	margin-top: 0;
 }
 
 /* ------------------------------------------------- list screens built in PHP */
 
-.subkit-card--flush {
+.easysubscription-card--flush {
 	padding: 0;
 	max-width: none;
 }
 
-.subkit-toolbar {
+.easysubscription-toolbar {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 8px;
 	padding: 12px 16px;
-	border-bottom: 1px solid var(--subkit-line-soft);
+	border-bottom: 1px solid var(--easysubscription-line-soft);
 }
 
-.subkit-toolbar--quiet {
-	background: var(--subkit-line-soft);
+.easysubscription-toolbar--quiet {
+	background: var(--easysubscription-line-soft);
 }
 
-.subkit-toolbar__end {
+.easysubscription-toolbar__end {
 	margin-left: auto;
 }
 
-.subkit-tabs {
+.easysubscription-tabs {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 4px;
 }
 
-.subkit-tab {
+.easysubscription-tab {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
 	padding: 4px 10px;
 	border-radius: 6px;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	font-size: 12px;
 	font-weight: 500;
 	text-decoration: none;
 }
 
-.subkit-tab:hover,
-.subkit-tab:focus {
-	background: var(--subkit-line-soft);
-	color: var(--subkit-ink);
+.easysubscription-tab:hover,
+.easysubscription-tab:focus {
+	background: var(--easysubscription-line-soft);
+	color: var(--easysubscription-ink);
 }
 
-.subkit-tab.is-current {
-	background: var(--subkit-accent);
+.easysubscription-tab.is-current {
+	background: var(--easysubscription-accent);
 	color: #fff;
 }
 
-.subkit-tab__count {
+.easysubscription-tab__count {
 	opacity: .7;
 }
 
-.subkit-card--flush .subkit-table {
+.easysubscription-card--flush .easysubscription-table {
 	margin: 0;
 	border: 0;
 	box-shadow: none;
 }
 
-.subkit-card--flush .subkit-table th,
-.subkit-card--flush .subkit-table td {
+.easysubscription-card--flush .easysubscription-table th,
+.easysubscription-card--flush .easysubscription-table td {
 	padding: 12px 16px;
 }
 
-.subkit-cardfoot {
+.easysubscription-cardfoot {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
 	gap: 12px;
 	padding: 12px 16px;
-	border-top: 1px solid var(--subkit-line-soft);
+	border-top: 1px solid var(--easysubscription-line-soft);
 	font-size: 13px;
 }
 
-.subkit-empty {
+.easysubscription-empty {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
@@ -1210,15 +1210,15 @@ body.subkit-admin #wpbody-content > .notice + .notice {
 	text-align: center;
 }
 
-.subkit-empty__title {
+.easysubscription-empty__title {
 	margin: 0;
 	font-size: 14px;
 	font-weight: 600;
 }
 
-.subkit-empty__body {
+.easysubscription-empty__body {
 	margin: 0;
 	max-width: 46ch;
-	color: var(--subkit-ink-soft);
+	color: var(--easysubscription-ink-soft);
 	font-size: 13px;
 }

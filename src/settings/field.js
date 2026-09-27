@@ -1,6 +1,6 @@
 import { Fragment } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { cn } from '@subkit/ui';
+import { cn } from '@easysubscription/ui';
 
 const RENAMED = { readonly: 'readOnly', maxlength: 'maxLength' };
 
@@ -33,7 +33,7 @@ export function Control( { field, value, onChange, described } ) {
 
 	if ( field.type === 'checkbox' ) {
 		return (
-			<span className="subkit-switch">
+			<span className="easysubscription-switch">
 				<input
 					{ ...common }
 					type="checkbox"
@@ -43,7 +43,10 @@ export function Control( { field, value, onChange, described } ) {
 						onChange( event.target.checked ? 'yes' : 'no' )
 					}
 				/>
-				<span className="subkit-switch__track" aria-hidden="true" />
+				<span
+					className="easysubscription-switch__track"
+					aria-hidden="true"
+				/>
 			</span>
 		);
 	}
@@ -52,7 +55,7 @@ export function Control( { field, value, onChange, described } ) {
 		return (
 			<select
 				{ ...common }
-				className="subkit-input"
+				className="easysubscription-input"
 				value={ value }
 				onChange={ ( event ) => onChange( event.target.value ) }
 			>
@@ -72,7 +75,7 @@ export function Control( { field, value, onChange, described } ) {
 			<textarea
 				{ ...common }
 				{ ...extra }
-				className="subkit-input subkit-input--wide"
+				className="easysubscription-input easysubscription-input--wide"
 				rows="4"
 				value={ value }
 				onChange={ ( event ) => onChange( event.target.value ) }
@@ -86,10 +89,10 @@ export function Control( { field, value, onChange, described } ) {
 			{ ...extra }
 			type={ field.type }
 			className={ cn(
-				'subkit-input',
+				'easysubscription-input',
 				field.type === 'number'
-					? 'subkit-input--short'
-					: 'subkit-input--wide'
+					? 'easysubscription-input--short'
+					: 'easysubscription-input--wide'
 			) }
 			value={ value }
 			onFocus={
@@ -104,36 +107,39 @@ export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 	return (
 		<div
 			className={ cn(
-				'subkit-settings__row',
-				stacked && 'subkit-settings__row--stacked'
+				'easysubscription-settings__row',
+				stacked && 'easysubscription-settings__row--stacked'
 			) }
 		>
-			<div className="subkit-settings__label">
-				<label className="subkit-settings__title" htmlFor={ field.id }>
+			<div className="easysubscription-settings__label">
+				<label
+					className="easysubscription-settings__title"
+					htmlFor={ field.id }
+				>
 					{ field.title }
 				</label>
 				{ field.help ? (
 					<p
-						className="subkit-settings__help"
+						className="easysubscription-settings__help"
 						id={ `${ field.id }-help` }
 						// Kept to wp_kses_post() by the server, as the PHP page prints it.
 						dangerouslySetInnerHTML={ { __html: field.help } }
 					/>
 				) : null }
 			</div>
-			<div className="subkit-settings__control">
-				{ field.subkit_email && onEdit ? (
+			<div className="easysubscription-settings__control">
+				{ field.easysubscription_email && onEdit ? (
 					<button
 						type="button"
-						className="subkit-btn subkit-btn--sm"
+						className="easysubscription-btn easysubscription-btn--sm"
 						aria-label={ sprintf(
 							/* translators: %s: the email's name, such as "Renewal reminder" */
-							__( 'Edit %s', 'subkit-subscriptions' ),
+							__( 'Edit %s', 'easysubscription' ),
 							field.title
 						) }
-						onClick={ () => onEdit( field.subkit_email ) }
+						onClick={ () => onEdit( field.easysubscription_email ) }
 					>
-						{ __( 'Edit', 'subkit-subscriptions' ) }
+						{ __( 'Edit', 'easysubscription' ) }
 					</button>
 				) : null }
 				<Control
@@ -159,7 +165,7 @@ export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 				) ) }
 				{ field.suffix ? (
 					<span
-						className="subkit-settings__suffix"
+						className="easysubscription-settings__suffix"
 						dangerouslySetInnerHTML={ { __html: field.suffix } }
 					/>
 				) : null }

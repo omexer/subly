@@ -1,11 +1,11 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
-use SubKit\Billing\Renewal_Scheduler;
-use SubKit\Data\Migrator;
-use SubKit\Data\Subscription_Query;
-use SubKit\Gateways\Gateway_Registry;
+use EasySubscription\Billing\Renewal_Scheduler;
+use EasySubscription\Data\Migrator;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Gateways\Gateway_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,8 +30,8 @@ class Help_Page {
 	public function add_page(): void {
 		add_submenu_page(
 			Menu::PARENT,
-			__( 'Help', 'subkit-subscriptions' ),
-			__( 'Help', 'subkit-subscriptions' ),
+			__( 'Help', 'easysubscription' ),
+			__( 'Help', 'easysubscription' ),
 			Menu::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
@@ -44,13 +44,13 @@ class Help_Page {
 	public function report(): array {
 		global $wpdb;
 
-		$scheduler = \SubKit\Plugin::instance()->get( 'scheduler' );
-		$gateways  = \SubKit\Plugin::instance()->get( 'gateways' );
+		$scheduler = \EasySubscription\Plugin::instance()->get( 'scheduler' );
+		$gateways  = \EasySubscription\Plugin::instance()->get( 'gateways' );
 		$migrator  = new Migrator();
 
 		$rows = array(
-			'EasySubscription'     => defined( 'SUBKIT_VERSION' ) ? SUBKIT_VERSION : '?',
-			'EasySubscription Pro' => defined( 'SUBKIT_PRO_VERSION' ) ? SUBKIT_PRO_VERSION : __( 'not installed', 'subkit-subscriptions' ),
+			'EasySubscription'     => defined( 'EASYSUBSCRIPTION_VERSION' ) ? EASYSUBSCRIPTION_VERSION : '?',
+			'EasySubscription Pro' => defined( 'EASYSUBSCRIPTION_PRO_VERSION' ) ? EASYSUBSCRIPTION_PRO_VERSION : __( 'not installed', 'easysubscription' ),
 			'WordPress'            => get_bloginfo( 'version' ),
 			'WooCommerce'          => defined( 'WC_VERSION' ) ? WC_VERSION : '?',
 			'PHP'                  => PHP_VERSION,
@@ -91,7 +91,7 @@ class Help_Page {
 		 *
 		 * @param array $rows
 		 */
-		return (array) apply_filters( 'subkit_support_report', $rows );
+		return (array) apply_filters( 'easysubscription_support_report', $rows );
 	}
 
 	/**
@@ -103,24 +103,24 @@ class Help_Page {
 		return array(
 			array(
 				'icon'  => '1',
-				'title' => __( 'Run the setup checks', 'subkit-subscriptions' ),
-				'body'  => __( 'Home runs a real renewal end to end without charging anyone. If renewals are the problem, that test usually says why.', 'subkit-subscriptions' ),
-				'label' => __( 'Open Home', 'subkit-subscriptions' ),
+				'title' => __( 'Run the setup checks', 'easysubscription' ),
+				'body'  => __( 'Home runs a real renewal end to end without charging anyone. If renewals are the problem, that test usually says why.', 'easysubscription' ),
+				'label' => __( 'Open Home', 'easysubscription' ),
 				'url'   => admin_url( 'admin.php?page=' . Menu::SLUG ),
 			),
 			array(
 				'icon'  => '2',
-				'title' => __( 'Read the activity log', 'subkit-subscriptions' ),
-				'body'  => __( 'Every subscription records each charge attempt and status change, with the reason. Open one and scroll to Activity.', 'subkit-subscriptions' ),
-				'label' => __( 'All subscriptions', 'subkit-subscriptions' ),
+				'title' => __( 'Read the activity log', 'easysubscription' ),
+				'body'  => __( 'Every subscription records each charge attempt and status change, with the reason. Open one and scroll to Activity.', 'easysubscription' ),
+				'label' => __( 'All subscriptions', 'easysubscription' ),
 				'url'   => admin_url( 'admin.php?page=' . Menu::LIST_SLUG ),
 			),
 			array(
 				'icon'  => '3',
-				'title' => __( 'Check renewal health', 'subkit-subscriptions' ),
-				'body'  => __( 'Settings shows whether the renewal queue is running, any charge whose outcome is unknown, and the double-charge safeguard.', 'subkit-subscriptions' ),
-				'label' => __( 'Open settings', 'subkit-subscriptions' ),
-				'url'   => admin_url( 'admin.php?page=wc-settings&tab=subkit' ),
+				'title' => __( 'Check renewal health', 'easysubscription' ),
+				'body'  => __( 'Settings shows whether the renewal queue is running, any charge whose outcome is unknown, and the double-charge safeguard.', 'easysubscription' ),
+				'label' => __( 'Open settings', 'easysubscription' ),
+				'url'   => admin_url( 'admin.php?page=wc-settings&tab=easysubscription' ),
 			),
 		);
 	}
@@ -142,7 +142,7 @@ class Help_Page {
 
 	public function render(): void {
 		if ( ! current_user_can( Menu::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subkit-subscriptions' ) );
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'easysubscription' ) );
 		}
 
 		App_Host::start( self::SLUG );
@@ -155,16 +155,16 @@ class Help_Page {
 		$text   = self::report_text( $report );
 
 		Page_Shell::open(
-			__( 'Help', 'subkit-subscriptions' ),
-			__( 'Where to look first, and the report to send if you still need a hand.', 'subkit-subscriptions' )
+			__( 'Help', 'easysubscription' ),
+			__( 'Where to look first, and the report to send if you still need a hand.', 'easysubscription' )
 		);
 
-		echo '<h2 class="subkit-section-title">' . esc_html__( 'Check these first', 'subkit-subscriptions' ) . '</h2>';
-		echo '<div class="subkit-grid">';
+		echo '<h2 class="easysubscription-section-title">' . esc_html__( 'Check these first', 'easysubscription' ) . '</h2>';
+		echo '<div class="easysubscription-grid">';
 
 		foreach ( $this->tiles() as $tile ) {
 			printf(
-				'<div class="subkit-tile"><div class="subkit-tile__top"><span class="subkit-tile__icon" aria-hidden="true">%s</span><h3 class="subkit-tile__title">%s</h3></div><p class="subkit-tile__body">%s</p><div class="subkit-tile__foot"><a class="subkit-btn subkit-btn--sm" href="%s">%s</a></div></div>',
+				'<div class="easysubscription-tile"><div class="easysubscription-tile__top"><span class="easysubscription-tile__icon" aria-hidden="true">%s</span><h3 class="easysubscription-tile__title">%s</h3></div><p class="easysubscription-tile__body">%s</p><div class="easysubscription-tile__foot"><a class="easysubscription-btn easysubscription-btn--sm" href="%s">%s</a></div></div>',
 				esc_html( $tile['icon'] ),
 				esc_html( $tile['title'] ),
 				esc_html( $tile['body'] ),
@@ -175,17 +175,17 @@ class Help_Page {
 
 		echo '</div>';
 
-		echo '<h2 class="subkit-section-title">' . esc_html__( 'System report', 'subkit-subscriptions' ) . '</h2>';
-		echo '<div class="subkit-card subkit-report-card">';
-		echo '<div class="subkit-report-card__head"><p class="subkit-lede">' . esc_html__( 'Paste this into your support request. It contains no keys and no customer data.', 'subkit-subscriptions' ) . '</p>';
+		echo '<h2 class="easysubscription-section-title">' . esc_html__( 'System report', 'easysubscription' ) . '</h2>';
+		echo '<div class="easysubscription-card easysubscription-report-card">';
+		echo '<div class="easysubscription-report-card__head"><p class="easysubscription-lede">' . esc_html__( 'Paste this into your support request. It contains no keys and no customer data.', 'easysubscription' ) . '</p>';
 		printf(
-			'<button type="button" class="subkit-btn subkit-btn--primary subkit-btn--sm" data-subkit-copy="subkit-report" data-subkit-copied="%s">%s</button></div>',
-			esc_attr__( 'Copied', 'subkit-subscriptions' ),
-			esc_html__( 'Copy report', 'subkit-subscriptions' )
+			'<button type="button" class="easysubscription-btn easysubscription-btn--primary easysubscription-btn--sm" data-easysubscription-copy="easysubscription-report" data-easysubscription-copied="%s">%s</button></div>',
+			esc_attr__( 'Copied', 'easysubscription' ),
+			esc_html__( 'Copy report', 'easysubscription' )
 		);
 
 		printf(
-			'<textarea id="subkit-report" readonly rows="%d" class="subkit-report">%s</textarea>',
+			'<textarea id="easysubscription-report" readonly rows="%d" class="easysubscription-report">%s</textarea>',
 			(int) min( 24, count( $report ) + 1 ),
 			esc_textarea( $text )
 		);

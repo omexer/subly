@@ -7,46 +7,46 @@
  * @package EasySubscription
  */
 
-use SubKit\Admin\Settings_Page;
-use SubKit\Lifecycle\Cancellation_Policy;
+use EasySubscription\Admin\Settings_Page;
+use EasySubscription\Lifecycle\Cancellation_Policy;
 
 require __DIR__ . '/bootstrap.php';
 
 $woo = null;
 foreach ( WC_Admin_Settings::get_settings_pages() as $candidate ) {
-	if ( $candidate instanceof WC_Settings_Page && 'subkit' === $candidate->get_id() ) {
+	if ( $candidate instanceof WC_Settings_Page && 'easysubscription' === $candidate->get_id() ) {
 		$woo = $candidate;
 	}
 }
 if ( ! $woo ) {
-	subkit_test_abort( 'the settings tab is not registered' );
+	easysubscription_test_abort( 'the settings tab is not registered' );
 }
 
 // One section no group names, and one field stacked into Renewal & Billing beside the free one.
 $extra = static function ( $sections ) {
 	$sections                      = (array) $sections;
-	$sections['subkit_test_extra'] = 'Test extra';
+	$sections['easysubscription_test_extra'] = 'Test extra';
 	if ( ! isset( $sections['recovery'] ) ) {
 		$sections['recovery'] = 'Test retries';
 	}
 	return $sections;
 };
 $extra_fields = static function ( $settings, $section ) {
-	if ( 'subkit_test_extra' === $section ) {
+	if ( 'easysubscription_test_extra' === $section ) {
 		return array(
-			array( 'title' => 'Extra', 'type' => 'title', 'id' => 'subkit_test_extra_title' ),
-			array( 'title' => 'Note', 'type' => 'textarea', 'id' => 'subkit_test_extra_note', 'default' => '' ),
-			array( 'title' => 'Path', 'type' => 'text', 'id' => 'subkit_test_extra_path', 'default' => '' ),
-			array( 'type' => 'sectionend', 'id' => 'subkit_test_extra_title' ),
+			array( 'title' => 'Extra', 'type' => 'title', 'id' => 'easysubscription_test_extra_title' ),
+			array( 'title' => 'Note', 'type' => 'textarea', 'id' => 'easysubscription_test_extra_note', 'default' => '' ),
+			array( 'title' => 'Path', 'type' => 'text', 'id' => 'easysubscription_test_extra_path', 'default' => '' ),
+			array( 'type' => 'sectionend', 'id' => 'easysubscription_test_extra_title' ),
 		);
 	}
 	if ( 'recovery' === $section ) {
-		return array_merge( (array) $settings, array( array( 'title' => 'Stacked', 'type' => 'text', 'id' => 'subkit_test_stacked_option', 'default' => '' ) ) );
+		return array_merge( (array) $settings, array( array( 'title' => 'Stacked', 'type' => 'text', 'id' => 'easysubscription_test_stacked_option', 'default' => '' ) ) );
 	}
 	return $settings;
 };
-add_filter( 'woocommerce_get_sections_subkit', $extra, 99 );
-add_filter( 'woocommerce_get_settings_subkit', $extra_fields, 99, 2 );
+add_filter( 'woocommerce_get_sections_easysubscription', $extra, 99 );
+add_filter( 'woocommerce_get_settings_easysubscription', $extra_fields, 99, 2 );
 
 // Every option any section can save, as it was, so every save below is undone.
 $absent   = new stdClass();
@@ -60,13 +60,13 @@ foreach ( array_keys( $woo->get_sections() ) as $section ) {
 }
 
 $get = static function ( string $path, array $query = array() ): WP_REST_Response {
-	$request = new WP_REST_Request( 'GET', '/subkit/v1/settings' . $path );
+	$request = new WP_REST_Request( 'GET', '/easysubscription/v1/settings' . $path );
 	$request->set_query_params( $query );
 	return rest_do_request( $request );
 };
 
 $post = static function ( string $section, array $values ): WP_REST_Response {
-	$request = new WP_REST_Request( 'POST', '/subkit/v1/settings/' . $section );
+	$request = new WP_REST_Request( 'POST', '/easysubscription/v1/settings/' . $section );
 	$request->set_header( 'content-type', 'application/json' );
 	$request->set_body( wp_json_encode( array( 'values' => $values ) ) );
 	return rest_do_request( $request );
@@ -111,10 +111,10 @@ foreach ( $sections as $section => $label ) {
 }
 $check( 'every section is in the menu once, in the group the PHP page puts it in', array() === $missing && count( $listed ) === count( $sections ), $missing );
 $check( 'groups keep their labels and menu order', array_values( array_intersect( array_keys( Settings_Page::groups() ), array_column( $groups, 'id' ) ) ) === array_column( $groups, 'id' ) && 'Customer Controls' === ( array_column( $groups, 'label', 'id' )['customers'] ?? '' ) );
-$check( 'a section no group names lands in Integrations', array( 'integrations' ) === ( $listed['subkit_test_extra'] ?? null ) );
+$check( 'a section no group names lands in Integrations', array( 'integrations' ) === ( $listed['easysubscription_test_extra'] ?? null ) );
 $payments = array_column( $groups, null, 'id' )['payments'] ?? array();
 $check( 'Payments lists its gateways', ! empty( $payments['list'] ) && in_array( 'stripe', array_column( $payments['sections'], 'id' ), true ) );
-$notices = $get( '', array( 'subkit_license_notice' => 'activated' ) )->get_data()['notices'] ?? array();
+$notices = $get( '', array( 'easysubscription_license_notice' => 'activated' ) )->get_data()['notices'] ?? array();
 $check( 'a licence change that came back to the page is reported', array( array( 'type' => 'good', 'message' => 'Licence activated.' ) ) === $notices, $notices );
 
 echo "\n2. Every section returns its fields and their saved values\n";
@@ -145,44 +145,44 @@ $check( 'every field of every section is there, with the value saved for it', ar
 update_option( Cancellation_Policy::OPTION, 'yes' );
 $controls = $fields_of( $get( '/customer_controls' )->get_data() );
 $when     = $controls[ Cancellation_Policy::OPTION_WHEN ] ?? array();
-$check( 'a row behind a switch names the switch', Cancellation_Policy::OPTION === ( $when['subkit_show_if'] ?? '' ) );
+$check( 'a row behind a switch names the switch', Cancellation_Policy::OPTION === ( $when['easysubscription_show_if'] ?? '' ) );
 $check( 'a select carries its options in order', array( Cancellation_Policy::AT_PERIOD_END, Cancellation_Policy::IMMEDIATELY ) === array_column( $when['options'] ?? array(), 'value' ) );
 $check( 'a switch carries its help text', str_contains( $controls[ Cancellation_Policy::OPTION ]['help'] ?? '', 'My Account' ) );
 
 $general = $get( '/general' )->get_data();
 $html    = implode( '', array_column( array_merge( ...array_column( $general['cards'] ?? array(), 'rows' ) ), 'html' ) );
-$check( 'rows only PHP can draw come drawn, by the same callbacks', str_contains( $html, 'subkit-checks' ) && str_contains( $html, 'Double-charge protection' ) );
+$check( 'rows only PHP can draw come drawn, by the same callbacks', str_contains( $html, 'easysubscription-checks' ) && str_contains( $html, 'Double-charge protection' ) );
 $check( 'General is addressed as general', 'general' === ( $general['section'] ?? '' ) && 'general' === ( $general['cards'][0]['anchor'] ?? '' ) );
 $check( 'cards keep their titles, one per WooCommerce title', in_array( 'Access', array_column( $general['cards'] ?? array(), 'title' ), true ) );
 
 $renewal = $get( '/renewal' )->get_data();
-$check( 'a stacked group returns all its sections together', array( 'recovery', 'renewal' ) === ( $renewal['sections'] ?? null ) && isset( $fields_of( $renewal )['subkit_test_stacked_option'], $fields_of( $renewal )['subkit_catch_up_policy'] ), $renewal['sections'] ?? null );
-$check( 'a section that does not exist is a 404', 404 === $get( '/subkit_no_such_section' )->get_status() );
+$check( 'a stacked group returns all its sections together', array( 'recovery', 'renewal' ) === ( $renewal['sections'] ?? null ) && isset( $fields_of( $renewal )['easysubscription_test_stacked_option'], $fields_of( $renewal )['easysubscription_catch_up_policy'] ), $renewal['sections'] ?? null );
+$check( 'a section that does not exist is a 404', 404 === $get( '/easysubscription_no_such_section' )->get_status() );
 
 echo "\n3. A save writes only the posted fields of that page\n";
 update_option( Cancellation_Policy::OPTION, 'yes' );
 update_option( Cancellation_Policy::OPTION_WHEN, Cancellation_Policy::AT_PERIOD_END );
-update_option( 'subkit_allow_auto_renew_toggle', 'yes' );
-update_option( 'subkit_guest_checkout', 'create_account' );
+update_option( 'easysubscription_allow_auto_renew_toggle', 'yes' );
+update_option( 'easysubscription_guest_checkout', 'create_account' );
 
 $saved = $post( 'customer_controls', array( Cancellation_Policy::OPTION => 'no' ) );
 $check( 'the save succeeds', 200 === $saved->get_status() && true === ( $saved->get_data()['saved'] ?? null ), $saved->get_data() );
 $check( 'the posted field is written', 'no' === get_option( Cancellation_Policy::OPTION ) );
-$check( 'a switch on the same page that was not posted stays on', 'yes' === get_option( 'subkit_allow_auto_renew_toggle' ) );
+$check( 'a switch on the same page that was not posted stays on', 'yes' === get_option( 'easysubscription_allow_auto_renew_toggle' ) );
 $check( 'a select on the same page that was not posted is untouched', Cancellation_Policy::AT_PERIOD_END === get_option( Cancellation_Policy::OPTION_WHEN ) );
-$check( 'the fresh values come back', 'no' === ( $saved->get_data()['values'][ Cancellation_Policy::OPTION ] ?? '' ) && 'yes' === ( $saved->get_data()['values']['subkit_allow_auto_renew_toggle'] ?? '' ) );
+$check( 'the fresh values come back', 'no' === ( $saved->get_data()['values'][ Cancellation_Policy::OPTION ] ?? '' ) && 'yes' === ( $saved->get_data()['values']['easysubscription_allow_auto_renew_toggle'] ?? '' ) );
 
 $again = $post( 'customer_controls', array( Cancellation_Policy::OPTION => 'no' ) );
-$check( 'saving the same again changes nothing further', 200 === $again->get_status() && 'no' === get_option( Cancellation_Policy::OPTION ) && 'yes' === get_option( 'subkit_allow_auto_renew_toggle' ) );
+$check( 'saving the same again changes nothing further', 200 === $again->get_status() && 'no' === get_option( Cancellation_Policy::OPTION ) && 'yes' === get_option( 'easysubscription_allow_auto_renew_toggle' ) );
 
 echo "\n4. Nothing else can be written\n";
 $siteurl = get_option( 'siteurl' );
 $foreign = $post( 'customer_controls', array( 'siteurl' => 'https://attacker.example' ) );
-$check( 'an option that is not a setting is refused', 400 === $foreign->get_status() && 'subkit_unknown_setting' === ( $foreign->get_data()['code'] ?? '' ), $foreign->get_data() );
+$check( 'an option that is not a setting is refused', 400 === $foreign->get_status() && 'easysubscription_unknown_setting' === ( $foreign->get_data()['code'] ?? '' ), $foreign->get_data() );
 $check( '  and not written', $siteurl === get_option( 'siteurl' ) );
 
-$mixed = $post( 'customer_controls', array( Cancellation_Policy::OPTION => 'yes', 'subkit_guest_checkout' => 'require_login' ) );
-$check( "another section's setting is refused, with the rest of the request", 400 === $mixed->get_status() && 'no' === get_option( Cancellation_Policy::OPTION ) && 'create_account' === get_option( 'subkit_guest_checkout' ) );
+$mixed = $post( 'customer_controls', array( Cancellation_Policy::OPTION => 'yes', 'easysubscription_guest_checkout' => 'require_login' ) );
+$check( "another section's setting is refused, with the rest of the request", 400 === $mixed->get_status() && 'no' === get_option( Cancellation_Policy::OPTION ) && 'create_account' === get_option( 'easysubscription_guest_checkout' ) );
 
 $nested = $post( 'customer_controls', array( Cancellation_Policy::OPTION => array( 'yes' ) ) );
 $check( 'a value that is not a single value is refused', 400 === $nested->get_status() && 'no' === get_option( Cancellation_Policy::OPTION ) );
@@ -191,7 +191,7 @@ $customer = wp_insert_user(
 	array(
 		'user_login' => 'sk_settings_' . wp_generate_password( 6, false, false ),
 		'user_pass'  => wp_generate_password( 32 ),
-		'user_email' => 'sk-settings-' . wp_generate_password( 6, false, false ) . '@example.test',
+		'user_email' => 'es-settings-' . wp_generate_password( 6, false, false ) . '@example.test',
 		'role'       => 'customer',
 	)
 );
@@ -209,51 +209,51 @@ $check( 'a select value that is not an option falls back to the default', Cancel
 $post( 'customer_controls', array( Cancellation_Policy::OPTION => 'maybe' ) );
 $check( 'a switch sent anything but on is saved as off', 'no' === get_option( Cancellation_Policy::OPTION ) );
 
-$post( 'subkit_test_extra', array( 'subkit_test_extra_note' => 'Hello <script>alert(1)</script><strong>there</strong>', 'subkit_test_extra_path' => 'C:\\shop\\files' ) );
-$check( 'a textarea is kept to safe HTML', 'Hello alert(1)<strong>there</strong>' === get_option( 'subkit_test_extra_note' ), get_option( 'subkit_test_extra_note' ) );
-$check( 'a backslash survives the save', 'C:\\shop\\files' === get_option( 'subkit_test_extra_path' ), get_option( 'subkit_test_extra_path' ) );
+$post( 'easysubscription_test_extra', array( 'easysubscription_test_extra_note' => 'Hello <script>alert(1)</script><strong>there</strong>', 'easysubscription_test_extra_path' => 'C:\\shop\\files' ) );
+$check( 'a textarea is kept to safe HTML', 'Hello alert(1)<strong>there</strong>' === get_option( 'easysubscription_test_extra_note' ), get_option( 'easysubscription_test_extra_note' ) );
+$check( 'a backslash survives the save', 'C:\\shop\\files' === get_option( 'easysubscription_test_extra_path' ), get_option( 'easysubscription_test_extra_path' ) );
 
 $sanitised = static fn( $value ) => 'charge_all' === $value ? 'rebase' : $value;
-update_option( 'subkit_catch_up_policy', 'charge_all' );
-add_filter( 'woocommerce_admin_settings_sanitize_option_subkit_catch_up_policy', $sanitised );
-$post( 'renewal', array( 'subkit_catch_up_policy' => 'charge_all' ) );
-remove_filter( 'woocommerce_admin_settings_sanitize_option_subkit_catch_up_policy', $sanitised );
-$check( "a field's own sanitising filter runs", 'rebase' === get_option( 'subkit_catch_up_policy' ), get_option( 'subkit_catch_up_policy' ) );
+update_option( 'easysubscription_catch_up_policy', 'charge_all' );
+add_filter( 'woocommerce_admin_settings_sanitize_option_easysubscription_catch_up_policy', $sanitised );
+$post( 'renewal', array( 'easysubscription_catch_up_policy' => 'charge_all' ) );
+remove_filter( 'woocommerce_admin_settings_sanitize_option_easysubscription_catch_up_policy', $sanitised );
+$check( "a field's own sanitising filter runs", 'rebase' === get_option( 'easysubscription_catch_up_policy' ), get_option( 'easysubscription_catch_up_policy' ) );
 
 echo "\n6. A stacked group saves each of its sections\n";
-$fired  = static fn( string $id ): int => did_action( 'woocommerce_update_options_subkit_' . $id );
+$fired  = static fn( string $id ): int => did_action( 'woocommerce_update_options_easysubscription_' . $id );
 $before = array( 'renewal' => $fired( 'renewal' ), 'recovery' => $fired( 'recovery' ) );
-$stack  = $post( 'renewal', array( 'subkit_catch_up_policy' => 'charge_all', 'subkit_test_stacked_option' => 'stacked' ) );
-$check( 'both sections are written from one save', 200 === $stack->get_status() && 'charge_all' === get_option( 'subkit_catch_up_policy' ) && 'stacked' === get_option( 'subkit_test_stacked_option' ), $stack->get_data() );
+$stack  = $post( 'renewal', array( 'easysubscription_catch_up_policy' => 'charge_all', 'easysubscription_test_stacked_option' => 'stacked' ) );
+$check( 'both sections are written from one save', 200 === $stack->get_status() && 'charge_all' === get_option( 'easysubscription_catch_up_policy' ) && 'stacked' === get_option( 'easysubscription_test_stacked_option' ), $stack->get_data() );
 $check( "each section's update action runs once, as on WooCommerce's own tab", $before['renewal'] + 1 === $fired( 'renewal' ) && $before['recovery'] + 1 === $fired( 'recovery' ) );
-$only = $post( 'renewal', array( 'subkit_catch_up_policy' => 'rebase' ) );
-$check( 'a section with nothing posted is not saved or announced', 200 === $only->get_status() && 'stacked' === get_option( 'subkit_test_stacked_option' ) && $before['recovery'] + 1 === $fired( 'recovery' ) );
+$only = $post( 'renewal', array( 'easysubscription_catch_up_policy' => 'rebase' ) );
+$check( 'a section with nothing posted is not saved or announced', 200 === $only->get_status() && 'stacked' === get_option( 'easysubscription_test_stacked_option' ) && $before['recovery'] + 1 === $fired( 'recovery' ) );
 
 echo "\n7. What WooCommerce is told during a save comes back\n";
 $refuse = static function (): void {
 	WC_Admin_Settings::add_error( 'Test refusal.' );
 };
-add_action( 'woocommerce_update_options_subkit_subkit_test_extra', $refuse );
-$first  = $post( 'subkit_test_extra', array( 'subkit_test_extra_path' => 'one' ) );
-$second = $post( 'subkit_test_extra', array( 'subkit_test_extra_path' => 'two' ) );
-remove_action( 'woocommerce_update_options_subkit_subkit_test_extra', $refuse );
+add_action( 'woocommerce_update_options_easysubscription_easysubscription_test_extra', $refuse );
+$first  = $post( 'easysubscription_test_extra', array( 'easysubscription_test_extra_path' => 'one' ) );
+$second = $post( 'easysubscription_test_extra', array( 'easysubscription_test_extra_path' => 'two' ) );
+remove_action( 'woocommerce_update_options_easysubscription_easysubscription_test_extra', $refuse );
 $check( 'an error raised on save is returned', array( 'Test refusal.' ) === ( $first->get_data()['errors'] ?? null ), $first->get_data()['errors'] ?? null );
 $check( 'the next save returns only its own, not the last one too', array( 'Test refusal.' ) === ( $second->get_data()['errors'] ?? null ), $second->get_data()['errors'] ?? null );
-$check( 'a save with nothing to say returns no errors', array() === ( $post( 'subkit_test_extra', array( 'subkit_test_extra_path' => 'three' ) )->get_data()['errors'] ?? null ) );
+$check( 'a save with nothing to say returns no errors', array() === ( $post( 'easysubscription_test_extra', array( 'easysubscription_test_extra_path' => 'three' ) )->get_data()['errors'] ?? null ) );
 
 echo "\n8. The route's script loads with the app\n";
-$page = \SubKit\Plugin::instance()->get( 'settings_page' );
+$page = \EasySubscription\Plugin::instance()->get( 'settings_page' );
 // The shell fires this on every app page; it is not merged into this branch.
-do_action( 'subkit_app_enqueue' );
-$script = wp_scripts()->registered['subkit-settings'] ?? null;
-$check( 'the settings bundle is enqueued from the app hook', $page instanceof Settings_Page && wp_script_is( 'subkit-settings', 'enqueued' ) );
-$check( '  after the shell and the shared UI', $script && in_array( 'subkit-shell', $script->deps, true ) && in_array( 'subkit-ui', $script->deps, true ), $script ? $script->deps : null );
-wp_dequeue_script( 'subkit-settings' );
-wp_deregister_script( 'subkit-settings' );
+do_action( 'easysubscription_app_enqueue' );
+$script = wp_scripts()->registered['easysubscription-settings'] ?? null;
+$check( 'the settings bundle is enqueued from the app hook', $page instanceof Settings_Page && wp_script_is( 'easysubscription-settings', 'enqueued' ) );
+$check( '  after the shell and the shared UI', $script && in_array( 'easysubscription-shell', $script->deps, true ) && in_array( 'easysubscription-ui', $script->deps, true ), $script ? $script->deps : null );
+wp_dequeue_script( 'easysubscription-settings' );
+wp_deregister_script( 'easysubscription-settings' );
 
-remove_filter( 'woocommerce_get_sections_subkit', $extra, 99 );
-remove_filter( 'woocommerce_get_settings_subkit', $extra_fields, 99 );
-foreach ( array_merge( $snapshot, array( 'subkit_test_extra_note' => $absent, 'subkit_test_extra_path' => $absent, 'subkit_test_stacked_option' => $absent ) ) as $name => $value ) {
+remove_filter( 'woocommerce_get_sections_easysubscription', $extra, 99 );
+remove_filter( 'woocommerce_get_settings_easysubscription', $extra_fields, 99 );
+foreach ( array_merge( $snapshot, array( 'easysubscription_test_extra_note' => $absent, 'easysubscription_test_extra_path' => $absent, 'easysubscription_test_stacked_option' => $absent ) ) as $name => $value ) {
 	if ( $value === $absent ) {
 		delete_option( $name );
 	} else {
@@ -261,4 +261,4 @@ foreach ( array_merge( $snapshot, array( 'subkit_test_extra_note' => $absent, 's
 	}
 }
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

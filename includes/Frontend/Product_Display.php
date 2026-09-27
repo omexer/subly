@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Frontend;
+namespace EasySubscription\Frontend;
 
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Product_Display {
 
-	public const OPTION_BUTTON_TEXT = 'subkit_subscribe_button_text';
+	public const OPTION_BUTTON_TEXT = 'easysubscription_subscribe_button_text';
 
 	public function __construct( private readonly Disclosure $disclosure ) {}
 
@@ -36,7 +36,7 @@ class Product_Display {
 	public static function button_text(): string {
 		$text = trim( (string) get_option( self::OPTION_BUTTON_TEXT, '' ) );
 
-		return '' === $text ? __( 'Subscribe', 'subkit-subscriptions' ) : $text;
+		return '' === $text ? __( 'Subscribe', 'easysubscription' ) : $text;
 	}
 
 	/**
@@ -97,12 +97,12 @@ class Product_Display {
 			return $price_html;
 		}
 
-		return $price_html . '<span class="subkit-cart-terms">' . esc_html( wp_strip_all_tags( $this->disclosure->price_line( $product ) ) ) . '</span>';
+		return $price_html . '<span class="easysubscription-cart-terms">' . esc_html( wp_strip_all_tags( $this->disclosure->price_line( $product ) ) ) . '</span>';
 	}
 
 	public function on_checkout_totals(): void {
 		foreach ( $this->subscription_products_in_cart() as $product ) {
-			echo '<tr class="subkit-recurring-total"><th>' . esc_html__( 'Recurring', 'subkit-subscriptions' ) . '</th><td>'
+			echo '<tr class="easysubscription-recurring-total"><th>' . esc_html__( 'Recurring', 'easysubscription' ) . '</th><td>'
 				. wp_kses_post( $this->disclosure->price_line( $product ) ) . '</td></tr>';
 		}
 	}
@@ -118,7 +118,7 @@ class Product_Display {
 		}
 
 		// Amounts arrive wrapped in <bdi> so RTL cannot reorder them.
-		echo '<p class="subkit-checkout-consent">' . wp_kses( $this->disclosure->sentence( reset( $products ) ), array( 'bdi' => array() ) ) . '</p>';
+		echo '<p class="easysubscription-checkout-consent">' . wp_kses( $this->disclosure->sentence( reset( $products ) ), array( 'bdi' => array() ) ) . '</p>';
 	}
 
 	public function styles(): void {
@@ -126,18 +126,18 @@ class Product_Display {
 			return;
 		}
 
-		wp_register_style( 'subkit-frontend', false, array(), SUBKIT_VERSION );
-		wp_enqueue_style( 'subkit-frontend' );
+		wp_register_style( 'easysubscription-frontend', false, array(), EASYSUBSCRIPTION_VERSION );
+		wp_enqueue_style( 'easysubscription-frontend' );
 		wp_add_inline_style(
-			'subkit-frontend',
-			'.subkit-disclosure{margin:1em 0}
-			 .subkit-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
-			 .subkit-cart-terms{display:block;font-size:.85em;opacity:.8}
-			 .subkit-checkout-consent{margin:0 0 1em;font-size:.9em}
-			 .subkit-blocks-disclosure{padding:1em 0;border-top:1px solid rgba(0,0,0,.1)}
-			 .subkit-blocks-disclosure__price{font-weight:600;margin:0 0 .35em}
-			 .subkit-blocks-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
-			 .subkit-blocks-disclosure__consent{margin:.75em 0 0;font-size:.85em}'
+			'easysubscription-frontend',
+			'.easysubscription-disclosure{margin:1em 0}
+			 .easysubscription-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
+			 .easysubscription-cart-terms{display:block;font-size:.85em;opacity:.8}
+			 .easysubscription-checkout-consent{margin:0 0 1em;font-size:.9em}
+			 .easysubscription-blocks-disclosure{padding:1em 0;border-top:1px solid rgba(0,0,0,.1)}
+			 .easysubscription-blocks-disclosure__price{font-weight:600;margin:0 0 .35em}
+			 .easysubscription-blocks-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
+			 .easysubscription-blocks-disclosure__consent{margin:.75em 0 0;font-size:.85em}'
 		);
 	}
 

@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Gateways\PayPal;
+namespace EasySubscription\Gateways\PayPal;
 
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,30 +11,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * The PayPal payment method shown at checkout for subscription purchases.
  *
- * Separate from PayPal_Gateway, which is SubKit's recurring adapter. This one is a real
+ * Separate from PayPal_Gateway, which is EasySubscription's recurring adapter. This one is a real
  * WC_Payment_Gateway: it only appears when the cart holds a subscription, creates the
  * PayPal subscription, and hands the customer off to PayPal to approve it. The recurring
  * adapter then takes over once PayPal starts sending webhooks.
  */
 class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 
-	public const ID = 'subkit_paypal';
+	public const ID = 'easysubscription_paypal';
 
 	public function __construct(
 		private readonly PayPal_Client $client,
 		private readonly PayPal_Plans $plans
 	) {
 		$this->id                 = self::ID;
-		$this->method_title       = __( 'PayPal Subscriptions (EasySubscription)', 'subkit-subscriptions' );
-		$this->method_description = __( 'Lets customers start a subscription with PayPal. Configure the credentials under WooCommerce → Settings → Subscriptions → PayPal.', 'subkit-subscriptions' );
+		$this->method_title       = __( 'PayPal Subscriptions (EasySubscription)', 'easysubscription' );
+		$this->method_description = __( 'Lets customers start a subscription with PayPal. Configure the credentials under WooCommerce → Settings → Subscriptions → PayPal.', 'easysubscription' );
 		$this->has_fields         = false;
 		$this->supports           = array( 'products' );
 
 		$this->init_form_fields();
 		$this->init_settings();
 
-		$this->title       = $this->get_option( 'title', __( 'PayPal', 'subkit-subscriptions' ) );
-		$this->description = $this->get_option( 'description', __( 'Approve a recurring payment with your PayPal account.', 'subkit-subscriptions' ) );
+		$this->title       = $this->get_option( 'title', __( 'PayPal', 'easysubscription' ) );
+		$this->description = $this->get_option( 'description', __( 'Approve a recurring payment with your PayPal account.', 'easysubscription' ) );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 		add_action( 'woocommerce_api_' . self::ID . '_return', array( $this, 'handle_return' ) );
@@ -43,20 +43,20 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 	public function init_form_fields(): void {
 		$this->form_fields = array(
 			'enabled'     => array(
-				'title'   => __( 'Enable/Disable', 'subkit-subscriptions' ),
+				'title'   => __( 'Enable/Disable', 'easysubscription' ),
 				'type'    => 'checkbox',
-				'label'   => __( 'Offer PayPal for subscription purchases', 'subkit-subscriptions' ),
+				'label'   => __( 'Offer PayPal for subscription purchases', 'easysubscription' ),
 				'default' => 'no',
 			),
 			'title'       => array(
-				'title'   => __( 'Title', 'subkit-subscriptions' ),
+				'title'   => __( 'Title', 'easysubscription' ),
 				'type'    => 'text',
-				'default' => __( 'PayPal', 'subkit-subscriptions' ),
+				'default' => __( 'PayPal', 'easysubscription' ),
 			),
 			'description' => array(
-				'title'   => __( 'Description', 'subkit-subscriptions' ),
+				'title'   => __( 'Description', 'easysubscription' ),
 				'type'    => 'textarea',
-				'default' => __( 'Approve a recurring payment with your PayPal account.', 'subkit-subscriptions' ),
+				'default' => __( 'Approve a recurring payment with your PayPal account.', 'easysubscription' ),
 			),
 		);
 	}
@@ -92,14 +92,14 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		$order = wc_get_order( $order_id );
 
 		// A second agreement would bill alongside this one; the Store API pays orders without the pay page's gateway list.
-		if ( $order instanceof \WC_Order && 'subkit_renewal' === $order->get_created_via() ) {
-			return $this->abort( $order, __( 'A renewal cannot be paid with PayPal.', 'subkit-subscriptions' ) );
+		if ( $order instanceof \WC_Order && 'easysubscription_renewal' === $order->get_created_via() ) {
+			return $this->abort( $order, __( 'A renewal cannot be paid with PayPal.', 'easysubscription' ) );
 		}
 
 		$product = $this->subscription_product_in( $order );
 
 		if ( ! $product ) {
-			return $this->abort( $order, __( 'This order does not contain a subscription.', 'subkit-subscriptions' ) );
+			return $this->abort( $order, __( 'This order does not contain a subscription.', 'easysubscription' ) );
 		}
 
 		$plan = $this->plans->plan_for( $product );
@@ -145,7 +145,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		$approve = $this->approval_link( $response['body'] );
 
 		if ( '' === $approve ) {
-			return $this->abort( $order, __( 'PayPal did not return an approval link.', 'subkit-subscriptions' ) );
+			return $this->abort( $order, __( 'PayPal did not return an approval link.', 'easysubscription' ) );
 		}
 
 		return array(
@@ -160,7 +160,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 	public function handle_return(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- PayPal controls this redirect; the token below is the check.
 		$order_id = absint( $_GET['order_id'] ?? 0 );
-		$result   = sanitize_key( $_GET['subkit_result'] ?? '' );
+		$result   = sanitize_key( $_GET['easysubscription_result'] ?? '' );
 		$token    = sanitize_text_field( wp_unslash( $_GET['token'] ?? '' ) );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
@@ -172,8 +172,8 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		}
 
 		if ( 'approved' !== $result ) {
-			$order->update_status( 'cancelled', __( 'Customer cancelled the PayPal approval.', 'subkit-subscriptions' ) );
-			wc_add_notice( __( 'You cancelled the PayPal approval, so no subscription was started.', 'subkit-subscriptions' ), 'notice' );
+			$order->update_status( 'cancelled', __( 'Customer cancelled the PayPal approval.', 'easysubscription' ) );
+			wc_add_notice( __( 'You cancelled the PayPal approval, so no subscription was started.', 'easysubscription' ), 'notice' );
 			wp_safe_redirect( wc_get_cart_url() );
 			exit;
 		}
@@ -198,7 +198,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		$status   = (string) ( $response['body']['status'] ?? '' );
 
 		if ( ! $response['ok'] || ! in_array( $status, array( 'ACTIVE', 'APPROVED' ), true ) ) {
-			$order->update_status( 'on-hold', __( 'Waiting for PayPal to activate the subscription.', 'subkit-subscriptions' ) );
+			$order->update_status( 'on-hold', __( 'Waiting for PayPal to activate the subscription.', 'easysubscription' ) );
 			return;
 		}
 
@@ -223,8 +223,8 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		}
 	}
 
-	private function subscription_for( \WC_Order $order ): ?\SubKit\Domain\Subscription {
-		$id = (int) $order->get_meta( '_subkit_subscription_id' );
+	private function subscription_for( \WC_Order $order ): ?\EasySubscription\Domain\Subscription {
+		$id = (int) $order->get_meta( '_easysubscription_subscription_id' );
 
 		if ( ! $id ) {
 			return null;
@@ -232,7 +232,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 
 		$subscription = wc_get_order( $id );
 
-		return $subscription instanceof \SubKit\Domain\Subscription ? $subscription : null;
+		return $subscription instanceof \EasySubscription\Domain\Subscription ? $subscription : null;
 	}
 
 	private function subscription_product_in( \WC_Order $order ): ?\WC_Product {
@@ -251,7 +251,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		return add_query_arg(
 			array(
 				'order_id'      => $order->get_id(),
-				'subkit_result' => $result,
+				'easysubscription_result' => $result,
 				'token'         => $this->return_token( $order ),
 			),
 			WC()->api_request_url( self::ID . '_return' )
@@ -262,7 +262,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 	 * Ties the return URL to this specific order so it cannot be replayed for another.
 	 */
 	private function return_token( \WC_Order $order ): string {
-		return hash_hmac( 'sha256', 'subkit_paypal_return_' . $order->get_id() . $order->get_order_key(), wp_salt( 'auth' ) );
+		return hash_hmac( 'sha256', 'easysubscription_paypal_return_' . $order->get_id() . $order->get_order_key(), wp_salt( 'auth' ) );
 	}
 
 	private function approval_link( array $body ): string {
@@ -280,7 +280,7 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 			$order->add_order_note( sprintf( 'PayPal: %s', $message ) );
 		}
 
-		wc_add_notice( __( 'We could not start your PayPal subscription. Please try again or use another payment method.', 'subkit-subscriptions' ), 'error' );
+		wc_add_notice( __( 'We could not start your PayPal subscription. Please try again or use another payment method.', 'easysubscription' ), 'error' );
 
 		return array( 'result' => 'failure' );
 	}

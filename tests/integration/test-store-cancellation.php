@@ -5,8 +5,8 @@
  * @package EasySubscription
  */
 
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -22,7 +22,7 @@ $s->save();
 $s->transition_to( Subscription_Status::Active );
 $s->save();
 
-$c  = new \SubKit\Rest\Subscriptions_Controller( \SubKit\Plugin::instance()->get( 'activity' ), \SubKit\Plugin::instance()->get( 'processor' ) );
+$c  = new \EasySubscription\Rest\Subscriptions_Controller( \EasySubscription\Plugin::instance()->get( 'activity' ), \EasySubscription\Plugin::instance()->get( 'processor' ) );
 $m  = new ReflectionMethod( $c, 'transition' );
 $m->setAccessible( true );
 $m->invoke( $c, $s, Subscription_Status::Cancelled, 'Cancelled by the store.' );
@@ -32,4 +32,4 @@ $check( 'store is told', in_array( get_option( 'admin_email' ), $sent, true ), $
 $check( 'the subscription really is cancelled', str_contains( wc_get_order( $s->get_id() )->get_status(), 'cancelled' ), wc_get_order( $s->get_id() )->get_status() );
 
 $s->delete( true );
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

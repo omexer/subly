@@ -292,7 +292,7 @@ every year and nobody knows which one their site is using.
 
 > **WP Software License** does the same job for that plugin, but the call that changes licence
 > state is an **assumption** — it is guarded so it does nothing rather than failing loudly,
-> and it fires `subkit_integration_unsupported`. Verify it against a real install before
+> and it fires `easysubscription_integration_unsupported`. Verify it against a real install before
 > relying on it.
 
 **Settings that matter.**

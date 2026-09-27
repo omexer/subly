@@ -7,25 +7,25 @@
  * @package EasySubscription
  */
 
-use SubKit\Admin\App_Host;
-use SubKit\Admin\Help_Page;
-use SubKit\Admin\Integration_Installer;
-use SubKit\Admin\Integrations_Page;
-use SubKit\Admin\Menu;
-use SubKit\Admin\Page_Shell;
-use SubKit\Admin\Settings_Page;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Admin\App_Host;
+use EasySubscription\Admin\Help_Page;
+use EasySubscription\Admin\Integration_Installer;
+use EasySubscription\Admin\Integrations_Page;
+use EasySubscription\Admin\Menu;
+use EasySubscription\Admin\Page_Shell;
+use EasySubscription\Admin\Settings_Page;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 require __DIR__ . '/bootstrap.php';
 
 require_once ABSPATH . 'wp-admin/includes/user.php';
 
-$plugin = \SubKit\Plugin::instance();
+$plugin = \EasySubscription\Plugin::instance();
 $host   = $plugin->get( 'app_host' );
 
 if ( ! $host instanceof App_Host ) {
-	subkit_test_abort( 'the app host is not registered' );
+	easysubscription_test_abort( 'the app host is not registered' );
 }
 
 $users = array();
@@ -34,7 +34,7 @@ foreach ( array( 'customer', 'shop_manager' ) as $role ) {
 		array(
 			'user_login' => 'sk_shell_' . $role . '_' . wp_generate_password( 6, false, false ),
 			'user_pass'  => wp_generate_password( 32 ),
-			'user_email' => 'sk-shell-' . wp_generate_password( 6, false, false ) . '@example.test',
+			'user_email' => 'es-shell-' . wp_generate_password( 6, false, false ) . '@example.test',
 			'role'       => $role,
 		)
 	);
@@ -52,11 +52,11 @@ $free_pages = array( Menu::SLUG, Menu::LIST_SLUG, Integrations_Page::SLUG, Help_
 
 $check( 'every free page is an app page', array() === array_diff( $free_pages, App_Host::pages() ), App_Host::pages() );
 
-$add_page = static fn( $pages ): array => array_merge( (array) $pages, array( 'subkit-subscriptions-harness', Menu::SLUG ) );
-add_filter( 'subkit_app_pages', $add_page );
+$add_page = static fn( $pages ): array => array_merge( (array) $pages, array( 'easysubscription-harness', Menu::SLUG ) );
+add_filter( 'easysubscription_app_pages', $add_page );
 $pages = App_Host::pages();
-remove_filter( 'subkit_app_pages', $add_page );
-$check( 'another plugin adds its page through the filter, without repeating ours', in_array( 'subkit-subscriptions-harness', $pages, true ) && 1 === count( array_keys( $pages, Menu::SLUG, true ) ), $pages );
+remove_filter( 'easysubscription_app_pages', $add_page );
+$check( 'another plugin adds its page through the filter, without repeating ours', in_array( 'easysubscription-harness', $pages, true ) && 1 === count( array_keys( $pages, Menu::SLUG, true ) ), $pages );
 
 // ---------------------------------------------------------------- each page prints the host
 
@@ -88,12 +88,12 @@ $screens = array(
 
 foreach ( $screens as $label => list( $slug, $render, $get, $inside ) ) {
 	$html   = $hosted( $render, $get );
-	$prefix = '<div id="subkit-app" class="subkit-ui" data-page="' . $slug . '"></div><div id="subkit-fallback">';
+	$prefix = '<div id="easysubscription-app" class="easysubscription-ui" data-page="' . $slug . '"></div><div id="easysubscription-fallback">';
 	$body   = substr( $html, strlen( $prefix ), -strlen( '</div>' ) );
 
 	$check( "{$label} opens with the app host for its own page", str_starts_with( $html, $prefix ), substr( $html, 0, 160 ) );
-	$check( "  and closes the fallback it opened", str_ends_with( rtrim( $html ), '</div>' ) && substr_count( $html, 'id="subkit-app"' ) === 1, substr( $html, -80 ) );
-	$check( '  with its server render inside the fallback', str_contains( $body, 'class="subkit-shell"' ) && str_contains( $body, $inside ), wp_strip_all_tags( substr( $body, 0, 400 ) ) );
+	$check( "  and closes the fallback it opened", str_ends_with( rtrim( $html ), '</div>' ) && substr_count( $html, 'id="easysubscription-app"' ) === 1, substr( $html, -80 ) );
+	$check( '  with its server render inside the fallback', str_contains( $body, 'class="easysubscription-shell"' ) && str_contains( $body, $inside ), wp_strip_all_tags( substr( $body, 0, 400 ) ) );
 }
 
 // ---------------------------------------------------------------- what loads, and where
@@ -109,13 +109,13 @@ $enqueue_on = static function ( ?string $page, string $hook ) use ( $plugin, $ho
 	$GLOBALS['wp_scripts'] = null;
 	$GLOBALS['wp_styles']  = null;
 	$plugin_page           = $page;
-	$before                = did_action( 'subkit_app_enqueue' );
+	$before                = did_action( 'easysubscription_app_enqueue' );
 
 	$plugin->get( 'admin_assets' )->enqueue( $hook );
 	$host->enqueue();
 
 	return array(
-		'fired'   => did_action( 'subkit_app_enqueue' ) - $before,
+		'fired'   => did_action( 'easysubscription_app_enqueue' ) - $before,
 		'scripts' => wp_scripts(),
 	);
 };
@@ -129,8 +129,8 @@ foreach ( $free_pages as $slug ) {
 
 	$routes_ok = true;
 	foreach ( array( 'dashboard', 'subscriptions', 'integrations', 'help' ) as $bundle ) {
-		$registered = $scripts->registered[ 'subkit-' . $bundle ] ?? null;
-		$routes_ok  = $routes_ok && wp_script_is( 'subkit-' . $bundle, 'enqueued' ) && $registered && in_array( App_Host::HANDLE, $registered->deps, true );
+		$registered = $scripts->registered[ 'easysubscription-' . $bundle ] ?? null;
+		$routes_ok  = $routes_ok && wp_script_is( 'easysubscription-' . $bundle, 'enqueued' ) && $registered && in_array( App_Host::HANDLE, $registered->deps, true );
 	}
 	$check( '  every free route loads after the shell', $routes_ok );
 }
@@ -138,13 +138,13 @@ foreach ( $free_pages as $slug ) {
 $data = (string) wp_scripts()->get_data( App_Host::HANDLE, 'before' )[1];
 $check(
 	'the shell is told the header links, with Upgrade only while Pro is not active',
-	str_contains( $data, wp_json_encode( Page_Shell::header_links()['help'] ) ) && str_contains( $data, did_action( 'subkit_pro_loaded' ) ? '"upgrade":""' : wp_json_encode( Page_Shell::UPGRADE_URL ) ),
+	str_contains( $data, wp_json_encode( Page_Shell::header_links()['help'] ) ) && str_contains( $data, did_action( 'easysubscription_pro_loaded' ) ? '"upgrade":""' : wp_json_encode( Page_Shell::UPGRADE_URL ) ),
 	$data
 );
 
 $others = array(
-	'our WooCommerce settings tab'           => array( 'wc-settings', 'woocommerce_page_wc-settings', array( 'tab' => 'subkit' ), true ),
-	'an EasySubscription page with no route' => array( 'subkit-subscriptions-harness', 'easysubscription_page_subkit-subscriptions-harness', array(), true ),
+	'our WooCommerce settings tab'           => array( 'wc-settings', 'woocommerce_page_wc-settings', array( 'tab' => 'easysubscription' ), true ),
+	'an EasySubscription page with no route' => array( 'easysubscription-harness', 'easysubscription_page_easysubscription-harness', array(), true ),
 	'another plugin\'s page'                 => array( 'some-other-plugin', 'toplevel_page_some-other-plugin', array(), false ),
 	'a screen with no page'                  => array( null, 'edit.php', array(), false ),
 );
@@ -152,11 +152,11 @@ foreach ( $others as $label => list( $page, $hook, $query, $loads_ui ) ) {
 	$_GET   = $query;
 	$result = $enqueue_on( $page, $hook );
 	$_GET   = array();
-	$check( "{$label}: no app hook and no shell", 0 === $result['fired'] && ! wp_script_is( App_Host::HANDLE, 'enqueued' ) && ! wp_script_is( 'subkit-dashboard', 'enqueued' ) );
+	$check( "{$label}: no app hook and no shell", 0 === $result['fired'] && ! wp_script_is( App_Host::HANDLE, 'enqueued' ) && ! wp_script_is( 'easysubscription-dashboard', 'enqueued' ) );
 
 	// These load the shared UI, so only the page check keeps the app off them.
 	if ( $loads_ui ) {
-		$check( '  though the shared UI was registered there', wp_script_is( 'subkit-ui', 'registered' ) );
+		$check( '  though the shared UI was registered there', wp_script_is( 'easysubscription-ui', 'registered' ) );
 	}
 }
 
@@ -174,14 +174,14 @@ $tiles = static fn( $integrations ): array => array_merge(
 		array( 'title' => 'Zz Shell Hosted', 'active' => false, 'slug' => 'zz-shell-harness', 'url' => 'https://example.test/hosted' ),
 	)
 );
-add_filter( 'subkit_admin_integrations', $tiles, 99 );
+add_filter( 'easysubscription_admin_integrations', $tiles, 99 );
 
 $get = static function ( string $path, int $user ): WP_REST_Response {
 	wp_set_current_user( $user );
 	return rest_do_request( new WP_REST_Request( 'GET', $path ) );
 };
 
-$response = $get( '/subkit/v1/integrations', 1 );
+$response = $get( '/easysubscription/v1/integrations', 1 );
 $data     = $response->get_data();
 $by_title = array_column( (array) ( $data['integrations'] ?? array() ), null, 'title' );
 
@@ -196,31 +196,31 @@ $check(
 	$data['installer'] ?? null
 );
 $check( '  and sorted as the page sorts them', array_values( array_map( 'strval', array_column( $data['integrations'], 'title' ) ) ) === array_values( array_map( static fn( $i ) => (string) $i['title'], $plugin->get( 'integrations_page' )->integrations() ) ) );
-$check( '  a second request answers the same', $data === $get( '/subkit/v1/integrations', 1 )->get_data() );
+$check( '  a second request answers the same', $data === $get( '/easysubscription/v1/integrations', 1 )->get_data() );
 
-$manager      = $get( '/subkit/v1/integrations', $users['shop_manager'] );
+$manager      = $get( '/easysubscription/v1/integrations', $users['shop_manager'] );
 $manager_data = $manager->get_data();
 $manager_tile = array_column( (array) ( $manager_data['integrations'] ?? array() ), null, 'title' )['Zz Shell Hosted'] ?? array();
 $check( 'a shop manager sees them, but is offered no install and no installer nonce', 200 === $manager->get_status() && '' === ( $manager_tile['install'] ?? null ) && null === $manager_data['installer'] && 'https://example.test/hosted' === $manager_tile['get_url'], $manager_data['installer'] ?? null );
 
-remove_filter( 'subkit_admin_integrations', $tiles, 99 );
+remove_filter( 'easysubscription_admin_integrations', $tiles, 99 );
 
-$help = $get( '/subkit/v1/help', 1 );
+$help = $get( '/easysubscription/v1/help', 1 );
 $page = $plugin->get( 'help_page' );
 $check( 'help answers an administrator with the page\'s own tiles', 200 === $help->get_status() && array_column( $page->tiles(), 'title' ) === array_column( $help->get_data()['tiles'], 'title' ) && array_column( $page->tiles(), 'url' ) === array_column( $help->get_data()['tiles'], 'url' ), $help->get_data()['tiles'] ?? null );
 $check( '  and the report the page shows', Help_Page::report_text( $page->report() ) === $help->get_data()['report'] && str_contains( $help->get_data()['report'], 'EasySubscription: ' ), $help->get_data()['report'] ?? null );
 
 $panel = static function ( $subscription ): void {
-	echo '<div class="sk-shell-harness">panel for #' . (int) $subscription->get_id() . '</div>';
+	echo '<div class="es-shell-harness">panel for #' . (int) $subscription->get_id() . '</div>';
 };
-add_action( 'subkit_admin_subscription_detail', $panel );
-$panels = $get( "/subkit/v1/subscriptions/{$id}/panels", 1 );
+add_action( 'easysubscription_admin_subscription_detail', $panel );
+$panels = $get( "/easysubscription/v1/subscriptions/{$id}/panels", 1 );
 $check( 'the detail panels endpoint returns what extensions draw under that subscription', 200 === $panels->get_status() && str_contains( (string) $panels->get_data()['html'], "panel for #{$id}" ), $panels->get_data() );
-$check( '  and says so when there is no such subscription', 404 === $get( '/subkit/v1/subscriptions/999999999/panels', 1 )->get_status() );
-$check( '  and answers a shop manager, who can open that screen', 200 === $get( "/subkit/v1/subscriptions/{$id}/panels", $users['shop_manager'] )->get_status() );
-remove_action( 'subkit_admin_subscription_detail', $panel );
+$check( '  and says so when there is no such subscription', 404 === $get( '/easysubscription/v1/subscriptions/999999999/panels', 1 )->get_status() );
+$check( '  and answers a shop manager, who can open that screen', 200 === $get( "/easysubscription/v1/subscriptions/{$id}/panels", $users['shop_manager'] )->get_status() );
+remove_action( 'easysubscription_admin_subscription_detail', $panel );
 
-foreach ( array( '/subkit/v1/integrations', '/subkit/v1/help', "/subkit/v1/subscriptions/{$id}/panels" ) as $path ) {
+foreach ( array( '/easysubscription/v1/integrations', '/easysubscription/v1/help', "/easysubscription/v1/subscriptions/{$id}/panels" ) as $path ) {
 	$check( "{$path} refuses a customer", 403 === $get( $path, $users['customer'] )->get_status() );
 	$check( "{$path} refuses a visitor", 401 === $get( $path, 0 )->get_status() );
 }
@@ -231,4 +231,4 @@ foreach ( $users as $user ) {
 }
 wp_set_current_user( 0 );
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

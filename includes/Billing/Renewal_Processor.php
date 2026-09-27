@@ -1,33 +1,33 @@
 <?php
 
-namespace SubKit\Billing;
+namespace EasySubscription\Billing;
 
-use SubKit\Data\Activity_Repository;
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Billing_Schedule;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Charge_Result;
-use SubKit\Gateways\Gateway_Model;
-use SubKit\Gateways\Gateway_Registry;
+use EasySubscription\Data\Activity_Repository;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Billing_Schedule;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Charge_Result;
+use EasySubscription\Gateways\Gateway_Model;
+use EasySubscription\Gateways\Gateway_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * The renewal pipeline. Everything else in SubKit is UI around this.
+ * The renewal pipeline. Everything else in EasySubscription is UI around this.
  *
  * Developer Guide 7. The ordering is not stylistic: nothing contacts a gateway before
  * the charge slot is claimed, and the lock is always released in a finally.
  */
 class Renewal_Processor {
 
-	public const ACTION_SETTLE = 'subkit_settle_paid_renewal';
+	public const ACTION_SETTLE = 'easysubscription_settle_paid_renewal';
 
-	public const ACTION_RESOLVE = 'subkit_resolve_pending_renewal';
+	public const ACTION_RESOLVE = 'easysubscription_resolve_pending_renewal';
 
-	private const META_PAID_WHILE_PENDING = '_subkit_paid_while_pending';
+	private const META_PAID_WHILE_PENDING = '_easysubscription_paid_while_pending';
 
 	public function __construct(
 		private readonly Charge_Slot_Repository $slots,
@@ -98,7 +98,7 @@ class Renewal_Processor {
 		 * @param string|false $reason
 		 * @param Subscription $subscription
 		 */
-		$stop = apply_filters( 'subkit_stop_billing', $this->end_date_reached( $subscription ), $subscription );
+		$stop = apply_filters( 'easysubscription_stop_billing', $this->end_date_reached( $subscription ), $subscription );
 
 		if ( is_string( $stop ) && '' !== $stop ) {
 			$this->finish( $subscription, $stop );
@@ -171,7 +171,7 @@ class Renewal_Processor {
 
 		// A payment started on its pay page (a bank transfer, a Direct Debit) is still clearing; a retry must not leave it active and unpaid.
 		if ( Charge_Slot_Repository::STATE_FAILED === $slot->state && $order->has_status( 'on-hold' ) ) {
-			$this->hold( $subscription, __( 'Waiting for the payment made on the renewal\'s pay page to clear.', 'subkit-subscriptions' ) );
+			$this->hold( $subscription, __( 'Waiting for the payment made on the renewal\'s pay page to clear.', 'easysubscription' ) );
 			return;
 		}
 
@@ -244,13 +244,13 @@ class Renewal_Processor {
 	}
 
 	private function slot_for( \WC_Order $order ): ?object {
-		$slot_id = (int) $order->get_meta( '_subkit_charge_slot_id' );
+		$slot_id = (int) $order->get_meta( '_easysubscription_charge_slot_id' );
 
-		if ( 'subkit_renewal' !== $order->get_created_via() || ! $slot_id ) {
+		if ( 'easysubscription_renewal' !== $order->get_created_via() || ! $slot_id ) {
 			return null;
 		}
 
-		$slot = $this->slots->find( (int) $order->get_meta( '_subkit_subscription_id' ), (int) $order->get_meta( '_subkit_period_index' ) );
+		$slot = $this->slots->find( (int) $order->get_meta( '_easysubscription_subscription_id' ), (int) $order->get_meta( '_easysubscription_period_index' ) );
 
 		return $slot && (int) $slot->id === $slot_id ? $slot : null;
 	}
@@ -390,13 +390,13 @@ class Renewal_Processor {
 		$reason  = '' !== (string) $result->message ? (string) $result->message : (string) $result->code;
 		$message = sprintf(
 			/* translators: %s: renewal order number */
-			__( 'The payment provider reported that the payment for renewal order #%s failed after the order was marked paid. Nothing was changed automatically: collect the payment from the customer, or cancel the subscription.', 'subkit-subscriptions' ),
+			__( 'The payment provider reported that the payment for renewal order #%s failed after the order was marked paid. Nothing was changed automatically: collect the payment from the customer, or cancel the subscription.', 'easysubscription' ),
 			$order->get_order_number()
 		);
 
 		if ( '' !== $reason ) {
 			/* translators: %s: the reason the payment provider gave */
-			$message .= ' ' . sprintf( __( 'Reason given: %s', 'subkit-subscriptions' ), $reason );
+			$message .= ' ' . sprintf( __( 'Reason given: %s', 'easysubscription' ), $reason );
 		}
 
 		$order->add_order_note( $message );
@@ -465,7 +465,7 @@ class Renewal_Processor {
 			$subscription->set_period_index( (int) $slot->period_index );
 			$subscription->save();
 
-			do_action( 'subkit_renewal_succeeded', $subscription, $order );
+			do_action( 'easysubscription_renewal_succeeded', $subscription, $order );
 			return;
 		}
 
@@ -476,7 +476,7 @@ class Renewal_Processor {
 
 		$this->advance( $subscription, $slot );
 
-		do_action( 'subkit_renewal_succeeded', $subscription, $order );
+		do_action( 'easysubscription_renewal_succeeded', $subscription, $order );
 	}
 
 	/**
@@ -521,7 +521,7 @@ class Renewal_Processor {
 		$this->slots->mark_charging( (int) $slot->id );
 		$key = $this->slots->idempotency_key( $this->slots->find( $subscription->get_id(), (int) $slot->period_index ) ?? $slot );
 
-		do_action( 'subkit_before_renewal_charge', $subscription, $order );
+		do_action( 'easysubscription_before_renewal_charge', $subscription, $order );
 
 		$result = $gateway->charge_renewal( $subscription, $order, $key );
 
@@ -548,18 +548,18 @@ class Renewal_Processor {
 			$order->payment_complete( (string) $result->reference );
 			$this->advance( $subscription, $slot );
 
-			do_action( 'subkit_renewal_succeeded', $subscription, $order );
+			do_action( 'easysubscription_renewal_succeeded', $subscription, $order );
 			return;
 		}
 
 		if ( $result->needs_customer_action() ) {
 			// Not a failure. No dunning, no attempt_group bump — the customer just has to confirm.
-			$order->update_status( 'on-hold', __( 'Awaiting customer authentication.', 'subkit-subscriptions' ) );
-			$order->update_meta_data( '_subkit_action_url', $result->action_url );
+			$order->update_status( 'on-hold', __( 'Awaiting customer authentication.', 'easysubscription' ) );
+			$order->update_meta_data( '_easysubscription_action_url', $result->action_url );
 			$order->save();
-			$this->hold( $subscription, __( 'Waiting for the customer to confirm payment.', 'subkit-subscriptions' ) );
+			$this->hold( $subscription, __( 'Waiting for the customer to confirm payment.', 'easysubscription' ) );
 
-			do_action( 'subkit_renewal_requires_action', $subscription, $order, $result );
+			do_action( 'easysubscription_renewal_requires_action', $subscription, $order, $result );
 			return;
 		}
 
@@ -568,10 +568,10 @@ class Renewal_Processor {
 			$this->slots->mark_pending( (int) $slot->id );
 			$order->set_transaction_id( (string) $result->reference );
 			// A link left from an earlier confirmation step would make the order payable again.
-			$order->delete_meta_data( '_subkit_action_url' );
-			$order->update_status( 'on-hold', __( 'Payment submitted; awaiting confirmation from the payment provider.', 'subkit-subscriptions' ) );
+			$order->delete_meta_data( '_easysubscription_action_url' );
+			$order->update_status( 'on-hold', __( 'Payment submitted; awaiting confirmation from the payment provider.', 'easysubscription' ) );
 
-			do_action( 'subkit_renewal_pending', $subscription, $order, $result );
+			do_action( 'easysubscription_renewal_pending', $subscription, $order, $result );
 			return;
 		}
 
@@ -596,11 +596,11 @@ class Renewal_Processor {
 		 * @param \WC_Order     $order
 		 * @param Charge_Result $result
 		 */
-		do_action( 'subkit_before_failed_renewal_hold', $subscription, $order, $result );
+		do_action( 'easysubscription_before_failed_renewal_hold', $subscription, $order, $result );
 
 		$this->hold( $subscription, $result->describe() );
 
-		do_action( 'subkit_renewal_failed', $subscription, $order, $result );
+		do_action( 'easysubscription_renewal_failed', $subscription, $order, $result );
 	}
 
 	/**
@@ -621,7 +621,7 @@ class Renewal_Processor {
 	private function finish( Subscription $subscription, string $reason ): void {
 		$this->close( $subscription, Subscription_Status::Expired, $reason );
 
-		do_action( 'subkit_subscription_finished', $subscription, $reason );
+		do_action( 'easysubscription_subscription_finished', $subscription, $reason );
 	}
 
 	/**
@@ -650,8 +650,8 @@ class Renewal_Processor {
 			return;
 		}
 
-		// Not subkit_subscription_finished: that means the plan ran its course, not that the customer left.
-		$this->close( $subscription, Subscription_Status::Cancelled, __( 'Cancelled at the end of the paid period.', 'subkit-subscriptions' ) );
+		// Not easysubscription_subscription_finished: that means the plan ran its course, not that the customer left.
+		$this->close( $subscription, Subscription_Status::Cancelled, __( 'Cancelled at the end of the paid period.', 'easysubscription' ) );
 	}
 
 	/**
@@ -697,7 +697,7 @@ class Renewal_Processor {
 
 			$this->scheduler->schedule_at( $subscription_id, (int) strtotime( $slot->covers_to_gmt . ' UTC' ) );
 
-			do_action( 'subkit_renewal_succeeded', $subscription, $order );
+			do_action( 'easysubscription_renewal_succeeded', $subscription, $order );
 			return false;
 		}
 
@@ -705,7 +705,7 @@ class Renewal_Processor {
 		$this->slots->mark_abandoned( (int) $slot->id );
 
 		if ( $order instanceof \WC_Order && ! $order->is_paid() ) {
-			$order->update_status( 'cancelled', __( 'The subscription ended before this renewal was paid.', 'subkit-subscriptions' ) );
+			$order->update_status( 'cancelled', __( 'The subscription ended before this renewal was paid.', 'easysubscription' ) );
 		}
 
 		return true;
@@ -725,7 +725,7 @@ class Renewal_Processor {
 	/**
 	 * Tell a gateway that bills on a plan of its own that we are done.
 	 *
-	 * Unscheduling stops SubKit asking for money; it does nothing to PayPal, which bills
+	 * Unscheduling stops EasySubscription asking for money; it does nothing to PayPal, which bills
 	 * from its own plan and would go on charging a customer whose subscription has ended.
 	 * A tokenized gateway only moves money when we ask it to, so it has nothing to undo.
 	 */
@@ -748,9 +748,9 @@ class Renewal_Processor {
 			Activity_Repository::TYPE_NOTE,
 			$released
 				/* translators: %s: payment gateway name */
-				? sprintf( __( '%s was told to stop billing.', 'subkit-subscriptions' ), $gateway->title() )
+				? sprintf( __( '%s was told to stop billing.', 'easysubscription' ), $gateway->title() )
 				/* translators: %s: payment gateway name */
-				: sprintf( __( '%s could not be told to stop billing and may keep charging this customer. Cancel the agreement in your gateway account.', 'subkit-subscriptions' ), $gateway->title() )
+				: sprintf( __( '%s could not be told to stop billing and may keep charging this customer. Cancel the agreement in your gateway account.', 'easysubscription' ), $gateway->title() )
 		);
 	}
 
@@ -765,7 +765,7 @@ class Renewal_Processor {
 	private function covers_to( Billing_Schedule $schedule, \DateTimeImmutable $from ): \DateTimeImmutable {
 		$to = $schedule->next_date_from( $from );
 
-		if ( 'charge_all' === get_option( 'subkit_catch_up_policy', 'rebase' ) ) {
+		if ( 'charge_all' === get_option( 'easysubscription_catch_up_policy', 'rebase' ) ) {
 			return $to;
 		}
 
@@ -809,7 +809,7 @@ class Renewal_Processor {
 	 * A cloned staging site inherits every subscription and will happily bill real people.
 	 */
 	private function is_billing_site( Subscription $subscription ): bool {
-		$origin = (string) $subscription->get_meta( '_subkit_site_url' );
+		$origin = (string) $subscription->get_meta( '_easysubscription_site_url' );
 
 		return '' === $origin || get_option( 'siteurl' ) === $origin;
 	}

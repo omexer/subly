@@ -14,7 +14,7 @@ import {
 	Input,
 	Skeleton,
 	Stat,
-} from '@subkit/ui';
+} from '@easysubscription/ui';
 import {
 	daysAgo,
 	describeSchedule,
@@ -26,9 +26,9 @@ import {
 
 function Fact( { label, children } ) {
 	return (
-		<div className="sk-flex sk-justify-between sk-gap-4 sk-border-b sk-border-border sk-py-2.5 last:sk-border-0">
-			<span className="sk-text-muted-foreground">{ label }</span>
-			<span className="sk-text-right">{ children }</span>
+		<div className="es-flex es-justify-between es-gap-4 es-border-b es-border-border es-py-2.5 last:es-border-0">
+			<span className="es-text-muted-foreground">{ label }</span>
+			<span className="es-text-right">{ children }</span>
 		</div>
 	);
 }
@@ -42,13 +42,13 @@ function Fact( { label, children } ) {
 function entryLabel( type ) {
 	switch ( type ) {
 		case 'status_change':
-			return __( 'Status', 'subkit-subscriptions' );
+			return __( 'Status', 'easysubscription' );
 		case 'charge_attempt':
-			return __( 'Charge', 'subkit-subscriptions' );
+			return __( 'Charge', 'easysubscription' );
 		case 'schedule_change':
-			return __( 'Schedule', 'subkit-subscriptions' );
+			return __( 'Schedule', 'easysubscription' );
 		default:
-			return __( 'Note', 'subkit-subscriptions' );
+			return __( 'Note', 'easysubscription' );
 	}
 }
 
@@ -89,12 +89,12 @@ export function Detail( { id, onBack, onFail } ) {
 		setBusy( true );
 
 		return Promise.all( [
-			apiFetch( { path: `/subkit/v1/subscriptions/${ id }` } ),
+			apiFetch( { path: `/easysubscription/v1/subscriptions/${ id }` } ),
 			apiFetch( {
-				path: `/subkit/v1/subscriptions/${ id }/activity`,
+				path: `/easysubscription/v1/subscriptions/${ id }/activity`,
 			} ).catch( () => [] ),
 			apiFetch( {
-				path: `/subkit/v1/subscriptions/${ id }/panels`,
+				path: `/easysubscription/v1/subscriptions/${ id }/panels`,
 			} ).catch( () => ( {} ) ),
 		] )
 			.then( ( [ subscription, entries, extra ] ) => {
@@ -121,10 +121,10 @@ export function Detail( { id, onBack, onFail } ) {
 							ok: false,
 							message: __(
 								'That could not be reloaded.',
-								'subkit-subscriptions'
+								'easysubscription'
 							),
 						} );
-					} else if ( 'subkit_not_found' === error?.code ) {
+					} else if ( 'easysubscription_not_found' === error?.code ) {
 						setMissing( true );
 					} else {
 						onFail();
@@ -150,14 +150,14 @@ export function Detail( { id, onBack, onFail } ) {
 		setNotice( null );
 
 		apiFetch( {
-			path: `/subkit/v1/subscriptions/${ id }/actions`,
+			path: `/easysubscription/v1/subscriptions/${ id }/actions`,
 			method: 'POST',
 			data: { action },
 		} )
 			.then( () => {
 				setNotice( {
 					ok: true,
-					message: __( 'Done.', 'subkit-subscriptions' ),
+					message: __( 'Done.', 'easysubscription' ),
 				} );
 
 				return load();
@@ -168,7 +168,7 @@ export function Detail( { id, onBack, onFail } ) {
 					ok: false,
 					message:
 						error?.message ||
-						__( 'That did not work.', 'subkit-subscriptions' ),
+						__( 'That did not work.', 'easysubscription' ),
 				} );
 			} );
 	};
@@ -178,7 +178,7 @@ export function Detail( { id, onBack, onFail } ) {
 		setNotice( null );
 
 		apiFetch( {
-			path: `/subkit/v1/subscriptions/${ id }`,
+			path: `/easysubscription/v1/subscriptions/${ id }`,
 			method: 'POST',
 			data: {
 				next_payment: dates.next_payment
@@ -194,7 +194,7 @@ export function Detail( { id, onBack, onFail } ) {
 					ok: true,
 					message: __(
 						'The schedule was changed.',
-						'subkit-subscriptions'
+						'easysubscription'
 					),
 				} );
 
@@ -208,7 +208,7 @@ export function Detail( { id, onBack, onFail } ) {
 						error?.message ||
 						__(
 							'That date could not be read.',
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 				} );
 			} );
@@ -217,11 +217,11 @@ export function Detail( { id, onBack, onFail } ) {
 	if ( missing ) {
 		return (
 			<Card>
-				<CardContent className="sk-p-6">
+				<CardContent className="es-p-6">
 					<p>
 						{ __(
 							'No subscription with that id.',
-							'subkit-subscriptions'
+							'easysubscription'
 						) }
 					</p>
 				</CardContent>
@@ -230,30 +230,27 @@ export function Detail( { id, onBack, onFail } ) {
 	}
 
 	if ( ! data ) {
-		return <Skeleton className="sk-my-4 sk-h-64" />;
+		return <Skeleton className="es-my-4 es-h-64" />;
 	}
 
-	let nextMeta = __( 'Nothing scheduled', 'subkit-subscriptions' );
+	let nextMeta = __( 'Nothing scheduled', 'easysubscription' );
 
 	// The date only moves once the provider confirms, so "overdue" would mislead.
 	if ( data.payment_pending ) {
-		nextMeta = __( 'Waiting for the payment', 'subkit-subscriptions' );
+		nextMeta = __( 'Waiting for the payment', 'easysubscription' );
 	} else if ( data.next_payment ) {
 		nextMeta = whenDue( data.next_payment );
 	}
 
 	return (
-		<div className={ busy ? 'sk-opacity-60 sk-transition-opacity' : '' }>
-			<div className="sk-mb-4 sk-flex sk-flex-wrap sk-items-start sk-gap-3">
+		<div className={ busy ? 'es-opacity-60 es-transition-opacity' : '' }>
+			<div className="es-mb-4 es-flex es-flex-wrap es-items-start es-gap-3">
 				<div>
-					<div className="sk-flex sk-flex-wrap sk-items-center sk-gap-2">
-						<h2 className="sk-m-0 sk-text-xl sk-font-semibold">
+					<div className="es-flex es-flex-wrap es-items-center es-gap-2">
+						<h2 className="es-m-0 es-text-xl es-font-semibold">
 							{ sprintf(
 								/* translators: %d: subscription id. */
-								__(
-									'Subscription #%d',
-									'subkit-subscriptions'
-								),
+								__( 'Subscription #%d', 'easysubscription' ),
 								data.id
 							) }
 						</h2>
@@ -261,7 +258,7 @@ export function Detail( { id, onBack, onFail } ) {
 							{ data.status_label }
 						</Badge>
 					</div>
-					<p className="sk-mt-1 sk-text-sm sk-text-muted-foreground">
+					<p className="es-mt-1 es-text-sm es-text-muted-foreground">
 						{ data.customer_name || data.customer_email || '—' }
 						{ data.customer_name && data.customer_email
 							? ` · ${ data.customer_email }`
@@ -274,19 +271,19 @@ export function Detail( { id, onBack, onFail } ) {
 						variant="ghost"
 						size="sm"
 						onClick={ onBack }
-						className="sk-ml-auto"
+						className="es-ml-auto"
 					>
-						{ __( '← All subscriptions', 'subkit-subscriptions' ) }
+						{ __( '← All subscriptions', 'easysubscription' ) }
 					</Button>
 				) : null }
 			</div>
 
 			{ notice ? (
 				<div
-					className={ `sk-mb-4 sk-rounded-lg sk-border sk-p-3 sk-text-sm ${
+					className={ `es-mb-4 es-rounded-lg es-border es-p-3 es-text-sm ${
 						notice.ok
-							? 'sk-border-success sk-text-success'
-							: 'sk-border-destructive sk-text-destructive'
+							? 'es-border-success es-text-success'
+							: 'es-border-destructive es-text-destructive'
 					}` }
 					role="status"
 				>
@@ -296,46 +293,46 @@ export function Detail( { id, onBack, onFail } ) {
 
 			{ data.payment_pending ? (
 				<div
-					className="sk-mb-4 sk-rounded-lg sk-border sk-p-3 sk-text-sm"
+					className="es-mb-4 es-rounded-lg es-border es-p-3 es-text-sm"
 					role="status"
 				>
 					<strong>
-						{ __( 'Payment processing', 'subkit-subscriptions' ) }
+						{ __( 'Payment processing', 'easysubscription' ) }
 					</strong>{ ' ' }
 					{ sprintf(
 						/* translators: 1: renewal order number, 2: how long ago, such as "3 days ago". */
 						__(
 							'Renewal order #%1$s was submitted %2$s and is waiting for the payment provider to confirm it.',
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 						data.payment_pending_order.number,
 						daysAgo( data.payment_pending_since )
 					) }{ ' ' }
 					<a href={ data.payment_pending_order.url }>
-						{ __( 'View order', 'subkit-subscriptions' ) }
+						{ __( 'View order', 'easysubscription' ) }
 					</a>
 				</div>
 			) : null }
 
-			<div className="sk-mb-4 sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+			<div className="es-mb-4 es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 				<Stat
-					label={ __( 'Recurring total', 'subkit-subscriptions' ) }
+					label={ __( 'Recurring total', 'easysubscription' ) }
 					value={ data.total_formatted }
 					meta={ describeSchedule( data ) }
 				/>
 				<Stat
-					label={ __( 'Next payment', 'subkit-subscriptions' ) }
+					label={ __( 'Next payment', 'easysubscription' ) }
 					value={ data.next_payment_formatted || '—' }
 					meta={ nextMeta }
 				/>
 				<Stat
-					label={ __( 'Payments made', 'subkit-subscriptions' ) }
+					label={ __( 'Payments made', 'easysubscription' ) }
 					value={ String( Number( data.period_index || 0 ) + 1 ) }
 					meta={
 						formatDay( data.date_created )
 							? sprintf(
 									/* translators: %s: date the subscription started. */
-									__( 'since %s', 'subkit-subscriptions' ),
+									__( 'since %s', 'easysubscription' ),
 									formatDay( data.date_created )
 							  )
 							: ''
@@ -343,46 +340,36 @@ export function Detail( { id, onBack, onFail } ) {
 				/>
 			</div>
 
-			<div className="sk-grid sk-gap-4 sk-grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
+			<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{ __( 'Details', 'subkit-subscriptions' ) }
+							{ __( 'Details', 'easysubscription' ) }
 						</CardTitle>
 					</CardHeader>
-					<CardContent className="sk-text-sm">
-						<Fact
-							label={ __( 'Customer', 'subkit-subscriptions' ) }
-						>
+					<CardContent className="es-text-sm">
+						<Fact label={ __( 'Customer', 'easysubscription' ) }>
 							{ data.customer_name || data.customer_email || '—' }
 						</Fact>
-						<Fact label={ __( 'Email', 'subkit-subscriptions' ) }>
+						<Fact label={ __( 'Email', 'easysubscription' ) }>
 							{ data.customer_email || '—' }
 						</Fact>
 						<Fact
-							label={ __(
-								'Payment method',
-								'subkit-subscriptions'
-							) }
+							label={ __( 'Payment method', 'easysubscription' ) }
 						>
 							{ data.payment_method_title ||
 								data.payment_method ||
 								'—' }
 						</Fact>
-						<Fact
-							label={ __( 'Trial ends', 'subkit-subscriptions' ) }
-						>
+						<Fact label={ __( 'Trial ends', 'easysubscription' ) }>
 							{ formatDay( data.trial_end ) || '—' }
 						</Fact>
-						<Fact label={ __( 'Ends', 'subkit-subscriptions' ) }>
+						<Fact label={ __( 'Ends', 'easysubscription' ) }>
 							{ formatDay( data.end_date ) ||
-								__( 'Not set', 'subkit-subscriptions' ) }
+								__( 'Not set', 'easysubscription' ) }
 						</Fact>
 						<Fact
-							label={ __(
-								'Parent order',
-								'subkit-subscriptions'
-							) }
+							label={ __( 'Parent order', 'easysubscription' ) }
 						>
 							{ data.parent_order_id
 								? `#${ data.parent_order_id }`
@@ -394,14 +381,11 @@ export function Detail( { id, onBack, onFail } ) {
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{ __(
-								'Things you can do',
-								'subkit-subscriptions'
-							) }
+							{ __( 'Things you can do', 'easysubscription' ) }
 						</CardTitle>
 					</CardHeader>
-					<CardContent className="sk-flex sk-flex-col sk-gap-5">
-						<div className="sk-flex sk-flex-wrap sk-items-center sk-gap-2">
+					<CardContent className="es-flex es-flex-col es-gap-5">
+						<div className="es-flex es-flex-wrap es-items-center es-gap-2">
 							{ data.billable && ! data.payment_pending ? (
 								<Button
 									disabled={ busy }
@@ -412,17 +396,14 @@ export function Detail( { id, onBack, onFail } ) {
 												/* translators: %s: recurring total. */
 												__(
 													'This charges the customer %s right now. Continue?',
-													'subkit-subscriptions'
+													'easysubscription'
 												),
 												data.total_formatted
 											)
 										)
 									}
 								>
-									{ __(
-										'Renew now',
-										'subkit-subscriptions'
-									) }
+									{ __( 'Renew now', 'easysubscription' ) }
 								</Button>
 							) : null }
 							<Button
@@ -430,41 +411,41 @@ export function Detail( { id, onBack, onFail } ) {
 								disabled={ busy }
 								onClick={ () => act( 'reactivate' ) }
 							>
-								{ __( 'Reactivate', 'subkit-subscriptions' ) }
+								{ __( 'Reactivate', 'easysubscription' ) }
 							</Button>
 						</div>
 
 						{ data.billable && ! data.payment_pending ? (
-							<p className="sk-m-0 sk-text-xs sk-text-muted-foreground">
+							<p className="es-m-0 es-text-xs es-text-muted-foreground">
 								{ __(
 									'Charging now takes the next payment immediately and moves the schedule on. It does not skip the queue for a failed one - the activity log below says what happened last.',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</p>
 						) : null }
 
-						<div className="sk-flex sk-flex-col sk-gap-2 sk-border-t sk-pt-4">
-							<h4 className="sk-m-0 sk-text-sm sk-font-medium">
+						<div className="es-flex es-flex-col es-gap-2 es-border-t es-pt-4">
+							<h4 className="es-m-0 es-text-sm es-font-medium">
 								{ __(
 									'Change the schedule',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</h4>
-							<p className="sk-m-0 sk-mb-1 sk-text-xs sk-text-muted-foreground">
+							<p className="es-m-0 es-mb-1 es-text-xs es-text-muted-foreground">
 								{ __(
 									'Moving the next payment changes when the customer is next charged; nothing is charged by saving. An end date stops renewals on or after it.',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</p>
 
 							<label
-								className="sk-text-xs sk-text-muted-foreground"
-								htmlFor="subkit-next-payment"
+								className="es-text-xs es-text-muted-foreground"
+								htmlFor="easysubscription-next-payment"
 							>
-								{ __( 'Next payment', 'subkit-subscriptions' ) }
+								{ __( 'Next payment', 'easysubscription' ) }
 							</label>
 							<Input
-								id="subkit-next-payment"
+								id="easysubscription-next-payment"
 								type="datetime-local"
 								value={ dates.next_payment }
 								onChange={ ( event ) =>
@@ -476,13 +457,13 @@ export function Detail( { id, onBack, onFail } ) {
 							/>
 
 							<label
-								className="sk-text-xs sk-text-muted-foreground"
-								htmlFor="subkit-end-date"
+								className="es-text-xs es-text-muted-foreground"
+								htmlFor="easysubscription-end-date"
 							>
-								{ __( 'Ends', 'subkit-subscriptions' ) }
+								{ __( 'Ends', 'easysubscription' ) }
 							</label>
 							<Input
-								id="subkit-end-date"
+								id="easysubscription-end-date"
 								type="datetime-local"
 								value={ dates.end_date }
 								onChange={ ( event ) =>
@@ -498,26 +479,26 @@ export function Detail( { id, onBack, onFail } ) {
 								size="sm"
 								disabled={ busy }
 								onClick={ saveDates }
-								className="sk-mt-1 sk-self-start"
+								className="es-mt-1 es-self-start"
 							>
 								{ __(
 									'Save the schedule',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</Button>
 						</div>
 
-						<div className="sk-flex sk-flex-col sk-items-start sk-gap-2 sk-border-t sk-pt-4">
-							<h4 className="sk-m-0 sk-text-sm sk-font-medium">
+						<div className="es-flex es-flex-col es-items-start es-gap-2 es-border-t es-pt-4">
+							<h4 className="es-m-0 es-text-sm es-font-medium">
 								{ __(
 									'End this subscription',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</h4>
-							<p className="sk-m-0 sk-text-xs sk-text-muted-foreground">
+							<p className="es-m-0 es-text-xs es-text-muted-foreground">
 								{ __(
 									'Billing stops and the customer keeps what the last payment covered. This cannot be undone.',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</p>
 							<Button
@@ -529,14 +510,14 @@ export function Detail( { id, onBack, onFail } ) {
 										'cancel',
 										__(
 											'Cancel this subscription? It cannot be reactivated afterwards.',
-											'subkit-subscriptions'
+											'easysubscription'
 										)
 									)
 								}
 							>
 								{ __(
 									'Cancel subscription',
-									'subkit-subscriptions'
+									'easysubscription'
 								) }
 							</Button>
 						</div>
@@ -544,43 +525,43 @@ export function Detail( { id, onBack, onFail } ) {
 				</Card>
 			</div>
 
-			<Card className="sk-mt-4">
+			<Card className="es-mt-4">
 				<CardHeader>
 					<CardTitle>
-						{ __( 'Activity', 'subkit-subscriptions' ) }
+						{ __( 'Activity', 'easysubscription' ) }
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{ activity.length ? (
-						<div className="sk-flex sk-flex-col sk-gap-5">
+						<div className="es-flex es-flex-col es-gap-5">
 							{ byDay( activity ).map( ( group ) => (
 								<div key={ group.day }>
-									<h4 className="sk-m-0 sk-mb-2 sk-text-xs sk-font-semibold sk-uppercase sk-tracking-wide sk-text-muted-foreground">
+									<h4 className="es-m-0 es-mb-2 es-text-xs es-font-semibold es-uppercase es-tracking-wide es-text-muted-foreground">
 										{ formatDay( group.day ) || group.day }
 									</h4>
-									<ol className="sk-m-0 sk-flex sk-list-none sk-flex-col sk-gap-2 sk-p-0 sk-text-sm">
+									<ol className="es-m-0 es-flex es-list-none es-flex-col es-gap-2 es-p-0 es-text-sm">
 										{ group.entries.map(
 											( entry, index ) => (
 												<li
 													key={ `${ entry.date }-${ index }` }
-													className="sk-flex sk-gap-3"
+													className="es-flex es-gap-3"
 												>
-													<span className="sk-w-20 sk-shrink-0 sk-whitespace-nowrap sk-tabular-nums sk-text-muted-foreground">
+													<span className="es-w-20 es-shrink-0 es-whitespace-nowrap es-tabular-nums es-text-muted-foreground">
 														{ formatTime(
 															entry.date
 														) }
 													</span>
-													<span className="sk-w-20 sk-shrink-0">
+													<span className="es-w-20 es-shrink-0">
 														<Badge variant="secondary">
 															{ entryLabel(
 																entry.type
 															) }
 														</Badge>
 													</span>
-													<span className="sk-min-w-0">
+													<span className="es-min-w-0">
 														{ entry.message }
 														{ entry.actor ? (
-															<span className="sk-text-muted-foreground">
+															<span className="es-text-muted-foreground">
 																{ ' · ' }
 																{ entry.actor }
 															</span>
@@ -594,10 +575,10 @@ export function Detail( { id, onBack, onFail } ) {
 							) ) }
 						</div>
 					) : (
-						<p className="sk-m-0 sk-text-sm sk-text-muted-foreground">
+						<p className="es-m-0 es-text-sm es-text-muted-foreground">
 							{ __(
 								'Nothing has happened to this subscription yet. Charges, status changes and schedule edits are all recorded here.',
-								'subkit-subscriptions'
+								'easysubscription'
 							) }
 						</p>
 					) }
@@ -606,8 +587,8 @@ export function Detail( { id, onBack, onFail } ) {
 
 			{ panels ? (
 				<div
-					className="sk-mt-4"
-					// Drawn by other plugins' PHP on subkit_admin_subscription_detail, as the server screen draws it.
+					className="es-mt-4"
+					// Drawn by other plugins' PHP on easysubscription_admin_subscription_detail, as the server screen draws it.
 					dangerouslySetInnerHTML={ { __html: panels } }
 				/>
 			) : null }

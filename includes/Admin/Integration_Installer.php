@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Integration_Installer {
 
-	public const ACTION = 'subkit_install_integration';
+	public const ACTION = 'easysubscription_install_integration';
 
 	public function register(): void {
 		add_action( 'wp_ajax_' . self::ACTION, array( $this, 'handle' ) );
@@ -30,13 +30,13 @@ class Integration_Installer {
 		// install_plugins and activate_plugins are separate capabilities on purpose, and a
 		// site can grant one without the other.
 		if ( ! current_user_can( 'install_plugins' ) || ! current_user_can( 'activate_plugins' ) ) {
-			wp_send_json_error( array( 'message' => __( 'You do not have permission to install plugins.', 'subkit-subscriptions' ) ), 403 );
+			wp_send_json_error( array( 'message' => __( 'You do not have permission to install plugins.', 'easysubscription' ) ), 403 );
 		}
 
 		$slug = isset( $_POST['slug'] ) ? sanitize_key( wp_unslash( $_POST['slug'] ) ) : '';
 
 		if ( '' === $slug || ! in_array( $slug, $this->allowed(), true ) ) {
-			wp_send_json_error( array( 'message' => __( 'That is not an integration EasySubscription offers.', 'subkit-subscriptions' ) ), 400 );
+			wp_send_json_error( array( 'message' => __( 'That is not an integration EasySubscription offers.', 'easysubscription' ) ), 400 );
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/plugin.php';
@@ -61,7 +61,7 @@ class Integration_Installer {
 			wp_send_json_error( array( 'message' => $activated->get_error_message() ), 500 );
 		}
 
-		wp_send_json_success( array( 'message' => __( 'Installed and activated.', 'subkit-subscriptions' ) ) );
+		wp_send_json_success( array( 'message' => __( 'Installed and activated.', 'easysubscription' ) ) );
 	}
 
 	/**
@@ -70,7 +70,7 @@ class Integration_Installer {
 	private function allowed(): array {
 		$slugs = array();
 
-		foreach ( (array) apply_filters( 'subkit_admin_integrations', array() ) as $integration ) {
+		foreach ( (array) apply_filters( 'easysubscription_admin_integrations', array() ) as $integration ) {
 			$slug = (string) ( $integration['slug'] ?? '' );
 
 			if ( '' !== $slug ) {
@@ -103,7 +103,7 @@ class Integration_Installer {
 		$download = isset( $fields['download_link'] ) ? (string) $fields['download_link'] : '';
 
 		if ( '' === $download ) {
-			return new \WP_Error( 'subkit_no_download', __( 'WordPress.org did not offer a download for that plugin.', 'subkit-subscriptions' ) );
+			return new \WP_Error( 'easysubscription_no_download', __( 'WordPress.org did not offer a download for that plugin.', 'easysubscription' ) );
 		}
 
 		$upgrader = new \Plugin_Upgrader( new \WP_Ajax_Upgrader_Skin() );
@@ -114,12 +114,12 @@ class Integration_Installer {
 		}
 
 		if ( true !== $result ) {
-			return new \WP_Error( 'subkit_install_failed', __( 'WordPress could not install that plugin.', 'subkit-subscriptions' ) );
+			return new \WP_Error( 'easysubscription_install_failed', __( 'WordPress could not install that plugin.', 'easysubscription' ) );
 		}
 
 		$file = $this->installed_file( $slug );
 
-		return $file ?: new \WP_Error( 'subkit_install_missing', __( 'The plugin installed but could not be found afterwards.', 'subkit-subscriptions' ) );
+		return $file ?: new \WP_Error( 'easysubscription_install_missing', __( 'The plugin installed but could not be found afterwards.', 'easysubscription' ) );
 	}
 
 	private function installed_file( string $slug ): string {

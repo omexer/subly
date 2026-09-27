@@ -19,7 +19,7 @@
 	}
 
 	function Disclosure( props ) {
-		var data = ( props.extensions || {} ).subkit;
+		var data = ( props.extensions || {} ).easysubscription;
 
 		if ( ! data || ! data.has_subscription ) {
 			return null;
@@ -31,26 +31,26 @@
 			el(
 				'div',
 				{
-					className: 'subkit-blocks-disclosure',
+					className: 'easysubscription-blocks-disclosure',
 					role: 'group',
-					'aria-label': __( 'Subscription terms', 'subkit-subscriptions' ),
+					'aria-label': __( 'Subscription terms', 'easysubscription' ),
 				},
-				el( 'p', { className: 'subkit-blocks-disclosure__price' }, data.price_line ),
+				el( 'p', { className: 'easysubscription-blocks-disclosure__price' }, data.price_line ),
 				el(
 					'ul',
-					{ className: 'subkit-blocks-disclosure__facts' },
+					{ className: 'easysubscription-blocks-disclosure__facts' },
 					( data.lines || [] ).map( function ( line, index ) {
-						return el( 'li', { key: 'subkit-fact-' + index }, line );
+						return el( 'li', { key: 'easysubscription-fact-' + index }, line );
 					} )
 				),
 				data.consent
-					? el( 'p', { className: 'subkit-blocks-disclosure__consent' }, data.consent )
+					? el( 'p', { className: 'easysubscription-blocks-disclosure__consent' }, data.consent )
 					: null
 			)
 		);
 	}
 
-	wp.plugins.registerPlugin( 'subkit-subscription-terms', {
+	wp.plugins.registerPlugin( 'easysubscription-subscription-terms', {
 		render: Disclosure,
 		scope: 'woocommerce-checkout',
 	} );

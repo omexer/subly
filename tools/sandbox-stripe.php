@@ -7,25 +7,25 @@
  * outcome, then let reconciliation settle it and ask Stripe itself how many charges
  * exist. Anything but exactly one is a double charge.
  *
- * Reads the key from the SUBKIT_STRIPE_TEST_KEY environment variable. It is never
+ * Reads the key from the EASYSUBSCRIPTION_STRIPE_TEST_KEY environment variable. It is never
  * written to the database, printed, or logged.
  *
  * Usage, from the wp-docker directory:
- *   docker compose exec -T -e SUBKIT_STRIPE_TEST_KEY="$SUBKIT_STRIPE_TEST_KEY" wordpress \
- *     php /var/www/html/wp-content/plugins/subkit-subscriptions/tools/sandbox-stripe.php
+ *   docker compose exec -T -e EASYSUBSCRIPTION_STRIPE_TEST_KEY="$EASYSUBSCRIPTION_STRIPE_TEST_KEY" wordpress \
+ *     php /var/www/html/wp-content/plugins/easysubscription/tools/sandbox-stripe.php
  */
 
 require_once '/var/www/html/wp-load.php';
 
-use SubKit\Data\Charge_Slot_Repository;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Stripe\Stripe_Gateway;
+use EasySubscription\Data\Charge_Slot_Repository;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Stripe\Stripe_Gateway;
 
-$key = (string) getenv( 'SUBKIT_STRIPE_TEST_KEY' );
+$key = (string) getenv( 'EASYSUBSCRIPTION_STRIPE_TEST_KEY' );
 
 if ( '' === $key ) {
-	fwrite( STDERR, "SUBKIT_STRIPE_TEST_KEY is not set.\n" );
+	fwrite( STDERR, "EASYSUBSCRIPTION_STRIPE_TEST_KEY is not set.\n" );
 	exit( 1 );
 }
 
@@ -77,7 +77,7 @@ if ( ! is_array( $account ) || isset( $account['error'] ) ) {
 }
 
 echo "\n=== Building a real customer with a saved card ===\n";
-$customer = stripe( $key, 'POST', '/v1/customers', array( 'description' => 'SubKit sandbox run' ) );
+$customer = stripe( $key, 'POST', '/v1/customers', array( 'description' => 'EasySubscription sandbox run' ) );
 check( 'customer created', isset( $customer['id'] ), (string) ( $customer['id'] ?? '' ) );
 
 // pm_card_visa is Stripe's own test payment method; no card number is ever handled here.
@@ -87,13 +87,13 @@ check( 'test payment method created', isset( $method['id'] ), (string) ( $method
 $attached = stripe( $key, 'POST', '/v1/payment_methods/' . $method['id'] . '/attach', array( 'customer' => $customer['id'] ) );
 check( 'payment method attached', isset( $attached['id'] ) && ! isset( $attached['error'] ) );
 
-echo "\n=== Wiring SubKit to it ===\n";
-update_option( 'subkit_stripe_enabled', 'yes' );
-update_option( 'subkit_stripe_live', 'no' );
-update_option( 'subkit_stripe_test_secret', $key );
+echo "\n=== Wiring EasySubscription to it ===\n";
+update_option( 'easysubscription_stripe_enabled', 'yes' );
+update_option( 'easysubscription_stripe_live', 'no' );
+update_option( 'easysubscription_stripe_test_secret', $key );
 
-$plugin  = SubKit\Plugin::instance();
-$gateway = new Stripe_Gateway( SubKit\Gateways\Stripe\Stripe_Client::from_settings() );
+$plugin  = EasySubscription\Plugin::instance();
+$gateway = new Stripe_Gateway( EasySubscription\Gateways\Stripe\Stripe_Client::from_settings() );
 $plugin->get( 'gateways' )->add( $gateway );
 
 $subscription = new Subscription();
@@ -121,14 +121,14 @@ check( 'subscription ready', '12.00' === wc_get_order( $id )->get_total(), '#' .
 
 $slots = $plugin->get( 'charge_slots' );
 $count_intents = static function () use ( $key, $id ): int {
-	$search = stripe( $key, 'GET', '/v1/payment_intents/search?query=' . rawurlencode( sprintf( 'metadata["subkit_subscription"]:"%d"', $id ) ) . '&limit=100' );
+	$search = stripe( $key, 'GET', '/v1/payment_intents/search?query=' . rawurlencode( sprintf( 'metadata["easysubscription_subscription"]:"%d"', $id ) ) . '&limit=100' );
 
 	return is_array( $search ) && isset( $search['data'] ) ? count( $search['data'] ) : -1;
 };
 $slot_states = static function () use ( $id ): string {
 	global $wpdb;
 
-	return implode( ',', (array) $wpdb->get_col( $wpdb->prepare( "SELECT CONCAT(period_index,':',state) FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id = %d ORDER BY period_index", $id ) ) );
+	return implode( ',', (array) $wpdb->get_col( $wpdb->prepare( "SELECT CONCAT(period_index,':',state) FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id = %d ORDER BY period_index", $id ) ) );
 };
 
 echo "\n=== The timeout: abort the read after Stripe has the request ===\n";
@@ -165,7 +165,7 @@ $final_states  = $slot_states();
 
 check( 'slot settled', str_contains( $final_states, 'paid' ), $final_states );
 check( 'EXACTLY ONE charge exists at Stripe', 1 === $final_intents, $final_intents . ' payment intent(s) — anything but 1 is a double charge' );
-check( 'subscription is active again', 'sk-active' === wc_get_order( $id )->get_status(), (string) wc_get_order( $id )->get_status() );
+check( 'subscription is active again', 'es-active' === wc_get_order( $id )->get_status(), (string) wc_get_order( $id )->get_status() );
 check( 'next payment moved forward', '' !== (string) wc_get_order( $id )->get_next_payment(), (string) wc_get_order( $id )->get_next_payment() );
 
 echo "\n=== A second run changes nothing ===\n";
@@ -175,8 +175,8 @@ check( 'still exactly one charge', 1 === $count_intents(), $count_intents() . ' 
 
 echo "\n=== Cleaning up ===\n";
 global $wpdb;
-$wpdb->delete( $wpdb->prefix . 'subkit_charge_slot', array( 'subscription_id' => $id ) );
-$wpdb->delete( $wpdb->prefix . 'subkit_activity', array( 'subscription_id' => $id ) );
+$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $id ) );
+$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $id ) );
 
 foreach ( wc_get_orders( array( 'parent' => $id, 'limit' => -1, 'type' => 'shop_order' ) ) as $child ) {
 	$child->delete( true );
@@ -185,9 +185,9 @@ foreach ( wc_get_orders( array( 'parent' => $id, 'limit' => -1, 'type' => 'shop_
 wc_get_order( $id )->delete( true );
 stripe( $key, 'DELETE', '/v1/customers/' . $customer['id'] );
 
-delete_option( 'subkit_stripe_test_secret' );
-delete_option( 'subkit_stripe_enabled' );
-check( 'key removed from the database', '' === (string) get_option( 'subkit_stripe_test_secret', '' ) );
+delete_option( 'easysubscription_stripe_test_secret' );
+delete_option( 'easysubscription_stripe_enabled' );
+check( 'key removed from the database', '' === (string) get_option( 'easysubscription_stripe_test_secret', '' ) );
 
 printf( "\n%d passed, %d failed\n\n", $pass, $fail );
 exit( $fail > 0 ? 1 : 0 );

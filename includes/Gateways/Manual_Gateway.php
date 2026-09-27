@@ -1,29 +1,29 @@
 <?php
 
-namespace SubKit\Gateways;
+namespace EasySubscription\Gateways;
 
-use SubKit\Domain\Subscription;
+use EasySubscription\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Manual renewal: SubKit raises the renewal order and the customer pays it themselves.
+ * Manual renewal: EasySubscription raises the renewal order and the customer pays it themselves.
  *
  * This is the fallback for offline methods (BACS, cheque, COD) and for any gateway that
  * cannot be charged off-session.
  */
 class Manual_Gateway implements Recurring_Gateway {
 
-	public const ID = 'subkit_manual';
+	public const ID = 'easysubscription_manual';
 
 	public function id(): string {
 		return self::ID;
 	}
 
 	public function title(): string {
-		return __( 'Manual renewal', 'subkit-subscriptions' );
+		return __( 'Manual renewal', 'easysubscription' );
 	}
 
 	public function model(): Gateway_Model {

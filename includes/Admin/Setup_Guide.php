@@ -1,14 +1,14 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
-use SubKit\Billing\Renewal_Processor;
-use SubKit\Billing\Renewal_Scheduler;
-use SubKit\Data\Subscription_Query;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Gateways\Test_Gateway;
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Billing\Renewal_Processor;
+use EasySubscription\Billing\Renewal_Scheduler;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Gateways\Test_Gateway;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -22,15 +22,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Setup_Guide {
 
-	private const DISMISSED = 'subkit_setup_notice_dismissed';
+	private const DISMISSED = 'easysubscription_setup_notice_dismissed';
 
 	public function __construct( private readonly Renewal_Scheduler $scheduler ) {}
 
 	public function register(): void {
 		add_action( 'admin_notices', array( $this, 'activation_notice' ) );
-		add_action( 'admin_post_subkit_dismiss_setup', array( $this, 'dismiss' ) );
-		add_action( 'admin_post_subkit_test_renewal', array( $this, 'run_test_renewal' ) );
-		add_action( 'admin_post_subkit_create_product', array( $this, 'create_first_product' ) );
+		add_action( 'admin_post_easysubscription_dismiss_setup', array( $this, 'dismiss' ) );
+		add_action( 'admin_post_easysubscription_test_renewal', array( $this, 'run_test_renewal' ) );
+		add_action( 'admin_post_easysubscription_create_product', array( $this, 'create_first_product' ) );
 	}
 
 	/**
@@ -48,17 +48,17 @@ class Setup_Guide {
 
 		printf(
 			'<div class="notice notice-success"><p><strong>%s</strong> %s</p><p><a class="button button-primary" href="%s">%s</a> <a href="%s">%s</a></p></div>',
-			esc_html__( 'EasySubscription is active.', 'subkit-subscriptions' ),
-			esc_html__( 'Turn any product into a subscription in about two minutes.', 'subkit-subscriptions' ),
+			esc_html__( 'EasySubscription is active.', 'easysubscription' ),
+			esc_html__( 'Turn any product into a subscription in about two minutes.', 'easysubscription' ),
 			esc_url( add_query_arg( array( 'page' => Menu::SLUG ), admin_url( 'admin.php' ) ) ),
-			esc_html__( 'Set up subscriptions', 'subkit-subscriptions' ),
-			esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=subkit_dismiss_setup' ), 'subkit_dismiss_setup' ) ),
-			esc_html__( 'Dismiss', 'subkit-subscriptions' )
+			esc_html__( 'Set up subscriptions', 'easysubscription' ),
+			esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=easysubscription_dismiss_setup' ), 'easysubscription_dismiss_setup' ) ),
+			esc_html__( 'Dismiss', 'easysubscription' )
 		);
 	}
 
 	public function dismiss(): void {
-		if ( current_user_can( Menu::CAPABILITY ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'subkit_dismiss_setup' ) ) {
+		if ( current_user_can( Menu::CAPABILITY ) && wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'easysubscription_dismiss_setup' ) ) {
 			update_option( self::DISMISSED, 1, false );
 		}
 
@@ -77,26 +77,26 @@ class Setup_Guide {
 		return array(
 			array(
 				'done'   => (bool) $connected,
-				'title'  => __( 'Connect a payment method', 'subkit-subscriptions' ),
+				'title'  => __( 'Connect a payment method', 'easysubscription' ),
 				'detail' => $connected
 					/* translators: %s: comma-separated list of connected gateways */
-					? sprintf( __( '%s can charge renewals automatically.', 'subkit-subscriptions' ), implode( ', ', $connected ) )
-					: __( 'Subscriptions renew by themselves once a gateway is connected — Stripe or PayPal, both included. Without one, renewals become invoices the customer pays by hand, which still works.', 'subkit-subscriptions' ),
+					? sprintf( __( '%s can charge renewals automatically.', 'easysubscription' ), implode( ', ', $connected ) )
+					: __( 'Subscriptions renew by themselves once a gateway is connected — Stripe or PayPal, both included. Without one, renewals become invoices the customer pays by hand, which still works.', 'easysubscription' ),
 				'action' => array(
-					'label' => $connected ? __( 'Change', 'subkit-subscriptions' ) : __( 'Choose a gateway', 'subkit-subscriptions' ),
-					'url'   => admin_url( 'admin.php?page=wc-settings&tab=subkit' ),
+					'label' => $connected ? __( 'Change', 'easysubscription' ) : __( 'Choose a gateway', 'easysubscription' ),
+					'url'   => admin_url( 'admin.php?page=wc-settings&tab=easysubscription' ),
 				),
 			),
 			array(
 				'done'   => (bool) $product,
-				'title'  => __( 'Create a subscription product', 'subkit-subscriptions' ),
+				'title'  => __( 'Create a subscription product', 'easysubscription' ),
 				'detail' => $product
 					/* translators: %s: product name */
-					? sprintf( __( '"%s" is ready to sell.', 'subkit-subscriptions' ), $product->get_name() )
-					: __( 'Edit any simple product and tick Subscription in the Product data panel.', 'subkit-subscriptions' ),
+					? sprintf( __( '"%s" is ready to sell.', 'easysubscription' ), $product->get_name() )
+					: __( 'Edit any simple product and tick Subscription in the Product data panel.', 'easysubscription' ),
 				'action' => $product
 					? array(
-						'label' => __( 'Edit', 'subkit-subscriptions' ),
+						'label' => __( 'Edit', 'easysubscription' ),
 						'url'   => get_edit_post_link( $product->get_id(), '' ),
 					)
 					: null,
@@ -104,19 +104,19 @@ class Setup_Guide {
 			),
 			array(
 				'done'   => $queue_ok,
-				'title'  => __( 'Check automatic renewals can run', 'subkit-subscriptions' ),
+				'title'  => __( 'Check automatic renewals can run', 'easysubscription' ),
 				'detail' => $queue_ok
-					? __( 'Renewals are processing normally.', 'subkit-subscriptions' )
-					: __( 'Scheduled tasks are overdue. On a quiet site WordPress cron may not fire often enough — a real server cron fixes it.', 'subkit-subscriptions' ),
+					? __( 'Renewals are processing normally.', 'easysubscription' )
+					: __( 'Scheduled tasks are overdue. On a quiet site WordPress cron may not fire often enough — a real server cron fixes it.', 'easysubscription' ),
 				'action' => null,
 			),
 			array(
-				'done'   => (bool) get_option( 'subkit_test_renewal_passed' ),
-				'title'  => __( 'Run a test renewal', 'subkit-subscriptions' ),
-				'detail' => __( 'See a renewal happen end to end, on a throwaway subscription. Nobody is charged and everything is deleted afterwards.', 'subkit-subscriptions' ),
+				'done'   => (bool) get_option( 'easysubscription_test_renewal_passed' ),
+				'title'  => __( 'Run a test renewal', 'easysubscription' ),
+				'detail' => __( 'See a renewal happen end to end, on a throwaway subscription. Nobody is charged and everything is deleted afterwards.', 'easysubscription' ),
 				'action' => array(
-					'label' => __( 'Run test renewal', 'subkit-subscriptions' ),
-					'url'   => wp_nonce_url( admin_url( 'admin-post.php?action=subkit_test_renewal' ), 'subkit_test_renewal' ),
+					'label' => __( 'Run test renewal', 'easysubscription' ),
+					'url'   => wp_nonce_url( admin_url( 'admin-post.php?action=easysubscription_test_renewal' ), 'easysubscription_test_renewal' ),
 				),
 			),
 		);
@@ -127,17 +127,17 @@ class Setup_Guide {
 	 * find the Product data panel to get started.
 	 */
 	public function create_first_product(): void {
-		if ( ! current_user_can( Menu::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'subkit_create_product' ) ) {
-			wp_die( esc_html__( 'That request could not be verified.', 'subkit-subscriptions' ) );
+		if ( ! current_user_can( Menu::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'easysubscription_create_product' ) ) {
+			wp_die( esc_html__( 'That request could not be verified.', 'easysubscription' ) );
 		}
 
-		$name  = sanitize_text_field( wp_unslash( $_POST['subkit_name'] ?? '' ) );
-		$price = wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['subkit_price'] ?? '' ) ) );
+		$name  = sanitize_text_field( wp_unslash( $_POST['easysubscription_name'] ?? '' ) );
+		$price = wc_format_decimal( sanitize_text_field( wp_unslash( $_POST['easysubscription_price'] ?? '' ) ) );
 
-		$period   = sanitize_key( wp_unslash( $_POST['subkit_period'] ?? 'month' ) );
+		$period   = sanitize_key( wp_unslash( $_POST['easysubscription_period'] ?? 'month' ) );
 		$period   = in_array( $period, array( 'day', 'week', 'month', 'year' ), true ) ? $period : 'month';
-		$interval = intval( wp_unslash( $_POST['subkit_interval'] ?? 1 ) );
-		$trial    = intval( wp_unslash( $_POST['subkit_trial'] ?? 0 ) );
+		$interval = intval( wp_unslash( $_POST['easysubscription_interval'] ?? 1 ) );
+		$trial    = intval( wp_unslash( $_POST['easysubscription_trial'] ?? 0 ) );
 
 		// intval with a range check, not absint: absint would turn a posted -4 into 4.
 		if ( '' === $name || '' === $price || (float) $price <= 0 || $interval < 1 || $interval > 365 || $trial < 0 || $trial > 365 ) {
@@ -158,7 +158,7 @@ class Setup_Guide {
 	}
 
 	private function redirect_back( string $result ): void {
-		wp_safe_redirect( add_query_arg( 'subkit_product', $result, admin_url( 'admin.php?page=' . Menu::SLUG ) ) );
+		wp_safe_redirect( add_query_arg( 'easysubscription_product', $result, admin_url( 'admin.php?page=' . Menu::SLUG ) ) );
 		exit;
 	}
 
@@ -169,8 +169,8 @@ class Setup_Guide {
 	 * will trust it with real customers, and one who hasn't opens a support ticket.
 	 */
 	public function run_test_renewal(): void {
-		if ( ! current_user_can( Menu::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'subkit_test_renewal' ) ) {
-			wp_die( esc_html__( 'That request could not be verified.', 'subkit-subscriptions' ) );
+		if ( ! current_user_can( Menu::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'easysubscription_test_renewal' ) ) {
+			wp_die( esc_html__( 'That request could not be verified.', 'easysubscription' ) );
 		}
 
 		$result = $this->perform_test_renewal();
@@ -179,7 +179,7 @@ class Setup_Guide {
 			add_query_arg(
 				array(
 					'page'        => Menu::SLUG,
-					'subkit_test' => $result ? 'pass' : 'fail',
+					'easysubscription_test' => $result ? 'pass' : 'fail',
 				),
 				admin_url( 'admin.php' )
 			)
@@ -190,8 +190,8 @@ class Setup_Guide {
 	public function perform_test_renewal(): bool {
 		Test_Gateway::sanction();
 
-		$processor = \SubKit\Plugin::instance()->get( 'processor' );
-		$registry  = \SubKit\Plugin::instance()->get( 'gateways' );
+		$processor = \EasySubscription\Plugin::instance()->get( 'processor' );
+		$registry  = \EasySubscription\Plugin::instance()->get( 'gateways' );
 
 		if ( ! $processor instanceof Renewal_Processor || ! $registry ) {
 			return false;
@@ -204,10 +204,10 @@ class Setup_Guide {
 		$subscription->set_billing_period( 'month' );
 		$subscription->set_billing_interval( 1 );
 		$subscription->set_payment_method( Test_Gateway::ID );
-		$subscription->set_payment_method_title( __( 'EasySubscription self-test', 'subkit-subscriptions' ) );
+		$subscription->set_payment_method_title( __( 'EasySubscription self-test', 'easysubscription' ) );
 		$subscription->set_next_payment( gmdate( 'Y-m-d H:i:s', time() - MINUTE_IN_SECONDS ) );
-		$subscription->update_meta_data( '_subkit_site_url', get_option( 'siteurl' ) );
-		$subscription->update_meta_data( '_subkit_is_test', 'yes' );
+		$subscription->update_meta_data( '_easysubscription_site_url', get_option( 'siteurl' ) );
+		$subscription->update_meta_data( '_easysubscription_is_test', 'yes' );
 		$subscription->transition_to( Subscription_Status::Active );
 		$subscription->save();
 
@@ -231,7 +231,7 @@ class Setup_Guide {
 
 		$this->cleanup_test( $id );
 
-		update_option( 'subkit_test_renewal_passed', $renewed ? 1 : 0, false );
+		update_option( 'easysubscription_test_renewal_passed', $renewed ? 1 : 0, false );
 
 		return $renewed;
 	}
@@ -243,7 +243,7 @@ class Setup_Guide {
 		global $wpdb;
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		return $wpdb->get_results( $wpdb->prepare( "SELECT state FROM {$wpdb->prefix}subkit_charge_slot WHERE subscription_id = %d", $id ) );
+		return $wpdb->get_results( $wpdb->prepare( "SELECT state FROM {$wpdb->prefix}easysubscription_charge_slot WHERE subscription_id = %d", $id ) );
 	}
 
 	private function cleanup_test( int $id ): void {
@@ -252,7 +252,7 @@ class Setup_Guide {
 		foreach ( wc_get_orders(
 			array(
 				'limit'      => -1,
-				'meta_key'   => '_subkit_subscription_id',
+				'meta_key'   => '_easysubscription_subscription_id',
 				'meta_value' => $id,
 			)
 		) as $order ) {
@@ -260,9 +260,9 @@ class Setup_Guide {
 		}
 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->delete( $wpdb->prefix . 'subkit_charge_slot', array( 'subscription_id' => $id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $id ), array( '%d' ) );
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-		$wpdb->delete( $wpdb->prefix . 'subkit_activity', array( 'subscription_id' => $id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $id ), array( '%d' ) );
 
 		$subscription = wc_get_order( $id );
 		if ( $subscription ) {
@@ -279,9 +279,9 @@ class Setup_Guide {
 	 * @return string[]
 	 */
 	private function connected_gateways(): array {
-		$registry = \SubKit\Plugin::instance()->get( 'gateways' );
+		$registry = \EasySubscription\Plugin::instance()->get( 'gateways' );
 
-		if ( ! $registry instanceof \SubKit\Gateways\Gateway_Registry ) {
+		if ( ! $registry instanceof \EasySubscription\Gateways\Gateway_Registry ) {
 			return array();
 		}
 
@@ -290,7 +290,7 @@ class Setup_Guide {
 		foreach ( $registry->all() as $gateway ) {
 			// Manual and the test gateway are always present and charge nobody by
 			// themselves, so counting them would tick this step on a store with nothing set up.
-			if ( in_array( $gateway->id(), array( 'subkit_manual', Test_Gateway::ID ), true ) ) {
+			if ( in_array( $gateway->id(), array( 'easysubscription_manual', Test_Gateway::ID ), true ) ) {
 				continue;
 			}
 

@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -14,14 +14,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class App_Host {
 
-	public const HANDLE = 'subkit-shell';
+	public const HANDLE = 'easysubscription-shell';
 
-	public const BODY_CLASS = 'subkit-app-page';
+	public const BODY_CLASS = 'easysubscription-app-page';
 
 	private bool $enqueued = false;
 
 	public static function start( string $page ): void {
-		printf( '<div id="subkit-app" class="subkit-ui" data-page="%s"></div><div id="subkit-fallback">', esc_attr( $page ) );
+		printf( '<div id="easysubscription-app" class="easysubscription-ui" data-page="%s"></div><div id="easysubscription-fallback">', esc_attr( $page ) );
 	}
 
 	public static function end(): void {
@@ -38,7 +38,7 @@ final class App_Host {
 		 * @param string[] $pages
 		 */
 		$pages = (array) apply_filters(
-			'subkit_app_pages',
+			'easysubscription_app_pages',
 			array(
 				Menu::SLUG,
 				Menu::LIST_SLUG,
@@ -75,33 +75,33 @@ final class App_Host {
 			return;
 		}
 
-		$asset = SUBKIT_PATH . 'build/shell.asset.php';
+		$asset = EASYSUBSCRIPTION_PATH . 'build/shell.asset.php';
 
-		if ( ! is_readable( $asset ) || ! wp_script_is( 'subkit-ui', 'registered' ) ) {
+		if ( ! is_readable( $asset ) || ! wp_script_is( 'easysubscription-ui', 'registered' ) ) {
 			return;
 		}
 
 		$asset = require $asset;
 
-		wp_enqueue_style( 'subkit-ui' );
-		wp_enqueue_style( self::HANDLE, SUBKIT_URL . 'build/shell.css', array( 'subkit-ui' ), $asset['version'] );
+		wp_enqueue_style( 'easysubscription-ui' );
+		wp_enqueue_style( self::HANDLE, EASYSUBSCRIPTION_URL . 'build/shell.css', array( 'easysubscription-ui' ), $asset['version'] );
 		wp_style_add_data( self::HANDLE, 'rtl', 'replace' );
 
 		wp_enqueue_script(
 			self::HANDLE,
-			SUBKIT_URL . 'build/shell.js',
-			array_merge( $asset['dependencies'], array( 'subkit-ui' ) ),
+			EASYSUBSCRIPTION_URL . 'build/shell.js',
+			array_merge( $asset['dependencies'], array( 'easysubscription-ui' ) ),
 			$asset['version'],
 			true
 		);
 
 		wp_add_inline_script(
 			self::HANDLE,
-			'window.subkitShellData = ' . wp_json_encode( array( 'links' => Page_Shell::header_links() ) ) . ';',
+			'window.easysubscriptionShellData = ' . wp_json_encode( array( 'links' => Page_Shell::header_links() ) ) . ';',
 			'before'
 		);
 
-		wp_set_script_translations( self::HANDLE, 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
+		wp_set_script_translations( self::HANDLE, 'easysubscription', EASYSUBSCRIPTION_PATH . 'languages' );
 
 		$this->enqueued = true;
 
@@ -110,6 +110,6 @@ final class App_Host {
 		 *
 		 * Route bundles enqueue themselves here, with App_Host::HANDLE as a dependency.
 		 */
-		do_action( 'subkit_app_enqueue' );
+		do_action( 'easysubscription_app_enqueue' );
 	}
 }

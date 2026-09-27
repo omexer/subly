@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Domain;
+namespace EasySubscription\Domain;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Money in integer minor units.
  *
  * Float arithmetic on prices is how installment plans end up a penny short across
- * three charges, so nothing in SubKit does maths on a float.
+ * three charges, so nothing in EasySubscription does maths on a float.
  */
 final class Money {
 

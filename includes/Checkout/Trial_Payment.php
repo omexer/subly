@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Checkout;
+namespace EasySubscription\Checkout;
 
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Trial_Payment {
 
-	public const OPTION = 'subkit_collect_payment_on_trial';
+	public const OPTION = 'easysubscription_collect_payment_on_trial';
 
 	public function register(): void {
 		add_filter( 'woocommerce_cart_needs_payment', array( $this, 'cart_needs_payment' ), 10, 2 );
@@ -44,7 +44,7 @@ final class Trial_Payment {
 		foreach ( $cart->get_cart() as $key => $item ) {
 			$product = $item['data'] ?? null;
 
-			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'subkit_cart_item_is_subscription', true, $item, $key ) && self::renews_for_money( $product, $cart->get_applied_coupons() ) ) {
+			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'easysubscription_cart_item_is_subscription', true, $item, $key ) && self::renews_for_money( $product, $cart->get_applied_coupons() ) ) {
 				return true;
 			}
 		}
@@ -68,14 +68,14 @@ final class Trial_Payment {
 			return $needs_payment;
 		}
 
-		if ( 'subkit_renewal' === $order->get_created_via() ) {
+		if ( 'easysubscription_renewal' === $order->get_created_via() ) {
 			return $needs_payment;
 		}
 
 		foreach ( $order->get_items() as $item ) {
 			$product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
 
-			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'subkit_create_subscription_for_item', true, $item, $product, $order ) && self::renews_for_money( $product, $order->get_coupon_codes() ) ) {
+			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'easysubscription_create_subscription_for_item', true, $item, $product, $order ) && self::renews_for_money( $product, $order->get_coupon_codes() ) ) {
 				return true;
 			}
 		}
@@ -94,7 +94,7 @@ final class Trial_Payment {
 		 * @param \WC_Product $product
 		 * @param string[]    $coupon_codes
 		 */
-		$amount = (float) apply_filters( 'subkit_checkout_renewal_amount', (float) Subscription_Product::recurring_price( $product )->decimal(), $product, $coupon_codes );
+		$amount = (float) apply_filters( 'easysubscription_checkout_renewal_amount', (float) Subscription_Product::recurring_price( $product )->decimal(), $product, $coupon_codes );
 
 		return $amount > 0;
 	}

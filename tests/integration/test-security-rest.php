@@ -5,8 +5,8 @@
  * @package EasySubscription
  */
 
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -14,7 +14,7 @@ $customer = wp_insert_user(
 	array(
 		'user_login' => 'sk_rest_' . wp_generate_password( 6, false, false ),
 		'user_pass'  => wp_generate_password( 32 ),
-		'user_email' => 'sk-rest-' . wp_generate_password( 6, false, false ) . '@example.test',
+		'user_email' => 'es-rest-' . wp_generate_password( 6, false, false ) . '@example.test',
 		'role'       => 'customer',
 	)
 );
@@ -30,15 +30,15 @@ $bodies = array(
 	'#/subscriptions/actions$#'      => array( 'ids' => array( $id ), 'action' => 'cancel' ),
 	'#/subscriptions/\d+/actions$#'  => array( 'action' => 'cancel' ),
 	'#/health/\d+/actions$#'         => array( 'action' => 'dismiss' ),
-	'#/subscriptions/\d+$#'          => array( 'status' => 'sk-cancelled' ),
-	'#/settings/\d+$#'               => array( 'values' => array( 'subkit_allow_cancellation' => 'no' ) ),
+	'#/subscriptions/\d+$#'          => array( 'status' => 'es-cancelled' ),
+	'#/settings/\d+$#'               => array( 'values' => array( 'easysubscription_allow_cancellation' => 'no' ) ),
 	'#/settings/emails/\d+$#'        => array( 'values' => array( 'subject' => 'Hijacked' ) ),
 );
 
 $routes = array();
 foreach ( rest_get_server()->get_routes() as $route => $handlers ) {
 	// The namespace index is WordPress core's own and public for every plugin.
-	if ( ! preg_match( '#^/subkit/v1/.#', $route ) || str_contains( $route, 'webhook/paypal' ) ) {
+	if ( ! preg_match( '#^/easysubscription/v1/.#', $route ) || str_contains( $route, 'webhook/paypal' ) ) {
 		continue;
 	}
 	foreach ( $handlers as $handler ) {
@@ -77,27 +77,27 @@ foreach ( array( 'a visitor' => 0, 'a customer' => $customer ) as $who => $user 
 	$check( "every protected route refuses {$who}", array() === $open, $open );
 }
 
-$check( 'and the subscription is untouched', 'sk-pending' === wc_get_order( $id )->get_status(), wc_get_order( $id )->get_status() );
+$check( 'and the subscription is untouched', 'es-pending' === wc_get_order( $id )->get_status(), wc_get_order( $id )->get_status() );
 
 // A forged "payment completed", shaped exactly like a real one.
 wp_set_current_user( 0 );
-$webhook = get_option( 'subkit_paypal_webhook_id', null );
+$webhook = get_option( 'easysubscription_paypal_webhook_id', null );
 
 foreach ( array( '' => 'with no webhook ID', 'WH-FAKE' => 'with a webhook ID' ) as $value => $label ) {
-	update_option( 'subkit_paypal_webhook_id', $value );
+	update_option( 'easysubscription_paypal_webhook_id', $value );
 	$event_id = 'WH-FORGED-' . wp_generate_password( 8, false, false );
-	$request  = new WP_REST_Request( 'POST', '/subkit/v1/webhook/paypal' );
+	$request  = new WP_REST_Request( 'POST', '/easysubscription/v1/webhook/paypal' );
 	$request->set_header( 'content-type', 'application/json' );
 	$request->set_body( wp_json_encode( array( 'id' => $event_id, 'event_type' => 'PAYMENT.SALE.COMPLETED', 'resource' => array( 'id' => 'TXN-FORGED', 'billing_agreement_id' => 'I-ANY' ) ) ) );
 
 	$status = rest_do_request( $request )->get_status();
-	$kept   = get_transient( 'subkit_pp_evt_body_' . md5( $event_id ) );
+	$kept   = get_transient( 'easysubscription_pp_evt_body_' . md5( $event_id ) );
 
 	$check( "a forged PayPal webhook is refused {$label}", 401 === $status && false === $kept, array( $status, (bool) $kept ) );
 }
 
-null === $webhook ? delete_option( 'subkit_paypal_webhook_id' ) : update_option( 'subkit_paypal_webhook_id', $webhook );
+null === $webhook ? delete_option( 'easysubscription_paypal_webhook_id' ) : update_option( 'easysubscription_paypal_webhook_id', $webhook );
 $sub->delete( true );
 wp_delete_user( $customer );
 
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

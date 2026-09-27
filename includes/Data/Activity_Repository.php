@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Data;
+namespace EasySubscription\Data;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -25,7 +25,7 @@ class Activity_Repository {
 		global $wpdb;
 
 		$wpdb->insert(
-			$wpdb->prefix . 'subkit_activity',
+			$wpdb->prefix . 'easysubscription_activity',
 			array(
 				'subscription_id' => $subscription_id,
 				'type'            => $type,
@@ -46,7 +46,7 @@ class Activity_Repository {
 
 		return $wpdb->get_results(
 			$wpdb->prepare(
-				"SELECT * FROM {$wpdb->prefix}subkit_activity WHERE subscription_id = %d ORDER BY created_gmt DESC, id DESC LIMIT %d",
+				"SELECT * FROM {$wpdb->prefix}easysubscription_activity WHERE subscription_id = %d ORDER BY created_gmt DESC, id DESC LIMIT %d",
 				$subscription_id,
 				$limit
 			)

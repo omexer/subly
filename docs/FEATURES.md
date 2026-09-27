@@ -145,11 +145,11 @@ Verification key:
 | **Delivery schedules** (cadence, manifest, print) | Run | Guards refuse rather than coerce |
 | **Reports** (MRR, ARR, churn, LTV) | Run | |
 | **Content access** (per-product roles, download capability) | Wired | |
-| **Members-only content** | Run (suite) | Per-post panel and `[subkit_restricted]` shortcode; kept out of excerpts, feeds, REST, search and the Latest Posts block. On hold does not unlock |
+| **Members-only content** | Run (suite) | Per-post panel and `[easysubscription_restricted]` shortcode; kept out of excerpts, feeds, REST, search and the Latest Posts block. On hold does not unlock |
 | **Win-back campaign** | Run (suite) | Up to three emails, single-use personal coupons, signed come-back link, confirmed unsubscribe |
 | **Anniversary thank-yous** | Run (suite) | Daily scan, 7-day window so enabling it never floods; renewal discount or personal store coupon |
 | **Retention offer on cancellation** | Run (suite) | Whether its coupon discounts renewals is unverified — see HANDOVER |
-| **Subscription webhooks** | Run (suite) | WooCommerce's own webhooks, resource `subkit_subscription`; see Pro's `docs/WEBHOOKS.md` |
+| **Subscription webhooks** | Run (suite) | WooCommerce's own webhooks, resource `easysubscription_subscription`; see Pro's `docs/WEBHOOKS.md` |
 | **WhatsApp notifications** | Mocked | Meta Cloud API faked; opt-in at checkout and My Account; exactly-once per event |
 | **REST API**: pause and resume, reports, health | Run | 401 / 404 / 409 / 400 paths all proven. The subscriptions routes themselves are free. |
 | **Mollie renewals** | Mocked | Idempotency-Key + payment metadata |

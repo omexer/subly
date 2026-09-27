@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Gateways\PayPal;
+namespace EasySubscription\Gateways\PayPal;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Thin PayPal REST client: OAuth token caching and JSON requests.
  *
- * Deliberately not a full SDK. Everything SubKit needs is four endpoints, and a vendored
+ * Deliberately not a full SDK. Everything EasySubscription needs is four endpoints, and a vendored
  * SDK would be the only production dependency in the whole free plugin.
  */
 class PayPal_Client {
@@ -17,7 +17,7 @@ class PayPal_Client {
 	private const LIVE    = 'https://api-m.paypal.com';
 	private const SANDBOX = 'https://api-m.sandbox.paypal.com';
 
-	private const TOKEN_TRANSIENT = 'subkit_paypal_token';
+	private const TOKEN_TRANSIENT = 'easysubscription_paypal_token';
 
 	public function __construct(
 		private readonly string $client_id,
@@ -27,9 +27,9 @@ class PayPal_Client {
 
 	public static function from_settings(): self {
 		return new self(
-			(string) get_option( 'subkit_paypal_client_id', '' ),
-			(string) get_option( 'subkit_paypal_secret', '' ),
-			'yes' !== get_option( 'subkit_paypal_live', 'no' )
+			(string) get_option( 'easysubscription_paypal_client_id', '' ),
+			(string) get_option( 'easysubscription_paypal_secret', '' ),
+			'yes' !== get_option( 'easysubscription_paypal_live', 'no' )
 		);
 	}
 
@@ -38,7 +38,7 @@ class PayPal_Client {
 	}
 
 	public function is_enabled(): bool {
-		return 'yes' === get_option( 'subkit_paypal_enabled', 'no' ) && $this->is_configured();
+		return 'yes' === get_option( 'easysubscription_paypal_enabled', 'no' ) && $this->is_configured();
 	}
 
 	public function base(): string {
@@ -118,7 +118,7 @@ class PayPal_Client {
 			return (string) $body['message'];
 		}
 
-		return __( 'Unexpected response from PayPal.', 'subkit-subscriptions' );
+		return __( 'Unexpected response from PayPal.', 'easysubscription' );
 	}
 
 	private function fail( int $status, string $error ): array {

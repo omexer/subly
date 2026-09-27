@@ -1,17 +1,17 @@
 <?php
 
-namespace SubKit\Billing;
+namespace EasySubscription\Billing;
 
-use SubKit\Admin\Menu;
-use SubKit\Admin\Notice_Dismissals;
-use SubKit\Admin\Notices;
-use SubKit\Admin\Settings_Page;
-use SubKit\Data\Activity_Repository;
-use SubKit\Data\Subscription_Query;
-use SubKit\Domain\Money;
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Admin\Menu;
+use EasySubscription\Admin\Notice_Dismissals;
+use EasySubscription\Admin\Notices;
+use EasySubscription\Admin\Settings_Page;
+use EasySubscription\Data\Activity_Repository;
+use EasySubscription\Data\Subscription_Query;
+use EasySubscription\Domain\Money;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -22,15 +22,15 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Renewal_Tax_Repair {
 
-	public const OPTION_SINCE = 'subkit_tax_exclusive_lines_since';
+	public const OPTION_SINCE = 'easysubscription_tax_exclusive_lines_since';
 
-	public const ACTION = 'subkit_repair_renewal_tax';
+	public const ACTION = 'easysubscription_repair_renewal_tax';
 
-	public const CACHE = 'subkit_tax_added_twice';
+	public const CACHE = 'easysubscription_tax_added_twice';
 
-	public const NOTICE = 'subkit-tax-added-twice';
+	public const NOTICE = 'easysubscription-tax-added-twice';
 
-	public const FROM_SUBKIT = 'subkit';
+	public const FROM_EASYSUBSCRIPTION = 'easysubscription';
 
 	public function __construct( private readonly Activity_Repository $activity ) {}
 
@@ -92,7 +92,7 @@ class Renewal_Tax_Repair {
 			|| ! in_array( $status, array( Subscription_Status::Active, Subscription_Status::Trialling, Subscription_Status::OnHold ), true )
 			|| ! $created || $created->getTimestamp() >= $this->since()
 			|| $subscription->get_items( 'tax' ) || 0.0 !== (float) $subscription->get_total_tax()
-			|| '' !== (string) $subscription->get_meta( '_subkit_renewal_price_applied' )
+			|| '' !== (string) $subscription->get_meta( '_easysubscription_renewal_price_applied' )
 			|| ! $lines ) {
 			return false;
 		}
@@ -162,7 +162,7 @@ class Renewal_Tax_Repair {
 		$id = absint( $_GET['subscription'] ?? 0 );
 
 		if ( ! current_user_can( Menu::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), self::ACTION . '_' . $id ) ) {
-			wp_die( esc_html__( 'That request could not be verified.', 'subkit-subscriptions' ) );
+			wp_die( esc_html__( 'That request could not be verified.', 'easysubscription' ) );
 		}
 
 		$subscription = wc_get_order( $id );
@@ -176,8 +176,8 @@ class Renewal_Tax_Repair {
 		wp_safe_redirect(
 			add_query_arg(
 				array(
-					'subkit_tax_repaired'      => $repaired ? $id : 0,
-					'subkit_tax_repair_failed' => $repaired ? 0 : $id,
+					'easysubscription_tax_repaired'      => $repaired ? $id : 0,
+					'easysubscription_tax_repair_failed' => $repaired ? 0 : $id,
 				),
 				self::list_url( sanitize_key( wp_unslash( $_GET['from'] ?? '' ) ) )
 			)
@@ -191,7 +191,7 @@ class Renewal_Tax_Repair {
 				array(
 					'action'       => self::ACTION,
 					'subscription' => $subscription_id,
-					'from'         => self::FROM_SUBKIT === $from ? self::FROM_SUBKIT : 'woocommerce',
+					'from'         => self::FROM_EASYSUBSCRIPTION === $from ? self::FROM_EASYSUBSCRIPTION : 'woocommerce',
 				),
 				admin_url( 'admin-post.php' )
 			),
@@ -202,13 +202,13 @@ class Renewal_Tax_Repair {
 	/**
 	 * The list lives on both settings screens; each one's repair comes back to it.
 	 */
-	public static function list_url( string $from = self::FROM_SUBKIT ): string {
-		return self::FROM_SUBKIT === $from
+	public static function list_url( string $from = self::FROM_EASYSUBSCRIPTION ): string {
+		return self::FROM_EASYSUBSCRIPTION === $from
 			? Settings_Page::section_url()
 			: add_query_arg(
 				array(
 					'page' => 'wc-settings',
-					'tab'  => 'subkit',
+					'tab'  => 'easysubscription',
 				),
 				admin_url( 'admin.php' )
 			);
@@ -235,15 +235,15 @@ class Renewal_Tax_Repair {
 						'EasySubscription: %d subscription renews with tax added twice, so its customer pays more than at checkout and may be owed a refund.',
 						'EasySubscription: %d subscriptions renew with tax added twice, so their customers pay more than at checkout and may be owed refunds.',
 						$count,
-						'subkit-subscriptions'
+						'easysubscription'
 					),
 					$count
 				)
 			),
 			esc_url( self::list_url() . '#' . self::NOTICE ),
-			esc_html__( 'Review and repair', 'subkit-subscriptions' ),
+			esc_html__( 'Review and repair', 'easysubscription' ),
 			esc_url( Notice_Dismissals::url( self::NOTICE, $count ) ),
-			esc_html__( 'Dismiss', 'subkit-subscriptions' )
+			esc_html__( 'Dismiss', 'easysubscription' )
 		);
 	}
 

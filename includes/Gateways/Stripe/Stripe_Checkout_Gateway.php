@@ -1,9 +1,9 @@
 <?php
 
-namespace SubKit\Gateways\Stripe;
+namespace EasySubscription\Gateways\Stripe;
 
-use SubKit\Domain\Money;
-use SubKit\Product\Subscription_Product;
+use EasySubscription\Domain\Money;
+use EasySubscription\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,20 +18,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 
-	public const ID = 'subkit_stripe';
+	public const ID = 'easysubscription_stripe';
 
 	public function __construct( private readonly Stripe_Client $client ) {
 		$this->id                 = self::ID;
-		$this->method_title       = __( 'Stripe Subscriptions (EasySubscription)', 'subkit-subscriptions' );
-		$this->method_description = __( 'Take card payments for subscriptions. Renewals are charged automatically against the saved card. Configure keys under WooCommerce → Settings → Subscriptions → Stripe.', 'subkit-subscriptions' );
+		$this->method_title       = __( 'Stripe Subscriptions (EasySubscription)', 'easysubscription' );
+		$this->method_description = __( 'Take card payments for subscriptions. Renewals are charged automatically against the saved card. Configure keys under WooCommerce → Settings → Subscriptions → Stripe.', 'easysubscription' );
 		$this->has_fields         = false;
 		$this->supports           = array( 'products', 'refunds' );
 
 		$this->init_form_fields();
 		$this->init_settings();
 
-		$this->title       = $this->get_option( 'title', __( 'Credit or debit card', 'subkit-subscriptions' ) );
-		$this->description = $this->get_option( 'description', __( 'You will be redirected to Stripe to pay securely.', 'subkit-subscriptions' ) );
+		$this->title       = $this->get_option( 'title', __( 'Credit or debit card', 'easysubscription' ) );
+		$this->description = $this->get_option( 'description', __( 'You will be redirected to Stripe to pay securely.', 'easysubscription' ) );
 
 		add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
 		add_action( 'woocommerce_api_' . self::ID . '_return', array( $this, 'handle_return' ) );
@@ -40,20 +40,20 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 	public function init_form_fields(): void {
 		$this->form_fields = array(
 			'enabled'     => array(
-				'title'   => __( 'Enable/Disable', 'subkit-subscriptions' ),
+				'title'   => __( 'Enable/Disable', 'easysubscription' ),
 				'type'    => 'checkbox',
-				'label'   => __( 'Offer card payments for subscription purchases', 'subkit-subscriptions' ),
+				'label'   => __( 'Offer card payments for subscription purchases', 'easysubscription' ),
 				'default' => 'no',
 			),
 			'title'       => array(
-				'title'   => __( 'Title', 'subkit-subscriptions' ),
+				'title'   => __( 'Title', 'easysubscription' ),
 				'type'    => 'text',
-				'default' => __( 'Credit or debit card', 'subkit-subscriptions' ),
+				'default' => __( 'Credit or debit card', 'easysubscription' ),
 			),
 			'description' => array(
-				'title'   => __( 'Description', 'subkit-subscriptions' ),
+				'title'   => __( 'Description', 'easysubscription' ),
 				'type'    => 'textarea',
-				'default' => __( 'You will be redirected to Stripe to pay securely.', 'subkit-subscriptions' ),
+				'default' => __( 'You will be redirected to Stripe to pay securely.', 'easysubscription' ),
 			),
 		);
 	}
@@ -94,12 +94,12 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 
 		if ( ! $response['ok'] || empty( $response['body']['url'] ) ) {
 			$order->add_order_note( sprintf( 'Stripe: %s', $response['error'] ) );
-			wc_add_notice( __( 'We could not start the card payment. Please try again or use another method.', 'subkit-subscriptions' ), 'error' );
+			wc_add_notice( __( 'We could not start the card payment. Please try again or use another method.', 'easysubscription' ), 'error' );
 
 			return array( 'result' => 'failure' );
 		}
 
-		$order->update_meta_data( '_subkit_stripe_session', $response['body']['id'] );
+		$order->update_meta_data( '_easysubscription_stripe_session', $response['body']['id'] );
 		$order->save();
 
 		return array(
@@ -122,7 +122,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			'client_reference_id' => (string) $order->get_id(),
 			'success_url'         => $this->return_url( $order, 'success' ),
 			'cancel_url'          => $this->return_url( $order, 'cancel' ),
-			'metadata'            => array( 'subkit_order' => (string) $order->get_id() ),
+			'metadata'            => array( 'easysubscription_order' => (string) $order->get_id() ),
 		);
 
 		$amount = Money::from_decimal( $order->get_total(), $order->get_currency() );
@@ -131,7 +131,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			return $common + array(
 				'mode'              => 'setup',
 				'currency'          => strtolower( $order->get_currency() ),
-				'setup_intent_data' => array( 'metadata' => array( 'subkit_order' => (string) $order->get_id() ) ),
+				'setup_intent_data' => array( 'metadata' => array( 'easysubscription_order' => (string) $order->get_id() ) ),
 			);
 		}
 
@@ -148,7 +148,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 						'product_data' => array(
 							'name' => sprintf(
 								/* translators: %s: order number */
-								__( 'Order %s', 'subkit-subscriptions' ),
+								__( 'Order %s', 'easysubscription' ),
 								$order->get_order_number()
 							),
 						),
@@ -161,7 +161,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 	public function handle_return(): void {
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Stripe controls this redirect; the HMAC below is the check.
 		$order_id = absint( $_GET['order_id'] ?? 0 );
-		$result   = sanitize_key( $_GET['subkit_result'] ?? '' );
+		$result   = sanitize_key( $_GET['easysubscription_result'] ?? '' );
 		$token    = sanitize_text_field( wp_unslash( $_GET['token'] ?? '' ) );
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
@@ -172,14 +172,14 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 			exit;
 		}
 
-		if ( 'success' !== $result && 'subkit_renewal' === $order->get_created_via() ) {
-			wc_add_notice( __( 'The card payment was cancelled, so this renewal is still unpaid.', 'subkit-subscriptions' ), 'notice' );
+		if ( 'success' !== $result && 'easysubscription_renewal' === $order->get_created_via() ) {
+			wc_add_notice( __( 'The card payment was cancelled, so this renewal is still unpaid.', 'easysubscription' ), 'notice' );
 			wp_safe_redirect( $order->get_checkout_payment_url() );
 			exit;
 		}
 
 		if ( 'success' !== $result ) {
-			wc_add_notice( __( 'The card payment was cancelled, so no subscription was started.', 'subkit-subscriptions' ), 'notice' );
+			wc_add_notice( __( 'The card payment was cancelled, so no subscription was started.', 'easysubscription' ), 'notice' );
 			wp_safe_redirect( wc_get_cart_url() );
 			exit;
 		}
@@ -194,7 +194,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 	 * Confirm with Stripe and capture the saved payment method for future renewals.
 	 */
 	public function complete_from_session( \WC_Order $order ): void {
-		$session_id = (string) $order->get_meta( '_subkit_stripe_session' );
+		$session_id = (string) $order->get_meta( '_easysubscription_stripe_session' );
 
 		if ( '' === $session_id ) {
 			return;
@@ -203,7 +203,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 		$session = $this->client->get( '/v1/checkout/sessions/' . rawurlencode( $session_id ) . '?expand[]=payment_intent&expand[]=setup_intent' );
 
 		if ( ! $session['ok'] || ! $this->session_is_settled( $session['body'] ?? array() ) ) {
-			$order->update_status( 'on-hold', __( 'Waiting for Stripe to confirm the payment.', 'subkit-subscriptions' ) );
+			$order->update_status( 'on-hold', __( 'Waiting for Stripe to confirm the payment.', 'easysubscription' ) );
 			return;
 		}
 
@@ -233,13 +233,13 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 
 		$order->add_order_note( $message );
 
-		$activity     = \SubKit\Plugin::instance()->get( 'activity' );
-		$subscription = (int) $order->get_meta( '_subkit_subscription_id' );
+		$activity     = \EasySubscription\Plugin::instance()->get( 'activity' );
+		$subscription = (int) $order->get_meta( '_easysubscription_subscription_id' );
 
-		if ( $subscription && $activity instanceof \SubKit\Data\Activity_Repository ) {
+		if ( $subscription && $activity instanceof \EasySubscription\Data\Activity_Repository ) {
 			$activity->log(
 				$subscription,
-				\SubKit\Data\Activity_Repository::TYPE_CHARGE_ATTEMPT,
+				\EasySubscription\Data\Activity_Repository::TYPE_CHARGE_ATTEMPT,
 				$message,
 				array(
 					'reference' => $reference,
@@ -261,7 +261,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 	}
 
 	private function attach_mandate( \WC_Order $order ): void {
-		$id = (int) $order->get_meta( '_subkit_subscription_id' );
+		$id = (int) $order->get_meta( '_easysubscription_subscription_id' );
 
 		if ( ! $id ) {
 			return;
@@ -269,7 +269,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 
 		$subscription = wc_get_order( $id );
 
-		if ( ! $subscription instanceof \SubKit\Domain\Subscription ) {
+		if ( ! $subscription instanceof \EasySubscription\Domain\Subscription ) {
 			return;
 		}
 
@@ -284,7 +284,7 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 		return add_query_arg(
 			array(
 				'order_id'      => $order->get_id(),
-				'subkit_result' => $result,
+				'easysubscription_result' => $result,
 				'token'         => $this->return_token( $order ),
 			),
 			WC()->api_request_url( self::ID . '_return' )
@@ -292,6 +292,6 @@ class Stripe_Checkout_Gateway extends \WC_Payment_Gateway {
 	}
 
 	private function return_token( \WC_Order $order ): string {
-		return hash_hmac( 'sha256', 'subkit_stripe_return_' . $order->get_id() . $order->get_order_key(), wp_salt( 'auth' ) );
+		return hash_hmac( 'sha256', 'easysubscription_stripe_return_' . $order->get_id() . $order->get_order_key(), wp_salt( 'auth' ) );
 	}
 }

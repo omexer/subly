@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Gateways;
+namespace EasySubscription\Gateways;
 
-use SubKit\Domain\Subscription;
+use EasySubscription\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

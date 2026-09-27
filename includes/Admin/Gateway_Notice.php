@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Admin;
+namespace EasySubscription\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -26,7 +26,7 @@ class Gateway_Notice {
 		}
 
 		$this->notice(
-			__( 'EasySubscription is not offering a payment method at checkout.', 'subkit-subscriptions' ),
+			__( 'EasySubscription is not offering a payment method at checkout.', 'easysubscription' ),
 			array_merge( $this->stripe(), $this->paypal_credentials() ),
 			$this->stripe() ? 'stripe' : 'paypal'
 		);
@@ -35,7 +35,7 @@ class Gateway_Notice {
 		// alongside "not offered at checkout" would send the merchant looking for the
 		// wrong thing entirely.
 		$this->notice(
-			__( 'PayPal renewals will not be recorded.', 'subkit-subscriptions' ),
+			__( 'PayPal renewals will not be recorded.', 'easysubscription' ),
 			$this->paypal_webhook(),
 			'paypal'
 		);
@@ -58,7 +58,7 @@ class Gateway_Notice {
 		printf(
 			'</ul><p><a class="button" href="%s">%s</a></p></div>',
 			esc_url( Settings_Page::section_url( $section ) ),
-			esc_html__( 'Finish setting it up', 'subkit-subscriptions' )
+			esc_html__( 'Finish setting it up', 'easysubscription' )
 		);
 	}
 
@@ -66,12 +66,12 @@ class Gateway_Notice {
 	 * @return string[]
 	 */
 	private function stripe(): array {
-		if ( 'yes' !== get_option( 'subkit_stripe_enabled', 'no' ) ) {
+		if ( 'yes' !== get_option( 'easysubscription_stripe_enabled', 'no' ) ) {
 			return array();
 		}
 
-		$live = 'yes' === get_option( 'subkit_stripe_live', 'no' );
-		$key  = (string) get_option( $live ? 'subkit_stripe_secret' : 'subkit_stripe_test_secret', '' );
+		$live = 'yes' === get_option( 'easysubscription_stripe_live', 'no' );
+		$key  = (string) get_option( $live ? 'easysubscription_stripe_secret' : 'easysubscription_stripe_test_secret', '' );
 
 		if ( '' !== $key ) {
 			return array();
@@ -81,8 +81,8 @@ class Gateway_Notice {
 		// environment set to the other, which looks like an empty field that is not empty.
 		return array(
 			$live
-				? __( 'Stripe is switched on and set to Live, but its live secret key is empty. Until it has one, Stripe is not offered at checkout.', 'subkit-subscriptions' )
-				: __( 'Stripe is switched on and set to Test, but its test secret key is empty. Until it has one, Stripe is not offered at checkout.', 'subkit-subscriptions' ),
+				? __( 'Stripe is switched on and set to Live, but its live secret key is empty. Until it has one, Stripe is not offered at checkout.', 'easysubscription' )
+				: __( 'Stripe is switched on and set to Test, but its test secret key is empty. Until it has one, Stripe is not offered at checkout.', 'easysubscription' ),
 		);
 	}
 
@@ -92,15 +92,15 @@ class Gateway_Notice {
 	 * @return string[]
 	 */
 	private function paypal_credentials(): array {
-		if ( 'yes' !== get_option( 'subkit_paypal_enabled', 'no' ) ) {
+		if ( 'yes' !== get_option( 'easysubscription_paypal_enabled', 'no' ) ) {
 			return array();
 		}
 
 		$missing = array();
 
 		foreach ( array(
-			'subkit_paypal_client_id' => __( 'client ID', 'subkit-subscriptions' ),
-			'subkit_paypal_secret'    => __( 'secret', 'subkit-subscriptions' ),
+			'easysubscription_paypal_client_id' => __( 'client ID', 'easysubscription' ),
+			'easysubscription_paypal_secret'    => __( 'secret', 'easysubscription' ),
 		) as $option => $label ) {
 			if ( '' === (string) get_option( $option, '' ) ) {
 				$missing[] = $label;
@@ -114,21 +114,21 @@ class Gateway_Notice {
 		return array(
 			sprintf(
 				/* translators: %s: the PayPal fields that are empty. */
-				__( 'PayPal is switched on but has no %s. Until it does, PayPal is not offered at checkout.', 'subkit-subscriptions' ),
-				implode( __( ' and ', 'subkit-subscriptions' ), $missing )
+				__( 'PayPal is switched on but has no %s. Until it does, PayPal is not offered at checkout.', 'easysubscription' ),
+				implode( __( ' and ', 'easysubscription' ), $missing )
 			),
 		);
 	}
 
 	/**
 	 * The webhook ID does not gate the checkout: PayPal bills on its own schedule and
-	 * tells SubKit by webhook, and an unverifiable webhook is rejected, so every renewal
+	 * tells EasySubscription by webhook, and an unverifiable webhook is rejected, so every renewal
 	 * goes unrecorded while the customer is charged.
 	 *
 	 * @return string[]
 	 */
 	private function paypal_webhook(): array {
-		if ( 'yes' !== get_option( 'subkit_paypal_enabled', 'no' ) || '' !== (string) get_option( 'subkit_paypal_webhook_id', '' ) ) {
+		if ( 'yes' !== get_option( 'easysubscription_paypal_enabled', 'no' ) || '' !== (string) get_option( 'easysubscription_paypal_webhook_id', '' ) ) {
 			return array();
 		}
 
@@ -139,7 +139,7 @@ class Gateway_Notice {
 		}
 
 		return array(
-			__( 'PayPal is switched on but has no webhook ID. Customers can pay, and PayPal will keep charging them, but EasySubscription cannot verify what PayPal sends back — so renewals are rejected and never show against the subscription.', 'subkit-subscriptions' ),
+			__( 'PayPal is switched on but has no webhook ID. Customers can pay, and PayPal will keep charging them, but EasySubscription cannot verify what PayPal sends back — so renewals are rejected and never show against the subscription.', 'easysubscription' ),
 		);
 	}
 }

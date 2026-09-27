@@ -5,15 +5,15 @@
  * @package EasySubscription
  */
 
-use SubKit\Domain\Subscription;
-use SubKit\Domain\Subscription_Status;
+use EasySubscription\Domain\Subscription;
+use EasySubscription\Domain\Subscription_Status;
 
 require __DIR__ . '/bootstrap.php';
 
 $notices = array();
-set_error_handler( function ( $no, $str, $file ) use ( &$notices ) { if ( str_contains( $file, 'subkit' ) ) { $notices[] = "$str @ " . basename( $file ); } return false; } );
+set_error_handler( function ( $no, $str, $file ) use ( &$notices ) { if ( str_contains( $file, 'easysubscription' ) ) { $notices[] = "$str @ " . basename( $file ); } return false; } );
 
-$product = subkit_test_product();
+$product = easysubscription_test_product();
 $s = new Subscription();
 $s->set_customer_id( 1 ); $s->set_currency( get_woocommerce_currency() );
 $s->set_billing_period( 'month' ); $s->set_billing_interval( 1 );
@@ -24,7 +24,7 @@ $s->add_item( $i );
 $s->transition_to( Subscription_Status::Pending ); $s->calculate_totals( false ); $s->save();
 $s->transition_to( Subscription_Status::Active ); $s->save();
 
-$endpoint = \SubKit\Plugin::instance()->get( 'account' );
+$endpoint = \EasySubscription\Plugin::instance()->get( 'account' );
 
 ob_start(); $endpoint->render( '' ); $list = ob_get_clean();
 $check( 'the list renders', '' !== trim( $list ) );
@@ -39,4 +39,4 @@ $check( 'no PHP notices from EasySubscription while rendering', array() === $not
 
 restore_error_handler();
 $s->delete( true );
-subkit_test_done( $fail );
+easysubscription_test_done( $fail );

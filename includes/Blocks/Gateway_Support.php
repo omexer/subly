@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Blocks;
+namespace EasySubscription\Blocks;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * appears - so without this a merchant sees the gateway marked Active and the customer
  * sees "There are no payment methods available".
  *
- * Both of SubKit's gateways redirect to the provider, so there are no card fields to
+ * Both of EasySubscription's gateways redirect to the provider, so there are no card fields to
  * render here: a label, a description, and the same availability rule the classic
  * checkout uses.
  */
@@ -40,7 +40,7 @@ class Gateway_Support extends AbstractPaymentMethodType {
 	 * @return string[]
 	 */
 	public function get_payment_method_script_handles(): array {
-		$asset = SUBKIT_PATH . 'build/blocks.asset.php';
+		$asset = EASYSUBSCRIPTION_PATH . 'build/blocks.asset.php';
 
 		if ( ! is_readable( $asset ) ) {
 			return array();
@@ -50,8 +50,8 @@ class Gateway_Support extends AbstractPaymentMethodType {
 
 		// Registered once however many gateways ask for it; WordPress ignores a repeat.
 		wp_register_script(
-			'subkit-blocks',
-			SUBKIT_URL . 'build/blocks.js',
+			'easysubscription-blocks',
+			EASYSUBSCRIPTION_URL . 'build/blocks.js',
 			// The two WooCommerce globals are externals at build time, so the asset file
 			// cannot know about them; their handles have to be named here.
 			array_merge( $asset['dependencies'], array( 'wc-blocks-registry', 'wc-settings' ) ),
@@ -59,9 +59,9 @@ class Gateway_Support extends AbstractPaymentMethodType {
 			true
 		);
 
-		wp_set_script_translations( 'subkit-blocks', 'subkit-subscriptions', SUBKIT_PATH . 'languages' );
+		wp_set_script_translations( 'easysubscription-blocks', 'easysubscription', EASYSUBSCRIPTION_PATH . 'languages' );
 
-		return array( 'subkit-blocks' );
+		return array( 'easysubscription-blocks' );
 	}
 
 	/**

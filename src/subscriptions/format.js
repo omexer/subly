@@ -5,11 +5,11 @@
 import { __, sprintf, _n } from '@wordpress/i18n';
 
 export function statusVariant( status ) {
-	if ( 'sk-active' === status || 'sk-trialling' === status ) {
+	if ( 'es-active' === status || 'es-trialling' === status ) {
 		return 'success';
 	}
 
-	if ( 'sk-on-hold' === status ) {
+	if ( 'es-on-hold' === status ) {
 		return 'destructive';
 	}
 
@@ -28,53 +28,53 @@ export function describeSchedule( row ) {
 	switch ( row.billing_period ) {
 		case 'day':
 			return 1 === count
-				? __( 'every day', 'subkit-subscriptions' )
+				? __( 'every day', 'easysubscription' )
 				: sprintf(
 						/* translators: %d: number of days. */
 						_n(
 							'every %d day',
 							'every %d days',
 							count,
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 						count
 				  );
 		case 'week':
 			return 1 === count
-				? __( 'every week', 'subkit-subscriptions' )
+				? __( 'every week', 'easysubscription' )
 				: sprintf(
 						/* translators: %d: number of weeks. */
 						_n(
 							'every %d week',
 							'every %d weeks',
 							count,
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 						count
 				  );
 		case 'year':
 			return 1 === count
-				? __( 'every year', 'subkit-subscriptions' )
+				? __( 'every year', 'easysubscription' )
 				: sprintf(
 						/* translators: %d: number of years. */
 						_n(
 							'every %d year',
 							'every %d years',
 							count,
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 						count
 				  );
 		case 'month':
 			return 1 === count
-				? __( 'every month', 'subkit-subscriptions' )
+				? __( 'every month', 'easysubscription' )
 				: sprintf(
 						/* translators: %d: number of months. */
 						_n(
 							'every %d month',
 							'every %d months',
 							count,
-							'subkit-subscriptions'
+							'easysubscription'
 						),
 						count
 				  );
@@ -121,19 +121,19 @@ export function whenDue( stamp ) {
 				'%d day overdue',
 				'%d days overdue',
 				Math.abs( days ),
-				'subkit-subscriptions'
+				'easysubscription'
 			),
 			Math.abs( days )
 		);
 	}
 
 	if ( 0 === days ) {
-		return __( 'today', 'subkit-subscriptions' );
+		return __( 'today', 'easysubscription' );
 	}
 
 	return sprintf(
 		/* translators: %d: number of days. */
-		_n( 'in %d day', 'in %d days', days, 'subkit-subscriptions' ),
+		_n( 'in %d day', 'in %d days', days, 'easysubscription' ),
 		days
 	);
 }
@@ -187,12 +187,12 @@ export function daysAgo( stamp ) {
 	const days = Math.floor( ( Date.now() - date.getTime() ) / 86400000 );
 
 	if ( days < 1 ) {
-		return __( 'today', 'subkit-subscriptions' );
+		return __( 'today', 'easysubscription' );
 	}
 
 	return sprintf(
 		/* translators: %d: number of days. */
-		_n( '%d day ago', '%d days ago', days, 'subkit-subscriptions' ),
+		_n( '%d day ago', '%d days ago', days, 'easysubscription' ),
 		days
 	);
 }

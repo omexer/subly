@@ -1,6 +1,6 @@
 <?php
 
-namespace SubKit\Rest;
+namespace EasySubscription\Rest;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,19 +11,19 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Api_Access {
 
-	public const OPTION = 'subkit_allow_api_keys';
+	public const OPTION = 'easysubscription_allow_api_keys';
 
 	public const SECTION = 'api';
 
-	public const NAMESPACES = array( 'subkit/v1', 'subkit-pro/v1' );
+	public const NAMESPACES = array( 'easysubscription/v1', 'easysubscription-pro/v1' );
 
 	private const METHODS = array( 'GET', 'POST', 'PUT', 'PATCH', 'DELETE' );
 
 	public function register(): void {
 		add_filter( 'woocommerce_rest_is_request_to_rest_api', array( $this, 'include_our_routes' ) );
-		add_filter( 'woocommerce_get_sections_subkit', array( $this, 'add_section' ) );
-		add_filter( 'woocommerce_get_settings_subkit', array( $this, 'settings' ), 10, 2 );
-		add_action( 'woocommerce_admin_field_subkit_api_info', array( $this, 'render_info' ) );
+		add_filter( 'woocommerce_get_sections_easysubscription', array( $this, 'add_section' ) );
+		add_filter( 'woocommerce_get_settings_easysubscription', array( $this, 'settings' ), 10, 2 );
+		add_action( 'woocommerce_admin_field_easysubscription_api_info', array( $this, 'render_info' ) );
 	}
 
 	public static function enabled(): bool {
@@ -94,7 +94,7 @@ final class Api_Access {
 	public function add_section( $sections ): array {
 		$sections = (array) $sections;
 
-		$sections[ self::SECTION ] = __( 'API Settings', 'subkit-subscriptions' );
+		$sections[ self::SECTION ] = __( 'API Settings', 'easysubscription' );
 
 		return $sections;
 	}
@@ -111,33 +111,33 @@ final class Api_Access {
 
 		return array(
 			array(
-				'title' => __( 'API access', 'subkit-subscriptions' ),
+				'title' => __( 'API access', 'easysubscription' ),
 				'type'  => 'title',
-				'id'    => 'subkit_api_title',
+				'id'    => 'easysubscription_api_title',
 			),
 			array(
-				'title'    => __( 'Allow API keys', 'subkit-subscriptions' ),
-				'desc'     => __( 'Apps can read and manage subscriptions with a WooCommerce REST API key.', 'subkit-subscriptions' ),
-				'desc_tip' => __( 'A read key can only read, and a write key can only make changes. The key\'s user must be able to manage WooCommerce. When off, only a logged-in store manager can use these endpoints.', 'subkit-subscriptions' ),
+				'title'    => __( 'Allow API keys', 'easysubscription' ),
+				'desc'     => __( 'Apps can read and manage subscriptions with a WooCommerce REST API key.', 'easysubscription' ),
+				'desc_tip' => __( 'A read key can only read, and a write key can only make changes. The key\'s user must be able to manage WooCommerce. When off, only a logged-in store manager can use these endpoints.', 'easysubscription' ),
 				'type'     => 'checkbox',
 				'id'       => self::OPTION,
 				'default'  => 'no',
 			),
-			array( 'type' => 'subkit_api_info' ),
+			array( 'type' => 'easysubscription_api_info' ),
 			array(
 				'type' => 'sectionend',
-				'id'   => 'subkit_api_title',
+				'id'   => 'easysubscription_api_title',
 			),
 		);
 	}
 
 	public function render_info(): void {
-		printf( '<tr valign="top"><th scope="row" class="titledesc">%s</th><td class="forminp subkit-api-info">', esc_html__( 'Endpoints', 'subkit-subscriptions' ) );
+		printf( '<tr valign="top"><th scope="row" class="titledesc">%s</th><td class="forminp easysubscription-api-info">', esc_html__( 'Endpoints', 'easysubscription' ) );
 
 		foreach ( self::endpoints() as $namespace => $routes ) {
 			printf(
 				'<p>%s <code>%s</code></p><table class="widefat striped"><tbody>',
-				esc_html__( 'Base URL', 'subkit-subscriptions' ),
+				esc_html__( 'Base URL', 'easysubscription' ),
 				esc_html( rest_url( $namespace ) )
 			);
 
@@ -151,7 +151,7 @@ final class Api_Access {
 		printf(
 			'<p><a href="%s">%s</a></p></td></tr>',
 			esc_url( admin_url( 'admin.php?page=wc-settings&tab=advanced&section=keys&create-key=1' ) ),
-			esc_html__( 'Create API keys', 'subkit-subscriptions' )
+			esc_html__( 'Create API keys', 'easysubscription' )
 		);
 	}
 

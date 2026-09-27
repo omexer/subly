@@ -1,8 +1,8 @@
 <?php
 
-namespace SubKit\Data;
+namespace EasySubscription\Data;
 
-use SubKit\Domain\Subscription;
+use EasySubscription\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -46,8 +46,8 @@ class Cleanup {
 			return;
 		}
 
-		$wpdb->delete( $wpdb->prefix . 'subkit_charge_slot', array( 'subscription_id' => $order_id ), array( '%d' ) );
-		$wpdb->delete( $wpdb->prefix . 'subkit_activity', array( 'subscription_id' => $order_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $order_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $order_id ), array( '%d' ) );
 	}
 
 	/**
@@ -71,7 +71,7 @@ class Cleanup {
 
 		$removed = 0;
 
-		foreach ( array( 'subkit_charge_slot', 'subkit_activity' ) as $table ) {
+		foreach ( array( 'easysubscription_charge_slot', 'easysubscription_activity' ) as $table ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a one-off sweep of our own table.
 			$ids = (array) $wpdb->get_col( $wpdb->prepare( 'SELECT DISTINCT subscription_id FROM %i', $wpdb->prefix . $table ) );
 
