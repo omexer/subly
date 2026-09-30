@@ -11,8 +11,6 @@ use EasySubscription\Domain\Subscription;
 use EasySubscription\Domain\Subscription_Status;
 use EasySubscription\Gateways\Charge_Result;
 use EasySubscription\Gateways\Gateway_Model;
-use EasySubscription\Gateways\Stripe\Stripe_Checkout_Gateway;
-use EasySubscription\Gateways\Stripe\Stripe_Client;
 use EasySubscription\Gateways\Test_Gateway;
 
 require __DIR__ . '/bootstrap.php';
@@ -36,7 +34,11 @@ $harness = new class() implements \EasySubscription\Gateways\Recurring_Gateway {
 	}
 	public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): Charge_Result {
 		++$this->charges;
-		return 'success' === $this->next ? Charge_Result::success( 'ch_' . $this->charges ) : Charge_Result::hard_decline( 'card_declined', 'Declined by the harness.' );
+		return match ( $this->next ) {
+			'success'         => Charge_Result::success( 'ch_' . $this->charges ),
+			'requires_action' => Charge_Result::requires_action( $r->get_checkout_payment_url(), 'pi_harness_' . $this->charges ),
+			default           => Charge_Result::hard_decline( 'card_declined', 'Declined by the harness.' ),
+		};
 	}
 	public function reconcile( Subscription $s, string $k ): ?Charge_Result { return null; }
 	public function cancel_mandate( Subscription $s ): bool { return true; }
@@ -249,22 +251,6 @@ $check( 'a plan-billed gateway is never offered, even for its own subscription',
 $wp->query_vars['order-pay'] = $shop->get_id();
 $check( 'an ordinary order keeps every gateway', array_keys( $offered ) === array_keys( (array) apply_filters( 'woocommerce_available_payment_gateways', $offered ) ) );
 
-$plain = new WC_Product_Simple();
-$plain->set_name( 'SK pay link plain product' );
-$plain->set_regular_price( '5' );
-$plain->set_status( 'publish' );
-$plain->save();
-wc_load_cart();
-WC()->cart->empty_cart();
-WC()->cart->add_to_cart( $plain->get_id() );
-
-$stripe          = new Stripe_Checkout_Gateway( new Stripe_Client( 'sk_test_harness' ) );
-$stripe->enabled = 'yes';
-$wp->query_vars  = $query_vars;
-$check( 'at checkout, card payments still need a subscription in the cart', ! $stripe->is_available() );
-$wp->query_vars['order-pay'] = $order7->get_id();
-$check( 'on a pay page, whatever is in the cart does not hide them', $stripe->is_available() );
-
 echo "\n6. Renewals waiting on the customer\n";
 $wp->query_vars = $query_vars;
 $confirmations  = array();
@@ -294,36 +280,8 @@ $held_plain->set_status( 'on-hold' );
 $held_plain->save();
 $check( 'an on-hold renewal that is not waiting on the customer still cannot be paid', ! wc_get_order( $order7->get_id() )->needs_payment() );
 
-$stripe_api = new class( 'sk_test_harness' ) extends Stripe_Client {
-	public array $routes = array();
-	public function post( string $path, array $params, string $idempotency_key = '' ): array { return $this->answer( 'POST ' . $path ); }
-	public function get( string $path ): array { return $this->answer( 'GET ' . $path ); }
-	private function answer( string $request ): array {
-		foreach ( $this->routes as $prefix => $response ) {
-			if ( str_starts_with( $request, $prefix ) ) { return $response; }
-		}
-		return array( 'ok' => false, 'status' => 404, 'body' => array(), 'error' => 'unrouted ' . $request, 'code' => '' );
-	}
-};
-$to_stripe = static function ( $gateway, $subscription ) use ( $stripe_api ) {
-	return \EasySubscription\Gateways\Stripe\Stripe_Gateway::ID === $subscription->get_payment_method() ? new \EasySubscription\Gateways\Stripe\Stripe_Gateway( $stripe_api ) : $gateway;
-};
-add_filter( 'easysubscription_gateway_for_subscription', $to_stripe, 10, 2 );
-
-$secret             = 'pi_3ds_secret_harness';
-$stripe_api->routes = array(
-	'POST /v1/payment_intents' => array(
-		'ok'     => false,
-		'status' => 402,
-		'code'   => 'authentication_required',
-		'error'  => 'This payment requires authentication.',
-		'body'   => array( 'error' => array( 'code' => 'authentication_required', 'payment_intent' => array( 'id' => 'pi_3ds', 'client_secret' => $secret ) ) ),
-	),
-);
-$sca = $make( 'paylink-3ds@example.test', \EasySubscription\Gateways\Stripe\Stripe_Gateway::ID );
-$sca->update_meta_data( \EasySubscription\Gateways\Stripe\Stripe_Gateway::META_CUSTOMER, 'cus_3ds' );
-$sca->update_meta_data( \EasySubscription\Gateways\Stripe\Stripe_Gateway::META_METHOD, 'pm_3ds' );
-$sca->save();
+$sca           = $make( 'paylink-3ds@example.test' );
+$harness->next = 'requires_action';
 $confirmations = array();
 $processor->process( $sca->get_id() );
 $sca_slot  = $slots->latest_unsettled( $sca->get_id() );
@@ -333,7 +291,6 @@ if ( ! $sca_order instanceof WC_Order ) {
 }
 $action = (string) $sca_order->get_meta( '_easysubscription_action_url' );
 $check( 'a bank challenge sends the customer to the renewal\'s pay page', $sca_order->get_checkout_payment_url() === $action, $action );
-$check( 'the link carries no client secret', ! str_contains( $action, $secret ) && ! str_contains( implode( '', $confirmations ), $secret ), $action );
 $check( 'the confirmation email and My Account both use it', 1 === count( $confirmations ) && str_contains( html_entity_decode( $confirmations[0] ), $action ) && $action === ( \EasySubscription\Frontend\MyAccount\Status_Presenter::primary_action( wc_get_order( $sca->get_id() ) )['url'] ?? '' ) );
 $check( 'and it can be paid there', $sca_order->needs_payment() );
 wc_get_order( $sca_order->get_id() )->payment_complete( 'pi_checkout_3ds' );
@@ -349,17 +306,6 @@ $refused_pp = $paypal->process_payment( $order7->get_id() );
 $pp_notes   = implode( ' | ', wp_list_pluck( wc_get_order_notes( array( 'order_id' => $order7->get_id() ) ), 'content' ) );
 $check( 'PayPal refuses to pay a renewal, whatever route reached it', 'failure' === ( $refused_pp['result'] ?? '' ) && str_contains( $pp_notes, 'cannot be paid with PayPal' ), $pp_notes );
 
-$paid_twice = wc_get_order( $order->get_id() );
-$paid_twice->update_meta_data( '_easysubscription_stripe_session', 'cs_second' );
-$paid_twice->save();
-$stripe_api->routes = array(
-	'GET /v1/checkout/sessions/cs_second' => array( 'ok' => true, 'status' => 200, 'error' => '', 'code' => '', 'body' => array( 'id' => 'cs_second', 'mode' => 'payment', 'payment_status' => 'paid', 'customer' => 'cus_twice', 'payment_intent' => array( 'id' => 'pi_second_capture', 'payment_method' => 'pm_twice' ) ) ),
-);
-( new Stripe_Checkout_Gateway( $stripe_api ) )->complete_from_session( $paid_twice );
-$logged = implode( ' | ', wp_list_pluck( $free->get( 'activity' )->for_subscription( $s1->get_id(), 20 ), 'message' ) );
-$check( 'a second Stripe capture of a paid renewal is flagged for refund', str_contains( $logged, 'pi_second_capture' ) && str_contains( $logged, 'Refund' ), $logged );
-$check( 'and the order keeps the payment it was settled with', 'paylink_txn_1' === wc_get_order( $order->get_id() )->get_transaction_id() && 1 === $succeeded[ $s1->get_id() ] );
-
 $ending               = $make( 'paylink-ending@example.test' );
 list( $slot9, $order9 ) = $decline( $ending );
 $ending               = wc_get_order( $ending->get_id() );
@@ -371,12 +317,8 @@ $check( 'a subscription that is ending keeps what it paid for', strtotime( (stri
 // Receipts, licence extensions, webhooks and Dunning all hang off this; the money was taken.
 $check( 'and the payment is announced once, like any other renewal', 1 === ( $succeeded[ $ending->get_id() ] ?? 0 ) && Subscription_Status::PendingCancel === wc_get_order( $ending->get_id() )->get_status_enum(), $succeeded[ $ending->get_id() ] ?? 0 );
 
-remove_filter( 'easysubscription_gateway_for_subscription', $to_stripe, 10 );
-
 // ---- clean up -----------------------------------------------------------------------
 $wp->query_vars = $query_vars;
-WC()->cart->empty_cart();
-$plain->delete( true );
 $shop->delete( true );
 
 global $wpdb;

@@ -16,7 +16,7 @@ const rows = people.map( ( [ name, product, status, label, total ], i ) => ( {
 	customer_email: name.toLowerCase().replace( /\s+/g, '.' ) + '@example.com',
 	total_formatted: total,
 	next_payment_formatted: [ '14 October 2026', '2 September 2027', '—', '19 September 2026', '30 September 2026', '' ][ i ],
-	payment_method_title: [ 'Stripe', 'PayPal', 'Stripe', 'Stripe', 'Stripe', 'PayPal' ][ i ],
+	payment_method_title: [ 'PayPal', 'Manual', 'PayPal', 'PayPal', 'PayPal', 'Manual' ][ i ],
 	billable: [ 'es-active', 'es-on-hold', 'es-trialling' ].includes( status ),
 	edit_url: '#detail',
 } ) );
@@ -37,7 +37,7 @@ export const fixtures = {
 			done: setupDone ? 4 : 2,
 			total: 4,
 			steps: [
-				{ done: true, title: 'Connect a payment method', detail: 'Stripe can charge renewals automatically.', action: { label: 'Change', url: '#' }, form: '' },
+				{ done: true, title: 'Connect a payment method', detail: 'PayPal can charge renewals automatically.', action: { label: 'Change', url: '#' }, form: '' },
 				{ done: true, title: 'Create a subscription product', detail: '"Coffee box" is ready to sell.', action: { label: 'Edit', url: '#' }, form: '' },
 				{ done: !! setupDone, title: 'Check automatic renewals can run', detail: 'Renewals are processing normally.', action: null, form: '' },
 				{ done: !! setupDone, title: 'Run a test renewal', detail: 'See a renewal happen end to end, on a throwaway subscription. Nobody is charged and everything is deleted afterwards.', action: { label: 'Run test renewal', url: '#' }, form: '' },
@@ -71,10 +71,10 @@ export const fixtures = {
 		end_date: '',
 		trial_end: '',
 		parent_order_id: 801,
-		payment_method: 'easysubscription_stripe',
+		payment_method: 'easysubscription_paypal',
 	},
 	'/easysubscription/v1/subscriptions/812/activity': [
-		{ type: 'charge_attempt', message: 'Renewal charged £40.00 through Stripe.', actor: 'system', date: '2026-09-14 09:00:12' },
+		{ type: 'charge_attempt', message: 'Renewal charged £40.00 through PayPal.', actor: 'system', date: '2026-09-14 09:00:12' },
 		{ type: 'status_change', message: 'Activated after the first payment.', actor: 'system', date: '2026-08-14 10:21:40' },
 	],
 	'/easysubscription/v1/reports': {

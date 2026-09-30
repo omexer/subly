@@ -41,9 +41,6 @@ use EasySubscription\Gateways\PayPal\PayPal_Client;
 use EasySubscription\Gateways\PayPal\PayPal_Plans;
 use EasySubscription\Gateways\PayPal\PayPal_Gateway;
 use EasySubscription\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
-use EasySubscription\Gateways\Stripe\Stripe_Checkout_Gateway;
-use EasySubscription\Gateways\Stripe\Stripe_Client;
-use EasySubscription\Gateways\Stripe\Stripe_Gateway;
 use EasySubscription\Product\Product_Meta_Fields;
 use EasySubscription\Product\Product_Types;
 use EasySubscription\Admin\App_Host;
@@ -204,26 +201,11 @@ final class Plugin {
 			}
 		);
 
-		$this->services['stripe_client'] = Stripe_Client::from_settings();
-
-		add_filter(
-			'woocommerce_payment_gateways',
-			function ( array $gateways ): array {
-				$gateways[] = new Stripe_Checkout_Gateway( $this->services['stripe_client'] );
-
-				return $gateways;
-			}
-		);
-
 		add_action(
 			'easysubscription_register_gateways',
 			function ( Gateway_Registry $registry ): void {
 				if ( $this->services['paypal_client']->is_enabled() ) {
 					$registry->add( new PayPal_Gateway( $this->services['paypal_client'] ) );
-				}
-
-				if ( $this->services['stripe_client']->is_enabled() ) {
-					$registry->add( new Stripe_Gateway( $this->services['stripe_client'] ) );
 				}
 			}
 		);
@@ -289,7 +271,6 @@ final class Plugin {
 					return;
 				}
 
-				$registry->register( new Gateway_Support( Stripe_Checkout_Gateway::ID ) );
 				$registry->register( new Gateway_Support( PayPal_Checkout_Gateway::ID ) );
 			}
 		);

@@ -27,8 +27,8 @@ class Gateway_Notice {
 
 		$this->notice(
 			__( 'EasySubscription is not offering a payment method at checkout.', 'easysubscription' ),
-			array_merge( $this->stripe(), $this->paypal_credentials() ),
-			$this->stripe() ? 'stripe' : 'paypal'
+			$this->paypal_credentials(),
+			'paypal'
 		);
 
 		// Separate on purpose: this one does not stop a customer paying, so saying it
@@ -59,30 +59,6 @@ class Gateway_Notice {
 			'</ul><p><a class="button" href="%s">%s</a></p></div>',
 			esc_url( Settings_Page::section_url( $section ) ),
 			esc_html__( 'Finish setting it up', 'easysubscription' )
-		);
-	}
-
-	/**
-	 * @return string[]
-	 */
-	private function stripe(): array {
-		if ( 'yes' !== get_option( 'easysubscription_stripe_enabled', 'no' ) ) {
-			return array();
-		}
-
-		$live = 'yes' === get_option( 'easysubscription_stripe_live', 'no' );
-		$key  = (string) get_option( $live ? 'easysubscription_stripe_secret' : 'easysubscription_stripe_test_secret', '' );
-
-		if ( '' !== $key ) {
-			return array();
-		}
-
-		// Naming the environment matters: the usual cause is keys in one box and the
-		// environment set to the other, which looks like an empty field that is not empty.
-		return array(
-			$live
-				? __( 'Stripe is switched on and set to Live, but its live secret key is empty. Until it has one, Stripe is not offered at checkout.', 'easysubscription' )
-				: __( 'Stripe is switched on and set to Test, but its test secret key is empty. Until it has one, Stripe is not offered at checkout.', 'easysubscription' ),
 		);
 	}
 

@@ -11,7 +11,7 @@
 
 require __DIR__ . '/bootstrap.php';
 
-$keys   = array( 'easysubscription_paypal_enabled', 'easysubscription_paypal_client_id', 'easysubscription_paypal_secret', 'easysubscription_paypal_webhook_id', 'easysubscription_stripe_enabled' );
+$keys   = array( 'easysubscription_paypal_enabled', 'easysubscription_paypal_client_id', 'easysubscription_paypal_secret', 'easysubscription_paypal_webhook_id' );
 $before = array();
 foreach ( $keys as $key ) {
 	$before[ $key ] = get_option( $key, null );
@@ -24,7 +24,6 @@ $render = static function (): string {
 	return trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( (string) ob_get_clean() ) ) );
 };
 
-update_option( 'easysubscription_stripe_enabled', 'no' );
 update_option( 'easysubscription_paypal_enabled', 'yes' );
 
 update_option( 'easysubscription_paypal_client_id', 'AX' );

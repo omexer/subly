@@ -22,12 +22,15 @@ if ( ! $woo ) {
 	easysubscription_test_abort( 'the settings tab is not registered' );
 }
 
-// One section no group names, and one field stacked into Renewal & Billing beside the free one.
+// One section no group names, one field stacked into Renewal & Billing beside the free one, and a second gateway beside PayPal.
 $extra = static function ( $sections ) {
 	$sections                      = (array) $sections;
 	$sections['easysubscription_test_extra'] = 'Test extra';
 	if ( ! isset( $sections['recovery'] ) ) {
 		$sections['recovery'] = 'Test retries';
+	}
+	if ( ! isset( $sections['mollie'] ) ) {
+		$sections['mollie'] = 'Test gateway';
 	}
 	return $sections;
 };
@@ -39,6 +42,9 @@ $extra_fields = static function ( $settings, $section ) {
 			array( 'title' => 'Path', 'type' => 'text', 'id' => 'easysubscription_test_extra_path', 'default' => '' ),
 			array( 'type' => 'sectionend', 'id' => 'easysubscription_test_extra_title' ),
 		);
+	}
+	if ( 'mollie' === $section && array() === (array) $settings ) {
+		return array( array( 'title' => 'Listed', 'type' => 'text', 'id' => 'easysubscription_test_listed_option', 'default' => '' ) );
 	}
 	if ( 'recovery' === $section ) {
 		return array_merge( (array) $settings, array( array( 'title' => 'Stacked', 'type' => 'text', 'id' => 'easysubscription_test_stacked_option', 'default' => '' ) ) );
@@ -113,7 +119,7 @@ $check( 'every section is in the menu once, in the group the PHP page puts it in
 $check( 'groups keep their labels and menu order', array_values( array_intersect( array_keys( Settings_Page::groups() ), array_column( $groups, 'id' ) ) ) === array_column( $groups, 'id' ) && 'Customer Controls' === ( array_column( $groups, 'label', 'id' )['customers'] ?? '' ) );
 $check( 'a section no group names lands in Integrations', array( 'integrations' ) === ( $listed['easysubscription_test_extra'] ?? null ) );
 $payments = array_column( $groups, null, 'id' )['payments'] ?? array();
-$check( 'Payments lists its gateways', ! empty( $payments['list'] ) && in_array( 'stripe', array_column( $payments['sections'], 'id' ), true ) );
+$check( 'Payments lists its gateways', ! empty( $payments['list'] ) && in_array( 'paypal', array_column( $payments['sections'], 'id' ), true ) );
 $notices = $get( '', array( 'easysubscription_license_notice' => 'activated' ) )->get_data()['notices'] ?? array();
 $check( 'a licence change that came back to the page is reported', array( array( 'type' => 'good', 'message' => 'Licence activated.' ) ) === $notices, $notices );
 

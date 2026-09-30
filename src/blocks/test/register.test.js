@@ -29,15 +29,10 @@ describe( 'registering EasySubscription with the block checkout', () => {
 		getSetting.mockReset();
 	} );
 
-	it( 'registers both gateways when the server says they are available', () => {
+	it( 'registers PayPal when the server says it is available', () => {
 		getSetting.mockImplementation(
 			( key ) =>
 				( {
-					easysubscription_stripe_data: {
-						title: 'Credit or debit card',
-						description: 'Pay by card.',
-						supports: [ 'products' ],
-					},
 					easysubscription_paypal_data: {
 						title: 'PayPal',
 						description: 'Pay with PayPal.',
@@ -48,16 +43,16 @@ describe( 'registering EasySubscription with the block checkout', () => {
 
 		load();
 
-		expect( registerPaymentMethod ).toHaveBeenCalledTimes( 2 );
-		expect(
-			registerPaymentMethod.mock.calls.map( ( call ) => call[ 0 ].name )
-		).toEqual( [ 'easysubscription_stripe', 'easysubscription_paypal' ] );
+		expect( registerPaymentMethod ).toHaveBeenCalledTimes( 1 );
+		expect( registerPaymentMethod.mock.calls[ 0 ][ 0 ].name ).toBe(
+			'easysubscription_paypal'
+		);
 		expect( registerPaymentMethod.mock.calls[ 0 ][ 0 ].ariaLabel ).toBe(
-			'Credit or debit card'
+			'PayPal'
 		);
 	} );
 
-	it( 'registers nothing for a gateway the server left out', () => {
+	it( 'leaves a gateway another plugin adds to that plugin', () => {
 		getSetting.mockImplementation( ( key ) =>
 			'easysubscription_stripe_data' === key
 				? { title: 'Card', description: '', supports: [ 'products' ] }
@@ -66,10 +61,7 @@ describe( 'registering EasySubscription with the block checkout', () => {
 
 		load();
 
-		expect( registerPaymentMethod ).toHaveBeenCalledTimes( 1 );
-		expect( registerPaymentMethod.mock.calls[ 0 ][ 0 ].name ).toBe(
-			'easysubscription_stripe'
-		);
+		expect( registerPaymentMethod ).not.toHaveBeenCalled();
 	} );
 
 	it( 'registers nothing at all when no EasySubscription gateway is available', () => {
@@ -82,15 +74,19 @@ describe( 'registering EasySubscription with the block checkout', () => {
 
 	it( 'decodes a title the server encoded', () => {
 		getSetting.mockImplementation( ( key ) =>
-			'easysubscription_stripe_data' === key
-				? { title: 'Card &amp; wallet', description: '', supports: [] }
+			'easysubscription_paypal_data' === key
+				? {
+						title: 'PayPal &amp; Pay Later',
+						description: '',
+						supports: [],
+				  }
 				: null
 		);
 
 		load();
 
 		expect( registerPaymentMethod.mock.calls[ 0 ][ 0 ].ariaLabel ).toBe(
-			'Card & wallet'
+			'PayPal & Pay Later'
 		);
 	} );
 } );

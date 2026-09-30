@@ -39,7 +39,6 @@ class Settings extends \WC_Settings_Page {
 			'checkout'          => __( 'Cart & checkout', 'easysubscription' ),
 			'notifications'     => __( 'Notifications', 'easysubscription' ),
 			'paypal'            => __( 'PayPal', 'easysubscription' ),
-			'stripe'            => __( 'Stripe', 'easysubscription' ),
 		);
 
 		// Core applies this in the method we are overriding; without it an extension can
@@ -330,50 +329,6 @@ class Settings extends \WC_Settings_Page {
 			array(
 				'type' => 'sectionend',
 				'id'   => 'easysubscription_paypal_title',
-			),
-		);
-	}
-
-	public function get_settings_for_stripe_section(): array {
-		return array(
-			array(
-				'title' => __( 'Stripe', 'easysubscription' ),
-				'type'  => 'title',
-				'desc'  => __( 'Cards are collected by Stripe and charged again automatically when a renewal falls due. EasySubscription keeps the schedule; Stripe only stores the card.', 'easysubscription' ),
-				'id'    => 'easysubscription_stripe_title',
-			),
-			array(
-				'title'   => __( 'Enable Stripe', 'easysubscription' ),
-				'desc'    => __( 'Offer card payments for subscription purchases', 'easysubscription' ),
-				'id'      => 'easysubscription_stripe_enabled',
-				'type'    => 'checkbox',
-				'default' => 'no',
-			),
-			array(
-				'title'   => __( 'Environment', 'easysubscription' ),
-				'id'      => 'easysubscription_stripe_live',
-				'type'    => 'select',
-				'default' => 'no',
-				'options' => array(
-					'no'  => __( 'Test mode', 'easysubscription' ),
-					'yes' => __( 'Live', 'easysubscription' ),
-				),
-			),
-			array(
-				'title' => __( 'Test secret key', 'easysubscription' ),
-				'id'    => 'easysubscription_stripe_test_secret',
-				'type'  => 'password',
-				'css'   => 'width:26rem',
-			),
-			array(
-				'title' => __( 'Live secret key', 'easysubscription' ),
-				'id'    => 'easysubscription_stripe_secret',
-				'type'  => 'password',
-				'css'   => 'width:26rem',
-			),
-			array(
-				'type' => 'sectionend',
-				'id'   => 'easysubscription_stripe_title',
 			),
 		);
 	}

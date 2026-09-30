@@ -22,8 +22,8 @@ const SUBSCRIPTION = {
 	next_payment_formatted: '12 October 2026',
 	end_date: '',
 	trial_end: '',
-	payment_method_title: 'Stripe',
-	payment_method: 'easysubscription_stripe',
+	payment_method_title: 'PayPal',
+	payment_method: 'easysubscription_paypal',
 	parent_order_id: 811,
 	billable: true,
 };

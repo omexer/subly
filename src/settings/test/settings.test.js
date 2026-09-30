@@ -32,7 +32,7 @@ const MENU = {
 			icon: '<path d="M3 3h1"/>',
 			list: true,
 			sections: [
-				{ id: 'stripe', title: 'Stripe' },
+				{ id: 'mollie', title: 'Mollie' },
 				{ id: 'paypal', title: 'PayPal' },
 			],
 		},
@@ -455,29 +455,29 @@ test( 'a notice from the last page load is shown until the next section', async 
 test( 'a listed group shows its sections under it once open', async () => {
 	await render();
 
-	expect( link( 'Stripe' ) ).toBeUndefined();
+	expect( link( 'Mollie' ) ).toBeUndefined();
 
-	PAGES.stripe = {
-		section: 'stripe',
+	PAGES.mollie = {
+		section: 'mollie',
 		group: 'payments',
-		sections: [ 'stripe' ],
+		sections: [ 'mollie' ],
 		cards: [
 			{
 				title: '',
 				desc: '',
-				anchor: 'stripe',
-				rows: [ field( 'stripe_on', 'checkbox', 'no' ) ],
+				anchor: 'mollie',
+				rows: [ field( 'mollie_on', 'checkbox', 'no' ) ],
 			},
 		],
 	};
 
 	await click( link( 'Payments' ) );
 
-	expect( link( 'Stripe' ).getAttribute( 'aria-current' ) ).toBe( 'page' );
+	expect( link( 'Mollie' ).getAttribute( 'aria-current' ) ).toBe( 'page' );
 	expect( link( 'Payments' ).getAttribute( 'aria-current' ) ).toBeNull();
 	expect( link( 'PayPal' ) ).not.toBeUndefined();
 
-	delete PAGES.stripe;
+	delete PAGES.mollie;
 } );
 
 test( 'rows follow their switch as it changes, and keep their value while hidden', async () => {

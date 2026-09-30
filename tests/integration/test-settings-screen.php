@@ -38,18 +38,24 @@ if ( ! $woo || ! $screen instanceof Settings_Page ) {
 	easysubscription_test_abort( 'the settings tab or the EasySubscription settings screen is not registered' );
 }
 
-// Two sections of our own for the duration: one no group names, and one stacked beside Renewal.
+// Sections of our own for the duration: one no group names, one stacked beside Renewal, and a second gateway beside PayPal.
 $extra = static function ( $sections ) {
 	$sections = (array) $sections;
 	$sections['easysubscription_test_extra'] = 'Test extra';
 	if ( ! isset( $sections['recovery'] ) ) {
 		$sections['recovery'] = 'Test retries';
 	}
+	if ( ! isset( $sections['mollie'] ) ) {
+		$sections['mollie'] = 'Test gateway';
+	}
 	return $sections;
 };
 $extra_fields = static function ( $settings, $section ) {
 	if ( 'easysubscription_test_extra' === $section ) {
 		return array( array( 'title' => 'Extra', 'type' => 'text', 'id' => 'easysubscription_test_extra_option', 'default' => '' ) );
+	}
+	if ( 'mollie' === $section && array() === (array) $settings ) {
+		return array( array( 'title' => 'Listed', 'type' => 'text', 'id' => 'easysubscription_test_listed_option', 'default' => '' ) );
 	}
 	if ( 'recovery' === $section ) {
 		return array_merge( (array) $settings, array( array( 'title' => 'Stacked', 'type' => 'text', 'id' => 'easysubscription_test_stacked_option', 'default' => '' ) ) );
@@ -148,11 +154,13 @@ foreach ( $sections as $section => $label ) {
 }
 $check( 'a section no group names lands in Integrations', 'integrations' === Settings_Page::group_of( 'easysubscription_test_extra' ) );
 
-$stripe = $xpath( $render( 'stripe' ) );
-$subnav = array_map( static fn( $a ) => trim( $a->textContent ), iterator_to_array( $stripe->query( '//ul[contains(@class,"easysubscription-settings__subnav")]//a' ) ) );
-$check( 'Payments lists its gateways under the menu entry', in_array( 'Stripe', $subnav, true ) && in_array( 'PayPal', $subnav, true ), $subnav );
-$check( 'with the one on screen marked', 'Stripe' === trim( (string) $stripe->query( '//ul[contains(@class,"easysubscription-settings__subnav")]//a[@aria-current="page"]' )->item( 0 )?->textContent ) );
-$check( 'and only its own fields in the form', 0 === $stripe->query( '//form//*[@id="easysubscription_paypal_client_id"]' )->length );
+$paypal = $xpath( $render( 'paypal' ) );
+$subnav = array_map( static fn( $a ) => trim( $a->textContent ), iterator_to_array( $paypal->query( '//ul[contains(@class,"easysubscription-settings__subnav")]//a' ) ) );
+$check( 'Payments lists its gateways under the menu entry', in_array( 'PayPal', $subnav, true ) && in_array( $sections['mollie'], $subnav, true ), $subnav );
+$check( 'with the one on screen marked', 'PayPal' === trim( (string) $paypal->query( '//ul[contains(@class,"easysubscription-settings__subnav")]//a[@aria-current="page"]' )->item( 0 )?->textContent ) );
+$listed = array_column( array_filter( $woo->get_settings_for_section( 'mollie' ), static fn( $f ) => ! empty( $f['id'] ) && in_array( $f['type'] ?? '', array( 'checkbox', 'select', 'text', 'password' ), true ) ), 'id' );
+$shown  = array_filter( $listed, static fn( $id ) => $paypal->query( '//form//*[@id="' . $id . '"]' )->length > 0 );
+$check( 'and only its own fields in the form', $listed && array() === $shown && 1 === $paypal->query( '//form//*[@id="easysubscription_paypal_client_id"]' )->length, $shown );
 
 $renewal = $render( 'recovery' );
 $check( 'a stacked group draws its sections together', str_contains( $renewal, 'id="easysubscription_catch_up_policy"' ) && str_contains( $renewal, 'id="easysubscription_test_stacked_option"' ) );

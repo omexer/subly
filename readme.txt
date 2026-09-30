@@ -8,13 +8,13 @@ Stable tag: 0.28.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Sell subscriptions in WooCommerce: recurring billing, free trials, Stripe and PayPal, and customers who manage their own plan.
+Sell subscriptions in WooCommerce: recurring billing, free trials, PayPal, and customers who manage their own plan.
 
 == Description ==
 
 EasySubscription turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
 
-**This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real Stripe or PayPal account (or any other gateway's sandbox), and no renewal has yet been watched happening on its own over time.
+**This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real PayPal account (or any other gateway's sandbox), and no renewal has yet been watched happening on its own over time.
 
 = Selling subscriptions =
 
@@ -27,7 +27,6 @@ EasySubscription turns WooCommerce products into subscriptions and runs the rene
 
 = Taking payment =
 
-* **Stripe** saves the card at checkout and renewals are charged automatically. A renewal that needs 3-D Secure sends the customer to Stripe's own page to confirm it.
 * **PayPal** runs the schedule itself, and EasySubscription keeps in step through PayPal's webhooks.
 * With no gateway at all, renewals become invoices the customer pays by hand.
 * Payments that are confirmed days later — Direct Debit and bank payments — wait as pending: the customer keeps access, the renewal order waits on hold so it cannot be paid twice, and EasySubscription never retries or re-charges it. The gateway settles it once the money is confirmed or refused.
@@ -63,7 +62,7 @@ A separate plugin adds:
 * **Plans and pricing:** variable subscriptions, several plans per product, instalment and split payment plans, introductory renewal prices, fixed expiry dates, minimum terms, payment caps, purchase limits, shipping on renewals and delivery schedules.
 * **Keeping customers:** pause and resume, plan switching, upgrade suggestions and "switch instead of cancelling", a retention offer on cancellation, a win-back email campaign, anniversary thank-yous with an optional gift, and members-only content.
 * **Getting paid:** configurable payment retries with a recovery report, card updates from My Account with expiring-card and "update your payment details" emails, recurring coupons and sign-up fee coupons, subscription webhooks, and WhatsApp notifications.
-* **More gateways:** Square, Braintree, Authorize.net, Mollie, Xendit, Razorpay (UPI Autopay), GoCardless Direct Debit, Adyen, WooPayments, Paddle, and bKash and SSLCommerz by payment link.
+* **More gateways:** Stripe, Square, Braintree, Authorize.net, Mollie, Xendit, Razorpay (UPI Autopay), GoCardless Direct Debit, Adyen, WooPayments, Paddle, and bKash and SSLCommerz by payment link.
 * **Integrations:** LearnDash, Tutor LMS, LearnPress, MailPoet, FluentCRM, WP Fusion, AutomatorWP, AutomateWoo, AffiliateWP recurring referrals, BuddyBoss and BuddyPress groups, License Manager for WooCommerce and WP Software License.
 * Reports, subscription health with a digest email, and a live QR status page.
 
@@ -82,11 +81,11 @@ To turn a product into a subscription yourself, edit it and choose **Subscriptio
 
 = Is this ready for a live store? =
 
-Not yet. The renewal engine is built and tested against a running WordPress, and Stripe and PayPal are both included. What has not happened yet is a payment through a real Stripe or PayPal account, and a renewal watched firing on its own over days. Until both have, use it on a staging site.
+Not yet. The renewal engine is built and tested against a running WordPress, and PayPal is included. What has not happened yet is a payment through a real PayPal account, and a renewal watched firing on its own over days. Until both have, use it on a staging site.
 
 = Which payment methods can renew automatically? =
 
-Stripe and PayPal, both included. EasySubscription Pro adds Square, Braintree, Authorize.net, Mollie, Xendit and WooPayments renewals against the payment method those plugins saved at checkout, and its own checkouts for Razorpay (UPI Autopay), GoCardless Direct Debit and Adyen; Paddle bills its own schedule, as PayPal does. bKash and SSLCommerz cannot charge a customer again automatically, so Pro emails each renewal as a payment link. Without any of them, each renewal is an invoice the customer pays.
+PayPal, included. EasySubscription Pro adds Stripe, which saves the card at checkout and charges each renewal itself, and Square, Braintree, Authorize.net, Mollie, Xendit and WooPayments renewals against the payment method those plugins saved at checkout, and its own checkouts for Razorpay (UPI Autopay), GoCardless Direct Debit and Adyen; Paddle bills its own schedule, as PayPal does. bKash and SSLCommerz cannot charge a customer again automatically, so Pro emails each renewal as a payment link. Without any of them, each renewal is an invoice the customer pays.
 
 = What happens to a Direct Debit renewal while it clears? =
 
@@ -109,20 +108,6 @@ Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS table
 EasySubscription talks to a payment provider only when you have switched that provider on and entered
 its credentials. Nothing is sent anywhere by default, and EasySubscription sends nothing to its own
 author or to any analytics service.
-
-= Stripe =
-
-Used to take the first payment at checkout and to charge renewals against the saved card,
-when Stripe is enabled under **WooCommerce → Settings → Subscriptions → Stripe**.
-
-Requests go to `https://api.stripe.com`. They are made when a customer places an order
-paying by card, when they return from Stripe's hosted checkout, and each time a renewal
-falls due. What is sent: the order's total and currency, the order number, the customer's
-billing email, the two addresses on this site that Stripe returns the customer to, and —
-for renewals — the Stripe customer and payment-method identifiers Stripe itself issued at
-checkout, plus the subscription and order numbers as metadata.
-
-Stripe's terms: https://stripe.com/legal/ssa — Stripe's privacy policy: https://stripe.com/privacy
 
 = PayPal =
 

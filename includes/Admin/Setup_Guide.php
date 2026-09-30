@@ -81,7 +81,7 @@ class Setup_Guide {
 				'detail' => $connected
 					/* translators: %s: comma-separated list of connected gateways */
 					? sprintf( __( '%s can charge renewals automatically.', 'easysubscription' ), implode( ', ', $connected ) )
-					: __( 'Subscriptions renew by themselves once a gateway is connected — Stripe or PayPal, both included. Without one, renewals become invoices the customer pays by hand, which still works.', 'easysubscription' ),
+					: __( 'Subscriptions renew by themselves once a gateway such as PayPal is connected. Without one, renewals become invoices the customer pays by hand, which still works.', 'easysubscription' ),
 				'action' => array(
 					'label' => $connected ? __( 'Change', 'easysubscription' ) : __( 'Choose a gateway', 'easysubscription' ),
 					'url'   => admin_url( 'admin.php?page=wc-settings&tab=easysubscription' ),
@@ -274,7 +274,7 @@ class Setup_Guide {
 	 * Which gateways can actually charge a renewal right now.
 	 *
 	 * Asks the registry rather than naming one, so a gateway added by Pro counts and the
-	 * checklist never tells a Stripe shop to go and connect PayPal.
+	 * checklist never tells a shop using another gateway to go and connect PayPal.
 	 *
 	 * @return string[]
 	 */

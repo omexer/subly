@@ -34,7 +34,6 @@ $options = array(
 	'easysubscription_paypal_client_id'                          => 'client-harness',
 	'easysubscription_paypal_secret'                             => 'secret-harness',
 	'easysubscription_paypal_webhook_id'                         => '',
-	'easysubscription_stripe_enabled'                            => 'no',
 	'easysubscription_guest_checkout'                            => Guest_Checkout::REQUIRE,
 	'woocommerce_enable_signup_and_login_from_checkout' => 'no',
 	'woocommerce_enable_checkout_login_reminder'       => 'no',
