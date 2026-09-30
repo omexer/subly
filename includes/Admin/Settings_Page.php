@@ -2,6 +2,8 @@
 
 namespace EasySubscription\Admin;
 
+use EasySubscription\Emails\Notification_Settings;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -199,7 +201,7 @@ class Settings_Page {
 	 * @return array<string, array{label: string, icon: string, sections: string[], list?: bool}>
 	 */
 	public static function groups(): array {
-		return array(
+		$groups = array(
 			'general'            => array(
 				'label'    => __( 'General', 'easysubscription' ),
 				'icon'     => '<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
@@ -231,14 +233,9 @@ class Settings_Page {
 				'sections' => array( 'live-qr' ),
 			),
 			'notifications'      => array(
-				'label'    => __( 'Notifications', 'easysubscription' ),
+				'label'    => __( 'Email Notifications', 'easysubscription' ),
 				'icon'     => '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/>',
 				'sections' => array( 'notifications', 'payment_methods' ),
-			),
-			'api'                => array(
-				'label'    => __( 'API Settings', 'easysubscription' ),
-				'icon'     => '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m9.5 10-2.5 2 2.5 2M14.5 10l2.5 2-2.5 2"/>',
-				'sections' => array( 'api' ),
 			),
 			'payments'           => array(
 				'label'    => __( 'Payments', 'easysubscription' ),
@@ -253,6 +250,13 @@ class Settings_Page {
 				'list'     => true,
 			),
 		);
+
+		/**
+		 * Filter the Settings menu's groups, in menu order.
+		 *
+		 * @param array<string, array{label: string, icon: string, sections: string[], list?: bool}> $groups
+		 */
+		return (array) apply_filters( 'easysubscription_settings_groups', $groups );
 	}
 
 	/**
@@ -611,6 +615,18 @@ class Settings_Page {
 			printf( '<p class="easysubscription-settings__help" id="%s">%s</p>', esc_attr( $id . '-help' ), wp_kses_post( $help ) );
 		}
 		echo '</div><div class="easysubscription-settings__control">';
+
+		$preview = Notification_Settings::preview_url( (string) ( $field['easysubscription_email'] ?? '' ) );
+
+		if ( '' !== $preview ) {
+			printf(
+				'<a class="easysubscription-btn easysubscription-btn--sm" href="%s" target="_blank" rel="noopener noreferrer">%s<span class="screen-reader-text"> %s</span></a>',
+				esc_url( $preview ),
+				esc_html__( 'Preview', 'easysubscription' ),
+				/* translators: %s: the email's name, such as "Renewal reminder" */
+				esc_html( sprintf( __( '%s (opens in a new tab)', 'easysubscription' ), (string) ( $field['title'] ?? '' ) ) )
+			);
+		}
 
 		$this->render_control( $field, '' !== $help );
 

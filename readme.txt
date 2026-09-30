@@ -2,7 +2,7 @@
 Contributors: pronob1010
 Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 8.1
 Stable tag: 0.28.1
 License: GPLv2 or later
@@ -50,10 +50,10 @@ EasySubscription turns WooCommerce products into subscriptions and runs the rene
 * **Home** walks you through setting up — connect a payment method, create a product, run a test renewal that charges nobody — then shows recurring revenue (net of tax), what needs your attention and your latest subscriptions.
 * **All subscriptions** lets you search, filter, sort and change subscriptions in bulk, and open any one to see its history, charge it now or move its dates.
 * **Health** checks, under Settings: whether the renewal queue is running, charges whose outcome is still unknown, renewals waiting more than 10 days for their payment provider to confirm them, whether the double-charge safeguard is in place, and subscriptions whose renewals add tax twice — listed with a Repair action, since subscriptions sold before 0.19.4 in tax-inclusive stores are never changed silently.
-* Nine emails for the moments that matter — six to the customer (including a reminder before each renewal) and three to you.
+* Ten emails for the moments that matter — seven to the customer (including a reminder before each renewal) and three to you — each with a preview under Email Notifications on WooCommerce 9.6 and later.
 * Customer roles and downloadable files that follow the subscription.
 * Integrations and Help screens, with a system report that never contains your keys.
-* A REST API for subscriptions, authenticated with WooCommerce's own API keys.
+* A REST API for subscriptions, open to logged-in store managers.
 
 = EasySubscription Pro =
 
@@ -61,10 +61,11 @@ A separate plugin adds:
 
 * **Plans and pricing:** variable subscriptions, several plans per product, instalment and split payment plans, introductory renewal prices, fixed expiry dates, minimum terms, payment caps, purchase limits, shipping on renewals and delivery schedules.
 * **Keeping customers:** pause and resume, plan switching, upgrade suggestions and "switch instead of cancelling", a retention offer on cancellation, a win-back email campaign, anniversary thank-yous with an optional gift, and members-only content.
-* **Getting paid:** configurable payment retries with a recovery report, card updates from My Account with expiring-card and "update your payment details" emails, recurring coupons and sign-up fee coupons, subscription webhooks, and WhatsApp notifications.
+* **Getting paid:** configurable payment retries and a grace period, with a recovery report, card updates from My Account with expiring-card and "update your payment details" emails, recurring coupons and sign-up fee coupons, subscription webhooks, and WhatsApp notifications.
 * **More gateways:** Stripe, Square, Braintree, Authorize.net, Mollie, Xendit, Razorpay (UPI Autopay), GoCardless Direct Debit, Adyen, WooPayments, Paddle, and bKash and SSLCommerz by payment link.
+* **Checkout and emails:** one-click checkout, your own Subscribe button text, trial ending and expiring soon reminders, and editing each email's subject, heading and content inside EasySubscription.
 * **Integrations:** LearnDash, Tutor LMS, LearnPress, MailPoet, FluentCRM, WP Fusion, AutomatorWP, AutomateWoo, AffiliateWP recurring referrals, BuddyBoss and BuddyPress groups, License Manager for WooCommerce and WP Software License.
-* Reports, subscription health with a digest email, and a live QR status page.
+* Reports, subscription health with a digest email, a live QR status page, and WooCommerce API keys on the subscription API.
 
 None of Pro's gateways has been run against a real sandbox yet either.
 

@@ -35,8 +35,6 @@ $run = function () { define( 'WP_UNINSTALL_PLUGIN', 'easysubscription/easysubscr
 $queued_actions = array(
 	\EasySubscription\Billing\Renewal_Scheduler::ACTION_RENEWAL,
 	\EasySubscription\Billing\Renewal_Scheduler::ACTION_REMINDER,
-	\EasySubscription\Billing\Renewal_Scheduler::ACTION_TRIAL_REMINDER,
-	\EasySubscription\Billing\Renewal_Scheduler::ACTION_EXPIRY_REMINDER,
 	\EasySubscription\Emails\Mailer::ACTION_REACTIVATED,
 	\EasySubscription\Billing\Renewal_Scheduler::ACTION_SWEEP,
 	\EasySubscription\Billing\Renewal_Processor::ACTION_SETTLE,

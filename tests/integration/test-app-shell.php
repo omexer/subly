@@ -137,8 +137,8 @@ foreach ( $free_pages as $slug ) {
 
 $data = (string) wp_scripts()->get_data( App_Host::HANDLE, 'before' )[1];
 $check(
-	'the shell is told the header links, with Upgrade only while Pro is not active',
-	str_contains( $data, wp_json_encode( Page_Shell::header_links()['help'] ) ) && str_contains( $data, did_action( 'easysubscription_pro_loaded' ) ? '"upgrade":""' : wp_json_encode( Page_Shell::UPGRADE_URL ) ),
+	'the shell is told the header links, with no Upgrade',
+	str_contains( $data, wp_json_encode( Page_Shell::header_links()['help'] ) ) && str_contains( $data, '"upgrade":""' ),
 	$data
 );
 

@@ -4,7 +4,8 @@
  * Plugin URI:  https://github.com/pronob1010/easysubscription
  * Description: Turn any WooCommerce product into a subscription and let it bill itself.
  * Version:     0.28.1
- * Author:      Pronob Mozumder
+ * Author:      Omexer
+ * Author URI:  https://omexer.com
  * Text Domain: easysubscription
  * Domain Path: /languages
  * License:     GPLv2 or later

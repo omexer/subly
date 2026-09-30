@@ -37,7 +37,7 @@ class Settings extends \WC_Settings_Page {
 			'customer_controls' => __( 'Customer controls', 'easysubscription' ),
 			'renewal'           => __( 'Renewal & billing', 'easysubscription' ),
 			'checkout'          => __( 'Cart & checkout', 'easysubscription' ),
-			'notifications'     => __( 'Notifications', 'easysubscription' ),
+			'notifications'     => __( 'Email notifications', 'easysubscription' ),
 			'paypal'            => __( 'PayPal', 'easysubscription' ),
 		);
 
@@ -149,28 +149,7 @@ class Settings extends \WC_Settings_Page {
 	}
 
 	public function get_settings_for_renewal_section(): array {
-		$settings = array(
-			array(
-				'title' => __( 'Grace period', 'easysubscription' ),
-				'type'  => 'title',
-				'id'    => 'easysubscription_grace_title',
-			),
-			array(
-				'title'             => __( 'Grace period after due date (Days)', 'easysubscription' ),
-				'desc_tip'          => __( 'The customer keeps access for this many days after a renewal payment fails. Retries happen within this window; when it ends, the action above applies.', 'easysubscription' ),
-				'id'                => 'easysubscription_grace_period_days',
-				'type'              => 'number',
-				'default'           => 7,
-				'custom_attributes' => array(
-					'min'  => '0',
-					'step' => '1',
-				),
-			),
-			array(
-				'type' => 'sectionend',
-				'id'   => 'easysubscription_grace_title',
-			),
-
+		return array(
 			array(
 				'title' => __( 'Renewal', 'easysubscription' ),
 				'type'  => 'title',
@@ -199,13 +178,6 @@ class Settings extends \WC_Settings_Page {
 				'id'   => 'easysubscription_renewals_title',
 			),
 		);
-
-		// Only Pro's payment retries read it; without Pro a failed renewal goes on hold at once, and its card has nothing else.
-		if ( ! did_action( 'easysubscription_pro_loaded' ) ) {
-			$settings = array_values( array_filter( $settings, static fn( array $setting ): bool => ! in_array( $setting['id'], array( 'easysubscription_grace_period_days', 'easysubscription_grace_title' ), true ) ) );
-		}
-
-		return $settings;
 	}
 
 	public function get_settings_for_checkout_section(): array {
@@ -234,33 +206,8 @@ class Settings extends \WC_Settings_Page {
 				'default' => 'yes',
 			),
 			array(
-				'title'   => __( 'Enable one-click checkout', 'easysubscription' ),
-				'desc'    => __( 'Adding a subscription to the cart takes the customer straight to checkout.', 'easysubscription' ),
-				'type'    => 'checkbox',
-				'id'      => \EasySubscription\Checkout\One_Click_Checkout::OPTION,
-				'default' => 'no',
-			),
-			array(
 				'type' => 'sectionend',
 				'id'   => 'easysubscription_checkout_title',
-			),
-
-			array(
-				'title' => __( 'Custom labels', 'easysubscription' ),
-				'type'  => 'title',
-				'id'    => 'easysubscription_labels_title',
-			),
-			array(
-				'title'       => __( 'Subscribe button text', 'easysubscription' ),
-				'desc_tip'    => __( 'The add to cart button on subscription products, on the product page and in product lists. Leave empty to use "Subscribe".', 'easysubscription' ),
-				'type'        => 'text',
-				'id'          => \EasySubscription\Frontend\Product_Display::OPTION_BUTTON_TEXT,
-				'default'     => '',
-				'placeholder' => __( 'Subscribe', 'easysubscription' ),
-			),
-			array(
-				'type' => 'sectionend',
-				'id'   => 'easysubscription_labels_title',
 			),
 		);
 	}

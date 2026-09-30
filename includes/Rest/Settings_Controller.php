@@ -4,6 +4,7 @@ namespace EasySubscription\Rest;
 
 use EasySubscription\Admin\Menu;
 use EasySubscription\Admin\Settings_Page;
+use EasySubscription\Emails\Notification_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -250,6 +251,7 @@ final class Settings_Controller {
 			'easysubscription_show_if'    => (string) ( $field['easysubscription_show_if'] ?? '' ),
 			'easysubscription_joins'      => (string) ( $field['easysubscription_joins'] ?? '' ),
 			'easysubscription_email'      => (string) ( $field['easysubscription_email'] ?? '' ),
+			'preview_url'       => Notification_Settings::preview_url( (string) ( $field['easysubscription_email'] ?? '' ) ),
 		);
 	}
 

@@ -22,7 +22,10 @@ module.exports = {
 		subscriptions: './src/subscriptions/index.js',
 		integrations: './src/integrations/index.js',
 		help: './src/help/index.js',
-		settings: './src/settings/index.js',
+		settings: {
+			import: './src/settings/index.js',
+			library: { name: [ 'easysubscription', 'settings' ], type: 'window' },
+		},
 		blocks: './src/blocks/index.js',
 	},
 	externals: {

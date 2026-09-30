@@ -17,12 +17,10 @@ use EasySubscription\Data\Cleanup;
 use EasySubscription\Data\Migrator;
 use EasySubscription\Data\Order_Type;
 use EasySubscription\Data\Stats;
-use EasySubscription\Rest\Api_Access;
 use EasySubscription\Rest\Dashboard_Controller;
 use EasySubscription\Rest\Help_Controller;
 use EasySubscription\Rest\Integrations_Controller;
 use EasySubscription\Rest\Overview_Controller;
-use EasySubscription\Rest\Email_Settings_Controller;
 use EasySubscription\Rest\Settings_Controller;
 use EasySubscription\Rest\Subscriptions_Controller;
 use EasySubscription\Checkout\Cart_Validation;
@@ -30,7 +28,6 @@ use EasySubscription\Checkout\Guest_Checkout;
 use EasySubscription\Checkout\Store_Api;
 use EasySubscription\Checkout\Subscription_Factory;
 use EasySubscription\Checkout\Initial_Payment;
-use EasySubscription\Checkout\One_Click_Checkout;
 use EasySubscription\Checkout\Renewal_Order_Pay;
 use EasySubscription\Checkout\Trial_Payment;
 use EasySubscription\Frontend\Disclosure;
@@ -137,9 +134,6 @@ final class Plugin {
 		$this->services['subscriptions_api'] = new Subscriptions_Controller( $this->services['activity'], $this->services['processor'] );
 		$this->services['subscriptions_api']->register();
 
-		$this->services['api_access'] = new Api_Access();
-		$this->services['api_access']->register();
-
 		$this->services['product_types'] = new Product_Types();
 		$this->services['product_types']->register();
 
@@ -153,9 +147,6 @@ final class Plugin {
 
 		$this->services['cart_rules'] = new Cart_Validation();
 		$this->services['cart_rules']->register();
-
-		$this->services['one_click'] = new One_Click_Checkout();
-		$this->services['one_click']->register();
 
 		$this->services['initial_payment'] = new Initial_Payment();
 		$this->services['initial_payment']->register();
@@ -293,9 +284,6 @@ final class Plugin {
 
 		$this->services['settings_api'] = new Settings_Controller( $this->services['settings_page'] );
 		$this->services['settings_api']->register();
-
-		$this->services['email_settings_api'] = new Email_Settings_Controller( $this->services['settings_page'] );
-		$this->services['email_settings_api']->register();
 
 		$this->services['admin_notices'] = new Notices();
 		$this->services['admin_notices']->register();

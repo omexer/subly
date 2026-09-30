@@ -16,8 +16,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Product_Display {
 
-	public const OPTION_BUTTON_TEXT = 'easysubscription_subscribe_button_text';
-
 	public function __construct( private readonly Disclosure $disclosure ) {}
 
 	public function register(): void {
@@ -34,9 +32,12 @@ class Product_Display {
 	}
 
 	public static function button_text(): string {
-		$text = trim( (string) get_option( self::OPTION_BUTTON_TEXT, '' ) );
-
-		return '' === $text ? __( 'Subscribe', 'easysubscription' ) : $text;
+		/**
+		 * Filter the add to cart button's text on subscription products.
+		 *
+		 * @param string $text
+		 */
+		return (string) apply_filters( 'easysubscription_subscribe_button_text', __( 'Subscribe', 'easysubscription' ) );
 	}
 
 	/**

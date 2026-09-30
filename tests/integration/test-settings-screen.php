@@ -171,9 +171,12 @@ $check( 'General carries the health checks', str_contains( $general, 'Renewal qu
 
 $was_pro = $wp_actions['easysubscription_pro_loaded'] ?? null;
 unset( $wp_actions['easysubscription_pro_loaded'] );
-$check( 'without Pro the header offers the upgrade', str_contains( $render( 'customer_controls' ), 'easysubscription-shell__upgrade' ) );
+$check( 'without Pro the header offers no upgrade', ! str_contains( $render( 'customer_controls' ), 'easysubscription-shell__upgrade' ) );
+add_filter( 'easysubscription_show_upgrade', '__return_true' );
+$check( 'until the filter turns it back on', str_contains( $render( 'customer_controls' ), 'easysubscription-shell__upgrade' ) );
 $wp_actions['easysubscription_pro_loaded'] = 1;
-$check( 'with Pro it does not', ! str_contains( $render( 'customer_controls' ), 'easysubscription-shell__upgrade' ) );
+$check( 'and never with Pro', ! str_contains( $render( 'customer_controls' ), 'easysubscription-shell__upgrade' ) );
+remove_filter( 'easysubscription_show_upgrade', '__return_true' );
 if ( null === $was_pro ) {
 	unset( $wp_actions['easysubscription_pro_loaded'] );
 } else {

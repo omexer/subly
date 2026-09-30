@@ -86,24 +86,17 @@ foreach ( WC_Admin_Settings::get_settings_pages() as $candidate ) {
 if ( ! $page ) {
 	easysubscription_test_abort( 'the Subscriptions settings tab is not registered' );
 }
-$was_pro                         = $wp_actions['easysubscription_pro_loaded'] ?? null;
-$wp_actions['easysubscription_pro_loaded'] = 1;
-$groups                          = array();
-$current                         = '';
-foreach ( $page->get_settings_for_section( 'renewal' ) as $field ) {
+$groups  = array();
+$current = '';
+// Free's own fields, before any extension adds to the section.
+foreach ( $page->get_settings_for_renewal_section() as $field ) {
 	if ( 'title' === ( $field['type'] ?? '' ) ) {
 		$current = (string) $field['title'];
 	} elseif ( isset( $field['id'] ) && 'sectionend' !== ( $field['type'] ?? '' ) ) {
 		$groups[ $current ][] = $field['id'];
 	}
 }
-if ( null === $was_pro ) {
-	unset( $wp_actions['easysubscription_pro_loaded'] );
-} else {
-	$wp_actions['easysubscription_pro_loaded'] = $was_pro;
-}
-$check( 'the grace period has its card, the reminder having moved to Notifications', array( 'easysubscription_grace_period_days' ) === ( $groups['Grace period'] ?? null ), $groups );
-$check( 'missed renewals and free first payments share the Renewal card', array( 'easysubscription_catch_up_policy', \EasySubscription\Checkout\Trial_Payment::OPTION ) === ( $groups['Renewal'] ?? null ), $groups );
+$check( 'missed renewals and free first payments share the Renewal card, the only one free draws', array( 'Renewal' => array( 'easysubscription_catch_up_policy', \EasySubscription\Checkout\Trial_Payment::OPTION ) ) === $groups, $groups );
 
 echo "\nWithout a grace period\n";
 $user = wp_insert_user(

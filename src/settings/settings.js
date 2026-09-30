@@ -3,7 +3,7 @@ import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { Skeleton, cn } from '@easysubscription/ui';
 import { Row } from './field';
-import { EmailEditor } from './email';
+import { getEmailEditor } from './extend';
 import { fieldsOf, isShown } from './visibility';
 
 export const PAGE = 'easysubscription-settings';
@@ -197,7 +197,8 @@ function Loading() {
 
 export function Settings( { params, setParams } ) {
 	const section = sectionOf( params );
-	const email = params.get( 'email' ) || '';
+	const EmailEditor = getEmailEditor();
+	const email = ( EmailEditor && params.get( 'email' ) ) || '';
 	const [ emailDirty, setEmailDirty ] = useState( false );
 	const [ menu, setMenu ] = useState( null );
 	const [ pages, setPages ] = useState( {} );
@@ -429,7 +430,7 @@ export function Settings( { params, setParams } ) {
 								page={ page }
 								valueOf={ valueOf }
 								onChange={ onChange }
-								onEdit={ openEmail }
+								onEdit={ EmailEditor ? openEmail : undefined }
 							/>
 						) : (
 							<Loading />

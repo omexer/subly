@@ -14,6 +14,15 @@ jQuery( function ( $ ) {
 		return $select.length ? $select.val() : config.defaultType;
 	}
 
+	// A checkbox reads as yes or no, so _virtual=no can ask for WooCommerce's own Virtual box.
+	function valueOf( $field ) {
+		if ( $field.is( ':checkbox' ) ) {
+			return $field.is( ':checked' ) ? 'yes' : 'no';
+		}
+
+		return String( $field.val() );
+	}
+
 	// data-easysubscription-when="field_id=a|b" on any input in a row shows the row only for those values.
 	function conditionsMet( $row ) {
 		var met = true;
@@ -23,7 +32,7 @@ jQuery( function ( $ ) {
 				$field = $( '#' + rule[ 0 ] ),
 				allowed = ( rule[ 1 ] || '' ).split( '|' );
 
-			if ( $field.length && allowed.indexOf( String( $field.val() ) ) === -1 ) {
+			if ( $field.length && allowed.indexOf( valueOf( $field ) ) === -1 ) {
 				met = false;
 			}
 		} );
@@ -76,18 +85,8 @@ jQuery( function ( $ ) {
 		} );
 	}
 
-	function syncShipping() {
-		var $mirror = $panel.find( '[data-easysubscription-mirrors]' ),
-			$virtual = $( '#' + $mirror.data( 'easysubscription-mirrors' ) );
-
-		if ( $mirror.length && $virtual.length ) {
-			$mirror.val( $virtual.is( ':checked' ) ? 'no' : 'yes' );
-		}
-	}
-
 	function sync() {
 		syncPricing();
-		syncShipping();
 		syncRows();
 		syncSections();
 	}
@@ -100,19 +99,12 @@ jQuery( function ( $ ) {
 		$button.closest( '.easysubscription-section' ).find( '.easysubscription-section__body' ).prop( 'hidden', ! open );
 	} );
 
-	$panel.on( 'change', '[data-easysubscription-mirrors]', function () {
-		$( '#' + $( this ).data( 'easysubscription-mirrors' ) )
-			.prop( 'checked', $( this ).val() === 'no' )
-			.trigger( 'change' );
-	} );
-
 	$options.on( 'change', 'select, input', function () {
 		syncRows();
 		syncSections();
 	} );
 
 	$( '#_virtual' ).on( 'change', function () {
-		syncShipping();
 		syncRows();
 		syncSections();
 	} );

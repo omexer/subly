@@ -687,16 +687,6 @@ body.easysubscription-admin #wpcontent { padding-left: 0; }
 	max-width: 640px;
 }
 
-.easysubscription-email-preview {
-	display: block;
-	width: 100%;
-	height: 640px;
-	margin: 16px 0 18px;
-	border: 1px solid var(--easysubscription-line);
-	border-radius: var(--easysubscription-radius-sm);
-	background: #fff;
-}
-
 .easysubscription-settings__label {
 	flex: 0 1 60%;
 	min-width: 0;

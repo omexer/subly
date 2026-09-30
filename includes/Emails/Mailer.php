@@ -26,8 +26,6 @@ class Mailer {
 		'Confirm_Payment'           => Confirm_Payment::class,
 		'Subscription_Cancelled'    => Subscription_Cancelled::class,
 		'Renewal_Reminder'          => Renewal_Reminder::class,
-		'Trial_Ending'              => Trial_Ending::class,
-		'Expiring_Soon'             => Expiring_Soon::class,
 		'Subscription_Reactivated'  => Subscription_Reactivated::class,
 		'Merchant_New_Subscription' => Merchant_New_Subscription::class,
 		'Merchant_Cancelled'        => Merchant_Subscription_Cancelled::class,
@@ -69,8 +67,6 @@ class Mailer {
 		add_action( 'easysubscription_subscription_cancelled', array( $this, 'on_cancelled' ), 10, 1 );
 		add_action( 'easysubscription_renewal_due_soon', array( $this, 'on_due_soon' ), 10, 1 );
 		add_action( 'easysubscription_subscription_finished', array( $this, 'on_finished' ), 10, 2 );
-		add_action( 'easysubscription_trial_ending_soon', array( $this, 'on_trial_ending' ), 10, 1 );
-		add_action( 'easysubscription_subscription_ending_soon', array( $this, 'on_ending_soon' ), 10, 1 );
 		add_action( 'easysubscription_subscription_status_changed', array( $this, 'on_status_changed' ), 10, 3 );
 		add_action( 'easysubscription_subscription_resumed', array( $this, 'queue_reactivated' ), 10, 1 );
 		add_action( self::ACTION_REACTIVATED, array( $this, 'send_reactivated' ), 10, 2 );
@@ -122,10 +118,13 @@ class Mailer {
 	}
 
 	public function on_due_soon( Subscription $subscription ): void {
-		// Two emails about one first payment is one too many.
-		$scheduler = \EasySubscription\Plugin::instance()->get( 'scheduler' );
-
-		if ( $scheduler instanceof Renewal_Scheduler && $scheduler->trial_reminder_covers( $subscription ) && self::is_enabled( 'Trial_Ending' ) ) {
+		/**
+		 * Whether the renewal reminder goes; false when another email already covers this payment.
+		 *
+		 * @param bool         $send
+		 * @param Subscription $subscription
+		 */
+		if ( ! apply_filters( 'easysubscription_send_renewal_reminder', true, $subscription ) ) {
 			return;
 		}
 
@@ -134,14 +133,6 @@ class Mailer {
 
 	public function on_finished( Subscription $subscription, string $reason = '' ): void {
 		$this->dispatch( 'Merchant_Ended', array( $subscription, $reason ) );
-	}
-
-	public function on_trial_ending( Subscription $subscription ): void {
-		$this->dispatch( 'Trial_Ending', array( $subscription ) );
-	}
-
-	public function on_ending_soon( Subscription $subscription ): void {
-		$this->dispatch( 'Expiring_Soon', array( $subscription ) );
 	}
 
 	/**

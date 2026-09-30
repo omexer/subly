@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * The Notifications section: one row per email, whose switch is that email's own WooCommerce setting.
+ * The Email Notifications section: one row per email, whose switch is that email's own WooCommerce setting.
  */
 final class Notification_Settings {
 
@@ -24,9 +24,7 @@ final class Notification_Settings {
 	public function register(): void {
 		add_action( 'init', array( $this, 'migrate' ), 6 );
 
-		foreach ( array( Renewal_Scheduler::OPTION_REMINDER_HOURS, Renewal_Scheduler::OPTION_EXPIRY_HOURS ) as $option ) {
-			add_filter( 'woocommerce_admin_settings_sanitize_option_' . $option, array( self::class, 'clamp_hours' ) );
-		}
+		add_filter( 'woocommerce_admin_settings_sanitize_option_' . Renewal_Scheduler::OPTION_REMINDER_HOURS, array( self::class, 'clamp_hours' ) );
 	}
 
 	/**
@@ -64,15 +62,11 @@ final class Notification_Settings {
 	 */
 	public static function fields(): array {
 		$renewal = self::email_row( 'easysubscription_renewal_reminder', __( 'Renewal reminder', 'easysubscription' ), __( 'Send customers a reminder email before their next renewal payment.', 'easysubscription' ) );
-		$expiry  = self::email_row( 'easysubscription_expiring_soon', __( 'Expiring soon reminder', 'easysubscription' ), __( 'Send customers a reminder email before their subscription expires.', 'easysubscription' ) );
 
 		$main = array(
 			$renewal,
 			$renewal ? self::hours_row( Renewal_Scheduler::OPTION_REMINDER_HOURS, __( 'Send renewal reminder before (Hours)', 'easysubscription' ), __( 'Choose how many hours before the renewal date the reminder email is sent.', 'easysubscription' ), $renewal['id'] ) : null,
-			$expiry,
-			$expiry ? self::hours_row( Renewal_Scheduler::OPTION_EXPIRY_HOURS, __( 'Send expiry reminder before (Hours)', 'easysubscription' ), __( 'Choose how many hours before the expiry date the reminder email is sent.', 'easysubscription' ), $expiry['id'] ) : null,
 			self::email_row( 'easysubscription_payment_failed', __( 'Payment failure emails', 'easysubscription' ), __( 'Notify customers when a renewal payment fails.', 'easysubscription' ) ),
-			self::email_row( 'easysubscription_trial_ending', __( 'Trial ending reminder', 'easysubscription' ), __( 'Send customers a reminder before their free trial ends.', 'easysubscription' ) ),
 			self::email_row( 'easysubscription_renewal_receipt', __( 'Renewal success email', 'easysubscription' ), __( 'Send customers a confirmation email after a subscription renewal payment is completed successfully.', 'easysubscription' ) ),
 			self::email_row( 'easysubscription_subscription_cancelled', __( 'Subscription cancelled email', 'easysubscription' ), __( 'Send customers a confirmation email when their subscription is cancelled.', 'easysubscription' ) ),
 			self::email_row( 'easysubscription_subscription_reactivated', __( 'Subscription reactivated email', 'easysubscription' ), __( 'Send customers a confirmation email when their paused or cancelled subscription is reactivated.', 'easysubscription' ) ),
@@ -89,7 +83,7 @@ final class Notification_Settings {
 		return array_merge(
 			array(
 				array(
-					'title' => __( 'Notifications', 'easysubscription' ),
+					'title' => __( 'Email notifications', 'easysubscription' ),
 					'type'  => 'title',
 					'id'    => self::CARD_MAIN,
 				),
@@ -181,9 +175,11 @@ final class Notification_Settings {
 	}
 
 	/**
+	 * How many hours ahead a reminder goes, shown only while its email's switch is on.
+	 *
 	 * @return array<string, mixed>
 	 */
-	private static function hours_row( string $option, string $title, string $tip, string $parent ): array {
+	public static function hours_row( string $option, string $title, string $tip, string $parent ): array {
 		return array(
 			'title'             => $title,
 			'desc_tip'          => $tip,
@@ -210,6 +206,26 @@ final class Notification_Settings {
 		}
 
 		return null;
+	}
+
+	/**
+	 * WooCommerce's own preview of the saved email, with sample details; empty before WooCommerce 9.6.
+	 */
+	public static function preview_url( string $email_id ): string {
+		$email = '' === $email_id ? null : self::email( $email_id );
+
+		if ( ! $email || ! class_exists( '\Automattic\WooCommerce\Internal\Admin\EmailPreview\EmailPreview' ) ) {
+			return '';
+		}
+
+		return add_query_arg(
+			array(
+				'preview_woocommerce_mail' => 'true',
+				'type'                     => rawurlencode( get_class( $email ) ),
+				'_wpnonce'                 => wp_create_nonce( 'preview-mail' ),
+			),
+			admin_url()
+		);
 	}
 
 	/**

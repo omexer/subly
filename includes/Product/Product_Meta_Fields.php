@@ -32,9 +32,8 @@ class Product_Meta_Fields {
 	public const PRIORITY_LIMIT        = 60;
 	public const PRIORITY_ACCESS       = 70;
 
-	public const PRIORITY_SHIPPING_REQUIRED = 10;
-	public const PRIORITY_DELIVERY          = 20;
-	public const PRIORITY_SHIPPING_CHARGE   = 40;
+	public const PRIORITY_DELIVERY        = 20;
+	public const PRIORITY_SHIPPING_CHARGE = 40;
 
 	public function register(): void {
 		add_action( 'woocommerce_product_options_general_product_data', array( $this, 'render' ) );
@@ -44,7 +43,6 @@ class Product_Meta_Fields {
 		add_action( self::ACTION_PRICING, array( $this, 'signup_fee_field' ), 20 );
 		add_action( self::ACTION_BILLING, array( $this, 'schedule_field' ), self::PRIORITY_SCHEDULE );
 		add_action( self::ACTION_BILLING, array( $this, 'trial_field' ), self::PRIORITY_TRIAL );
-		add_action( self::ACTION_SHIPPING, array( $this, 'shipping_required_field' ), self::PRIORITY_SHIPPING_REQUIRED );
 	}
 
 	public function render(): void {
@@ -122,27 +120,6 @@ class Product_Meta_Fields {
 				'tip'          => __( 'Nothing is charged until the trial ends, apart from any sign-up fee. Leave empty for no trial.', 'easysubscription' ),
 				'note'         => __( 'Offer customers a free trial before their first payment.', 'easysubscription' ),
 			)
-		);
-	}
-
-	/**
-	 * Mirrors WooCommerce's own Virtual checkbox rather than storing anything: two saved
-	 * answers to "does this ship" would sooner or later disagree.
-	 *
-	 * @param \WC_Product|null $product
-	 */
-	public function shipping_required_field( $product ): void {
-		$ships = ! ( $product && $product->is_virtual() );
-
-		printf(
-			'<p class="form-field show_if_%1$s"><label for="easysubscription_shipping_required">%2$s</label><select id="easysubscription_shipping_required" class="select short" data-easysubscription-mirrors="_virtual"><option value="yes"%3$s>%4$s</option><option value="no"%5$s>%6$s</option></select>%7$s</p>',
-			esc_attr( Product_Types::SIMPLE ),
-			esc_html__( 'Shipping required', 'easysubscription' ),
-			selected( $ships, true, false ),
-			esc_html__( 'Yes', 'easysubscription' ),
-			selected( $ships, false, false ),
-			esc_html__( 'No', 'easysubscription' ),
-			wc_help_tip( __( 'The same setting as the Virtual box above: "No" makes the product virtual.', 'easysubscription' ) ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wc_help_tip escapes.
 		);
 	}
 

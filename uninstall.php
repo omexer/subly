@@ -32,7 +32,7 @@ $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LI
 delete_metadata( 'user', 0, 'easysubscription_dismissed_notices', '', true );
 
 if ( function_exists( 'as_unschedule_all_actions' ) ) {
-	foreach ( array( 'easysubscription_scheduled_renewal', 'easysubscription_renewal_reminder', 'easysubscription_trial_reminder', 'easysubscription_expiry_reminder', 'easysubscription_reactivated_email', 'easysubscription_sweep_overdue', 'easysubscription_settle_paid_renewal', 'easysubscription_resolve_pending_renewal', 'easysubscription_daily_snapshot', 'easysubscription_paypal_process_webhook' ) as $easysubscription_action ) {
+	foreach ( array( 'easysubscription_scheduled_renewal', 'easysubscription_renewal_reminder', 'easysubscription_reactivated_email', 'easysubscription_sweep_overdue', 'easysubscription_settle_paid_renewal', 'easysubscription_resolve_pending_renewal', 'easysubscription_daily_snapshot', 'easysubscription_paypal_process_webhook' ) as $easysubscription_action ) {
 		// Hook alone: given a group as well, Action Scheduler only matches actions queued with no arguments.
 		as_unschedule_all_actions( $easysubscription_action );
 	}

@@ -19,7 +19,7 @@ class Renewal_Reminder extends Subscription_Email {
 	public function __construct() {
 		$this->id             = 'easysubscription_renewal_reminder';
 		$this->title          = __( 'Upcoming renewal', 'easysubscription' );
-		$this->description    = __( 'Sent to the customer before a subscription is charged. How far ahead is set under EasySubscription → Settings → Notifications.', 'easysubscription' );
+		$this->description    = __( 'Sent to the customer before a subscription is charged. How far ahead is set under EasySubscription → Settings → Email Notifications.', 'easysubscription' );
 		$this->customer_email = true;
 
 		parent::__construct();

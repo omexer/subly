@@ -1,15 +1,12 @@
 <?php
 /**
  * Cart & checkout settings: mixed carts refused in both directions and at both checkouts when
- * turned off, one-click checkout only for subscriptions and only when on, and the subscribe
- * button text on the product page and in product lists.
+ * turned off, and the subscribe button on the product page and in product lists.
  *
  * @package EasySubscription
  */
 
 use EasySubscription\Checkout\Cart_Validation;
-use EasySubscription\Checkout\One_Click_Checkout;
-use EasySubscription\Frontend\Product_Display;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -24,7 +21,7 @@ add_filter( 'wp_redirect', $stop_at_redirect, 1 );
 add_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 
 $absent   = new stdClass();
-$options  = array( Cart_Validation::OPTION_MIXED, One_Click_Checkout::OPTION, Product_Display::OPTION_BUTTON_TEXT, 'woocommerce_cart_redirect_after_add' );
+$options  = array( Cart_Validation::OPTION_MIXED, 'woocommerce_cart_redirect_after_add' );
 $snapshot = array();
 foreach ( $options as $option ) {
 	$snapshot[ $option ] = get_option( $option, $absent );
@@ -45,12 +42,6 @@ $one_time->set_name( 'SK Checkout One-time' );
 $one_time->set_status( 'publish' );
 $one_time->set_regular_price( '5' );
 $one_time->save();
-$legacy = new WC_Product_Simple();
-$legacy->set_name( 'SK Checkout Legacy Recurring' );
-$legacy->set_status( 'publish' );
-$legacy->set_regular_price( '9' );
-$legacy->update_meta_data( \EasySubscription\Product\Subscription_Product::META_ENABLED, 'yes' );
-$legacy->save();
 
 wc_load_cart();
 
@@ -122,13 +113,9 @@ foreach ( $page['cards'] ?? array() as $card ) {
 }
 $check( 'the guest checkout row is still there', isset( $fields['easysubscription_guest_checkout'] ) );
 $check( 'mixed checkout is a switch, on by default', 'checkbox' === ( $fields[ Cart_Validation::OPTION_MIXED ]['type'] ?? '' ) && 'yes' === ( $fields[ Cart_Validation::OPTION_MIXED ]['default'] ?? '' ) );
-$check( 'one-click checkout is a switch, off by default', 'checkbox' === ( $fields[ One_Click_Checkout::OPTION ]['type'] ?? '' ) && 'no' === ( $fields[ One_Click_Checkout::OPTION ]['default'] ?? '' ) );
-$check( 'the button text is a text box under Custom labels, showing the default', 'text' === ( $fields[ Product_Display::OPTION_BUTTON_TEXT ]['type'] ?? '' ) && 'Custom labels' === ( $fields[ Product_Display::OPTION_BUTTON_TEXT ]['card'] ?? '' ) && 'Subscribe' === ( $fields[ Product_Display::OPTION_BUTTON_TEXT ]['placeholder'] ?? '' ) );
 $check( 'no row for multiple subscriptions per cart', ! array_filter( array_keys( $fields ), static fn( $id ): bool => str_contains( (string) $id, 'multiple' ) ) );
 
 delete_option( Cart_Validation::OPTION_MIXED );
-delete_option( One_Click_Checkout::OPTION );
-delete_option( Product_Display::OPTION_BUTTON_TEXT );
 
 echo "\n2. Mixed checkout on (the default): both directions allowed\n";
 WC()->cart->empty_cart();
@@ -184,33 +171,7 @@ $check( 'one-time products on their own check out', ! $mentions( $classic_checko
 
 delete_option( Cart_Validation::OPTION_MIXED );
 
-echo "\n4. One-click checkout\n";
-WC()->cart->empty_cart();
-$off = $classic_add( $subscription->get_id() );
-$check( 'off: adding a subscription stays put', null === $off['redirect'] && array( $subscription->get_id() ) === $in_cart(), $off );
-$check( 'off: WooCommerce keeps its AJAX button for an older subscription product', $legacy->supports( 'ajax_add_to_cart' ) );
-
-$saved = $save( array( One_Click_Checkout::OPTION => 'yes' ) );
-$check( 'the switch saves on', 200 === $saved->get_status() && 'yes' === get_option( One_Click_Checkout::OPTION ) );
-
-WC()->cart->empty_cart();
-$on = $classic_add( $subscription->get_id() );
-$check( 'on: adding a subscription goes straight to checkout', wc_get_checkout_url() === $on['redirect'] && array( $subscription->get_id() ) === $in_cart(), $on );
-$one = $classic_add( $one_time->get_id() );
-$check( 'on: adding a one-time product does not', null === $one['redirect'] && 2 === count( $in_cart() ), $one );
-$check( 'on: an older subscription product loses the AJAX button, so it reaches the redirect', ! $legacy->supports( 'ajax_add_to_cart' ) );
-$check( '  but a one-time product keeps it', $one_time->supports( 'ajax_add_to_cart' ) );
-WC()->cart->empty_cart();
-$legacy_on = $classic_add( $legacy->get_id() );
-$check( 'on: the older subscription product also goes straight to checkout', wc_get_checkout_url() === $legacy_on['redirect'], $legacy_on );
-WC()->cart->empty_cart();
-$classic_add( $subscription->get_id() );
-$repeat = $classic_add( $subscription->get_id() );
-$check( 'on: a refused second subscription is not sent to checkout', null === $repeat['redirect'] && 1 === count( $repeat['errors'] ) && 1 === count( $in_cart() ), $repeat );
-
-delete_option( One_Click_Checkout::OPTION );
-
-echo "\n5. Subscribe button text\n";
+echo "\n4. The subscribe button\n";
 $out_of_stock = wc_get_product( $subscription->get_id() );
 $render_loop  = static function ( WC_Product $item ): string {
 	$GLOBALS['product'] = $item;
@@ -225,22 +186,12 @@ $render_single = static function ( WC_Product $item ): string {
 	return (string) ob_get_clean();
 };
 
-$check( 'default: the product page says Subscribe', 'Subscribe' === $subscription->single_add_to_cart_text() && str_contains( $render_single( $subscription ), '>Subscribe</button>' ) );
-$check( 'default: product lists say Subscribe', 'Subscribe' === $subscription->add_to_cart_text() && str_contains( $render_loop( $subscription ), '>Subscribe</a>' ) );
+$check( 'the product page says Subscribe', 'Subscribe' === $subscription->single_add_to_cart_text() && str_contains( $render_single( $subscription ), '>Subscribe</button>' ) );
+$check( 'product lists say Subscribe', 'Subscribe' === $subscription->add_to_cart_text() && str_contains( $render_loop( $subscription ), '>Subscribe</a>' ) );
 $check( 'a one-time product keeps Add to cart', 'Add to cart' === $one_time->single_add_to_cart_text() && 'Add to cart' === $one_time->add_to_cart_text() );
-
-$saved = $save( array( Product_Display::OPTION_BUTTON_TEXT => '<b>Join</b> now' ) );
-$check( 'custom text saves, without markup', 200 === $saved->get_status() && 'Join now' === get_option( Product_Display::OPTION_BUTTON_TEXT ), get_option( Product_Display::OPTION_BUTTON_TEXT ) );
-$check( 'custom: the product page uses it', 'Join now' === $subscription->single_add_to_cart_text() && str_contains( $render_single( $subscription ), '>Join now</button>' ) );
-$check( 'custom: product lists use it', 'Join now' === $subscription->add_to_cart_text() && str_contains( $render_loop( $subscription ), '>Join now</a>' ) );
-$check( 'custom: an older subscription product uses it too', 'Join now' === $legacy->add_to_cart_text() );
-$check( 'a one-time product is untouched', 'Add to cart' === $one_time->add_to_cart_text() );
 
 $out_of_stock->set_stock_status( 'outofstock' );
 $check( 'an out-of-stock subscription still says Read more in lists', 'Read more' === $out_of_stock->add_to_cart_text() );
-
-$saved = $save( array( Product_Display::OPTION_BUTTON_TEXT => '   ' ) );
-$check( 'empty text falls back to Subscribe', 200 === $saved->get_status() && 'Subscribe' === $subscription->single_add_to_cart_text() && 'Subscribe' === $subscription->add_to_cart_text() );
 
 WC()->cart->empty_cart();
 wc_clear_notices();
@@ -248,7 +199,6 @@ unset( $GLOBALS['product'] );
 remove_filter( 'wp_redirect', $stop_at_redirect, 1 );
 remove_filter( 'woocommerce_store_api_disable_nonce_check', '__return_true' );
 $one_time->delete( true );
-$legacy->delete( true );
 foreach ( $snapshot as $option => $value ) {
 	$absent === $value ? delete_option( $option ) : update_option( $option, $value );
 }

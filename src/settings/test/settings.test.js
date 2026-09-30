@@ -5,6 +5,7 @@
 import { act } from 'react';
 import { createRoot, useState } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
+import { registerEmailEditor } from '../extend';
 
 jest.mock( '@wordpress/api-fetch' );
 
@@ -143,12 +144,15 @@ PAGES.notifications = {
 			anchor: 'notifications',
 			rows: [
 				field(
-					'woocommerce_easysubscription_trial_ending_settings[enabled]',
+					'woocommerce_easysubscription_renewal_reminder_settings[enabled]',
 					'checkbox',
 					'yes',
 					{
-						title: 'Trial ending reminder',
-						easysubscription_email: 'easysubscription_trial_ending',
+						title: 'Renewal reminder',
+						easysubscription_email:
+							'easysubscription_renewal_reminder',
+						preview_url:
+							'/wp-admin/?preview_woocommerce_mail=true&type=Reminder',
 					}
 				),
 				field( 'plain_switch', 'checkbox', 'yes' ),
@@ -157,74 +161,10 @@ PAGES.notifications = {
 	],
 };
 
-const EMAIL = {
-	id: 'easysubscription_trial_ending',
-	title: 'Trial ending',
-	description: 'Sent before a free trial ends.',
-	recipient: 'customer',
-	woo_url:
-		'admin.php?page=wc-settings&tab=email&section=easysubscription_trial_ending',
-	preview_url: '/wp-admin/?preview_woocommerce_mail=true&type=Trial',
-	fields: [
-		{
-			key: 'enabled',
-			type: 'checkbox',
-			title: 'Enable/Disable',
-			label: 'Enable this email notification',
-			help: '',
-			placeholder: '',
-			options: [],
-			value: 'yes',
-		},
-		{
-			key: 'subject',
-			type: 'text',
-			title: 'Subject',
-			label: '',
-			help: 'Available placeholders: <code>{site_title}</code>',
-			placeholder: 'Your free trial ends soon',
-			options: [],
-			value: '',
-		},
-		{
-			key: 'email_type',
-			type: 'select',
-			title: 'Email type',
-			label: '',
-			help: '',
-			placeholder: '',
-			options: [
-				{ value: 'html', label: 'HTML' },
-				{ value: 'plain', label: 'Plain text' },
-			],
-			value: 'html',
-		},
-	],
-};
-
 let saveReply;
 
 function respond() {
 	apiFetch.mockImplementation( ( options ) => {
-		if (
-			options.path.startsWith( '/easysubscription/v1/settings/emails/' )
-		) {
-			return options.method === 'POST'
-				? Promise.resolve( {
-						...EMAIL,
-						fields: EMAIL.fields.map( ( item ) =>
-							item.key in options.data.values
-								? {
-										...item,
-										value: options.data.values[ item.key ],
-								  }
-								: item
-						),
-						errors: [],
-				  } )
-				: Promise.resolve( EMAIL );
-		}
-
 		if ( options.method === 'POST' ) {
 			return saveReply( options );
 		}
@@ -640,93 +580,97 @@ test( 'a section that cannot load says so', async () => {
 	);
 } );
 
-test( 'an email row opens that email in the app, and comes back', async () => {
-	await render( 'section=notifications' );
+test( 'an email row offers its preview in a new tab, and nothing to edit it with', async () => {
+	await render(
+		'section=notifications&email=easysubscription_renewal_reminder'
+	);
 
+	const preview = Array.from( container.querySelectorAll( 'a' ) ).find(
+		( a ) => a.textContent.startsWith( 'Preview' )
+	);
+
+	expect( preview.getAttribute( 'href' ) ).toBe(
+		'/wp-admin/?preview_woocommerce_mail=true&type=Reminder'
+	);
+	expect( preview.getAttribute( 'target' ) ).toBe( '_blank' );
+	expect( preview.getAttribute( 'rel' ) ).toBe( 'noopener noreferrer' );
+	expect( preview.textContent ).toBe(
+		'Preview Renewal reminder (opens in a new tab)'
+	);
 	expect(
 		el( '#plain_switch' ).closest( '.easysubscription-settings__row' )
 			.textContent
-	).not.toContain( 'Edit' );
-
-	const edit = el( 'button[aria-label="Edit Trial ending reminder"]' );
-
-	await click( edit );
-
-	expect( setParams ).toHaveBeenLastCalledWith( {
-		section: 'notifications',
-		email: 'easysubscription_trial_ending',
-	} );
-	expect( el( 'h2' ).textContent ).toBe( 'Trial ending' );
-	expect( el( '#easysubscription-email-subject' ).placeholder ).toBe(
-		'Your free trial ends soon'
-	);
-	expect( el( '#easysubscription-email-subject-help' ).innerHTML ).toContain(
-		'<code>{site_title}</code>'
-	);
-	expect( el( '#easysubscription-email-enabled' ) ).toBeNull();
-	expect(
-		Array.from( container.querySelectorAll( 'a' ) )
-			.find( ( a ) => a.textContent === 'Open in WooCommerce' )
-			.getAttribute( 'href' )
-	).toBe( EMAIL.woo_url );
-	expect( el( 'iframe' ).getAttribute( 'src' ) ).toBe( EMAIL.preview_url );
-
-	await click(
-		Array.from( container.querySelectorAll( 'button' ) ).find(
-			( b ) => b.textContent === '← Back to notifications'
-		)
-	);
-
-	expect( setParams ).toHaveBeenLastCalledWith( {
-		section: 'notifications',
-	} );
+	).not.toContain( 'Preview' );
+	expect( container.textContent ).not.toContain( 'Edit' );
+	// Without an editor, an email in the address is ignored and the list is drawn.
 	expect( el( '#plain_switch' ) ).not.toBeNull();
 } );
 
-test( 'an email is saved through its own route, with only what changed', async () => {
-	await render( 'section=notifications&email=easysubscription_trial_ending' );
-
-	expect( el( 'button[type="submit"]' ).disabled ).toBe( true );
-
-	await type(
-		el( '#easysubscription-email-subject' ),
-		'Trial ends {site_title}'
-	);
-	await save();
-
-	const posts = apiFetch.mock.calls.filter(
-		( [ options ] ) => options.method === 'POST'
-	);
-
-	expect( posts ).toHaveLength( 1 );
-	expect( posts[ 0 ][ 0 ].path ).toBe(
-		'/easysubscription/v1/settings/emails/easysubscription_trial_ending'
-	);
-	expect( posts[ 0 ][ 0 ].data ).toEqual( {
-		values: { subject: 'Trial ends {site_title}' },
+describe( 'with an email editor registered', () => {
+	beforeEach( () => {
+		registerEmailEditor( ( { id, onBack, onDirty } ) => (
+			<div>
+				<p id="editing">{ id }</p>
+				<button type="button" onClick={ () => onDirty( true ) }>
+					Dirty
+				</button>
+				<button type="button" onClick={ onBack }>
+					Back
+				</button>
+			</div>
+		) );
 	} );
-	expect( el( '[role="status"]' ).textContent ).toBe( 'Email saved.' );
-	expect( el( '#easysubscription-email-subject' ).value ).toBe(
-		'Trial ends {site_title}'
-	);
-	expect( el( 'button[type="submit"]' ).disabled ).toBe( true );
-} );
 
-test( 'leaving an email with unsaved edits asks first', async () => {
-	await render( 'section=notifications&email=easysubscription_trial_ending' );
-	await type( el( '#easysubscription-email-subject' ), 'Draft' );
+	afterEach( () => registerEmailEditor( null ) );
 
-	const confirm = jest.spyOn( window, 'confirm' ).mockReturnValue( false );
+	function button( text ) {
+		return Array.from( container.querySelectorAll( 'button' ) ).find(
+			( b ) => b.textContent === text
+		);
+	}
 
-	await click(
-		Array.from( container.querySelectorAll( 'button' ) ).find(
-			( b ) => b.textContent === '← Back to notifications'
-		)
-	);
-	await click( link( 'General' ) );
+	test( 'an email row opens that email in the editor, and comes back', async () => {
+		await render( 'section=notifications' );
 
-	expect( confirm ).toHaveBeenCalledTimes( 2 );
-	expect( el( '#easysubscription-email-subject' ).value ).toBe( 'Draft' );
+		expect(
+			el( '#plain_switch' ).closest( '.easysubscription-settings__row' )
+				.textContent
+		).not.toContain( 'Edit' );
 
-	confirm.mockRestore();
+		await click( el( 'button[aria-label="Edit Renewal reminder"]' ) );
+
+		expect( setParams ).toHaveBeenLastCalledWith( {
+			section: 'notifications',
+			email: 'easysubscription_renewal_reminder',
+		} );
+		expect( el( '#editing' ).textContent ).toBe(
+			'easysubscription_renewal_reminder'
+		);
+
+		await click( button( 'Back' ) );
+
+		expect( setParams ).toHaveBeenLastCalledWith( {
+			section: 'notifications',
+		} );
+		expect( el( '#plain_switch' ) ).not.toBeNull();
+	} );
+
+	test( 'leaving an editor with unsaved edits asks first', async () => {
+		await render(
+			'section=notifications&email=easysubscription_renewal_reminder'
+		);
+		await click( button( 'Dirty' ) );
+
+		const confirm = jest
+			.spyOn( window, 'confirm' )
+			.mockReturnValue( false );
+
+		await click( button( 'Back' ) );
+		await click( link( 'General' ) );
+
+		expect( confirm ).toHaveBeenCalledTimes( 2 );
+		expect( el( '#editing' ) ).not.toBeNull();
+
+		confirm.mockRestore();
+	} );
 } );

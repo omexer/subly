@@ -127,8 +127,15 @@ class Page_Shell {
 			'home'     => admin_url( 'admin.php?page=' . Menu::SLUG ),
 			'help'     => admin_url( 'admin.php?page=' . Help_Page::SLUG ),
 			'settings' => admin_url( 'admin.php?page=' . Settings_Page::SLUG ),
-			'upgrade'  => did_action( 'easysubscription_pro_loaded' ) ? '' : self::UPGRADE_URL,
+			'upgrade'  => self::offers_upgrade() ? self::UPGRADE_URL : '',
 		);
+	}
+
+	/**
+	 * Off for now: the easysubscription_show_upgrade filter brings the header button back.
+	 */
+	private static function offers_upgrade(): bool {
+		return ! did_action( 'easysubscription_pro_loaded' ) && (bool) apply_filters( 'easysubscription_show_upgrade', false );
 	}
 
 	private static function icon( string $paths ): string {

@@ -128,6 +128,27 @@ export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 				) : null }
 			</div>
 			<div className="easysubscription-settings__control">
+				{ field.preview_url ? (
+					<a
+						className="easysubscription-btn easysubscription-btn--sm"
+						href={ field.preview_url }
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{ __( 'Preview', 'easysubscription' ) }
+						<span className="screen-reader-text">
+							{ ' ' }
+							{ sprintf(
+								/* translators: %s: the email's name, such as "Renewal reminder" */
+								__(
+									'%s (opens in a new tab)',
+									'easysubscription'
+								),
+								field.title
+							) }
+						</span>
+					</a>
+				) : null }
 				{ field.easysubscription_email && onEdit ? (
 					<button
 						type="button"
