@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.28.1
+Stable tag: 0.29.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -152,6 +152,13 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.29.0 =
+* Email Notifications (renamed from Notifications): turn each email on or off, and preview it as your customers will see it.
+* Cart & Checkout keeps guest checkout and mixed checkout.
+* Payments: PayPal. Stripe, one-click checkout, custom button labels, the trial ending and expiring soon reminders, in-app email editing and API access are part of EasySubscription Pro.
+* The product's Shipping settings appear only when an add-on uses them; WooCommerce's own Virtual option decides whether a subscription ships.
+* Tested with WordPress 7.1.
 
 = 0.28.1 =
 * The notification bell sits beside Help and Settings with its count as a small pill next to it, instead of a badge that covered the bell.
