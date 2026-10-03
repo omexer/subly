@@ -107,6 +107,20 @@ class ES_FCRM_Taxonomy {
 	}
 }
 
+// FluentCRM hands every API out through FCApi, a final class with nothing but __call.
+final class ES_FCRM_Api {
+
+	public function __construct( private object $instance ) {}
+
+	public function __call( $method, $params ) {
+		try {
+			return call_user_func_array( array( $this->instance, $method ), $params );
+		} catch ( \Exception $e ) {
+			return null;
+		}
+	}
+}
+
 function FluentCrmApi( $key ) {
-	return 'contacts' === $key ? new ES_FCRM_Contacts() : new ES_FCRM_Taxonomy( $key );
+	return new ES_FCRM_Api( 'contacts' === $key ? new ES_FCRM_Contacts() : new ES_FCRM_Taxonomy( $key ) );
 }

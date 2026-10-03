@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.30.1
+Stable tag: 0.30.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -153,6 +153,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.30.2 =
+* **Fix:** with the real FluentCRM plugin, no contact was created or tagged when a subscription started.
 
 = 0.30.1 =
 * **Fix:** FluentCRM tags and lists did not appear on subscription products, and were not applied, with the real FluentCRM plugin active.

@@ -188,7 +188,7 @@ class FluentCRM implements Integration {
 		$product->update_meta_data( self::PRODUCT_LISTS, Integrations::posted_ids( self::PRODUCT_LISTS ) );
 	}
 
-	/** FluentCrmApi( 'contacts' )->createOrUpdate( array $data ) returns a Subscriber model. */
+	/** FluentCrmApi( 'contacts' )->createOrUpdate( array $data ) returns a Subscriber model, or false for an invalid email. */
 	protected function contact( Subscription $subscription ): ?object {
 		$email = $subscription->get_billing_email();
 
@@ -198,7 +198,8 @@ class FluentCRM implements Integration {
 
 		$api = FluentCrmApi( 'contacts' );
 
-		if ( ! is_object( $api ) || ! method_exists( $api, 'createOrUpdate' ) ) {
+		// FluentCRM's FCApi wrapper only has __call, so method_exists() is always false on it.
+		if ( ! is_object( $api ) || ! is_callable( array( $api, 'createOrUpdate' ) ) ) {
 			do_action( 'easysubscription_integration_unsupported', $this->slug(), 'createOrUpdate' );
 			return null;
 		}
