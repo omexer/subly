@@ -38,6 +38,8 @@ use EasySubscription\Gateways\PayPal\PayPal_Client;
 use EasySubscription\Gateways\PayPal\PayPal_Plans;
 use EasySubscription\Gateways\PayPal\PayPal_Gateway;
 use EasySubscription\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
+use EasySubscription\Integrations\FluentCRM;
+use EasySubscription\Integrations\Integrations;
 use EasySubscription\Product\Product_Meta_Fields;
 use EasySubscription\Product\Product_Types;
 use EasySubscription\Admin\App_Host;
@@ -302,6 +304,12 @@ final class Plugin {
 
 		$this->services['integration_installer'] = new Integration_Installer();
 		$this->services['integration_installer']->register();
+
+		// Registered once extensions booting on easysubscription_loaded have added theirs.
+		$this->services['integrations'] = new Integrations();
+		add_action( 'easysubscription_loaded', array( $this->services['integrations'], 'register' ), 100, 0 );
+
+		add_filter( 'easysubscription_admin_integrations', array( FluentCRM::class, 'describe' ) );
 
 		/**
 		 * Fires once EasySubscription Free is loaded and its public API is available.

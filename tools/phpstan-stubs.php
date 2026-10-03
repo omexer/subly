@@ -79,3 +79,11 @@ class ActionScheduler_Store {
 	 */
 	public function query_actions( $query = array(), $query_type = 'select' ) {}
 }
+
+/**
+ * FluentCRM's API accessor, not installed here; every call is behind function_exists().
+ *
+ * @param string $key
+ * @return mixed
+ */
+function FluentCrmApi( $key ) {}

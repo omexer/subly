@@ -9,7 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * What EasySubscription can connect to, and whether each connection is live.
  *
- * The free plugin ships no integrations of its own. This screen exists so a merchant can
+ * FluentCRM is built in and extensions add the rest. This screen exists so a merchant can
  * see what is possible and what is missing, rather than discovering that an integration
  * silently did nothing because its plugin was never installed.
  */

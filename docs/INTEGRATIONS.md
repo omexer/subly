@@ -3,7 +3,7 @@
 An integration hands a subscription to the plugin that grants what the customer is paying
 for — a course, a mailing list, a licence key — and takes it back when they stop paying.
 
-All of them are **EasySubscription Pro** — thirteen as of Pro 0.39.1. Find them under **EasySubscription → Integrations**: a card for each,
+FluentCRM is part of EasySubscription itself; the other twelve are **EasySubscription Pro**. Find them under **EasySubscription → Integrations**: a card for each,
 grouped by what it connects to, saying what it does, which plugin it needs, whether that
 plugin is active right now, and — for plugins on WordPress.org — an Install button.
 
@@ -29,7 +29,7 @@ because nothing was lost.
 **On a variable product, configure the parent.** Variations use the parent product's
 integration settings (Pro 0.39.0; before that they were silently skipped). A once-only
 background job granted the missing access to live variable subscriptions. LearnDash, Tutor
-LMS, LearnPress, MailPoet, FluentCRM and WP Fusion do not record what EasySubscription added, so when
+LMS, LearnPress, MailPoet and WP Fusion do not record what EasySubscription added, so when
 such a subscription ends they remove everything the product configures — including access you
 may have granted by hand.
 
@@ -93,8 +93,13 @@ install button.
 
 **Configure:** lists and tags on the subscription product. Either, or both.
 
+Included in EasySubscription; it does not need Pro.
+
 **Active subscription** → the contact gains those lists and tags.
-**Subscription ends** → they are removed, unless another live subscription still grants them.
+**Subscription ends** → the ones EasySubscription added are removed, unless another live
+subscription still grants them. Tags and lists the contact already had stay. Subscriptions
+created before EasySubscription started recording this (when FluentCRM moved into the free
+plugin) remove everything their product configures, as before.
 
 ### WP Fusion
 

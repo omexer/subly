@@ -29,7 +29,9 @@ $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LI
 $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( '_transient_timeout_easysubscription_' ) . '%' ) );
 // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
-delete_metadata( 'user', 0, 'easysubscription_dismissed_notices', '', true );
+foreach ( array( 'easysubscription_dismissed_notices', '_easysubscription_fluentcrm_added_tags', '_easysubscription_fluentcrm_added_lists' ) as $easysubscription_user_meta ) {
+	delete_metadata( 'user', 0, $easysubscription_user_meta, '', true );
+}
 
 if ( function_exists( 'as_unschedule_all_actions' ) ) {
 	foreach ( array( 'easysubscription_scheduled_renewal', 'easysubscription_renewal_reminder', 'easysubscription_reactivated_email', 'easysubscription_sweep_overdue', 'easysubscription_settle_paid_renewal', 'easysubscription_resolve_pending_renewal', 'easysubscription_daily_snapshot', 'easysubscription_paypal_process_webhook' ) as $easysubscription_action ) {
