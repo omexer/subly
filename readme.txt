@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.29.0
+Stable tag: 0.30.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -153,6 +153,9 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.30.0 =
+* **FluentCRM integration.** Choose FluentCRM tags and lists on each subscription product: they are added when the subscription starts and removed when it ends, after any grace period. Tags a customer already had are never removed.
 
 = 0.29.0 =
 * Email Notifications (renamed from Notifications): turn each email on or off, and preview it as your customers will see it.
