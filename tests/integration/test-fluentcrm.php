@@ -43,6 +43,8 @@ $page = static function (): string {
 };
 
 echo "\n1. Registration ({$label})\n";
+$boot_registry = \EasySubscription\Plugin::instance()->get( 'integrations' );
+$check( 'the engine picks integrations after plugins loading later than it have booted (FluentCRM boots on plugins_loaded 10)', 20 === has_action( 'plugins_loaded', array( $boot_registry, 'register' ) ) && false === has_action( 'easysubscription_loaded', array( $boot_registry, 'register' ) ) );
 $slugs = array_map( static fn( $i ) => $i->slug(), Integrations::integrations() );
 $check( "{$label}, FluentCRM is registered exactly once", 1 === count( array_keys( $slugs, 'fluentcrm', true ) ), $slugs );
 $check( 'without FluentCRM active it is not available', ! in_array( 'fluentcrm', Integrations::available(), true ) );

@@ -305,9 +305,9 @@ final class Plugin {
 		$this->services['integration_installer'] = new Integration_Installer();
 		$this->services['integration_installer']->register();
 
-		// Registered once extensions booting on easysubscription_loaded have added theirs.
+		// After every plugin's default plugins_loaded boot: FluentCRM only defines FluentCrmApi() there.
 		$this->services['integrations'] = new Integrations();
-		add_action( 'easysubscription_loaded', array( $this->services['integrations'], 'register' ), 100, 0 );
+		add_action( 'plugins_loaded', array( $this->services['integrations'], 'register' ), 20, 0 );
 
 		add_filter( 'easysubscription_admin_integrations', array( FluentCRM::class, 'describe' ) );
 

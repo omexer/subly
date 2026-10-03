@@ -3,7 +3,7 @@
  * Plugin Name: EasySubscription – Subscriptions for WooCommerce
  * Plugin URI:  https://github.com/pronob1010/easysubscription
  * Description: Turn any WooCommerce product into a subscription and let it bill itself.
- * Version:     0.30.0
+ * Version:     0.30.1
  * Author:      Omexer
  * Author URI:  https://omexer.com
  * Text Domain: easysubscription
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'EASYSUBSCRIPTION_VERSION', '0.30.0' );
+define( 'EASYSUBSCRIPTION_VERSION', '0.30.1' );
 define( 'EASYSUBSCRIPTION_FILE', __FILE__ );
 define( 'EASYSUBSCRIPTION_PATH', plugin_dir_path( __FILE__ ) );
 define( 'EASYSUBSCRIPTION_URL', plugin_dir_url( __FILE__ ) );
