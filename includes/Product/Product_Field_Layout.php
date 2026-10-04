@@ -22,7 +22,7 @@ final class Product_Field_Layout {
 	 */
 	public static function section( string $id, string $title, string $action, $product, string $wrapper_class = '', bool $collapsed = false ): void {
 		ob_start();
-		do_action( $action, $product );
+		do_action( $action, $product ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.DynamicHooknameFound -- callers pass easysubscription_ hooks.
 		$rows = (string) ob_get_clean();
 
 		if ( '' === trim( $rows ) ) {

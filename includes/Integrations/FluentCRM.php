@@ -65,7 +65,7 @@ class FluentCRM implements Integration {
 			'active'      => $integration->is_available(),
 			'category'    => __( 'Email and CRM', 'easysubscription' ),
 			'description' => __( 'Gives the contact your chosen lists and tags while the subscription is live.', 'easysubscription' ),
-			'icon'        => 'https://ps.w.org/fluent-crm/assets/icon-256x256.png',
+			'icon'        => '',
 			'hint'        => __( 'Set per product in the subscription product\'s settings.', 'easysubscription' ),
 		);
 

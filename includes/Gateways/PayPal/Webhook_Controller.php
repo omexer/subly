@@ -223,8 +223,10 @@ class Webhook_Controller {
 				'limit'      => 1,
 				'return'     => 'ids',
 				'status'     => 'any',
+				// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- a gateway reference can only be found by its meta.
 				'meta_key'   => self::META_TXN_ID,
 				'meta_value' => $txn_id,
+				// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 

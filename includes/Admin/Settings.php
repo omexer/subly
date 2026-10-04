@@ -43,7 +43,7 @@ class Settings extends \WC_Settings_Page {
 
 		// Core applies this in the method we are overriding; without it an extension can
 		// add settings but has no tab to put them on.
-		return (array) apply_filters( 'woocommerce_get_sections_' . $this->id, $sections );
+		return (array) apply_filters( 'woocommerce_get_sections_' . $this->id, $sections ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce's own settings hook.
 	}
 
 	public function get_settings_for_default_section(): array {

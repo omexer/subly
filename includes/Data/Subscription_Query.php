@@ -90,8 +90,10 @@ class Subscription_Query {
 			array(
 				'limit'      => 1,
 				'status'     => null,
+				// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- a stored gateway reference can only be found by its meta.
 				'meta_key'   => $meta_key,
 				'meta_value' => $meta_value,
+				// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 

@@ -122,7 +122,7 @@ class Settings_Page {
 
 		// After the whole stack is written: a section's checks may read another's settings.
 		foreach ( array_filter( $saved, static fn( string $id ): bool => '' !== $id ) as $id ) {
-			do_action( 'woocommerce_update_options_easysubscription_' . $id );
+			do_action( 'woocommerce_update_options_easysubscription_' . $id ); // phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- WooCommerce's own settings hook.
 		}
 
 		return (bool) $saved;

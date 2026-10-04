@@ -46,8 +46,10 @@ class Cleanup {
 			return;
 		}
 
+		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- our own tables, never cached.
 		$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $order_id ), array( '%d' ) );
 		$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $order_id ), array( '%d' ) );
+		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 
 	/**
@@ -80,6 +82,7 @@ class Cleanup {
 					continue;
 				}
 
+				// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- our own table, never cached.
 				$removed += (int) $wpdb->delete( $wpdb->prefix . $table, array( 'subscription_id' => (int) $id ), array( '%d' ) );
 			}
 		}

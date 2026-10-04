@@ -175,8 +175,10 @@ class Status_Presenter {
 				'orderby'    => 'date',
 				'order'      => 'DESC',
 				'status'     => array( 'pending', 'failed', 'on-hold' ),
+				// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- renewal orders are linked to their subscription by meta.
 				'meta_key'   => '_easysubscription_subscription_id',
 				'meta_value' => $subscription->get_id(),
+				// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 

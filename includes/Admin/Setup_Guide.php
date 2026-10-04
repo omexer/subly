@@ -252,8 +252,10 @@ class Setup_Guide {
 		foreach ( wc_get_orders(
 			array(
 				'limit'      => -1,
+				// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- renewal orders are linked to their subscription by meta.
 				'meta_key'   => '_easysubscription_subscription_id',
 				'meta_value' => $id,
+				// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		) as $order ) {
 			$order->delete( true );
@@ -305,8 +307,10 @@ class Setup_Guide {
 			array(
 				'limit'      => 1,
 				'status'     => 'publish',
+				// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value -- limit 1, once while setting up.
 				'meta_key'   => Subscription_Product::META_ENABLED,
 				'meta_value' => 'yes',
+				// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key, WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 			)
 		);
 
