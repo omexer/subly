@@ -118,16 +118,21 @@ $note = static function ( string $who, string $html ) use ( &$runs ): callable {
 	};
 };
 
-// Named like ours, which is how the callbacks used to be sorted.
-function easysubscription_harness_tip(): void {
-	echo '<div class="notice notice-info"><p>EasySubscription Pro is in test licence mode.</p></div>';
-}
+// Test code runs through eval(), so it reads as another plugin's; our own callback comes from a file in the plugin.
+require_once __DIR__ . '/stand-ins/notice-tip.php';
 
-add_action( 'admin_notices', $note( 'other', '<div class="notice notice-warning"><p>Milo Subscriptions: Staging Site Detected</p></div><div class="updated"><p>A second one.</p></div>' ) );
+// Another plugin's callbacks live outside our plugin folders; a temp file stands in for one.
+$foreign_file = trailingslashit( get_temp_dir() ) . 'es-foreign-notices-' . wp_generate_password( 8, false ) . '.php';
+file_put_contents( $foreign_file, '<?php function easysubscription_test_foreign_note( $who, $html ) { return static function () use ( $who, $html ) { $GLOBALS["es_test_runs"][] = $who; echo $html; }; }' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+require $foreign_file;
+unlink( $foreign_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+$GLOBALS['es_test_runs'] = &$runs;
+
+add_action( 'admin_notices', easysubscription_test_foreign_note( 'other', '<div class="notice notice-warning"><p>Milo Subscriptions: Staging Site Detected</p></div><div class="updated"><p>A second one.</p></div>' ) );
 add_action( 'admin_notices', 'easysubscription_harness_tip', 5 );
 add_action( 'admin_notices', array( $plugin->get( 'gateway_notice' ), 'render' ), 20 );
 add_action( 'admin_notices', $note( 'silent', '  ' ) );
-add_action( 'all_admin_notices', $note( 'core', '<div class="notice notice-error"><p>WordPress core says hello.</p></div>' ) );
+add_action( 'all_admin_notices', easysubscription_test_foreign_note( 'core', '<div class="notice notice-error"><p>WordPress core says hello.</p></div>' ) );
 
 $notices = new Notices();
 $notices->register();
@@ -140,10 +145,11 @@ $check( 'elsewhere in the admin, nothing is taken off the notice hooks', false !
 
 set_current_screen( 'toplevel_page_easysubscription' );
 $notices->collect();
-$check( 'on ours, every callback is taken off, ours included', false === has_action( 'admin_notices', 'easysubscription_harness_tip' ) && false === has_action( 'admin_notices', array( $plugin->get( 'gateway_notice' ), 'render' ) ) );
+$check( 'on ours, our own callbacks are taken off', false === has_action( 'admin_notices', 'easysubscription_harness_tip' ) && false === has_action( 'admin_notices', array( $plugin->get( 'gateway_notice' ), 'render' ) ) );
 
 $top = $printed( static fn() => do_action( 'admin_notices' ) ) . $printed( static fn() => do_action( 'all_admin_notices' ) );
-$check( 'nothing is printed at the top of the page', '' === trim( $top ), $top );
+$check( 'they print where WordPress puts them, untouched', str_contains( $top, '<div class="notice notice-warning"><p>Milo Subscriptions: Staging Site Detected</p></div><div class="updated"><p>A second one.</p></div>' ) && str_contains( $top, 'WordPress core says hello.' ), $top );
+$check( 'and none of ours is printed there', ! str_contains( $top, 'test licence mode' ) && ! str_contains( $top, 'PayPal renewals' ), $top );
 $check( 'each callback ran once, in its order', array( 'other', 'silent', 'core' ) === $runs, $runs );
 
 $shell = $printed(
@@ -157,8 +163,8 @@ $header = $header[1] ?? '';
 $after  = (string) strstr( $shell, '<hr class="wp-header-end">' );
 
 $check( 'the header has the bell, before Help', str_contains( $header, '<details class="easysubscription-notify"' ) && strpos( $header, 'easysubscription-notify' ) < strpos( $header, Page_Shell::header_links()['help'] ), $header );
-$check( 'counting every notice put in it', str_contains( $header, 'aria-label="4 notifications"' ) && str_contains( $header, '<span class="easysubscription-notify__count" aria-hidden="true">4</span>' ), $header );
-$check( 'which holds other plugins\', WordPress\'s and our own tip', str_contains( $header, 'Milo Subscriptions' ) && str_contains( $header, 'A second one.' ) && str_contains( $header, 'WordPress core says hello.' ) && str_contains( $header, 'test licence mode' ) );
+$check( 'counting the notices put in it', str_contains( $header, 'aria-label="1 notification"' ) && str_contains( $header, '<span class="easysubscription-notify__count" aria-hidden="true">1</span>' ), $header );
+$check( 'which holds our own tip, and nothing of another plugin\'s or WordPress\'s', str_contains( $header, 'test licence mode' ) && ! str_contains( $header, 'Milo Subscriptions' ) && ! str_contains( $header, 'WordPress core says hello.' ), $header );
 $check( 'but not the important one', ! str_contains( $header, 'PayPal renewals' ) );
 $check( 'which stays in view, under the page heading', $marked( $after ) && str_contains( $after, 'PayPal renewals will not be recorded.' ) && 1 === substr_count( $shell, 'PayPal renewals will not be recorded.' ), $after );
 

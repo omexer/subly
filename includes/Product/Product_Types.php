@@ -32,7 +32,8 @@ class Product_Types {
 
 		// Price, tax and inventory are hidden for any type WooCommerce does not know.
 		add_filter( 'woocommerce_product_data_tabs', array( $this, 'show_standard_tabs' ) );
-		add_action( 'admin_footer', array( $this, 'show_standard_fields' ) );
+		// Priority 20: after WooCommerce enqueues the product script whose type-change handler this triggers.
+		add_action( 'admin_enqueue_scripts', array( $this, 'show_standard_fields' ), 20 );
 
 		add_filter( 'woocommerce_product_supports', array( $this, 'supports' ), 10, 3 );
 
@@ -196,23 +197,21 @@ class Product_Types {
 	public function show_standard_fields(): void {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 
-		if ( ! $screen || 'product' !== $screen->id ) {
+		if ( ! $screen || 'product' !== $screen->id || ! wp_script_is( 'wc-admin-product-meta-boxes', 'enqueued' ) ) {
 			return;
 		}
-		?>
-		<script>
-		jQuery( function ( $ ) {
-			var simple = <?php echo wp_json_encode( self::SIMPLE ); ?>,
-				variable = <?php echo wp_json_encode( self::VARIABLE ); ?>;
 
-			$( '.pricing' ).addClass( 'show_if_' + simple );
-			$( '.show_if_simple' ).not( '.easysubscription-product-options' ).addClass( 'show_if_' + simple );
-			$( '.show_if_variable' ).addClass( 'show_if_' + variable );
+		$template = <<<'JS'
+jQuery( function ( $ ) {
+	var simple = %1$s, variable = %2$s;
+	$( '.pricing' ).addClass( 'show_if_' + simple );
+	$( '.show_if_simple' ).not( '.easysubscription-product-options' ).addClass( 'show_if_' + simple );
+	$( '.show_if_variable' ).addClass( 'show_if_' + variable );
+	$( 'body' ).trigger( 'woocommerce-product-type-change', $( '#product-type' ).val() );
+} );
+JS;
 
-			$( 'body' ).trigger( 'woocommerce-product-type-change', $( '#product-type' ).val() );
-		} );
-		</script>
-		<?php
+		wp_add_inline_script( 'wc-admin-product-meta-boxes', sprintf( $template, wp_json_encode( self::SIMPLE ), wp_json_encode( self::VARIABLE ) ) );
 	}
 
 	/**

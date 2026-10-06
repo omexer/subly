@@ -2,6 +2,8 @@
 
 namespace EasySubscription\Product;
 
+use EasySubscription\Admin\Allowed_Html;
+
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
@@ -35,7 +37,7 @@ final class Product_Field_Layout {
 				esc_attr( $id ),
 				esc_attr( $wrapper_class ),
 				esc_html( $title ),
-				$rows // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- rows are escaped by the callbacks that printed them.
+				wp_kses( $rows, Allowed_Html::form() )
 			);
 
 			return;
@@ -50,7 +52,7 @@ final class Product_Field_Layout {
 			esc_attr( $id ),
 			esc_attr( $wrapper_class ),
 			esc_html( $title ),
-			$rows // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- rows are escaped by the callbacks that printed them.
+			wp_kses( $rows, Allowed_Html::form() )
 		);
 	}
 
@@ -124,7 +126,7 @@ final class Product_Field_Layout {
 		echo '</select></span>';
 
 		if ( ! empty( $args['tip'] ) ) {
-			echo wc_help_tip( $args['tip'] ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- wc_help_tip escapes.
+			echo wp_kses( wc_help_tip( $args['tip'] ), Allowed_Html::form() );
 		}
 
 		if ( ! empty( $args['note'] ) ) {

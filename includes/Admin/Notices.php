@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * On our screens, notices marked IMPORTANT stay under the header; every other one moves into the header's notification centre.
+ * On our screens, our own notices move into the header's notification centre, IMPORTANT ones under it; others stay put.
  */
 class Notices {
 
@@ -119,14 +119,13 @@ class Notices {
 				. '<div class="easysubscription-notify__panel" id="easysubscription-other-notices" role="region" aria-label="%s"><p class="easysubscription-notify__head">%s</p><div class="easysubscription-notify__list">',
 			esc_attr( $label ),
 			esc_attr( $label ),
-			self::bell(), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+			wp_kses( self::bell(), Allowed_Html::svg() ),
 			esc_html( number_format_i18n( $notices->count ) ),
 			esc_attr__( 'Notifications', 'easysubscription' ),
 			esc_html__( 'Notifications', 'easysubscription' )
 		);
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- other plugins' notices, printed as WordPress would have printed them.
-		echo $notices->html;
+		echo wp_kses( $notices->html, Allowed_Html::form() );
 
 		echo '</div></div></details>';
 	}
@@ -143,8 +142,7 @@ class Notices {
 
 		$notices->placed = true;
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- our own notices, escaped where they were built.
-		echo $notices->important;
+		echo wp_kses( $notices->important, Allowed_Html::form() );
 	}
 
 	public function render_leftovers(): void {
@@ -156,13 +154,44 @@ class Notices {
 
 		$this->shown = true;
 
-		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- other plugins' notices, printed as WordPress would have printed them.
-		echo '<div class="easysubscription-other-notices">' . $this->html . '</div>';
+		echo '<div class="easysubscription-other-notices">' . wp_kses( $this->html, Allowed_Html::form() ) . '</div>';
 	}
 
 	public static function bell(): string {
 		return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
 			. '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg>';
+	}
+
+	/**
+	 * Whether a notice callback belongs to EasySubscription or an EasySubscription extension.
+	 *
+	 * @param callable $callback
+	 */
+	private static function is_ours( $callback ): bool {
+		try {
+			if ( is_array( $callback ) ) {
+				$reflection = new \ReflectionMethod( $callback[0], (string) $callback[1] );
+			} elseif ( is_string( $callback ) && str_contains( $callback, '::' ) ) {
+				$reflection = new \ReflectionMethod( $callback );
+			} elseif ( $callback instanceof \Closure || is_string( $callback ) ) {
+				$reflection = new \ReflectionFunction( $callback );
+			} else {
+				$reflection = new \ReflectionMethod( $callback, '__invoke' );
+			}
+		} catch ( \ReflectionException $e ) {
+			return false;
+		}
+
+		$class = $reflection instanceof \ReflectionMethod ? $reflection->getDeclaringClass()->getName() : '';
+
+		if ( str_starts_with( $class, 'EasySubscription' ) ) {
+			return true;
+		}
+
+		$file = wp_normalize_path( (string) $reflection->getFileName() );
+
+		// A plugin folder named for us: the free plugin, Pro, and add-ons, however their zip unpacked.
+		return str_starts_with( $file, wp_normalize_path( trailingslashit( WP_PLUGIN_DIR ) ) . 'easysubscription' );
 	}
 
 	private static function is_important( string $html ): bool {
@@ -200,7 +229,7 @@ class Notices {
 
 		foreach ( $wp_filter[ $hook ]->callbacks as $priority => $callbacks ) {
 			foreach ( $callbacks as $callback ) {
-				if ( ! is_callable( $callback['function'] ) ) {
+				if ( ! is_callable( $callback['function'] ) || ! self::is_ours( $callback['function'] ) ) {
 					continue;
 				}
 

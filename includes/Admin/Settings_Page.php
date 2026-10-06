@@ -413,7 +413,7 @@ class Settings_Page {
 				$here ? ' is-current' : '',
 				esc_url( self::section_url( $members[0] ) ),
 				$here && ! $group['list'] ? ' aria-current="page"' : '',
-				$group['icon'], // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- static SVG.
+				wp_kses( $group['icon'], Allowed_Html::svg() ),
 				esc_html( $group['label'] )
 			);
 
@@ -535,7 +535,7 @@ class Settings_Page {
 				if ( null === $row['html'] ) {
 					$this->render_row( $row['field'], $toggles, $row['joined'] );
 				} else {
-					echo '<div class="easysubscription-settings__row easysubscription-settings__row--wide">' . $row['html'] . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where it was built.
+					echo '<div class="easysubscription-settings__row easysubscription-settings__row--wide">' . wp_kses( $row['html'], Allowed_Html::form() ) . '</div>';
 				}
 			}
 
@@ -653,33 +653,33 @@ class Settings_Page {
 
 		switch ( $type ) {
 			case 'checkbox':
-				printf(
+				$html = sprintf(
 					'<span class="easysubscription-switch"><input type="checkbox" role="switch" name="%1$s" id="%1$s" value="1"%2$s%3$s /><span class="easysubscription-switch__track" aria-hidden="true"></span></span>',
 					esc_attr( $id ),
 					checked( $value, 'yes', false ),
-					$aria // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
+					$aria
 				);
 				break;
 
 			case 'select':
-				printf( '<select name="%1$s" id="%1$s" class="easysubscription-input"%2$s>', esc_attr( $id ), $aria ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
+				$html = sprintf( '<select name="%1$s" id="%1$s" class="easysubscription-input"%2$s>', esc_attr( $id ), $aria );
 				foreach ( (array) ( $field['options'] ?? array() ) as $option => $option_label ) {
-					printf(
+					$html .= sprintf(
 						'<option value="%s"%s>%s</option>',
 						esc_attr( (string) $option ),
 						selected( $value, (string) $option, false ),
 						esc_html( (string) $option_label )
 					);
 				}
-				echo '</select>';
+				$html .= '</select>';
 				break;
 
 			case 'textarea':
-				printf(
+				$html = sprintf(
 					'<textarea name="%1$s" id="%1$s" class="easysubscription-input easysubscription-input--wide" rows="4"%2$s%3$s>%4$s</textarea>',
 					esc_attr( $id ),
-					$aria, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
-					$this->attributes( $field ), // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in attributes().
+					$aria,
+					$this->attributes( $field ),
 					esc_textarea( $value )
 				);
 				break;
@@ -689,20 +689,22 @@ class Settings_Page {
 			case 'number':
 			case 'email':
 			case 'url':
-				printf(
+				$html = sprintf(
 					'<input type="%1$s" name="%2$s" id="%2$s" class="easysubscription-input%3$s" value="%4$s"%5$s%6$s />',
 					esc_attr( $type ),
 					esc_attr( $id ),
 					'number' === $type ? ' easysubscription-input--short' : ' easysubscription-input--wide',
 					esc_attr( $value ),
-					$aria, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped where built.
-					$this->attributes( $field ) // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- escaped in attributes().
+					$aria,
+					$this->attributes( $field )
 				);
 				break;
 
 			default:
-				echo $this->woo_markup( $field ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- WooCommerce's own field output.
+				$html = $this->woo_markup( $field );
 		}
+
+		echo wp_kses( $html, Allowed_Html::form() );
 	}
 
 	/**
