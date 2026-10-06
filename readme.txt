@@ -1,10 +1,10 @@
-=== EasySubscription – Subscriptions for WooCommerce ===
-Contributors: pronob1010
+=== Subly – Subscriptions for WooCommerce ===
+Contributors: omexer, amhossain
 Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.30.3
+Stable tag: 0.31.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Sell subscriptions in WooCommerce: recurring billing, free trials, PayPal, and c
 
 == Description ==
 
-EasySubscription turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
+Subly turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
 
 **This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real PayPal account (or any other gateway's sandbox), and no renewal has yet been watched happening on its own over time.
 
@@ -27,9 +27,9 @@ EasySubscription turns WooCommerce products into subscriptions and runs the rene
 
 = Taking payment =
 
-* **PayPal** runs the schedule itself, and EasySubscription keeps in step through PayPal's webhooks.
+* **PayPal** runs the schedule itself, and Subly keeps in step through PayPal's webhooks.
 * With no gateway at all, renewals become invoices the customer pays by hand.
-* Payments that are confirmed days later — Direct Debit and bank payments — wait as pending: the customer keeps access, the renewal order waits on hold so it cannot be paid twice, and EasySubscription never retries or re-charges it. The gateway settles it once the money is confirmed or refused.
+* Payments that are confirmed days later — Direct Debit and bank payments — wait as pending: the customer keeps access, the renewal order waits on hold so it cannot be paid twice, and Subly never retries or re-charges it. The gateway settles it once the money is confirmed or refused.
 * A failed or waiting renewal can be paid from its payment link. Paying it restarts the subscription exactly once, keeps the card it was paid with for later renewals, and is never charged again.
 * A safeguard in the database means a renewal can never be charged twice, even when two processes try at the same moment.
 * A charge whose result never arrived is checked with the gateway, not simply tried again.
@@ -52,11 +52,11 @@ EasySubscription turns WooCommerce products into subscriptions and runs the rene
 * **Health** checks, under Settings: whether the renewal queue is running, charges whose outcome is still unknown, renewals waiting more than 10 days for their payment provider to confirm them, whether the double-charge safeguard is in place, and subscriptions whose renewals add tax twice — listed with a Repair action, since subscriptions sold before 0.19.4 in tax-inclusive stores are never changed silently.
 * Ten emails for the moments that matter — seven to the customer (including a reminder before each renewal) and three to you — each with a preview under Email Notifications on WooCommerce 9.6 and later.
 * Customer roles and downloadable files that follow the subscription.
-* **FluentCRM:** choose tags and lists on each subscription product. The contact has them while the subscription is active or in a free trial and loses them when it stops, and only tags and lists EasySubscription added are ever removed.
+* **FluentCRM:** choose tags and lists on each subscription product. The contact has them while the subscription is active or in a free trial and loses them when it stops, and only tags and lists Subly added are ever removed.
 * Integrations and Help screens, with a system report that never contains your keys.
 * A REST API for subscriptions, open to logged-in store managers.
 
-= EasySubscription Pro =
+= Subly Pro =
 
 A separate plugin adds:
 
@@ -64,7 +64,7 @@ A separate plugin adds:
 * **Keeping customers:** pause and resume, plan switching, upgrade suggestions and "switch instead of cancelling", a retention offer on cancellation, a win-back email campaign, anniversary thank-yous with an optional gift, and members-only content.
 * **Getting paid:** configurable payment retries and a grace period, with a recovery report, card updates from My Account with expiring-card and "update your payment details" emails, recurring coupons and sign-up fee coupons, subscription webhooks, and WhatsApp notifications.
 * **More gateways:** Stripe, Square, Braintree, Authorize.net, Mollie, Xendit, Razorpay (UPI Autopay), GoCardless Direct Debit, Adyen, WooPayments, Paddle, and bKash and SSLCommerz by payment link.
-* **Checkout and emails:** one-click checkout, your own Subscribe button text, trial ending and expiring soon reminders, and editing each email's subject, heading and content inside EasySubscription.
+* **Checkout and emails:** one-click checkout, your own Subscribe button text, trial ending and expiring soon reminders, and editing each email's subject, heading and content inside Subly.
 * **Integrations:** LearnDash, Tutor LMS, LearnPress, MailPoet, WP Fusion, AutomatorWP, AutomateWoo, AffiliateWP recurring referrals, BuddyBoss and BuddyPress groups, License Manager for WooCommerce and WP Software License.
 * Reports, subscription health with a digest email, a live QR status page, and WooCommerce API keys on the subscription API.
 
@@ -73,9 +73,9 @@ None of Pro's gateways has been run against a real sandbox yet either.
 == Installation ==
 
 1. Install and activate WooCommerce 8.0 or newer.
-2. Upload the `easysubscription` folder to `/wp-content/plugins/`, or upload the ZIP from **Plugins → Add New → Upload Plugin**.
-3. Activate EasySubscription.
-4. Open **EasySubscription → Home** and follow the setup checklist: connect a payment method, create a subscription product, and run a test renewal.
+2. Upload the `subly` folder to `/wp-content/plugins/`, or upload the ZIP from **Plugins → Add New → Upload Plugin**.
+3. Activate Subly.
+4. Open **Subly → Home** and follow the setup checklist: connect a payment method, create a subscription product, and run a test renewal.
 
 To turn a product into a subscription yourself, edit it and choose **Subscription** in the **Product data** dropdown.
 
@@ -87,7 +87,7 @@ Not yet. The renewal engine is built and tested against a running WordPress, and
 
 = Which payment methods can renew automatically? =
 
-PayPal, included. EasySubscription Pro adds Stripe, which saves the card at checkout and charges each renewal itself, and Square, Braintree, Authorize.net, Mollie, Xendit and WooPayments renewals against the payment method those plugins saved at checkout, and its own checkouts for Razorpay (UPI Autopay), GoCardless Direct Debit and Adyen; Paddle bills its own schedule, as PayPal does. bKash and SSLCommerz cannot charge a customer again automatically, so Pro emails each renewal as a payment link. Without any of them, each renewal is an invoice the customer pays.
+PayPal, included. Subly Pro adds Stripe, which saves the card at checkout and charges each renewal itself, and Square, Braintree, Authorize.net, Mollie, Xendit and WooPayments renewals against the payment method those plugins saved at checkout, and its own checkouts for Razorpay (UPI Autopay), GoCardless Direct Debit and Adyen; Paddle bills its own schedule, as PayPal does. bKash and SSLCommerz cannot charge a customer again automatically, so Pro emails each renewal as a payment link. Without any of them, each renewal is an invoice the customer pays.
 
 = What happens to a Direct Debit renewal while it clears? =
 
@@ -107,8 +107,8 @@ Yes. Subscriptions are a native WooCommerce order type, stored in the HPOS table
 
 == External services ==
 
-EasySubscription talks to a payment provider only when you have switched that provider on and entered
-its credentials. Nothing is sent anywhere by default, and EasySubscription sends nothing to its own
+Subly talks to a payment provider only when you have switched that provider on and entered
+its credentials. Nothing is sent anywhere by default, and Subly sends nothing to its own
 author or to any analytics service.
 
 = PayPal =
@@ -118,7 +118,7 @@ Used to create and run the billing plan, when PayPal is enabled under
 
 Requests go to `https://api-m.paypal.com`, or to `https://api-m.sandbox.paypal.com` when the
 environment is set to Sandbox. They are made when a subscription product is bought, and
-whenever PayPal notifies the site of a payment so EasySubscription can verify that the notification is
+whenever PayPal notifies the site of a payment so Subly can verify that the notification is
 genuine. What is sent: the product name, the price, currency and billing cycle of the plan
 including any free trial or sign-up fee, the order number, the customer's first name, last
 name and billing email, this site's name and the addresses PayPal returns the customer to,
@@ -136,7 +136,7 @@ does. It happens only when you click Install, and sends only the plugin's slug.
 
 == Source code ==
 
-The JavaScript for EasySubscription's admin screens is bundled, and its unbundled source ships in this
+The JavaScript for Subly's admin screens is bundled, and its unbundled source ships in this
 plugin's `src/` directory alongside the build configuration. To rebuild it:
 
 `npm install`
@@ -154,6 +154,11 @@ included in the plugin.
 
 == Changelog ==
 
+= 0.31.0 =
+* **EasySubscription is now Subly.** New name, slug (`subly`) and prefixes throughout. Settings and data from EasySubscription are not carried over.
+* Admin notices from WordPress and other plugins are no longer moved into the notification bell; only Subly's own are.
+* Markup is escaped where it is printed, and the product-type script is enqueued rather than printed.
+
 = 0.30.3 =
 * **WordPress.org Plugin Check:** the FluentCRM tile no longer loads its icon from another site, and the readme changelog is shorter; the full history is in CHANGELOG.md.
 
@@ -169,7 +174,7 @@ included in the plugin.
 = 0.29.0 =
 * Email Notifications (renamed from Notifications): turn each email on or off, and preview it as your customers will see it.
 * Cart & Checkout keeps guest checkout and mixed checkout.
-* Payments: PayPal. Stripe, one-click checkout, custom button labels, the trial ending and expiring soon reminders, in-app email editing and API access are part of EasySubscription Pro.
+* Payments: PayPal. Stripe, one-click checkout, custom button labels, the trial ending and expiring soon reminders, in-app email editing and API access are part of Subly Pro.
 * The product's Shipping settings appear only when an add-on uses them; WooCommerce's own Virtual option decides whether a subscription ships.
 * Tested with WordPress 7.1.
 
@@ -177,12 +182,12 @@ included in the plugin.
 * The notification bell sits beside Help and Settings with its count as a small pill next to it, instead of a badge that covered the bell.
 
 = 0.28.0 =
-* **SubKit is now EasySubscription in every name:** folder, files, code, settings, database tables, hooks, the API (`easysubscription/v1`) and the repository. It is a new plugin: nothing is carried over from SubKit.
+* **SubKit is now Subly in every name:** folder, files, code, settings, database tables, hooks, the API (`subly/v1`) and the repository. It is a new plugin: nothing is carried over from SubKit.
 * **Quieter admin notices.** Only what needs you now — renewals or money at risk, or the result of something you just did — shows under the header, as compact cards (three at most). Everything else, including other plugins' notices, waits in a bell with a count in the top bar.
 
 = 0.27.0 =
-* **Your logo.** The EasySubscription logo leads every screen, and its icon marks the admin menu.
-* **Notifications.** Every EasySubscription email is listed with one switch — the same switch WooCommerce uses, so both screens always agree — and edited inside EasySubscription: subject, heading, additional content and format, with a preview. The renewal reminder is now set in hours before the renewal (existing stores are converted automatically).
+* **Your logo.** The Subly logo leads every screen, and its icon marks the admin menu.
+* **Notifications.** Every Subly email is listed with one switch — the same switch WooCommerce uses, so both screens always agree — and edited inside Subly: subject, heading, additional content and format, with a preview. The renewal reminder is now set in hours before the renewal (existing stores are converted automatically).
 * **New emails:** a trial ending reminder (3 days before a free trial turns into a paid subscription), an expiring soon reminder for subscriptions with an end date, and a subscription reactivated email.
 * **Cart & Checkout:** choose whether subscriptions and one-time products can be bought together, send customers straight to checkout when they subscribe, and set the Subscribe button text.
 * **API Settings:** let WooCommerce API keys use the subscription API (off by default; a read-only key can only read), with the list of endpoints and a link to create keys. Payment webhooks are unaffected.
@@ -205,4 +210,4 @@ The full history is in CHANGELOG.md, inside the plugin.
 Fixes missed renewals being skipped on stores with more than 50 active subscriptions.
 
 = 0.13.0 =
-EasySubscription now opens on a Home screen, and the subscriptions list moves to EasySubscription → All subscriptions. Old links still work.
+Subly now opens on a Home screen, and the subscriptions list moves to Subly → All subscriptions. Old links still work.

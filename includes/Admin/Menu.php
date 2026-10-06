@@ -1,23 +1,23 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
-use EasySubscription\Billing\Renewal_Processor;
-use EasySubscription\Data\Activity_Repository;
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Frontend\MyAccount\Status_Presenter;
+use Subly\Billing\Renewal_Processor;
+use Subly\Data\Activity_Repository;
+use Subly\Domain\Subscription;
+use Subly\Frontend\MyAccount\Status_Presenter;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * The EasySubscription menu: Home, and the subscriptions list with its detail screen.
+ * The Subly menu: Home, and the subscriptions list with its detail screen.
  */
 class Menu {
 
-	public const SLUG       = 'easysubscription';
-	public const LIST_SLUG  = 'easysubscription-list';
+	public const SLUG       = 'subly';
+	public const LIST_SLUG  = 'subly-list';
 	public const CAPABILITY = 'manage_woocommerce';
 
 	public function __construct(
@@ -28,7 +28,7 @@ class Menu {
 
 	public function register(): void {
 		add_action( 'admin_menu', array( $this, 'add_menu' ), 20 );
-		add_action( 'admin_post_easysubscription_process_renewal', array( $this, 'process_renewal_now' ) );
+		add_action( 'admin_post_subly_process_renewal', array( $this, 'process_renewal_now' ) );
 	}
 
 	/**
@@ -40,7 +40,7 @@ class Menu {
 	 * The brand glyph alone, as a data URI, so WordPress recolours it like its own menu icons.
 	 */
 	private static function menu_icon(): string {
-		$svg = (string) file_get_contents( EASYSUBSCRIPTION_PATH . 'assets/images/menu-icon.svg' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a bundled file.
+		$svg = (string) file_get_contents( SUBLY_PATH . 'assets/images/menu-icon.svg' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- a bundled file.
 
 		return 'data:image/svg+xml;base64,' . base64_encode( trim( $svg ) ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- WordPress reads menu icons this way.
 	}
@@ -48,8 +48,8 @@ class Menu {
 	public function add_menu(): void {
 		// Menu label is the product; the page title stays what the page actually shows.
 		add_menu_page(
-			__( 'EasySubscription', 'easysubscription' ),
-			__( 'EasySubscription', 'easysubscription' ),
+			__( 'Subly', 'subly' ),
+			__( 'Subly', 'subly' ),
 			self::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' ),
@@ -61,8 +61,8 @@ class Menu {
 		// Without this the top-level entry repeats itself as its own first child.
 		add_submenu_page(
 			self::SLUG,
-			__( 'EasySubscription home', 'easysubscription' ),
-			__( 'Home', 'easysubscription' ),
+			__( 'Subly home', 'subly' ),
+			__( 'Home', 'subly' ),
 			self::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
@@ -70,8 +70,8 @@ class Menu {
 
 		add_submenu_page(
 			self::SLUG,
-			__( 'All subscriptions', 'easysubscription' ),
-			__( 'All subscriptions', 'easysubscription' ),
+			__( 'All subscriptions', 'subly' ),
+			__( 'All subscriptions', 'subly' ),
 			self::CAPABILITY,
 			self::LIST_SLUG,
 			array( $this, 'render_list' )
@@ -86,7 +86,7 @@ class Menu {
 	 * list is now, rather than to a home screen that would ignore what they asked for.
 	 */
 	public function redirect_legacy_links(): void {
-		$carry = array( 'subscription', 'status', 's', 'paged', 'orderby', 'order', 'easysubscription_changed', 'easysubscription_asked', 'processed' );
+		$carry = array( 'subscription', 'status', 's', 'paged', 'orderby', 'order', 'subly_changed', 'subly_asked', 'processed' );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- a redirect carrying read-only view state.
 		$args = array_intersect_key( wp_unslash( $_GET ), array_flip( $carry ) );
 
@@ -108,12 +108,12 @@ class Menu {
 	 */
 	public function render(): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'easysubscription' ) );
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subly' ) );
 		}
 
 		App_Host::start( self::SLUG );
 
-		Page_Shell::open( __( 'Home', 'easysubscription' ), '', array(), '', false );
+		Page_Shell::open( __( 'Home', 'subly' ), '', array(), '', false );
 
 		$this->render_test_result();
 		$this->render_product_notice();
@@ -133,7 +133,7 @@ class Menu {
 
 	public function render_list(): void {
 		if ( ! current_user_can( self::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'easysubscription' ) );
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subly' ) );
 		}
 
 		App_Host::start( self::LIST_SLUG );
@@ -153,13 +153,13 @@ class Menu {
 		$table->prepare_items();
 
 		Page_Shell::open(
-			__( 'All subscriptions', 'easysubscription' ),
-			__( 'Everyone who pays you on a schedule.', 'easysubscription' ),
+			__( 'All subscriptions', 'subly' ),
+			__( 'Everyone who pays you on a schedule.', 'subly' ),
 			array(),
 			sprintf(
-				'<a class="easysubscription-btn easysubscription-btn--primary" href="%s">%s</a>',
+				'<a class="subly-btn subly-btn--primary" href="%s">%s</a>',
 				esc_url( admin_url( 'post-new.php?post_type=product' ) ),
-				esc_html__( 'New subscription product', 'easysubscription' )
+				esc_html__( 'New subscription product', 'subly' )
 			)
 		);
 
@@ -167,11 +167,11 @@ class Menu {
 
 		if ( ! $this->setup->has_subscriptions() ) {
 			printf(
-				'<div class="easysubscription-card"><div class="easysubscription-empty"><p class="easysubscription-empty__title">%s</p><p>%s</p><p><a class="easysubscription-btn easysubscription-btn--primary" href="%s">%s</a></p></div></div>',
-				esc_html__( 'No subscriptions yet', 'easysubscription' ),
-				esc_html__( 'They will be listed here the moment someone buys a subscription product.', 'easysubscription' ),
+				'<div class="subly-card"><div class="subly-empty"><p class="subly-empty__title">%s</p><p>%s</p><p><a class="subly-btn subly-btn--primary" href="%s">%s</a></p></div></div>',
+				esc_html__( 'No subscriptions yet', 'subly' ),
+				esc_html__( 'They will be listed here the moment someone buys a subscription product.', 'subly' ),
 				esc_url( admin_url( 'admin.php?page=' . self::SLUG ) ),
-				esc_html__( 'Finish setting up', 'easysubscription' )
+				esc_html__( 'Finish setting up', 'subly' )
 			);
 
 			Page_Shell::close();
@@ -189,7 +189,7 @@ class Menu {
 		}
 		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
-		$table->search_box( __( 'Search subscriptions', 'easysubscription' ), 'easysubscription-search' );
+		$table->search_box( __( 'Search subscriptions', 'subly' ), 'subly-search' );
 		$table->display();
 
 		echo '</form>';
@@ -199,7 +199,7 @@ class Menu {
 
 	private function render_test_result(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-		$result = isset( $_GET['easysubscription_test'] ) ? sanitize_key( wp_unslash( $_GET['easysubscription_test'] ) ) : '';
+		$result = isset( $_GET['subly_test'] ) ? sanitize_key( wp_unslash( $_GET['subly_test'] ) ) : '';
 
 		if ( '' === $result ) {
 			return;
@@ -209,16 +209,16 @@ class Menu {
 			'<div class="%s"><p>%s</p></div>',
 			esc_attr( Notices::feedback( 'pass' === $result ? 'success' : 'error', true ) ),
 			'pass' === $result
-				? esc_html__( 'Test renewal succeeded. A subscription was created, renewed and cleaned up — automatic billing works on this site.', 'easysubscription' )
-				: esc_html__( 'The test renewal did not complete. Check that scheduled tasks are running, then try again.', 'easysubscription' )
+				? esc_html__( 'Test renewal succeeded. A subscription was created, renewed and cleaned up — automatic billing works on this site.', 'subly' )
+				: esc_html__( 'The test renewal did not complete. Check that scheduled tasks are running, then try again.', 'subly' )
 		);
 	}
 
 	private function render_checklist(): void {
 
-		echo '<div class="easysubscription-card"><h2>'
-			. esc_html__( 'Get your first subscription running', 'easysubscription' )
-			. '</h2><ol class="easysubscription-steps">';
+		echo '<div class="subly-card"><h2>'
+			. esc_html__( 'Get your first subscription running', 'subly' )
+			. '</h2><ol class="subly-steps">';
 
 		$number = 0;
 
@@ -227,15 +227,15 @@ class Menu {
 			$done = ! empty( $step['done'] );
 
 			printf(
-				'<li class="easysubscription-step%s"><span class="easysubscription-step__mark">%s</span><div class="easysubscription-step__body">'
-					. '<span class="easysubscription-step__title">%s</span><span class="easysubscription-step__detail">%s</span>%s',
-				$done ? ' easysubscription-step--done' : '',
+				'<li class="subly-step%s"><span class="subly-step__mark">%s</span><div class="subly-step__body">'
+					. '<span class="subly-step__title">%s</span><span class="subly-step__detail">%s</span>%s',
+				$done ? ' subly-step--done' : '',
 				$done ? '&#10003;' : esc_html( (string) $number ),
 				esc_html( (string) $step['title'] ),
 				esc_html( (string) $step['detail'] ),
 				$step['action']
 					? sprintf(
-						'<div class="easysubscription-step__action"><a class="button button-small" href="%s">%s</a></div>',
+						'<div class="subly-step__action"><a class="button button-small" href="%s">%s</a></div>',
 						esc_url( (string) $step['action']['url'] ),
 						esc_html( (string) $step['action']['label'] )
 					)
@@ -254,14 +254,14 @@ class Menu {
 
 	private function render_bulk_notice(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-		if ( ! isset( $_GET['easysubscription_changed'] ) ) {
+		if ( ! isset( $_GET['subly_changed'] ) ) {
 			return;
 		}
 
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-		$changed = max( 0, (int) sanitize_text_field( wp_unslash( $_GET['easysubscription_changed'] ) ) );
+		$changed = max( 0, (int) sanitize_text_field( wp_unslash( $_GET['subly_changed'] ) ) );
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- display only.
-		$asked = isset( $_GET['easysubscription_asked'] ) ? max( 0, (int) sanitize_text_field( wp_unslash( $_GET['easysubscription_asked'] ) ) ) : 0;
+		$asked = isset( $_GET['subly_asked'] ) ? max( 0, (int) sanitize_text_field( wp_unslash( $_GET['subly_asked'] ) ) ) : 0;
 		$held  = $asked - $changed;
 
 		printf(
@@ -270,7 +270,7 @@ class Menu {
 			esc_html(
 				sprintf(
 					/* translators: %d: number of subscriptions */
-					_n( '%d subscription updated.', '%d subscriptions updated.', $changed, 'easysubscription' ),
+					_n( '%d subscription updated.', '%d subscriptions updated.', $changed, 'subly' ),
 					$changed
 				)
 			),
@@ -282,7 +282,7 @@ class Menu {
 							'%d was left alone because that change is not allowed from its current status.',
 							'%d were left alone because that change is not allowed from their current status.',
 							$held,
-							'easysubscription'
+							'subly'
 						),
 						$held
 					)
@@ -292,12 +292,12 @@ class Menu {
 	}
 
 	private function render_product_notice(): void {
-		$result = isset( $_GET['easysubscription_product'] ) ? sanitize_key( wp_unslash( $_GET['easysubscription_product'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$result = isset( $_GET['subly_product'] ) ? sanitize_key( wp_unslash( $_GET['subly_product'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
 		$message = match ( $result ) {
-			'created' => __( 'Your subscription product is published and ready to sell.', 'easysubscription' ),
-			'invalid' => __( 'Check the name, the price and the interval: the price must be above zero and the interval a whole number of periods.', 'easysubscription' ),
-			'failed'  => __( 'The product could not be created.', 'easysubscription' ),
+			'created' => __( 'Your subscription product is published and ready to sell.', 'subly' ),
+			'invalid' => __( 'Check the name, the price and the interval: the price must be above zero and the interval a whole number of periods.', 'subly' ),
+			'failed'  => __( 'The product could not be created.', 'subly' ),
 			default   => '',
 		};
 
@@ -316,41 +316,41 @@ class Menu {
 	 */
 	private function render_product_form(): void {
 		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="easysubscription-inline-form">
-			<?php wp_nonce_field( 'easysubscription_create_product' ); ?>
-			<input type="hidden" name="action" value="easysubscription_create_product" />
+		<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="subly-inline-form">
+			<?php wp_nonce_field( 'subly_create_product' ); ?>
+			<input type="hidden" name="action" value="subly_create_product" />
 
-			<label class="easysubscription-field">
-				<span><?php esc_html_e( 'Name', 'easysubscription' ); ?></span>
-				<input type="text" name="easysubscription_name" required style="width:14rem" />
+			<label class="subly-field">
+				<span><?php esc_html_e( 'Name', 'subly' ); ?></span>
+				<input type="text" name="subly_name" required style="width:14rem" />
 			</label>
 
-			<label class="easysubscription-field">
-				<span><?php esc_html_e( 'Price', 'easysubscription' ); ?></span>
-				<input type="text" name="easysubscription_price" required style="width:6rem" />
+			<label class="subly-field">
+				<span><?php esc_html_e( 'Price', 'subly' ); ?></span>
+				<input type="text" name="subly_price" required style="width:6rem" />
 			</label>
 
-			<label class="easysubscription-field">
-				<span><?php esc_html_e( 'Every', 'easysubscription' ); ?></span>
-				<input type="number" name="easysubscription_interval" value="1" min="1" max="365" style="width:4.5rem" />
+			<label class="subly-field">
+				<span><?php esc_html_e( 'Every', 'subly' ); ?></span>
+				<input type="number" name="subly_interval" value="1" min="1" max="365" style="width:4.5rem" />
 			</label>
 
-			<label class="easysubscription-field">
-				<span class="screen-reader-text"><?php esc_html_e( 'Billing period', 'easysubscription' ); ?></span>
-				<select name="easysubscription_period">
-					<option value="day"><?php esc_html_e( 'Days', 'easysubscription' ); ?></option>
-					<option value="week"><?php esc_html_e( 'Weeks', 'easysubscription' ); ?></option>
-					<option value="month" selected><?php esc_html_e( 'Months', 'easysubscription' ); ?></option>
-					<option value="year"><?php esc_html_e( 'Years', 'easysubscription' ); ?></option>
+			<label class="subly-field">
+				<span class="screen-reader-text"><?php esc_html_e( 'Billing period', 'subly' ); ?></span>
+				<select name="subly_period">
+					<option value="day"><?php esc_html_e( 'Days', 'subly' ); ?></option>
+					<option value="week"><?php esc_html_e( 'Weeks', 'subly' ); ?></option>
+					<option value="month" selected><?php esc_html_e( 'Months', 'subly' ); ?></option>
+					<option value="year"><?php esc_html_e( 'Years', 'subly' ); ?></option>
 				</select>
 			</label>
 
-			<label class="easysubscription-field">
-				<span><?php esc_html_e( 'Free trial (days)', 'easysubscription' ); ?></span>
-				<input type="number" name="easysubscription_trial" value="0" min="0" max="365" style="width:5.5rem" />
+			<label class="subly-field">
+				<span><?php esc_html_e( 'Free trial (days)', 'subly' ); ?></span>
+				<input type="number" name="subly_trial" value="0" min="0" max="365" style="width:5.5rem" />
 			</label>
 
-			<button type="submit" class="button button-primary"><?php esc_html_e( 'Create it', 'easysubscription' ); ?></button>
+			<button type="submit" class="button button-primary"><?php esc_html_e( 'Create it', 'subly' ); ?></button>
 		</form>
 		<?php
 	}
@@ -359,7 +359,7 @@ class Menu {
 		$subscription = wc_get_order( $id );
 
 		if ( ! $subscription instanceof Subscription ) {
-			Page_Shell::open( __( 'Subscription not found', 'easysubscription' ) );
+			Page_Shell::open( __( 'Subscription not found', 'subly' ) );
 			Page_Shell::close();
 			return;
 		}
@@ -368,7 +368,7 @@ class Menu {
 		$back  = add_query_arg( array( 'page' => self::LIST_SLUG ), admin_url( 'admin.php' ) );
 
 		/* translators: %d: subscription ID */
-		$heading = sprintf( __( 'Subscription #%d', 'easysubscription' ), $id );
+		$heading = sprintf( __( 'Subscription #%d', 'subly' ), $id );
 
 		// The heading below carries the status pill, so the shell's is for screen readers.
 		Page_Shell::open(
@@ -376,7 +376,7 @@ class Menu {
 			'',
 			array(
 				array(
-					'label' => __( 'All subscriptions', 'easysubscription' ),
+					'label' => __( 'All subscriptions', 'subly' ),
 					'url'   => $back,
 				),
 				array( 'label' => '#' . $id ),
@@ -386,23 +386,23 @@ class Menu {
 		);
 
 		printf(
-			'<h2 class="easysubscription-detail-heading">%s <span class="easysubscription-pill easysubscription-pill--%s">%s</span></h2><p class="easysubscription-lede"><a href="%s">&larr; %s</a></p>',
+			'<h2 class="subly-detail-heading">%s <span class="subly-pill subly-pill--%s">%s</span></h2><p class="subly-lede"><a href="%s">&larr; %s</a></p>',
 			esc_html( $heading ),
 			esc_attr( (string) $subscription->get_status() ),
 			esc_html( $state['label'] ),
 			esc_url( $back ),
-			esc_html__( 'All subscriptions', 'easysubscription' )
+			esc_html__( 'All subscriptions', 'subly' )
 		);
 
-		echo '<table class="widefat striped easysubscription-table easysubscription-facts"><tbody>';
-		$this->row( __( 'Customer', 'easysubscription' ), trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ) ?: (string) $subscription->get_billing_email() );
-		$this->row( __( 'Recurring total', 'easysubscription' ), wp_strip_all_tags( $subscription->get_formatted_order_total() ) );
-		$this->row( __( 'Billing', 'easysubscription' ), sprintf( '%d / %s', $subscription->get_billing_interval(), $subscription->get_billing_period() ) );
-		$this->row( __( 'Next payment', 'easysubscription' ), (string) $subscription->get_next_payment() ?: '-' );
+		echo '<table class="widefat striped subly-table subly-facts"><tbody>';
+		$this->row( __( 'Customer', 'subly' ), trim( $subscription->get_billing_first_name() . ' ' . $subscription->get_billing_last_name() ) ?: (string) $subscription->get_billing_email() );
+		$this->row( __( 'Recurring total', 'subly' ), wp_strip_all_tags( $subscription->get_formatted_order_total() ) );
+		$this->row( __( 'Billing', 'subly' ), sprintf( '%d / %s', $subscription->get_billing_interval(), $subscription->get_billing_period() ) );
+		$this->row( __( 'Next payment', 'subly' ), (string) $subscription->get_next_payment() ?: '-' );
 		$this->pending_row( $subscription );
-		$this->row( __( 'Trial ends', 'easysubscription' ), (string) $subscription->get_trial_end() ?: '-' );
-		$this->row( __( 'Payment method', 'easysubscription' ), $subscription->get_payment_method_title() ?: (string) $subscription->get_payment_method() );
-		$this->row( __( 'Parent order', 'easysubscription' ), $subscription->get_parent_order_id() ? '#' . $subscription->get_parent_order_id() : '-' );
+		$this->row( __( 'Trial ends', 'subly' ), (string) $subscription->get_trial_end() ?: '-' );
+		$this->row( __( 'Payment method', 'subly' ), $subscription->get_payment_method_title() ?: (string) $subscription->get_payment_method() );
+		$this->row( __( 'Parent order', 'subly' ), $subscription->get_parent_order_id() ? '#' . $subscription->get_parent_order_id() : '-' );
 		echo '</tbody></table>';
 
 		$this->render_process_button( $subscription );
@@ -414,7 +414,7 @@ class Menu {
 		 *
 		 * @param Subscription $subscription
 		 */
-		do_action( 'easysubscription_admin_subscription_detail', $subscription );
+		do_action( 'subly_admin_subscription_detail', $subscription );
 
 		Page_Shell::close();
 	}
@@ -432,17 +432,17 @@ class Menu {
 		$url = wp_nonce_url(
 			add_query_arg(
 				array(
-					'action'       => 'easysubscription_process_renewal',
+					'action'       => 'subly_process_renewal',
 					'subscription' => $subscription->get_id(),
 				),
 				admin_url( 'admin-post.php' )
 			),
-			'easysubscription_process_renewal_' . $subscription->get_id()
+			'subly_process_renewal_' . $subscription->get_id()
 		);
 
 		$confirm = sprintf(
 			/* translators: %s: recurring total */
-			__( 'This charges the customer %s right now. Continue?', 'easysubscription' ),
+			__( 'This charges the customer %s right now. Continue?', 'subly' ),
 			wp_strip_all_tags( $subscription->get_formatted_order_total() )
 		);
 
@@ -450,7 +450,7 @@ class Menu {
 			'<p><a href="%s" class="button" onclick="return confirm(%s)">%s</a></p>',
 			esc_url( $url ),
 			esc_attr( wp_json_encode( $confirm ) ),
-			esc_html__( 'Process renewal now', 'easysubscription' )
+			esc_html__( 'Process renewal now', 'subly' )
 		);
 	}
 
@@ -458,9 +458,9 @@ class Menu {
 	 * Recurring revenue at a glance, above the list.
 	 */
 	private function render_summary(): void {
-		$stats = \EasySubscription\Plugin::instance()->get( 'stats' );
+		$stats = \Subly\Plugin::instance()->get( 'stats' );
 
-		if ( ! $stats instanceof \EasySubscription\Data\Stats ) {
+		if ( ! $stats instanceof \Subly\Data\Stats ) {
 			return;
 		}
 
@@ -471,26 +471,26 @@ class Menu {
 			? round( ( ( $mrr->minor() - $oldest['mrr'] ) / $oldest['mrr'] ) * 100, 1 )
 			: null;
 
-		echo '<div id="easysubscription-overview-fallback"><div class="easysubscription-stats">';
+		echo '<div id="subly-overview-fallback"><div class="subly-stats">';
 
 		printf(
-			'<div class="easysubscription-stat"><span class="easysubscription-stat__label">%s</span><span class="easysubscription-stat__value">%s</span>%s</div>',
-			esc_html__( 'Monthly recurring revenue', 'easysubscription' ),
+			'<div class="subly-stat"><span class="subly-stat__label">%s</span><span class="subly-stat__value">%s</span>%s</div>',
+			esc_html__( 'Monthly recurring revenue', 'subly' ),
 			wp_kses_post( $mrr->format() ),
 			null === $change
-				? '<span class="easysubscription-stat__meta">' . esc_html__( 'Tracking starts today', 'easysubscription' ) . '</span>'
+				? '<span class="subly-stat__meta">' . esc_html__( 'Tracking starts today', 'subly' ) . '</span>'
 				: sprintf(
-					'<span class="easysubscription-stat__meta easysubscription-delta--%s">%s%s%% %s</span>',
+					'<span class="subly-stat__meta subly-delta--%s">%s%s%% %s</span>',
 					$change < 0 ? 'down' : 'up',
 					$change < 0 ? '' : '+',
 					esc_html( (string) $change ),
-					esc_html__( 'over 30 days', 'easysubscription' )
+					esc_html__( 'over 30 days', 'subly' )
 				)
 		);
 
 		printf(
-			'<div class="easysubscription-stat"><span class="easysubscription-stat__label">%s</span><span class="easysubscription-stat__value">%s</span></div>',
-			esc_html__( 'Live subscriptions', 'easysubscription' ),
+			'<div class="subly-stat"><span class="subly-stat__label">%s</span><span class="subly-stat__value">%s</span></div>',
+			esc_html__( 'Live subscriptions', 'subly' ),
 			esc_html( number_format_i18n( $stats->active_count() ) )
 		);
 
@@ -498,10 +498,10 @@ class Menu {
 
 		if ( $excluded ) {
 			printf(
-				'<div class="easysubscription-stat"><span class="easysubscription-stat__label">%s</span><span class="easysubscription-stat__value">%s</span><span class="easysubscription-stat__meta">%s</span></div>',
-				esc_html__( 'Not counted', 'easysubscription' ),
+				'<div class="subly-stat"><span class="subly-stat__label">%s</span><span class="subly-stat__value">%s</span><span class="subly-stat__meta">%s</span></div>',
+				esc_html__( 'Not counted', 'subly' ),
 				esc_html( number_format_i18n( $excluded ) ),
-				esc_html__( 'in another currency', 'easysubscription' )
+				esc_html__( 'in another currency', 'subly' )
 			);
 		}
 
@@ -511,14 +511,14 @@ class Menu {
 	private function render_activity( int $id ): void {
 		$entries = $this->activity->for_subscription( $id, 30 );
 
-		echo '<h2>' . esc_html__( 'Activity', 'easysubscription' ) . '</h2>';
+		echo '<h2>' . esc_html__( 'Activity', 'subly' ) . '</h2>';
 
 		if ( empty( $entries ) ) {
-			echo '<p>' . esc_html__( 'Nothing recorded yet.', 'easysubscription' ) . '</p>';
+			echo '<p>' . esc_html__( 'Nothing recorded yet.', 'subly' ) . '</p>';
 			return;
 		}
 
-		echo '<table class="widefat striped easysubscription-table easysubscription-facts"><tbody>';
+		echo '<table class="widefat striped subly-table subly-facts"><tbody>';
 		foreach ( $entries as $entry ) {
 			printf(
 				'<tr><td>%s</td><td>%s</td><td><code>%s</code></td></tr>',
@@ -533,8 +533,8 @@ class Menu {
 	public function process_renewal_now(): void {
 		$id = absint( $_GET['subscription'] ?? 0 );
 
-		if ( ! current_user_can( self::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'easysubscription_process_renewal_' . $id ) ) {
-			wp_die( esc_html__( 'That request could not be verified.', 'easysubscription' ) );
+		if ( ! current_user_can( self::CAPABILITY ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_GET['_wpnonce'] ?? '' ) ), 'subly_process_renewal_' . $id ) ) {
+			wp_die( esc_html__( 'That request could not be verified.', 'subly' ) );
 		}
 
 		$this->processor->process( $id );
@@ -561,10 +561,10 @@ class Menu {
 
 		printf(
 			'<tr><th scope="row">%s</th><td>%s</td></tr>',
-			esc_html__( 'Payment processing', 'easysubscription' ),
+			esc_html__( 'Payment processing', 'subly' ),
 			sprintf(
 				/* translators: 1: renewal order number, linked, 2: how long ago it was submitted, such as "3 days" */
-				esc_html__( 'Renewal order %1$s was submitted %2$s ago and is waiting for the payment provider to confirm it.', 'easysubscription' ),
+				esc_html__( 'Renewal order %1$s was submitted %2$s ago and is waiting for the payment provider to confirm it.', 'subly' ),
 				sprintf( '<a href="%s">#%s</a>', esc_url( $pending['order']->get_edit_order_url() ), esc_html( $pending['order']->get_order_number() ) ),
 				esc_html( human_time_diff( $pending['since'] ) )
 			)

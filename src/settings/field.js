@@ -1,6 +1,6 @@
 import { Fragment } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { cn } from '@easysubscription/ui';
+import { cn } from '@subly/ui';
 
 const RENAMED = { readonly: 'readOnly', maxlength: 'maxLength' };
 
@@ -33,7 +33,7 @@ export function Control( { field, value, onChange, described } ) {
 
 	if ( field.type === 'checkbox' ) {
 		return (
-			<span className="easysubscription-switch">
+			<span className="subly-switch">
 				<input
 					{ ...common }
 					type="checkbox"
@@ -44,7 +44,7 @@ export function Control( { field, value, onChange, described } ) {
 					}
 				/>
 				<span
-					className="easysubscription-switch__track"
+					className="subly-switch__track"
 					aria-hidden="true"
 				/>
 			</span>
@@ -55,7 +55,7 @@ export function Control( { field, value, onChange, described } ) {
 		return (
 			<select
 				{ ...common }
-				className="easysubscription-input"
+				className="subly-input"
 				value={ value }
 				onChange={ ( event ) => onChange( event.target.value ) }
 			>
@@ -75,7 +75,7 @@ export function Control( { field, value, onChange, described } ) {
 			<textarea
 				{ ...common }
 				{ ...extra }
-				className="easysubscription-input easysubscription-input--wide"
+				className="subly-input subly-input--wide"
 				rows="4"
 				value={ value }
 				onChange={ ( event ) => onChange( event.target.value ) }
@@ -89,10 +89,10 @@ export function Control( { field, value, onChange, described } ) {
 			{ ...extra }
 			type={ field.type }
 			className={ cn(
-				'easysubscription-input',
+				'subly-input',
 				field.type === 'number'
-					? 'easysubscription-input--short'
-					: 'easysubscription-input--wide'
+					? 'subly-input--short'
+					: 'subly-input--wide'
 			) }
 			value={ value }
 			onFocus={
@@ -107,60 +107,60 @@ export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 	return (
 		<div
 			className={ cn(
-				'easysubscription-settings__row',
-				stacked && 'easysubscription-settings__row--stacked'
+				'subly-settings__row',
+				stacked && 'subly-settings__row--stacked'
 			) }
 		>
-			<div className="easysubscription-settings__label">
+			<div className="subly-settings__label">
 				<label
-					className="easysubscription-settings__title"
+					className="subly-settings__title"
 					htmlFor={ field.id }
 				>
 					{ field.title }
 				</label>
 				{ field.help ? (
 					<p
-						className="easysubscription-settings__help"
+						className="subly-settings__help"
 						id={ `${ field.id }-help` }
 						// Kept to wp_kses_post() by the server, as the PHP page prints it.
 						dangerouslySetInnerHTML={ { __html: field.help } }
 					/>
 				) : null }
 			</div>
-			<div className="easysubscription-settings__control">
+			<div className="subly-settings__control">
 				{ field.preview_url ? (
 					<a
-						className="easysubscription-btn easysubscription-btn--sm"
+						className="subly-btn subly-btn--sm"
 						href={ field.preview_url }
 						target="_blank"
 						rel="noopener noreferrer"
 					>
-						{ __( 'Preview', 'easysubscription' ) }
+						{ __( 'Preview', 'subly' ) }
 						<span className="screen-reader-text">
 							{ ' ' }
 							{ sprintf(
 								/* translators: %s: the email's name, such as "Renewal reminder" */
 								__(
 									'%s (opens in a new tab)',
-									'easysubscription'
+									'subly'
 								),
 								field.title
 							) }
 						</span>
 					</a>
 				) : null }
-				{ field.easysubscription_email && onEdit ? (
+				{ field.subly_email && onEdit ? (
 					<button
 						type="button"
-						className="easysubscription-btn easysubscription-btn--sm"
+						className="subly-btn subly-btn--sm"
 						aria-label={ sprintf(
 							/* translators: %s: the email's name, such as "Renewal reminder" */
-							__( 'Edit %s', 'easysubscription' ),
+							__( 'Edit %s', 'subly' ),
 							field.title
 						) }
-						onClick={ () => onEdit( field.easysubscription_email ) }
+						onClick={ () => onEdit( field.subly_email ) }
 					>
-						{ __( 'Edit', 'easysubscription' ) }
+						{ __( 'Edit', 'subly' ) }
 					</button>
 				) : null }
 				<Control
@@ -186,7 +186,7 @@ export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 				) ) }
 				{ field.suffix ? (
 					<span
-						className="easysubscription-settings__suffix"
+						className="subly-settings__suffix"
 						dangerouslySetInnerHTML={ { __html: field.suffix } }
 					/>
 				) : null }

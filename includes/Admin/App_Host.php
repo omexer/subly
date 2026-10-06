@@ -1,27 +1,27 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Every EasySubscription admin page is a route of one React app, hosted here.
+ * Every Subly admin page is a route of one React app, hosted here.
  *
  * Each page still prints its own server render inside the host, which stays the screen
  * until the app has drawn the route and is what a browser without JavaScript sees.
  */
 final class App_Host {
 
-	public const HANDLE = 'easysubscription-shell';
+	public const HANDLE = 'subly-shell';
 
-	public const BODY_CLASS = 'easysubscription-app-page';
+	public const BODY_CLASS = 'subly-app-page';
 
 	private bool $enqueued = false;
 
 	public static function start( string $page ): void {
-		printf( '<div id="easysubscription-app" class="easysubscription-ui" data-page="%s"></div><div id="easysubscription-fallback">', esc_attr( $page ) );
+		printf( '<div id="subly-app" class="subly-ui" data-page="%s"></div><div id="subly-fallback">', esc_attr( $page ) );
 	}
 
 	public static function end(): void {
@@ -33,12 +33,12 @@ final class App_Host {
 	 */
 	public static function pages(): array {
 		/**
-		 * Filter the admin page slugs that are routes of the EasySubscription app.
+		 * Filter the admin page slugs that are routes of the Subly app.
 		 *
 		 * @param string[] $pages
 		 */
 		$pages = (array) apply_filters(
-			'easysubscription_app_pages',
+			'subly_app_pages',
 			array(
 				Menu::SLUG,
 				Menu::LIST_SLUG,
@@ -75,41 +75,41 @@ final class App_Host {
 			return;
 		}
 
-		$asset = EASYSUBSCRIPTION_PATH . 'build/shell.asset.php';
+		$asset = SUBLY_PATH . 'build/shell.asset.php';
 
-		if ( ! is_readable( $asset ) || ! wp_script_is( 'easysubscription-ui', 'registered' ) ) {
+		if ( ! is_readable( $asset ) || ! wp_script_is( 'subly-ui', 'registered' ) ) {
 			return;
 		}
 
 		$asset = require $asset;
 
-		wp_enqueue_style( 'easysubscription-ui' );
-		wp_enqueue_style( self::HANDLE, EASYSUBSCRIPTION_URL . 'build/shell.css', array( 'easysubscription-ui' ), $asset['version'] );
+		wp_enqueue_style( 'subly-ui' );
+		wp_enqueue_style( self::HANDLE, SUBLY_URL . 'build/shell.css', array( 'subly-ui' ), $asset['version'] );
 		wp_style_add_data( self::HANDLE, 'rtl', 'replace' );
 
 		wp_enqueue_script(
 			self::HANDLE,
-			EASYSUBSCRIPTION_URL . 'build/shell.js',
-			array_merge( $asset['dependencies'], array( 'easysubscription-ui' ) ),
+			SUBLY_URL . 'build/shell.js',
+			array_merge( $asset['dependencies'], array( 'subly-ui' ) ),
 			$asset['version'],
 			true
 		);
 
 		wp_add_inline_script(
 			self::HANDLE,
-			'window.easysubscriptionShellData = ' . wp_json_encode( array( 'links' => Page_Shell::header_links() ) ) . ';',
+			'window.sublyShellData = ' . wp_json_encode( array( 'links' => Page_Shell::header_links() ) ) . ';',
 			'before'
 		);
 
-		wp_set_script_translations( self::HANDLE, 'easysubscription', EASYSUBSCRIPTION_PATH . 'languages' );
+		wp_set_script_translations( self::HANDLE, 'subly', SUBLY_PATH . 'languages' );
 
 		$this->enqueued = true;
 
 		/**
-		 * Fires on every EasySubscription app page, once the shell is enqueued.
+		 * Fires on every Subly app page, once the shell is enqueued.
 		 *
 		 * Route bundles enqueue themselves here, with App_Host::HANDLE as a dependency.
 		 */
-		do_action( 'easysubscription_app_enqueue' );
+		do_action( 'subly_app_enqueue' );
 	}
 }

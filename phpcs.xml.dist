@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
-<ruleset name="EasySubscription">
-	<description>WordPress coding standards for EasySubscription.</description>
+<ruleset name="Subly">
+	<description>WordPress coding standards for Subly.</description>
 
-	<file>easysubscription.php</file>
+	<file>subly.php</file>
 	<file>includes</file>
 	<file>templates</file>
 
@@ -50,7 +50,7 @@
 	<rule ref="WordPress.WP.I18n">
 		<properties>
 			<property name="text_domain" type="array">
-				<element value="easysubscription"/>
+				<element value="subly"/>
 			</property>
 		</properties>
 	</rule>

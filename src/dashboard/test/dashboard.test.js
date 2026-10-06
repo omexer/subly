@@ -41,11 +41,11 @@ function data( overrides = {} ) {
 				id: 812,
 				customer: 'Ada Lovelace',
 				product: 'Coffee box',
-				status: 'es-active',
+				status: 'subly-active',
 				status_label: 'Active',
 				total: '£40.00',
 				created: '12 Sep 2026',
-				url: '/wp-admin/admin.php?page=easysubscription-list&subscription=812',
+				url: '/wp-admin/admin.php?page=subly-list&subscription=812',
 			},
 		],
 		links: {
@@ -91,7 +91,7 @@ describe( 'the home screen', () => {
 			'/wp-admin/admin-post.php'
 		);
 		expect( form.querySelector( 'input[name="action"]' ).value ).toBe(
-			'easysubscription_create_product'
+			'subly_create_product'
 		);
 		expect( form.querySelector( 'input[name="_wpnonce"]' ).value ).toBe(
 			'n0nce'
@@ -130,7 +130,7 @@ describe( 'the home screen', () => {
 						key: 'on_hold',
 						label: '2 subscriptions on hold after a failed payment',
 						count: 2,
-						url: '/list?status=es-on-hold',
+						url: '/list?status=subly-on-hold',
 						tone: 'bad',
 					},
 				],
@@ -141,7 +141,7 @@ describe( 'the home screen', () => {
 			a.textContent.includes( 'on hold after a failed payment' )
 		);
 
-		expect( link.getAttribute( 'href' ) ).toBe( '/list?status=es-on-hold' );
+		expect( link.getAttribute( 'href' ) ).toBe( '/list?status=subly-on-hold' );
 		expect( container.textContent ).not.toContain(
 			'Nothing needs you right now'
 		);

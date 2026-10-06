@@ -1,11 +1,11 @@
 <?php
 
-namespace EasySubscription\Gateways\PayPal;
+namespace Subly\Gateways\PayPal;
 
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Gateways\Charge_Result;
-use EasySubscription\Gateways\Gateway_Model;
-use EasySubscription\Gateways\Recurring_Gateway;
+use Subly\Domain\Subscription;
+use Subly\Gateways\Charge_Result;
+use Subly\Gateways\Gateway_Model;
+use Subly\Gateways\Recurring_Gateway;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -23,10 +23,10 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class PayPal_Gateway implements Recurring_Gateway {
 
-	public const ID = 'easysubscription_paypal';
+	public const ID = 'subly_paypal';
 
-	public const META_SUBSCRIPTION_ID = '_easysubscription_paypal_subscription_id';
-	public const META_PLAN_ID         = '_easysubscription_paypal_plan_id';
+	public const META_SUBSCRIPTION_ID = '_subly_paypal_subscription_id';
+	public const META_PLAN_ID         = '_subly_paypal_plan_id';
 
 	public function __construct( private readonly PayPal_Client $client ) {}
 
@@ -35,7 +35,7 @@ class PayPal_Gateway implements Recurring_Gateway {
 	}
 
 	public function title(): string {
-		return __( 'PayPal', 'easysubscription' );
+		return __( 'PayPal', 'subly' );
 	}
 
 	public function model(): Gateway_Model {

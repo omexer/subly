@@ -1,11 +1,11 @@
 /**
- * The notices on an app page: important EasySubscription ones stay under the header as compact cards, the rest go in the bell.
+ * The notices on an app page: important Subly ones stay under the header as compact cards, the rest go in the bell.
  */
 import { __ } from '@wordpress/i18n';
 
 export const NOTICES = 'div.notice, div.error, div.updated';
-export const IMPORTANT = 'easysubscription-notice--important';
-export const FEEDBACK = 'easysubscription-notice--feedback';
+export const IMPORTANT = 'subly-notice--important';
+export const FEEDBACK = 'subly-notice--feedback';
 export const SHOWN = 3;
 
 const LONG = 100;
@@ -105,13 +105,13 @@ function dropEmpty( detail ) {
  * @param {Element} node
  */
 export function compact( node ) {
-	if ( node.classList.contains( 'easysubscription-alert' ) ) {
+	if ( node.classList.contains( 'subly-alert' ) ) {
 		return;
 	}
 
 	const tone = severity( node );
 	const dismiss = node.querySelector(
-		'a[href*="action=easysubscription_dismiss_notice"]'
+		'a[href*="action=subly_dismiss_notice"]'
 	);
 	const actions = [
 		...node.querySelectorAll( 'a.button, button.button, input.button' ),
@@ -126,13 +126,13 @@ export function compact( node ) {
 	const detail = document.createElement( 'div' );
 	const bar = document.createElement( 'div' );
 
-	icon.className = 'easysubscription-alert__icon';
+	icon.className = 'subly-alert__icon';
 	icon.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${ ICONS[ tone ] }</svg>`;
-	text.className = 'easysubscription-alert__text';
-	text.id = `easysubscription-alert-${ ++ids }`;
-	title.className = 'easysubscription-alert__title';
-	detail.className = 'easysubscription-alert__detail';
-	bar.className = 'easysubscription-alert__actions';
+	text.className = 'subly-alert__text';
+	text.id = `subly-alert-${ ++ids }`;
+	title.className = 'subly-alert__title';
+	detail.className = 'subly-alert__detail';
+	bar.className = 'subly-alert__actions';
 
 	[ ...node.childNodes ]
 		.filter( ( child ) => ! closer.includes( child ) )
@@ -145,7 +145,7 @@ export function compact( node ) {
 
 		label.className = 'screen-reader-text';
 		label.textContent = dismiss.textContent.trim();
-		dismiss.className = 'easysubscription-alert__dismiss';
+		dismiss.className = 'subly-alert__dismiss';
 		dismiss.innerHTML =
 			'<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18"/></svg>';
 		dismiss.appendChild( label );
@@ -172,8 +172,8 @@ export function compact( node ) {
 		const more = document.createElement( 'button' );
 
 		more.type = 'button';
-		more.className = 'easysubscription-alert__more';
-		more.textContent = __( 'Details', 'easysubscription' );
+		more.className = 'subly-alert__more';
+		more.textContent = __( 'Details', 'subly' );
 		more.setAttribute( 'aria-expanded', 'false' );
 		more.setAttribute( 'aria-controls', text.id );
 		more.addEventListener( 'click', () => {
@@ -184,8 +184,8 @@ export function compact( node ) {
 	}
 
 	node.classList.add(
-		'easysubscription-alert',
-		`easysubscription-alert--${ tone }`
+		'subly-alert',
+		`subly-alert--${ tone }`
 	);
 	node.prepend( icon, text, bar );
 	closer.forEach( ( el ) => node.appendChild( el ) );
@@ -305,7 +305,7 @@ export function createNotices( { alerts, list, isRoute, onChange } ) {
 		collect( root ) {
 			let changed = false;
 
-			root.querySelectorAll( '.easysubscription-notify__list' ).forEach(
+			root.querySelectorAll( '.subly-notify__list' ).forEach(
 				( server ) => {
 					if ( server === list ) {
 						return;

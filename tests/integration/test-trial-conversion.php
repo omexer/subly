@@ -2,23 +2,23 @@
 /**
  * A free trial signs up for nothing, keeps its card, and converts to a paid renewal at the real price.
  *
- * @package EasySubscription
+ * @package Subly
  */
 
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Gateways\Test_Gateway;
+use Subly\Domain\Subscription;
+use Subly\Gateways\Test_Gateway;
 
 require __DIR__ . '/bootstrap.php';
 
-\EasySubscription\Plugin::instance()->get( 'gateways' )->add(
-	new class() implements \EasySubscription\Gateways\Recurring_Gateway {
+\Subly\Plugin::instance()->get( 'gateways' )->add(
+	new class() implements \Subly\Gateways\Recurring_Gateway {
 		public function id(): string { return Test_Gateway::ID; }
 		public function title(): string { return 'Harness approver'; }
-		public function model(): \EasySubscription\Gateways\Gateway_Model { return \EasySubscription\Gateways\Gateway_Model::Tokenized; }
+		public function model(): \Subly\Gateways\Gateway_Model { return \Subly\Gateways\Gateway_Model::Tokenized; }
 		public function supports( string $f ): bool { return true; }
-		public function create_mandate( Subscription $s, \WC_Order $o ): \EasySubscription\Gateways\Charge_Result { return \EasySubscription\Gateways\Charge_Result::success( 'mandate-' . $s->get_id() ); }
-		public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): \EasySubscription\Gateways\Charge_Result { return \EasySubscription\Gateways\Charge_Result::success( 'charge-' . $r->get_id() ); }
-		public function reconcile( Subscription $s, string $k ): ?\EasySubscription\Gateways\Charge_Result { return null; }
+		public function create_mandate( Subscription $s, \WC_Order $o ): \Subly\Gateways\Charge_Result { return \Subly\Gateways\Charge_Result::success( 'mandate-' . $s->get_id() ); }
+		public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): \Subly\Gateways\Charge_Result { return \Subly\Gateways\Charge_Result::success( 'charge-' . $r->get_id() ); }
+		public function reconcile( Subscription $s, string $k ): ?\Subly\Gateways\Charge_Result { return null; }
 		public function cancel_mandate( Subscription $s ): bool { return true; }
 		public function update_payment_method( Subscription $s, string $t ): bool { return true; }
 	}
@@ -27,11 +27,11 @@ require __DIR__ . '/bootstrap.php';
 $id = wp_insert_post( array( 'post_title' => 'SK trial flow', 'post_type' => 'product', 'post_status' => 'publish' ) );
 $p  = wc_get_product( $id );
 $p->set_regular_price( '20' ); $p->set_price( '20' );
-$p->update_meta_data( '_easysubscription_enabled', 'yes' );
-$p->update_meta_data( '_easysubscription_period', 'month' );
-$p->update_meta_data( '_easysubscription_interval', 1 );
-$p->update_meta_data( '_easysubscription_trial_days', 14 );
-$p->update_meta_data( '_easysubscription_trial_period', 'day' );
+$p->update_meta_data( '_subly_enabled', 'yes' );
+$p->update_meta_data( '_subly_period', 'month' );
+$p->update_meta_data( '_subly_interval', 1 );
+$p->update_meta_data( '_subly_trial_days', 14 );
+$p->update_meta_data( '_subly_trial_period', 'day' );
 $p->save();
 $p = wc_get_product( $id );
 
@@ -57,9 +57,9 @@ do_action( 'woocommerce_checkout_order_processed', $order->get_id() );
 $order = wc_get_order( $order->get_id() );
 $order->update_status( 'processing' );
 
-$sub = wc_get_order( (int) wc_get_order( $order->get_id() )->get_meta( '_easysubscription_subscription_id' ) );
+$sub = wc_get_order( (int) wc_get_order( $order->get_id() )->get_meta( '_subly_subscription_id' ) );
 $check( 'subscription created', $sub instanceof Subscription );
-if ( ! $sub instanceof Subscription ) { easysubscription_test_abort( 'cannot continue without it' ); }
+if ( ! $sub instanceof Subscription ) { subly_test_abort( 'cannot continue without it' ); }
 
 $check( 'status is trialling', str_contains( $sub->get_status(), 'trialling' ), $sub->get_status() );
 $check( 'recurring amount is the real price, not the trial total', '20.00' === wc_format_decimal( $sub->get_total(), 2 ), $sub->get_total() );
@@ -69,10 +69,10 @@ $check( 'first payment falls on the day the trial ends', substr( (string) $sub->
 // Bring the renewal forward and let the real processor run it.
 $sub->set_next_payment( gmdate( 'Y-m-d H:i:s', time() - 60 ) );
 $sub->save();
-\EasySubscription\Plugin::instance()->get( 'processor' )->process( $sub->get_id() );
+\Subly\Plugin::instance()->get( 'processor' )->process( $sub->get_id() );
 
 global $wpdb;
-$ids = $wpdb->get_col( $wpdb->prepare( "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key='_easysubscription_subscription_id' AND meta_value=%d AND order_id<>%d", $sub->get_id(), $order->get_id() ) );
+$ids = $wpdb->get_col( $wpdb->prepare( "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key='_subly_subscription_id' AND meta_value=%d AND order_id<>%d", $sub->get_id(), $order->get_id() ) );
 $renewal = $ids ? wc_get_order( (int) end( $ids ) ) : null;
 $check( 'a renewal order was raised', $renewal instanceof \WC_Order );
 if ( $renewal ) {
@@ -82,4 +82,4 @@ if ( $renewal ) {
 }
 
 WC()->cart->empty_cart();
-easysubscription_test_done( $fail );
+subly_test_done( $fail );

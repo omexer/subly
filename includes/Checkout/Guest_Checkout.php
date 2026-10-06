@@ -1,9 +1,9 @@
 <?php
 
-namespace EasySubscription\Checkout;
+namespace Subly\Checkout;
 
-use EasySubscription\Admin\Notices;
-use EasySubscription\Product\Subscription_Product;
+use Subly\Admin\Notices;
+use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -22,7 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Guest_Checkout {
 
-	private const OPTION = 'easysubscription_guest_checkout';
+	private const OPTION = 'subly_guest_checkout';
 
 	public const ALLOW   = 'create_account';
 	public const REQUIRE = 'require_login';
@@ -59,7 +59,7 @@ class Guest_Checkout {
 		$error = $this->blocking_error( $this->customer_email() );
 
 		if ( $error && $errors instanceof \WP_Error ) {
-			$errors->add( 'easysubscription_login_required', $error );
+			$errors->add( 'subly_login_required', $error );
 		}
 
 		return $errors;
@@ -102,8 +102,8 @@ class Guest_Checkout {
 		}
 
 		echo '<div class="' . esc_attr( Notices::important( 'warning', true ) ) . '"><p>' . esc_html__(
-			'EasySubscription requires customers to log in before buying a subscription, but WooCommerce is not offering a login or sign-up on the checkout page. Customers will be turned away with no way forward.',
-			'easysubscription'
+			'Subly requires customers to log in before buying a subscription, but WooCommerce is not offering a login or sign-up on the checkout page. Customers will be turned away with no way forward.',
+			'subly'
 		) . '</p></div>';
 	}
 
@@ -113,13 +113,13 @@ class Guest_Checkout {
 		}
 
 		if ( self::REQUIRE === self::mode() ) {
-			return __( 'Please log in or create an account to buy a subscription. You will need one to manage or cancel it later.', 'easysubscription' );
+			return __( 'Please log in or create an account to buy a subscription. You will need one to manage or cancel it later.', 'subly' );
 		}
 
 		// Letting this through would create a subscription owned by nobody, which the
 		// customer could never see or cancel. Better to stop here than to sell that.
 		if ( '' !== $email && email_exists( $email ) ) {
-			return __( 'You already have an account with this email address. Please log in to buy a subscription.', 'easysubscription' );
+			return __( 'You already have an account with this email address. Please log in to buy a subscription.', 'subly' );
 		}
 
 		return '';
@@ -172,7 +172,7 @@ class Guest_Checkout {
 			return 0;
 		}
 
-		$order->add_order_note( __( 'An account was created for this customer so they can manage their subscription.', 'easysubscription' ) );
+		$order->add_order_note( __( 'An account was created for this customer so they can manage their subscription.', 'subly' ) );
 
 		return (int) $user_id;
 	}

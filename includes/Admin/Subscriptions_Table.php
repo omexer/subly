@@ -1,11 +1,11 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
-use EasySubscription\Data\Subscription_Query;
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
-use EasySubscription\Frontend\MyAccount\Status_Presenter;
+use Subly\Data\Subscription_Query;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
+use Subly\Frontend\MyAccount\Status_Presenter;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -34,12 +34,12 @@ class Subscriptions_Table extends \WP_List_Table {
 	public function get_columns(): array {
 		return array(
 			'cb'           => '<input type="checkbox" />',
-			'subscription' => __( 'Subscription', 'easysubscription' ),
-			'customer'     => __( 'Customer', 'easysubscription' ),
-			'status'       => __( 'Status', 'easysubscription' ),
-			'next_payment' => __( 'Next payment', 'easysubscription' ),
-			'total'        => __( 'Recurring total', 'easysubscription' ),
-			'gateway'      => __( 'Payment method', 'easysubscription' ),
+			'subscription' => __( 'Subscription', 'subly' ),
+			'customer'     => __( 'Customer', 'subly' ),
+			'status'       => __( 'Status', 'subly' ),
+			'next_payment' => __( 'Next payment', 'subly' ),
+			'total'        => __( 'Recurring total', 'subly' ),
+			'gateway'      => __( 'Payment method', 'subly' ),
 		);
 	}
 
@@ -68,9 +68,9 @@ class Subscriptions_Table extends \WP_List_Table {
 	 */
 	public function get_bulk_actions(): array {
 		return array(
-			'cancel' => __( 'Cancel', 'easysubscription' ),
-			'hold'   => __( 'Put on hold', 'easysubscription' ),
-			'resume' => __( 'Reactivate', 'easysubscription' ),
+			'cancel' => __( 'Cancel', 'subly' ),
+			'hold'   => __( 'Put on hold', 'subly' ),
+			'resume' => __( 'Reactivate', 'subly' ),
 		);
 	}
 
@@ -138,7 +138,7 @@ class Subscriptions_Table extends \WP_List_Table {
 			// The pill carries colour, but the label is always readable text inside it:
 			// a merchant scanning for problems must not have to decode a swatch.
 			'status'       => sprintf(
-				'<span class="easysubscription-pill easysubscription-pill--%s">%s</span>%s',
+				'<span class="subly-pill subly-pill--%s">%s</span>%s',
 				esc_attr( (string) $item->get_status() ),
 				esc_html( Status_Presenter::for( $item )['label'] ),
 				$this->pending_line( $item )
@@ -162,7 +162,7 @@ class Subscriptions_Table extends \WP_List_Table {
 		);
 
 		$actions = array(
-			'view' => sprintf( '<a href="%s">%s</a>', esc_url( $view ), esc_html__( 'View', 'easysubscription' ) ),
+			'view' => sprintf( '<a href="%s">%s</a>', esc_url( $view ), esc_html__( 'View', 'subly' ) ),
 		);
 
 		$status = $item->get_status_enum();
@@ -175,15 +175,15 @@ class Subscriptions_Table extends \WP_List_Table {
 					wp_nonce_url(
 						add_query_arg(
 							array(
-								'action'       => 'easysubscription_process_renewal',
+								'action'       => 'subly_process_renewal',
 								'subscription' => $item->get_id(),
 							),
 							admin_url( 'admin-post.php' )
 						),
-						'easysubscription_process_renewal_' . $item->get_id()
+						'subly_process_renewal_' . $item->get_id()
 					)
 				),
-				esc_html__( 'Renew now', 'easysubscription' )
+				esc_html__( 'Renew now', 'subly' )
 			);
 		}
 
@@ -191,7 +191,7 @@ class Subscriptions_Table extends \WP_List_Table {
 			$actions['order'] = sprintf(
 				'<a href="%s">%s</a>',
 				esc_url( (string) $this->get_edit_order_url( $item->get_parent_order_id() ) ),
-				esc_html__( 'Parent order', 'easysubscription' )
+				esc_html__( 'Parent order', 'subly' )
 			);
 		}
 
@@ -209,7 +209,7 @@ class Subscriptions_Table extends \WP_List_Table {
 			'<br><span class="description">%s</span>',
 			sprintf(
 				/* translators: 1: renewal order number, linked, 2: how long ago it was submitted, such as "3 days" */
-				esc_html__( 'Renewal order %1$s submitted %2$s ago', 'easysubscription' ),
+				esc_html__( 'Renewal order %1$s submitted %2$s ago', 'subly' ),
 				sprintf( '<a href="%s">#%s</a>', esc_url( $pending['order']->get_edit_order_url() ), esc_html( $pending['order']->get_order_number() ) ),
 				esc_html( human_time_diff( $pending['since'] ) )
 			)
@@ -273,7 +273,7 @@ class Subscriptions_Table extends \WP_List_Table {
 				continue;
 			}
 
-			$subscription->transition_to( $target, __( 'Changed in bulk from the subscriptions list.', 'easysubscription' ) );
+			$subscription->transition_to( $target, __( 'Changed in bulk from the subscriptions list.', 'subly' ) );
 			$subscription->save();
 			++$changed;
 		}
@@ -282,8 +282,8 @@ class Subscriptions_Table extends \WP_List_Table {
 			add_query_arg(
 				array(
 					'page'           => Menu::LIST_SLUG,
-					'easysubscription_changed' => $changed,
-					'easysubscription_asked'   => count( $ids ),
+					'subly_changed' => $changed,
+					'subly_asked'   => count( $ids ),
 				),
 				admin_url( 'admin.php' )
 			)
@@ -318,7 +318,7 @@ class Subscriptions_Table extends \WP_List_Table {
 	}
 
 	public function no_items(): void {
-		esc_html_e( 'No subscriptions yet. Tick "Subscription" on a product to start selling one.', 'easysubscription' );
+		esc_html_e( 'No subscriptions yet. Tick "Subscription" on a product to start selling one.', 'subly' );
 	}
 
 	/**
@@ -333,7 +333,7 @@ class Subscriptions_Table extends \WP_List_Table {
 				'<a href="%s"%s>%s</a>',
 				esc_url( $base ),
 				'' === $current ? ' class="current"' : '',
-				esc_html__( 'All', 'easysubscription' )
+				esc_html__( 'All', 'subly' )
 			),
 		);
 

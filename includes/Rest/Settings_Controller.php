@@ -1,10 +1,10 @@
 <?php
 
-namespace EasySubscription\Rest;
+namespace Subly\Rest;
 
-use EasySubscription\Admin\Menu;
-use EasySubscription\Admin\Settings_Page;
-use EasySubscription\Emails\Notification_Settings;
+use Subly\Admin\Menu;
+use Subly\Admin\Settings_Page;
+use Subly\Emails\Notification_Settings;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Settings_Controller {
 
-	public const NAMESPACE = 'easysubscription/v1';
+	public const NAMESPACE = 'subly/v1';
 
 	/**
 	 * WooCommerce's default section has an empty id, which a URL path cannot carry.
@@ -142,9 +142,9 @@ final class Settings_Controller {
 
 		if ( $unknown ) {
 			return new \WP_Error(
-				'easysubscription_unknown_setting',
+				'subly_unknown_setting',
 				/* translators: %s: comma-separated option names */
-				sprintf( __( 'Not saved: %s is not a setting on this page.', 'easysubscription' ), implode( ', ', array_map( 'strval', $unknown ) ) ),
+				sprintf( __( 'Not saved: %s is not a setting on this page.', 'subly' ), implode( ', ', array_map( 'strval', $unknown ) ) ),
 				array( 'status' => 400 )
 			);
 		}
@@ -153,9 +153,9 @@ final class Settings_Controller {
 
 		if ( $invalid ) {
 			return new \WP_Error(
-				'easysubscription_invalid_setting',
+				'subly_invalid_setting',
 				/* translators: %s: comma-separated option names */
-				sprintf( __( 'Not saved: %s needs a single value.', 'easysubscription' ), implode( ', ', array_map( 'strval', $invalid ) ) ),
+				sprintf( __( 'Not saved: %s needs a single value.', 'subly' ), implode( ', ', array_map( 'strval', $invalid ) ) ),
 				array( 'status' => 400 )
 			);
 		}
@@ -248,10 +248,10 @@ final class Settings_Controller {
 			'value'             => $this->value( $field ),
 			'placeholder'       => (string) ( $field['placeholder'] ?? '' ),
 			'custom_attributes' => (object) array_map( 'strval', (array) ( $field['custom_attributes'] ?? array() ) ),
-			'easysubscription_show_if'    => (string) ( $field['easysubscription_show_if'] ?? '' ),
-			'easysubscription_joins'      => (string) ( $field['easysubscription_joins'] ?? '' ),
-			'easysubscription_email'      => (string) ( $field['easysubscription_email'] ?? '' ),
-			'preview_url'       => Notification_Settings::preview_url( (string) ( $field['easysubscription_email'] ?? '' ) ),
+			'subly_show_if'    => (string) ( $field['subly_show_if'] ?? '' ),
+			'subly_joins'      => (string) ( $field['subly_joins'] ?? '' ),
+			'subly_email'      => (string) ( $field['subly_email'] ?? '' ),
+			'preview_url'       => Notification_Settings::preview_url( (string) ( $field['subly_email'] ?? '' ) ),
 		);
 	}
 
@@ -293,8 +293,8 @@ final class Settings_Controller {
 		$sections = $this->page->sections();
 
 		return $sections ? $sections : new \WP_Error(
-			'easysubscription_settings_unavailable',
-			__( "WooCommerce's settings could not be loaded, so EasySubscription's settings cannot be shown. Check that WooCommerce is active.", 'easysubscription' ),
+			'subly_settings_unavailable',
+			__( "WooCommerce's settings could not be loaded, so Subly's settings cannot be shown. Check that WooCommerce is active.", 'subly' ),
 			array( 'status' => 503 )
 		);
 	}
@@ -308,8 +308,8 @@ final class Settings_Controller {
 		$section = self::GENERAL === $asked ? '' : $asked;
 
 		return isset( $sections[ $section ] ) ? $section : new \WP_Error(
-			'easysubscription_unknown_section',
-			__( 'There is no such settings section.', 'easysubscription' ),
+			'subly_unknown_section',
+			__( 'There is no such settings section.', 'subly' ),
 			array( 'status' => 404 )
 		);
 	}

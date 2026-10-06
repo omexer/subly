@@ -1,7 +1,7 @@
 {
-  "name": "easysubscription",
+  "name": "subly",
   "private": true,
-  "description": "Admin interface for EasySubscription.",
+  "description": "Admin interface for Subly.",
   "scripts": {
     "build": "wp-scripts build",
     "start": "wp-scripts start",

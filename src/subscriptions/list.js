@@ -22,19 +22,19 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@easysubscription/ui';
+} from '@subly/ui';
 import { daysAgo, describeSchedule, statusVariant, whenDue } from './format';
 
 const PER_PAGE = 20;
 
 const BULK = [
-	{ key: 'cancel', label: __( 'Cancel', 'easysubscription' ) },
+	{ key: 'cancel', label: __( 'Cancel', 'subly' ) },
 	{
 		key: 'change_status',
-		status: 'es-on-hold',
-		label: __( 'Put on hold', 'easysubscription' ),
+		status: 'subly-on-hold',
+		label: __( 'Put on hold', 'subly' ),
 	},
-	{ key: 'reactivate', label: __( 'Reactivate', 'easysubscription' ) },
+	{ key: 'reactivate', label: __( 'Reactivate', 'subly' ) },
 ];
 
 const SORTABLE = {
@@ -52,26 +52,26 @@ const SORTABLE = {
  */
 function Empty( { filtered, onClear } ) {
 	return (
-		<div className="es-flex es-flex-col es-items-center es-gap-2 es-p-10 es-text-center">
-			<p className="es-m-0 es-font-medium">
+		<div className="sb-flex sb-flex-col sb-items-center sb-gap-2 sb-p-10 sb-text-center">
+			<p className="sb-m-0 sb-font-medium">
 				{ filtered
-					? __( 'No subscriptions match that', 'easysubscription' )
-					: __( 'No subscriptions yet', 'easysubscription' ) }
+					? __( 'No subscriptions match that', 'subly' )
+					: __( 'No subscriptions yet', 'subly' ) }
 			</p>
-			<p className="es-m-0 es-max-w-md es-text-sm es-text-muted-foreground">
+			<p className="sb-m-0 sb-max-w-md sb-text-sm sb-text-muted-foreground">
 				{ filtered
 					? __(
 							'Try a different status, or clear the search.',
-							'easysubscription'
+							'subly'
 					  )
 					: __(
 							'One appears here the moment somebody buys a subscription product. Nothing is charged until a gateway is connected.',
-							'easysubscription'
+							'subly'
 					  ) }
 			</p>
 			{ filtered ? (
 				<Button variant="outline" size="sm" onClick={ onClear }>
-					{ __( 'Clear filters', 'easysubscription' ) }
+					{ __( 'Clear filters', 'subly' ) }
 				</Button>
 			) : (
 				<Button
@@ -84,7 +84,7 @@ function Empty( { filtered, onClear } ) {
 						).href;
 					} }
 				>
-					{ __( 'New subscription product', 'easysubscription' ) }
+					{ __( 'New subscription product', 'subly' ) }
 				</Button>
 			) }
 		</div>
@@ -102,17 +102,17 @@ function SortHeader( { column, label, sort, onSort, className } ) {
 				onClick={ () =>
 					onSort( { orderby: SORTABLE[ column ], order: next } )
 				}
-				className="es-inline-flex es-items-center es-gap-1 es-font-medium hover:es-text-foreground"
+				className="sb-inline-flex sb-items-center sb-gap-1 sb-font-medium hover:sb-text-foreground"
 				aria-label={ sprintf(
 					/* translators: %s: column name. */
-					__( 'Sort by %s', 'easysubscription' ),
+					__( 'Sort by %s', 'subly' ),
 					label
 				) }
 			>
 				{ label }
 				<span
 					aria-hidden="true"
-					className={ active ? '' : 'es-opacity-30' }
+					className={ active ? '' : 'sb-opacity-30' }
 				>
 					{ active && 'ASC' === sort.order ? '▲' : '▼' }
 				</span>
@@ -161,7 +161,7 @@ export function List( {
 		setBusy( true );
 
 		return apiFetch( {
-			path: `/easysubscription/v1/subscriptions?${ params.toString() }`,
+			path: `/subly/v1/subscriptions?${ params.toString() }`,
 			parse: false,
 		} )
 			.then( ( response ) =>
@@ -192,7 +192,7 @@ export function List( {
 
 	const refreshStatuses = useCallback(
 		() =>
-			apiFetch( { path: '/easysubscription/v1/subscriptions/statuses' } )
+			apiFetch( { path: '/subly/v1/subscriptions/statuses' } )
 				.then( setStatuses )
 				.catch( () => {} ),
 		[]
@@ -225,7 +225,7 @@ export function List( {
 		setNotice( null );
 
 		apiFetch( {
-			path: '/easysubscription/v1/subscriptions/actions',
+			path: '/subly/v1/subscriptions/actions',
 			method: 'POST',
 			data: {
 				ids: chosen,
@@ -246,7 +246,7 @@ export function List( {
 								'%d subscription updated.',
 								'%d subscriptions updated.',
 								changed,
-								'easysubscription'
+								'subly'
 							),
 							changed
 						) +
@@ -258,7 +258,7 @@ export function List( {
 										'%d was left alone because that change is not allowed from its current status.',
 										'%d were left alone because that change is not allowed from their current status.',
 										held,
-										'easysubscription'
+										'subly'
 									),
 									held
 							  )
@@ -276,7 +276,7 @@ export function List( {
 					ok: false,
 					message:
 						error?.message ||
-						__( 'That did not work.', 'easysubscription' ),
+						__( 'That did not work.', 'subly' ),
 				} );
 			} );
 	};
@@ -287,7 +287,7 @@ export function List( {
 			/* translators: %s: recurring total. */
 			__(
 				'This charges the customer %s right now. Continue?',
-				'easysubscription'
+				'subly'
 			),
 			row.total_formatted
 		);
@@ -301,7 +301,7 @@ export function List( {
 		setNotice( null );
 
 		apiFetch( {
-			path: `/easysubscription/v1/subscriptions/${ row.id }/actions`,
+			path: `/subly/v1/subscriptions/${ row.id }/actions`,
 			method: 'POST',
 			data: { action: 'renew_now' },
 		} )
@@ -310,7 +310,7 @@ export function List( {
 					ok: true,
 					message: __(
 						'The renewal was put through. The activity log says what happened.',
-						'easysubscription'
+						'subly'
 					),
 				} );
 
@@ -322,13 +322,13 @@ export function List( {
 					ok: false,
 					message:
 						error?.message ||
-						__( 'That did not work.', 'easysubscription' ),
+						__( 'That did not work.', 'subly' ),
 				} );
 			} );
 	};
 
 	if ( ! rows ) {
-		return <Skeleton className="es-my-4 es-h-64" />;
+		return <Skeleton className="sb-my-4 sb-h-64" />;
 	}
 
 	const pages = Math.max( 1, Math.ceil( total / PER_PAGE ) );
@@ -341,27 +341,27 @@ export function List( {
 			type="button"
 			aria-pressed={ query.status === key }
 			onClick={ () => set( { status: key, page: 1 } ) }
-			className={ `es-rounded-md es-px-2.5 es-py-1 es-text-xs es-font-medium ${
+			className={ `sb-rounded-md sb-px-2.5 sb-py-1 sb-text-xs sb-font-medium ${
 				query.status === key
-					? 'es-bg-primary es-text-primary-foreground'
-					: 'es-text-muted-foreground hover:es-bg-accent hover:es-text-foreground'
+					? 'sb-bg-primary sb-text-primary-foreground'
+					: 'sb-text-muted-foreground hover:sb-bg-accent hover:sb-text-foreground'
 			}` }
 		>
 			{ label }
 			{ undefined === count ? null : (
-				<span className="es-ml-1 es-opacity-70">{ count }</span>
+				<span className="sb-ml-1 sb-opacity-70">{ count }</span>
 			) }
 		</button>
 	);
 
 	return (
-		<div className={ busy ? 'es-opacity-60 es-transition-opacity' : '' }>
+		<div className={ busy ? 'sb-opacity-60 sb-transition-opacity' : '' }>
 			{ notice ? (
 				<div
-					className={ `es-mb-4 es-rounded-lg es-border es-p-3 es-text-sm ${
+					className={ `sb-mb-4 sb-rounded-lg sb-border sb-p-3 sb-text-sm ${
 						notice.ok
-							? 'es-border-success es-text-success'
-							: 'es-border-destructive es-text-destructive'
+							? 'sb-border-success sb-text-success'
+							: 'sb-border-destructive sb-text-destructive'
 					}` }
 					role="status"
 				>
@@ -370,11 +370,11 @@ export function List( {
 			) : null }
 
 			<Card>
-				<div className="es-flex es-flex-wrap es-items-center es-gap-2 es-border-b es-p-3">
-					<div className="es-flex es-flex-wrap es-items-center es-gap-1">
+				<div className="sb-flex sb-flex-wrap sb-items-center sb-gap-2 sb-border-b sb-p-3">
+					<div className="sb-flex sb-flex-wrap sb-items-center sb-gap-1">
 						{ tab(
 							'',
-							__( 'All', 'easysubscription' ),
+							__( 'All', 'subly' ),
 							total && ! filtered ? total : undefined
 						) }
 						{ statuses
@@ -389,25 +389,25 @@ export function List( {
 						value={ query.search }
 						placeholder={ __(
 							'Search name, email or id',
-							'easysubscription'
+							'subly'
 						) }
 						onChange={ ( event ) =>
 							set( { search: event.target.value, page: 1 } )
 						}
-						className="es-ml-auto es-w-64"
+						className="sb-ml-auto sb-w-64"
 					/>
 				</div>
 
 				{ chosen.length ? (
-					<div className="es-flex es-flex-wrap es-items-center es-gap-2 es-border-b es-bg-secondary es-px-3 es-py-2">
-						<span className="es-text-sm es-font-medium">
+					<div className="sb-flex sb-flex-wrap sb-items-center sb-gap-2 sb-border-b sb-bg-secondary sb-px-3 sb-py-2">
+						<span className="sb-text-sm sb-font-medium">
 							{ sprintf(
 								/* translators: %d: how many rows are selected. */
 								_n(
 									'%d selected',
 									'%d selected',
 									chosen.length,
-									'easysubscription'
+									'subly'
 								),
 								chosen.length
 							) }
@@ -419,9 +419,9 @@ export function List( {
 							}
 							aria-label={ __(
 								'Bulk action',
-								'easysubscription'
+								'subly'
 							) }
-							className="es-h-8"
+							className="sb-h-8"
 						>
 							{ BULK.map( ( item ) => (
 								<option key={ item.label } value={ item.label }>
@@ -430,28 +430,28 @@ export function List( {
 							) ) }
 						</Select>
 						<Button size="sm" disabled={ busy } onClick={ runBulk }>
-							{ __( 'Apply', 'easysubscription' ) }
+							{ __( 'Apply', 'subly' ) }
 						</Button>
 						<Button
 							variant="ghost"
 							size="sm"
 							onClick={ () => setChosen( [] ) }
 						>
-							{ __( 'Clear', 'easysubscription' ) }
+							{ __( 'Clear', 'subly' ) }
 						</Button>
 					</div>
 				) : null }
 
-				<CardContent className="es-p-0">
+				<CardContent className="sb-p-0">
 					<Table>
 						<TableHeader>
 							<TableRow>
-								<TableHead className="es-w-10">
+								<TableHead className="sb-w-10">
 									<Checkbox
 										checked={ allChosen }
 										aria-label={ __(
 											'Select all',
-											'easysubscription'
+											'subly'
 										) }
 										onChange={ ( event ) =>
 											setChosen(
@@ -465,25 +465,25 @@ export function List( {
 									/>
 								</TableHead>
 								<TableHead>
-									{ __( 'Customer', 'easysubscription' ) }
+									{ __( 'Customer', 'subly' ) }
 								</TableHead>
 								<SortHeader
 									column="id"
 									label={ __(
 										'Subscription',
-										'easysubscription'
+										'subly'
 									) }
 									sort={ query }
 									onSort={ set }
 								/>
 								<TableHead>
-									{ __( 'Status', 'easysubscription' ) }
+									{ __( 'Status', 'subly' ) }
 								</TableHead>
 								<SortHeader
 									column="next_payment"
 									label={ __(
 										'Next payment',
-										'easysubscription'
+										'subly'
 									) }
 									sort={ query }
 									onSort={ set }
@@ -492,14 +492,14 @@ export function List( {
 									column="total"
 									label={ __(
 										'Recurring total',
-										'easysubscription'
+										'subly'
 									) }
 									sort={ query }
 									onSort={ set }
-									className="es-text-right"
+									className="sb-text-right"
 								/>
-								<TableHead className="es-text-right">
-									{ __( 'Actions', 'easysubscription' ) }
+								<TableHead className="sb-text-right">
+									{ __( 'Actions', 'subly' ) }
 								</TableHead>
 							</TableRow>
 						</TableHeader>
@@ -509,7 +509,7 @@ export function List( {
 								rows.map( ( row ) => (
 									<TableRow
 										key={ row.id }
-										className="hover:es-bg-muted/40"
+										className="hover:sb-bg-muted/40"
 									>
 										<TableCell>
 											<Checkbox
@@ -520,7 +520,7 @@ export function List( {
 													/* translators: %d: subscription id. */
 													__(
 														'Select subscription %d',
-														'easysubscription'
+														'subly'
 													),
 													row.id
 												) }
@@ -549,27 +549,27 @@ export function List( {
 														onOpen( row.id );
 													}
 												} }
-												className="es-font-medium es-text-foreground hover:es-text-primary"
+												className="sb-font-medium sb-text-foreground hover:sb-text-primary"
 											>
 												{ row.customer_name ||
 													row.customer_email ||
 													__(
 														'Guest',
-														'easysubscription'
+														'subly'
 													) }
 											</a>
 											{ row.customer_name &&
 											row.customer_email ? (
-												<div className="es-text-xs es-text-muted-foreground">
+												<div className="sb-text-xs sb-text-muted-foreground">
 													{ row.customer_email }
 												</div>
 											) : null }
 										</TableCell>
 										<TableCell>
-											<span className="es-tabular-nums es-text-muted-foreground">
+											<span className="sb-tabular-nums sb-text-muted-foreground">
 												#{ row.id }
 											</span>
-											<div className="es-text-xs es-text-muted-foreground">
+											<div className="sb-text-xs sb-text-muted-foreground">
 												{ describeSchedule( row ) }
 											</div>
 										</TableCell>
@@ -582,10 +582,10 @@ export function List( {
 												{ row.status_label }
 											</Badge>
 											{ row.payment_pending ? (
-												<div className="es-mt-1 es-text-xs es-text-muted-foreground">
+												<div className="sb-mt-1 sb-text-xs sb-text-muted-foreground">
 													{ __(
 														'Payment processing',
-														'easysubscription'
+														'subly'
 													) }
 													{ ' · ' }
 													<a
@@ -599,7 +599,7 @@ export function List( {
 															/* translators: %s: renewal order number. */
 															__(
 																'order #%s',
-																'easysubscription'
+																'subly'
 															),
 															row
 																.payment_pending_order
@@ -611,7 +611,7 @@ export function List( {
 														/* translators: %s: how long ago, such as "3 days ago". */
 														__(
 															'submitted %s',
-															'easysubscription'
+															'subly'
 														),
 														daysAgo(
 															row.payment_pending_since
@@ -628,11 +628,11 @@ export function List( {
 															row.next_payment_formatted
 														}
 													</div>
-													<div className="es-text-xs es-text-muted-foreground">
+													<div className="sb-text-xs sb-text-muted-foreground">
 														{ row.payment_pending
 															? __(
 																	'waiting for the payment',
-																	'easysubscription'
+																	'subly'
 															  )
 															: whenDue(
 																	row.next_payment
@@ -640,20 +640,20 @@ export function List( {
 													</div>
 												</>
 											) : (
-												<span className="es-text-muted-foreground">
+												<span className="sb-text-muted-foreground">
 													—
 												</span>
 											) }
 										</TableCell>
-										<TableCell className="es-text-right es-font-medium es-tabular-nums">
+										<TableCell className="sb-text-right sb-font-medium sb-tabular-nums">
 											{ row.total_formatted }
-											<div className="es-text-xs es-font-normal es-text-muted-foreground">
+											<div className="sb-text-xs sb-font-normal sb-text-muted-foreground">
 												{ row.payment_method_title ||
 													row.payment_method ||
 													'—' }
 											</div>
 										</TableCell>
-										<TableCell className="es-text-right">
+										<TableCell className="sb-text-right">
 											{ row.billable &&
 											! row.payment_pending ? (
 												<Button
@@ -665,7 +665,7 @@ export function List( {
 												>
 													{ __(
 														'Renew now',
-														'easysubscription'
+														'subly'
 													) }
 												</Button>
 											) : null }
@@ -674,7 +674,7 @@ export function List( {
 								) )
 							) : (
 								<TableRow>
-									<TableCell colSpan={ 7 } className="es-p-0">
+									<TableCell colSpan={ 7 } className="sb-p-0">
 										<Empty
 											filtered={ filtered }
 											onClear={ () =>
@@ -693,21 +693,21 @@ export function List( {
 				</CardContent>
 
 				{ rows.length ? (
-					<div className="es-flex es-flex-wrap es-items-center es-gap-3 es-border-t es-p-3 es-text-sm">
-						<span className="es-text-muted-foreground">
+					<div className="sb-flex sb-flex-wrap sb-items-center sb-gap-3 sb-border-t sb-p-3 sb-text-sm">
+						<span className="sb-text-muted-foreground">
 							{ sprintf(
 								/* translators: %d: how many subscriptions matched. */
 								_n(
 									'%d subscription',
 									'%d subscriptions',
 									total,
-									'easysubscription'
+									'subly'
 								),
 								total
 							) }
 						</span>
 						{ pages > 1 ? (
-							<div className="es-ml-auto es-flex es-items-center es-gap-3">
+							<div className="sb-ml-auto sb-flex sb-items-center sb-gap-3">
 								<Button
 									variant="outline"
 									size="sm"
@@ -716,14 +716,14 @@ export function List( {
 										set( { page: query.page - 1 } )
 									}
 								>
-									{ __( 'Previous', 'easysubscription' ) }
+									{ __( 'Previous', 'subly' ) }
 								</Button>
-								<span className="es-text-muted-foreground">
+								<span className="sb-text-muted-foreground">
 									{ sprintf(
 										/* translators: 1: current page, 2: total pages. */
 										__(
 											'Page %1$d of %2$d',
-											'easysubscription'
+											'subly'
 										),
 										query.page,
 										pages
@@ -737,7 +737,7 @@ export function List( {
 										set( { page: query.page + 1 } )
 									}
 								>
-									{ __( 'Next', 'easysubscription' ) }
+									{ __( 'Next', 'subly' ) }
 								</Button>
 							</div>
 						) : null }

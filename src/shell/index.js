@@ -1,5 +1,5 @@
 /**
- * The EasySubscription admin app, published as window.easysubscription.shell for every route bundle.
+ * The Subly admin app, published as window.subly.shell for every route bundle.
  */
 import { registerRoute, navigate, current } from './router';
 import { boot } from './app';

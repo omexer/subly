@@ -1,23 +1,23 @@
 /* Until the shell moves them: nothing but important notices shows on a page it draws. */
-body.easysubscription-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):not(.easysubscription-notice--important, .inline, .below-h2, .easysubscription-notify__list *, .easysubscription-app__route *) {
+body.subly-app-page.js #wpbody-content :is(div.notice, div.error, div.updated):not(.subly-notice--important, .inline, .below-h2, .subly-notify__list *, .subly-app__route *) {
 	display: none;
 }
 
-.easysubscription-app__landing {
+.subly-app__landing {
 	display: contents;
 }
 
-.easysubscription-alerts:empty {
+.subly-alerts:empty {
 	display: none;
 }
 
-.easysubscription-alerts {
+.subly-alerts {
 	display: grid;
 	gap: 8px;
-	margin: 0 0 var(--easysubscription-gap);
+	margin: 0 0 var(--subly-gap);
 }
 
-.easysubscription-shell .notice.easysubscription-alert {
+.subly-shell .notice.subly-alert {
 	position: relative;
 	display: flex;
 	align-items: center;
@@ -25,37 +25,37 @@ body.easysubscription-app-page.js #wpbody-content :is(div.notice, div.error, div
 	min-width: 0;
 	margin: 0;
 	padding: 8px 12px 8px 10px;
-	border: 1px solid var(--easysubscription-line);
-	border-right: 3px solid var(--easysubscription-alert-tone, var(--easysubscription-accent));
-	border-radius: var(--easysubscription-radius-sm);
-	background: var(--easysubscription-bg);
-	box-shadow: var(--easysubscription-shadow);
+	border: 1px solid var(--subly-line);
+	border-right: 3px solid var(--subly-alert-tone, var(--subly-accent));
+	border-radius: var(--subly-radius-sm);
+	background: var(--subly-bg);
+	box-shadow: var(--subly-shadow);
 	font-size: 13px;
 	line-height: 1.45;
-	color: var(--easysubscription-ink);
+	color: var(--subly-ink);
 }
 
-.easysubscription-shell .easysubscription-alert--error { --easysubscription-alert-tone: var(--easysubscription-bad); }
-.easysubscription-shell .easysubscription-alert--warning { --easysubscription-alert-tone: var(--easysubscription-warn); }
-.easysubscription-shell .easysubscription-alert--success { --easysubscription-alert-tone: var(--easysubscription-good); }
+.subly-shell .subly-alert--error { --subly-alert-tone: var(--subly-bad); }
+.subly-shell .subly-alert--warning { --subly-alert-tone: var(--subly-warn); }
+.subly-shell .subly-alert--success { --subly-alert-tone: var(--subly-good); }
 
-.easysubscription-shell .easysubscription-alert.is-open {
+.subly-shell .subly-alert.is-open {
 	align-items: flex-start;
 }
 
-.easysubscription-alert__icon {
+.subly-alert__icon {
 	display: grid;
 	flex: none;
 	place-items: center;
-	color: var(--easysubscription-alert-tone, var(--easysubscription-accent));
+	color: var(--subly-alert-tone, var(--subly-accent));
 }
 
-.easysubscription-alert__text {
+.subly-alert__text {
 	flex: 1;
 	min-width: 0;
 }
 
-.easysubscription-shell .easysubscription-alert p.easysubscription-alert__title {
+.subly-shell .subly-alert p.subly-alert__title {
 	margin: 0;
 	padding: 0;
 	overflow: hidden;
@@ -64,53 +64,53 @@ body.easysubscription-app-page.js #wpbody-content :is(div.notice, div.error, div
 	text-overflow: ellipsis;
 }
 
-.easysubscription-alert__detail {
+.subly-alert__detail {
 	overflow: hidden;
-	color: var(--easysubscription-ink-soft);
+	color: var(--subly-ink-soft);
 	white-space: nowrap;
 	text-overflow: ellipsis;
 }
 
-.easysubscription-shell .easysubscription-alert__detail :is(p, ul, ol, li) {
+.subly-shell .subly-alert__detail :is(p, ul, ol, li) {
 	display: inline;
 	margin: 0 !important; /* Beats the inline list styles some notices carry. */
 	padding: 0;
 }
 
-.easysubscription-alert__detail li + li::before {
+.subly-alert__detail li + li::before {
 	content: " ";
 }
 
-.easysubscription-shell .easysubscription-alert.is-open :is(.easysubscription-alert__title, .easysubscription-alert__detail) {
+.subly-shell .subly-alert.is-open :is(.subly-alert__title, .subly-alert__detail) {
 	white-space: normal;
 }
 
-.easysubscription-shell .easysubscription-alert.is-open .easysubscription-alert__detail :is(p, ul, ol) {
+.subly-shell .subly-alert.is-open .subly-alert__detail :is(p, ul, ol) {
 	display: block;
 	margin: 4px 0 0 !important;
 }
 
-.easysubscription-shell .easysubscription-alert.is-open .easysubscription-alert__detail ul {
+.subly-shell .subly-alert.is-open .subly-alert__detail ul {
 	padding-right: 18px;
 	list-style: disc;
 }
 
-.easysubscription-shell .easysubscription-alert.is-open .easysubscription-alert__detail li {
+.subly-shell .subly-alert.is-open .subly-alert__detail li {
 	display: list-item;
 }
 
-.easysubscription-alert.is-open .easysubscription-alert__detail li + li::before {
+.subly-alert.is-open .subly-alert__detail li + li::before {
 	content: none;
 }
 
-.easysubscription-alert__actions {
+.subly-alert__actions {
 	display: flex;
 	flex: none;
 	align-items: center;
 	gap: 6px;
 }
 
-.easysubscription-shell .easysubscription-alert__actions .button {
+.subly-shell .subly-alert__actions .button {
 	min-height: 28px;
 	margin: 0;
 	padding: 0 10px;
@@ -118,54 +118,54 @@ body.easysubscription-app-page.js #wpbody-content :is(div.notice, div.error, div
 	line-height: 26px;
 }
 
-.easysubscription-alert__more,
-.easysubscription-alerts__more {
+.subly-alert__more,
+.subly-alerts__more {
 	padding: 4px 6px;
 	border: 0;
 	border-radius: 6px;
 	background: none;
-	color: var(--easysubscription-accent);
+	color: var(--subly-accent);
 	font: inherit;
 	font-size: 12px;
 	font-weight: 500;
 	cursor: pointer;
 }
 
-.easysubscription-alert__more:hover,
-.easysubscription-alerts__more:hover {
-	background: var(--easysubscription-accent-soft);
+.subly-alert__more:hover,
+.subly-alerts__more:hover {
+	background: var(--subly-accent-soft);
 }
 
-.easysubscription-alert__more[aria-expanded="true"] {
-	background: var(--easysubscription-accent-soft);
+.subly-alert__more[aria-expanded="true"] {
+	background: var(--subly-accent-soft);
 }
 
-.easysubscription-alerts__more {
-	margin: -8px 0 var(--easysubscription-gap);
+.subly-alerts__more {
+	margin: -8px 0 var(--subly-gap);
 	padding-right: 0;
 }
 
-.easysubscription-alert__dismiss {
+.subly-alert__dismiss {
 	display: grid;
 	place-items: center;
 	width: 28px;
 	height: 28px;
 	border-radius: 6px;
-	color: var(--easysubscription-ink-soft);
+	color: var(--subly-ink-soft);
 }
 
-.easysubscription-alert__dismiss:hover,
-.easysubscription-alert__dismiss:focus {
-	background: var(--easysubscription-line-soft);
-	color: var(--easysubscription-ink);
+.subly-alert__dismiss:hover,
+.subly-alert__dismiss:focus {
+	background: var(--subly-line-soft);
+	color: var(--subly-ink);
 }
 
 /* WordPress adds its own close button to dismissible notices, positioned for its layout. */
-.easysubscription-shell .easysubscription-alert.is-dismissible {
+.subly-shell .subly-alert.is-dismissible {
 	padding-left: 10px;
 }
 
-.easysubscription-shell .easysubscription-alert > .notice-dismiss {
+.subly-shell .subly-alert > .notice-dismiss {
 	position: static;
 	flex: none;
 	width: 28px;
@@ -174,36 +174,36 @@ body.easysubscription-app-page.js #wpbody-content :is(div.notice, div.error, div
 	border-radius: 6px;
 }
 
-.easysubscription-shell .easysubscription-alert > .notice-dismiss::before {
+.subly-shell .subly-alert > .notice-dismiss::before {
 	font-size: 18px;
 	line-height: 28px;
 }
 
-.easysubscription-alert :is(.easysubscription-alert__more, .easysubscription-alert__dismiss, .notice-dismiss):focus-visible,
-.easysubscription-alerts__more:focus-visible {
-	outline: 2px solid var(--easysubscription-accent);
+.subly-alert :is(.subly-alert__more, .subly-alert__dismiss, .notice-dismiss):focus-visible,
+.subly-alerts__more:focus-visible {
+	outline: 2px solid var(--subly-accent);
 	outline-offset: 1px;
 	box-shadow: none;
 }
 
 /* An important notice past the first few sits in the notification centre like any other. */
-.easysubscription-shell .easysubscription-notify__list .notice.easysubscription-alert {
+.subly-shell .subly-notify__list .notice.subly-alert {
 	border-width: 0 3px 0 0;
-	border-bottom: 1px solid var(--easysubscription-line-soft);
+	border-bottom: 1px solid var(--subly-line-soft);
 	border-radius: 0;
 	box-shadow: none;
 }
 
 @media screen and (max-width: 600px) {
-	.easysubscription-shell .notice.easysubscription-alert {
+	.subly-shell .notice.subly-alert {
 		flex-wrap: wrap;
 	}
 
-	.easysubscription-alert__text {
+	.subly-alert__text {
 		flex-basis: calc(100% - 40px);
 	}
 
-	.easysubscription-alert__actions {
+	.subly-alert__actions {
 		margin-right: 28px;
 	}
 }

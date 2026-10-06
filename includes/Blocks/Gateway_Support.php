@@ -1,6 +1,6 @@
 <?php
 
-namespace EasySubscription\Blocks;
+namespace Subly\Blocks;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
@@ -39,7 +39,7 @@ class Gateway_Support extends AbstractPaymentMethodType {
 	 * @return string[]
 	 */
 	public function get_payment_method_script_handles(): array {
-		$asset = EASYSUBSCRIPTION_PATH . 'build/blocks.asset.php';
+		$asset = SUBLY_PATH . 'build/blocks.asset.php';
 
 		if ( ! is_readable( $asset ) ) {
 			return array();
@@ -49,8 +49,8 @@ class Gateway_Support extends AbstractPaymentMethodType {
 
 		// Registered once however many gateways ask for it; WordPress ignores a repeat.
 		wp_register_script(
-			'easysubscription-blocks',
-			EASYSUBSCRIPTION_URL . 'build/blocks.js',
+			'subly-blocks',
+			SUBLY_URL . 'build/blocks.js',
 			// The two WooCommerce globals are externals at build time, so the asset file
 			// cannot know about them; their handles have to be named here.
 			array_merge( $asset['dependencies'], array( 'wc-blocks-registry', 'wc-settings' ) ),
@@ -58,9 +58,9 @@ class Gateway_Support extends AbstractPaymentMethodType {
 			true
 		);
 
-		wp_set_script_translations( 'easysubscription-blocks', 'easysubscription', EASYSUBSCRIPTION_PATH . 'languages' );
+		wp_set_script_translations( 'subly-blocks', 'subly', SUBLY_PATH . 'languages' );
 
-		return array( 'easysubscription-blocks' );
+		return array( 'subly-blocks' );
 	}
 
 	/**

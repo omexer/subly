@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Checkout;
+namespace Subly\Checkout;
 
-use EasySubscription\Product\Subscription_Product;
+use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Cart_Validation {
 
-	public const OPTION_MIXED = 'easysubscription_allow_mixed_checkout';
+	public const OPTION_MIXED = 'subly_allow_mixed_checkout';
 
 	public function register(): void {
 		// The Store API runs this filter too, turning the notice into its error.
@@ -65,13 +65,13 @@ class Cart_Validation {
 	 */
 	public function validate_store_api_cart( $errors ): void {
 		if ( $errors instanceof \WP_Error && $this->is_mixed_and_refused() ) {
-			$errors->add( 'easysubscription_mixed_cart', self::mixed_cart_message() );
+			$errors->add( 'subly_mixed_cart', self::mixed_cart_message() );
 		}
 	}
 
 	private function refusal( bool $recurring ): ?string {
 		if ( $recurring && Subscription_Product::cart_has_subscription() ) {
-			return __( 'You can only sign up for one subscription at a time. Please complete this order first, then start the next subscription.', 'easysubscription' );
+			return __( 'You can only sign up for one subscription at a time. Please complete this order first, then start the next subscription.', 'subly' );
 		}
 
 		if ( self::allows_mixed() ) {
@@ -79,11 +79,11 @@ class Cart_Validation {
 		}
 
 		if ( $recurring && self::cart_has_one_time_item() ) {
-			return __( 'Subscriptions are checked out on their own. Please complete the order in your cart first, or empty your cart, then add the subscription.', 'easysubscription' );
+			return __( 'Subscriptions are checked out on their own. Please complete the order in your cart first, or empty your cart, then add the subscription.', 'subly' );
 		}
 
 		if ( ! $recurring && Subscription_Product::cart_has_subscription() ) {
-			return __( 'Subscriptions are checked out on their own. Please complete your subscription order first, then add other products.', 'easysubscription' );
+			return __( 'Subscriptions are checked out on their own. Please complete your subscription order first, then add other products.', 'subly' );
 		}
 
 		return null;
@@ -95,7 +95,7 @@ class Cart_Validation {
 	}
 
 	private static function mixed_cart_message(): string {
-		return __( 'Subscriptions are checked out on their own. Please remove either the subscription or the other products from your cart.', 'easysubscription' );
+		return __( 'Subscriptions are checked out on their own. Please remove either the subscription or the other products from your cart.', 'subly' );
 	}
 
 	/**
@@ -115,7 +115,7 @@ class Cart_Validation {
 		 * @param int   $variation_id
 		 * @param array $item_data
 		 */
-		return (bool) apply_filters( 'easysubscription_adding_subscription', true, $product_id, $variation_id, $item_data );
+		return (bool) apply_filters( 'subly_adding_subscription', true, $product_id, $variation_id, $item_data );
 	}
 
 	/**
@@ -127,7 +127,7 @@ class Cart_Validation {
 		}
 
 		foreach ( WC()->cart->get_cart() as $key => $item ) {
-			if ( ! Subscription_Product::is_subscription( $item['data'] ?? null ) || ! apply_filters( 'easysubscription_cart_item_is_subscription', true, $item, $key ) ) {
+			if ( ! Subscription_Product::is_subscription( $item['data'] ?? null ) || ! apply_filters( 'subly_cart_item_is_subscription', true, $item, $key ) ) {
 				return true;
 			}
 		}

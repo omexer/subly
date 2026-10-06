@@ -1,13 +1,13 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * The frame every EasySubscription screen sits in: a header bar with breadcrumbs, the page heading,
+ * The frame every Subly screen sits in: a header bar with breadcrumbs, the page heading,
  * and a footer.
  *
  * One frame for every screen in both plugins, so a merchant moving from Subscriptions to
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Page_Shell {
 
-	public const UPGRADE_URL = 'https://github.com/pronob1010/easysubscription-pro';
+	public const UPGRADE_URL = 'https://omexer.com';
 
 	/**
 	 * @param string                                   $title    The page heading.
@@ -31,32 +31,32 @@ class Page_Shell {
 			$crumbs = array( array( 'label' => $title ) );
 		}
 
-		echo '<div class="easysubscription-shell">';
-		echo '<header class="easysubscription-shell__bar"><div class="easysubscription-shell__inner">';
+		echo '<div class="subly-shell">';
+		echo '<header class="subly-shell__bar"><div class="subly-shell__inner">';
 
-		echo '<nav class="easysubscription-crumbs" aria-label="' . esc_attr__( 'Breadcrumb', 'easysubscription' ) . '">';
+		echo '<nav class="subly-crumbs" aria-label="' . esc_attr__( 'Breadcrumb', 'subly' ) . '">';
 		printf(
-			'<a class="easysubscription-crumbs__home" href="%s"><img class="easysubscription-logo" src="%s" width="178" height="28" alt="%s"></a>',
+			'<a class="subly-crumbs__home" href="%s"><img class="subly-logo" src="%s" width="92" height="28" alt="%s"></a>',
 			esc_url( $links['home'] ),
 			esc_url( $links['logo'] ),
-			esc_attr__( 'EasySubscription', 'easysubscription' )
+			esc_attr__( 'Subly', 'subly' )
 		);
 
 		$last = count( $crumbs ) - 1;
 
 		foreach ( array_values( $crumbs ) as $index => $crumb ) {
-			echo '<span class="easysubscription-crumbs__sep" aria-hidden="true">/</span>';
+			echo '<span class="subly-crumbs__sep" aria-hidden="true">/</span>';
 
 			if ( $index < $last && ! empty( $crumb['url'] ) ) {
-				printf( '<a class="easysubscription-crumbs__link" href="%s">%s</a>', esc_url( (string) $crumb['url'] ), esc_html( (string) $crumb['label'] ) );
+				printf( '<a class="subly-crumbs__link" href="%s">%s</a>', esc_url( (string) $crumb['url'] ), esc_html( (string) $crumb['label'] ) );
 			} else {
-				printf( '<span class="easysubscription-crumbs__current" aria-current="page">%s</span>', esc_html( (string) $crumb['label'] ) );
+				printf( '<span class="subly-crumbs__current" aria-current="page">%s</span>', esc_html( (string) $crumb['label'] ) );
 			}
 		}
 
 		echo '</nav>';
 
-		echo '<div class="easysubscription-shell__meta">';
+		echo '<div class="subly-shell__meta">';
 
 		Notices::render_toggle();
 
@@ -64,37 +64,37 @@ class Page_Shell {
 			'<a href="%s">%s%s</a><a href="%s">%s%s</a>',
 			esc_url( $links['help'] ),
 			wp_kses( self::icon( '<rect x="3.5" y="3.5" width="17" height="17" rx="3"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4M12 16.6h.01"/>' ), Allowed_Html::svg() ),
-			esc_html__( 'Help', 'easysubscription' ),
+			esc_html__( 'Help', 'subly' ),
 			esc_url( $links['settings'] ),
 			wp_kses( self::icon( '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-1.8-.3 1.6 1.6 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0 .3-1.8 1.6 1.6 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9a1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 1 1.5 1.6 1.6 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>' ), Allowed_Html::svg() ),
-			esc_html__( 'Settings', 'easysubscription' )
+			esc_html__( 'Settings', 'subly' )
 		);
 
 		if ( '' !== $links['upgrade'] ) {
 			printf(
-				'<a class="easysubscription-shell__upgrade" href="%s" target="_blank" rel="noopener noreferrer">%s%s<span class="screen-reader-text"> %s</span></a>',
+				'<a class="subly-shell__upgrade" href="%s" target="_blank" rel="noopener noreferrer">%s%s<span class="screen-reader-text"> %s</span></a>',
 				esc_url( $links['upgrade'] ),
 				wp_kses( self::icon( '<path d="M3 8l4.5 4L12 6l4.5 6L21 8l-2 10H5z"/>' ), Allowed_Html::svg() ),
-				esc_html__( 'Upgrade to Pro', 'easysubscription' ),
+				esc_html__( 'Upgrade to Pro', 'subly' ),
 				/* translators: accessibility text for a link that opens in a new tab */
-				esc_html__( '(opens in a new tab)', 'easysubscription' )
+				esc_html__( '(opens in a new tab)', 'subly' )
 			);
 		}
 
 		echo '</div></div></header>';
 
-		echo '<div class="wrap easysubscription-shell__body">';
-		echo '<div class="easysubscription-head' . ( $visible ? '' : ' screen-reader-text' ) . '"><div class="easysubscription-head__text">';
-		echo '<h1 class="easysubscription-head__title">' . esc_html( $title ) . '</h1>';
+		echo '<div class="wrap subly-shell__body">';
+		echo '<div class="subly-head' . ( $visible ? '' : ' screen-reader-text' ) . '"><div class="subly-head__text">';
+		echo '<h1 class="subly-head__title">' . esc_html( $title ) . '</h1>';
 
 		if ( '' !== $subtitle ) {
-			echo '<p class="easysubscription-head__subtitle">' . esc_html( $subtitle ) . '</p>';
+			echo '<p class="subly-head__subtitle">' . esc_html( $subtitle ) . '</p>';
 		}
 
 		echo '</div>';
 
 		if ( '' !== $actions ) {
-			echo '<div class="easysubscription-head__actions">' . wp_kses_post( $actions ) . '</div>';
+			echo '<div class="subly-head__actions">' . wp_kses_post( $actions ) . '</div>';
 		}
 
 		echo '</div>';
@@ -108,11 +108,11 @@ class Page_Shell {
 
 	public static function close(): void {
 		printf(
-			'</div><footer class="easysubscription-shell__foot">%s &middot; <a href="%s">%s</a></footer></div>',
+			'</div><footer class="subly-shell__foot">%s &middot; <a href="%s">%s</a></footer></div>',
 			/* translators: %s: version number */
-			esc_html( sprintf( __( 'EasySubscription %s', 'easysubscription' ), EASYSUBSCRIPTION_VERSION ) ),
+			esc_html( sprintf( __( 'Subly %s', 'subly' ), SUBLY_VERSION ) ),
 			esc_url( admin_url( 'admin.php?page=' . Menu::SLUG . '-help' ) ),
-			esc_html__( 'Help and system report', 'easysubscription' )
+			esc_html__( 'Help and system report', 'subly' )
 		);
 	}
 
@@ -123,7 +123,7 @@ class Page_Shell {
 	 */
 	public static function header_links(): array {
 		return array(
-			'logo'     => EASYSUBSCRIPTION_URL . 'assets/images/logo.svg',
+			'logo'     => SUBLY_URL . 'assets/images/logo.svg',
 			'home'     => admin_url( 'admin.php?page=' . Menu::SLUG ),
 			'help'     => admin_url( 'admin.php?page=' . Help_Page::SLUG ),
 			'settings' => admin_url( 'admin.php?page=' . Settings_Page::SLUG ),
@@ -132,10 +132,10 @@ class Page_Shell {
 	}
 
 	/**
-	 * Off for now: the easysubscription_show_upgrade filter brings the header button back.
+	 * Off for now: the subly_show_upgrade filter brings the header button back.
 	 */
 	private static function offers_upgrade(): bool {
-		return ! did_action( 'easysubscription_pro_loaded' ) && (bool) apply_filters( 'easysubscription_show_upgrade', false );
+		return ! did_action( 'subly_pro_loaded' ) && (bool) apply_filters( 'subly_show_upgrade', false );
 	}
 
 	private static function icon( string $paths ): string {

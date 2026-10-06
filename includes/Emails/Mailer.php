@@ -1,18 +1,18 @@
 <?php
 
-namespace EasySubscription\Emails;
+namespace Subly\Emails;
 
-use EasySubscription\Billing\Renewal_Scheduler;
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
-use EasySubscription\Gateways\Charge_Result;
+use Subly\Billing\Renewal_Scheduler;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
+use Subly\Gateways\Charge_Result;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Registers EasySubscription's emails with WooCommerce and connects them to pipeline events.
+ * Registers Subly's emails with WooCommerce and connects them to pipeline events.
  *
  * Every message is a WC_Email so the merchant's existing branding, template overrides
  * and enable/disable toggles apply without extra settings of our own.
@@ -35,7 +35,7 @@ class Mailer {
 	/**
 	 * WooCommerce's own order emails, suppressed for renewal orders.
 	 *
-	 * A renewal is not a new order from the customer's point of view, and EasySubscription already
+	 * A renewal is not a new order from the customer's point of view, and Subly already
 	 * sends a receipt. Without this the customer gets two emails per renewal.
 	 */
 	private const WOO_ORDER_EMAILS = array(
@@ -48,27 +48,27 @@ class Mailer {
 		'customer_failed_order',
 	);
 
-	public const ACTION_REACTIVATED = 'easysubscription_reactivated_email';
+	public const ACTION_REACTIVATED = 'subly_reactivated_email';
 
-	private const META_REACTIVATED = '_easysubscription_reactivated_notified';
+	private const META_REACTIVATED = '_subly_reactivated_notified';
 
 	public function register(): void {
 		add_filter( 'woocommerce_email_classes', array( $this, 'add_emails' ) );
 
-		foreach ( self::WOO_ORDER_EMAILS as $easysubscription_email_id ) {
-			add_filter( "woocommerce_email_enabled_{$easysubscription_email_id}", array( $this, 'suppress_for_renewals' ), 10, 2 );
+		foreach ( self::WOO_ORDER_EMAILS as $subly_email_id ) {
+			add_filter( "woocommerce_email_enabled_{$subly_email_id}", array( $this, 'suppress_for_renewals' ), 10, 2 );
 		}
 
-		add_action( 'easysubscription_subscription_activated', array( $this, 'on_activated' ), 10, 1 );
-		add_action( 'easysubscription_subscription_created', array( $this, 'on_created' ), 10, 2 );
-		add_action( 'easysubscription_renewal_succeeded', array( $this, 'on_renewal_paid' ), 10, 2 );
-		add_action( 'easysubscription_renewal_failed', array( $this, 'on_renewal_failed' ), 10, 3 );
-		add_action( 'easysubscription_renewal_requires_action', array( $this, 'on_requires_action' ), 10, 3 );
-		add_action( 'easysubscription_subscription_cancelled', array( $this, 'on_cancelled' ), 10, 1 );
-		add_action( 'easysubscription_renewal_due_soon', array( $this, 'on_due_soon' ), 10, 1 );
-		add_action( 'easysubscription_subscription_finished', array( $this, 'on_finished' ), 10, 2 );
-		add_action( 'easysubscription_subscription_status_changed', array( $this, 'on_status_changed' ), 10, 3 );
-		add_action( 'easysubscription_subscription_resumed', array( $this, 'queue_reactivated' ), 10, 1 );
+		add_action( 'subly_subscription_activated', array( $this, 'on_activated' ), 10, 1 );
+		add_action( 'subly_subscription_created', array( $this, 'on_created' ), 10, 2 );
+		add_action( 'subly_renewal_succeeded', array( $this, 'on_renewal_paid' ), 10, 2 );
+		add_action( 'subly_renewal_failed', array( $this, 'on_renewal_failed' ), 10, 3 );
+		add_action( 'subly_renewal_requires_action', array( $this, 'on_requires_action' ), 10, 3 );
+		add_action( 'subly_subscription_cancelled', array( $this, 'on_cancelled' ), 10, 1 );
+		add_action( 'subly_renewal_due_soon', array( $this, 'on_due_soon' ), 10, 1 );
+		add_action( 'subly_subscription_finished', array( $this, 'on_finished' ), 10, 2 );
+		add_action( 'subly_subscription_status_changed', array( $this, 'on_status_changed' ), 10, 3 );
+		add_action( 'subly_subscription_resumed', array( $this, 'queue_reactivated' ), 10, 1 );
 		add_action( self::ACTION_REACTIVATED, array( $this, 'send_reactivated' ), 10, 2 );
 	}
 
@@ -77,7 +77,7 @@ class Mailer {
 	 * @param mixed $order
 	 */
 	public function suppress_for_renewals( $enabled, $order ) {
-		if ( $order instanceof \WC_Order && 'easysubscription_renewal' === $order->get_created_via() ) {
+		if ( $order instanceof \WC_Order && 'subly_renewal' === $order->get_created_via() ) {
 			return false;
 		}
 
@@ -86,7 +86,7 @@ class Mailer {
 
 	public function add_emails( array $emails ): array {
 		foreach ( self::CLASSES as $key => $class ) {
-			$emails[ 'EasySubscription_' . $key ] = new $class();
+			$emails[ 'Subly_' . $key ] = new $class();
 		}
 
 		return $emails;
@@ -124,7 +124,7 @@ class Mailer {
 		 * @param bool         $send
 		 * @param Subscription $subscription
 		 */
-		if ( ! apply_filters( 'easysubscription_send_renewal_reminder', true, $subscription ) ) {
+		if ( ! apply_filters( 'subly_send_renewal_reminder', true, $subscription ) ) {
 			return;
 		}
 
@@ -136,7 +136,7 @@ class Mailer {
 	}
 
 	/**
-	 * A withdrawn cancellation. Renewals never leave es-pending-cancel for active, so none is mistaken for one.
+	 * A withdrawn cancellation. Renewals never leave subly-cancelling for active, so none is mistaken for one.
 	 *
 	 * @param Subscription $subscription
 	 * @param string       $from
@@ -190,7 +190,7 @@ class Mailer {
 			return false;
 		}
 
-		$email = WC()->mailer()->get_emails()[ 'EasySubscription_' . $key ] ?? null;
+		$email = WC()->mailer()->get_emails()[ 'Subly_' . $key ] ?? null;
 
 		return $email instanceof \WC_Email && $email->is_enabled();
 	}
@@ -204,7 +204,7 @@ class Mailer {
 		}
 
 		$emails = WC()->mailer()->get_emails();
-		$email  = $emails[ 'EasySubscription_' . $key ] ?? null;
+		$email  = $emails[ 'Subly_' . $key ] ?? null;
 
 		// Each email declares its own trigger() with its own arguments, so there is no
 		// shared signature to put on the base class and no method to call blindly.

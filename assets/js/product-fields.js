@@ -1,12 +1,12 @@
-/* global jQuery, easysubscriptionProductFields */
+/* global jQuery, sublyProductFields */
 jQuery( function ( $ ) {
-	var config = window.easysubscriptionProductFields || {},
+	var config = window.sublyProductFields || {},
 		$panel = $( '#woocommerce-product-data' ),
-		$options = $panel.find( '.easysubscription-product-options' ),
-		$pricingSection = $panel.find( '.easysubscription-section--pricing' ),
+		$options = $panel.find( '.subly-product-options' ),
+		$pricingSection = $panel.find( '.subly-section--pricing' ),
 		$pricingRows = $pricingSection.find( '.form-field' ),
 		$wooPricing = $panel.find( '#general_product_data .options_group.pricing' ).first(),
-		$pricingTitle = $( '<h4 class="easysubscription-section__title easysubscription-pricing-title"></h4>' ).text( config.pricingTitle || '' );
+		$pricingTitle = $( '<h4 class="subly-section__title subly-pricing-title"></h4>' ).text( config.pricingTitle || '' );
 
 	function paymentType() {
 		var $select = $panel.find( '.' + config.paymentTypeClass + ' select' );
@@ -23,12 +23,12 @@ jQuery( function ( $ ) {
 		return String( $field.val() );
 	}
 
-	// data-easysubscription-when="field_id=a|b" on any input in a row shows the row only for those values.
+	// data-subly-when="field_id=a|b" on any input in a row shows the row only for those values.
 	function conditionsMet( $row ) {
 		var met = true;
 
-		$row.find( '[data-easysubscription-when]' ).each( function () {
-			var rule = String( $( this ).attr( 'data-easysubscription-when' ) ).split( '=' ),
+		$row.find( '[data-subly-when]' ).each( function () {
+			var rule = String( $( this ).attr( 'data-subly-when' ) ).split( '=' ),
 				$field = $( '#' + rule[ 0 ] ),
 				allowed = ( rule[ 1 ] || '' ).split( '|' );
 
@@ -42,21 +42,21 @@ jQuery( function ( $ ) {
 
 	// Hidden rows are disabled as well, so a value the merchant cannot see is never saved.
 	function syncRows() {
-		var current = 'easysubscription-for-' + paymentType();
+		var current = 'subly-for-' + paymentType();
 
 		$options.find( '.form-field' ).each( function () {
 			var $row = $( this ),
-				typed = /(^|\s)easysubscription-for-/.test( this.className ),
+				typed = /(^|\s)subly-for-/.test( this.className ),
 				shown = ( ! typed || $row.hasClass( current ) ) && conditionsMet( $row );
 
-			$row.toggleClass( 'easysubscription-type-hidden', ! shown );
+			$row.toggleClass( 'subly-type-hidden', ! shown );
 			$row.find( 'input, select, textarea' ).each( function () {
 				var $input = $( this );
 
 				if ( ! shown && ! $input.prop( 'disabled' ) ) {
-					$input.prop( 'disabled', true ).attr( 'data-easysubscription-disabled', '1' );
-				} else if ( shown && $input.attr( 'data-easysubscription-disabled' ) ) {
-					$input.prop( 'disabled', false ).removeAttr( 'data-easysubscription-disabled' );
+					$input.prop( 'disabled', true ).attr( 'data-subly-disabled', '1' );
+				} else if ( shown && $input.attr( 'data-subly-disabled' ) ) {
+					$input.prop( 'disabled', false ).removeAttr( 'data-subly-disabled' );
 				}
 			} );
 		} );
@@ -75,13 +75,13 @@ jQuery( function ( $ ) {
 	}
 
 	function syncSections() {
-		$panel.find( '.easysubscription-section' ).each( function () {
+		$panel.find( '.subly-section' ).each( function () {
 			var $section = $( this ),
 				visible = $section.find( '.form-field' ).filter( function () {
 					return $( this ).css( 'display' ) !== 'none';
 				} );
 
-			$section.toggleClass( 'easysubscription-section--empty', ! visible.length );
+			$section.toggleClass( 'subly-section--empty', ! visible.length );
 		} );
 	}
 
@@ -91,12 +91,12 @@ jQuery( function ( $ ) {
 		syncSections();
 	}
 
-	$panel.on( 'click', '.easysubscription-section__toggle', function () {
+	$panel.on( 'click', '.subly-section__toggle', function () {
 		var $button = $( this ),
 			open = $button.attr( 'aria-expanded' ) !== 'true';
 
 		$button.attr( 'aria-expanded', open ? 'true' : 'false' );
-		$button.closest( '.easysubscription-section' ).find( '.easysubscription-section__body' ).prop( 'hidden', ! open );
+		$button.closest( '.subly-section' ).find( '.subly-section__body' ).prop( 'hidden', ! open );
 	} );
 
 	$options.on( 'change', 'select, input', function () {

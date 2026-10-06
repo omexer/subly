@@ -1,9 +1,9 @@
 <?php
 
-namespace EasySubscription\Frontend;
+namespace Subly\Frontend;
 
-use EasySubscription\Data\Subscription_Query;
-use EasySubscription\Domain\Subscription_Status;
+use Subly\Data\Subscription_Query;
+use Subly\Domain\Subscription_Status;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -54,7 +54,7 @@ class Downloadable_Access {
 	private function is_subscription_product( int $product_id ): bool {
 		$product = wc_get_product( $product_id );
 
-		return $product instanceof \WC_Product && \EasySubscription\Product\Subscription_Product::is_subscription( $product );
+		return $product instanceof \WC_Product && \Subly\Product\Subscription_Product::is_subscription( $product );
 	}
 
 	private function has_live_subscription( int $user_id, int $product_id ): bool {
@@ -92,6 +92,6 @@ class Downloadable_Access {
 		 * @param int  $user_id
 		 * @param int  $product_id
 		 */
-		return (bool) apply_filters( 'easysubscription_has_product_access', $found, $user_id, $product_id );
+		return (bool) apply_filters( 'subly_has_product_access', $found, $user_id, $product_id );
 	}
 }

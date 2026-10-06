@@ -2,12 +2,12 @@
 /**
  * A subscription can never make anyone an administrator, or take a store role away.
  *
- * @package EasySubscription
+ * @package Subly
  */
 
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
-use EasySubscription\Lifecycle\Role_Management;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
+use Subly\Lifecycle\Role_Management;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -16,7 +16,7 @@ $user_with = static function ( string $role ): WP_User {
 		array(
 			'user_login' => 'sk_role_' . wp_generate_password( 6, false, false ),
 			'user_pass'  => wp_generate_password( 32 ),
-			'user_email' => 'es-role-' . wp_generate_password( 6, false, false ) . '@example.test',
+			'user_email' => 'sb-role-' . wp_generate_password( 6, false, false ) . '@example.test',
 			'role'       => $role,
 		)
 	);
@@ -36,7 +36,7 @@ $subscribe = static function ( WP_User $user ): Subscription {
 	return $s;
 };
 
-$before = get_option( 'easysubscription_active_role', null );
+$before = get_option( 'subly_active_role', null );
 $made   = array();
 
 // The rule itself.
@@ -50,17 +50,17 @@ $check( 'the dropdown offers no administrative role', ! array_intersect( array( 
 // WooCommerce's settings API throws out a value that is not one of the options.
 $settings = null;
 foreach ( WC_Admin_Settings::get_settings_pages() as $page ) {
-	if ( 'easysubscription' === $page->get_id() ) {
+	if ( 'subly' === $page->get_id() ) {
 		$settings = $page->get_settings_for_section( '' );
 	}
 }
 // Only the role field: save_fields() writes every field it is given, unchecked boxes as 'no'.
-$role_field = array_values( array_filter( (array) $settings, static fn( $f ) => 'easysubscription_active_role' === ( $f['id'] ?? '' ) ) );
-WC_Admin_Settings::save_fields( $role_field, array( 'easysubscription_active_role' => 'administrator' ) );
-$check( 'saving Administrator through the settings form is refused', 'administrator' !== get_option( 'easysubscription_active_role' ), get_option( 'easysubscription_active_role' ) );
+$role_field = array_values( array_filter( (array) $settings, static fn( $f ) => 'subly_active_role' === ( $f['id'] ?? '' ) ) );
+WC_Admin_Settings::save_fields( $role_field, array( 'subly_active_role' => 'administrator' ) );
+$check( 'saving Administrator through the settings form is refused', 'administrator' !== get_option( 'subly_active_role' ), get_option( 'subly_active_role' ) );
 
 // The attack, with the value planted directly as an older version could have stored it.
-update_option( 'easysubscription_active_role', 'administrator' );
+update_option( 'subly_active_role', 'administrator' );
 $manager = $user_with( 'shop_manager' );
 $made[]  = $subscribe( $manager );
 $check( 'a Shop Manager buying a subscription does not become an administrator', ! user_can( $manager->ID, 'manage_options' ) );
@@ -70,7 +70,7 @@ $made[]   = $subscribe( $customer );
 $check( 'nor does a customer', ! user_can( $customer->ID, 'manage_options' ) );
 
 // set_role() replaces every role, so the store's own staff must be left alone.
-update_option( 'easysubscription_active_role', 'subscriber' );
+update_option( 'subly_active_role', 'subscriber' );
 $staff  = $user_with( 'shop_manager' );
 $made[] = $subscribe( $staff );
 $check( 'a Shop Manager who buys a subscription keeps the store', user_can( $staff->ID, 'manage_woocommerce' ), get_userdata( $staff->ID )->roles );
@@ -86,6 +86,6 @@ foreach ( $made as $s ) {
 foreach ( array( $manager, $customer, $staff, $member ) as $u ) {
 	wp_delete_user( $u->ID );
 }
-null === $before ? delete_option( 'easysubscription_active_role' ) : update_option( 'easysubscription_active_role', $before );
+null === $before ? delete_option( 'subly_active_role' ) : update_option( 'subly_active_role', $before );
 
-easysubscription_test_done( $fail );
+subly_test_done( $fail );

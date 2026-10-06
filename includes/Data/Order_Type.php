@@ -1,16 +1,16 @@
 <?php
 
-namespace EasySubscription\Data;
+namespace Subly\Data;
 
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Registers the easysubscription_sub order type, its statuses, and the data store that backs it.
+ * Registers the subly_sub order type, its statuses, and the data store that backs it.
  */
 class Order_Type {
 
@@ -40,7 +40,7 @@ class Order_Type {
 					'label_count'               => _n_noop(
 						'Subscriptions <span class="count">(%s)</span>',
 						'Subscriptions <span class="count">(%s)</span>',
-						'easysubscription'
+						'subly'
 					),
 				)
 			);
@@ -52,8 +52,8 @@ class Order_Type {
 			Subscription::TYPE,
 			array(
 				'labels'                           => array(
-					'name'          => __( 'Subscriptions', 'easysubscription' ),
-					'singular_name' => __( 'Subscription', 'easysubscription' ),
+					'name'          => __( 'Subscriptions', 'subly' ),
+					'singular_name' => __( 'Subscription', 'subly' ),
 				),
 				'public'                           => false,
 				'show_ui'                          => false,
@@ -78,10 +78,10 @@ class Order_Type {
 	}
 
 	/**
-	 * Point the easysubscription_sub data store at whichever order storage the site is using.
+	 * Point the subly_sub data store at whichever order storage the site is using.
 	 *
 	 * WooCommerce does not wire custom order types to the HPOS data store automatically,
-	 * so without this WC_Data_Store::load( 'easysubscription_sub' ) throws.
+	 * so without this WC_Data_Store::load( 'subly_sub' ) throws.
 	 *
 	 * The HPOS store MUST be handed over as an object resolved from WooCommerce's
 	 * container. WC_Data_Store::__construct() does a bare `new $store()` when given a

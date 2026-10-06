@@ -6,12 +6,12 @@
  * which is not what happens: PayPal is offered and charges the customer, and every
  * webhook is then rejected, so no renewal is ever recorded.
  *
- * @package EasySubscription
+ * @package Subly
  */
 
 require __DIR__ . '/bootstrap.php';
 
-$keys   = array( 'easysubscription_paypal_enabled', 'easysubscription_paypal_client_id', 'easysubscription_paypal_secret', 'easysubscription_paypal_webhook_id' );
+$keys   = array( 'subly_paypal_enabled', 'subly_paypal_client_id', 'subly_paypal_secret', 'subly_paypal_webhook_id' );
 $before = array();
 foreach ( $keys as $key ) {
 	$before[ $key ] = get_option( $key, null );
@@ -19,33 +19,33 @@ foreach ( $keys as $key ) {
 
 $render = static function (): string {
 	ob_start();
-	( new \EasySubscription\Admin\Gateway_Notice() )->render();
+	( new \Subly\Admin\Gateway_Notice() )->render();
 
 	return trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( (string) ob_get_clean() ) ) );
 };
 
-update_option( 'easysubscription_paypal_enabled', 'yes' );
+update_option( 'subly_paypal_enabled', 'yes' );
 
-update_option( 'easysubscription_paypal_client_id', 'AX' );
-update_option( 'easysubscription_paypal_secret', 'SX' );
-update_option( 'easysubscription_paypal_webhook_id', '' );
+update_option( 'subly_paypal_client_id', 'AX' );
+update_option( 'subly_paypal_secret', 'SX' );
+update_option( 'subly_paypal_webhook_id', '' );
 $text = $render();
 $check( 'a missing webhook ID says renewals go unrecorded', str_contains( $text, 'renewals will not be recorded' ), $text );
 $check( 'and does not claim PayPal is hidden at checkout', ! str_contains( $text, 'not offered at checkout' ), $text );
 
-update_option( 'easysubscription_paypal_client_id', '' );
-update_option( 'easysubscription_paypal_secret', '' );
+update_option( 'subly_paypal_client_id', '' );
+update_option( 'subly_paypal_secret', '' );
 $text = $render();
 $check( 'missing credentials say PayPal is not offered', str_contains( $text, 'not offered at checkout' ), $text );
 $check( 'and do not also claim customers can pay', ! str_contains( $text, 'Customers can pay' ), $text );
 
-update_option( 'easysubscription_paypal_client_id', 'AX' );
-update_option( 'easysubscription_paypal_secret', 'SX' );
-update_option( 'easysubscription_paypal_webhook_id', 'WH-1' );
+update_option( 'subly_paypal_client_id', 'AX' );
+update_option( 'subly_paypal_secret', 'SX' );
+update_option( 'subly_paypal_webhook_id', 'WH-1' );
 $check( 'a complete setup shows nothing', '' === $render(), $render() );
 
 foreach ( $before as $key => $value ) {
 	null === $value ? delete_option( $key ) : update_option( $key, $value );
 }
 
-easysubscription_test_done( $fail );
+subly_test_done( $fail );

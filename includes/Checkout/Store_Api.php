@@ -1,9 +1,9 @@
 <?php
 
-namespace EasySubscription\Checkout;
+namespace Subly\Checkout;
 
-use EasySubscription\Frontend\Disclosure;
-use EasySubscription\Product\Subscription_Product;
+use Subly\Frontend\Disclosure;
+use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -39,7 +39,7 @@ class Store_Api {
 		woocommerce_store_api_register_endpoint_data(
 			array(
 				'endpoint'        => \Automattic\WooCommerce\StoreApi\Schemas\V1\CartSchema::IDENTIFIER,
-				'namespace'       => 'easysubscription',
+				'namespace'       => 'subly',
 				'data_callback'   => array( $this, 'cart_data' ),
 				'schema_callback' => array( $this, 'cart_schema' ),
 				'schema_type'     => ARRAY_A,
@@ -91,23 +91,23 @@ class Store_Api {
 	public function cart_schema(): array {
 		return array(
 			'has_subscription' => array(
-				'description' => __( 'Whether the cart contains a subscription.', 'easysubscription' ),
+				'description' => __( 'Whether the cart contains a subscription.', 'subly' ),
 				'type'        => 'boolean',
 				'readonly'    => true,
 			),
 			'price_line'       => array(
-				'description' => __( 'Headline recurring price.', 'easysubscription' ),
+				'description' => __( 'Headline recurring price.', 'subly' ),
 				'type'        => 'string',
 				'readonly'    => true,
 			),
 			'lines'            => array(
-				'description' => __( 'Subscription terms, one self-contained fact per line.', 'easysubscription' ),
+				'description' => __( 'Subscription terms, one self-contained fact per line.', 'subly' ),
 				'type'        => 'array',
 				'items'       => array( 'type' => 'string' ),
 				'readonly'    => true,
 			),
 			'consent'          => array(
-				'description' => __( 'The sentence shown before the customer places the order.', 'easysubscription' ),
+				'description' => __( 'The sentence shown before the customer places the order.', 'subly' ),
 				'type'        => 'string',
 				'readonly'    => true,
 			),
@@ -125,8 +125,8 @@ class Store_Api {
 		}
 
 		throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
-			'easysubscription_one_subscription_per_order',
-			esc_html__( 'You can only sign up for one subscription at a time. Please complete this order first, then start the next subscription.', 'easysubscription' ),
+			'subly_one_subscription_per_order',
+			esc_html__( 'You can only sign up for one subscription at a time. Please complete this order first, then start the next subscription.', 'subly' ),
 			400
 		);
 	}
@@ -137,10 +137,10 @@ class Store_Api {
 		}
 
 		wp_enqueue_script(
-			'easysubscription-blocks-checkout',
-			EASYSUBSCRIPTION_URL . 'assets/js/blocks-checkout.js',
+			'subly-blocks-checkout',
+			SUBLY_URL . 'assets/js/blocks-checkout.js',
 			array( 'wp-element', 'wp-plugins', 'wp-i18n', 'wc-blocks-checkout' ),
-			EASYSUBSCRIPTION_VERSION,
+			SUBLY_VERSION,
 			true
 		);
 	}

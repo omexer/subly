@@ -1,9 +1,9 @@
 <?php
 
-namespace EasySubscription\Lifecycle;
+namespace Subly\Lifecycle;
 
-use EasySubscription\Data\Activity_Repository;
-use EasySubscription\Domain\Subscription;
+use Subly\Data\Activity_Repository;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -18,8 +18,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Cancellation_Survey {
 
-	private const META_REASON = '_easysubscription_cancel_reason';
-	private const META_DETAIL = '_easysubscription_cancel_detail';
+	private const META_REASON = '_subly_cancel_reason';
+	private const META_DETAIL = '_subly_cancel_detail';
 
 	public function __construct( private readonly Activity_Repository $activity ) {}
 
@@ -32,29 +32,29 @@ class Cancellation_Survey {
 	 */
 	public function reasons(): array {
 		return (array) apply_filters(
-			'easysubscription_cancellation_reasons',
+			'subly_cancellation_reasons',
 			array(
-				'too_expensive' => __( 'Too expensive', 'easysubscription' ),
-				'not_using'     => __( "I wasn't using it", 'easysubscription' ),
-				'found_better'  => __( 'I found something better', 'easysubscription' ),
-				'quality'       => __( "It wasn't what I expected", 'easysubscription' ),
-				'temporary'     => __( 'Only pausing for now', 'easysubscription' ),
-				'other'         => __( 'Something else', 'easysubscription' ),
+				'too_expensive' => __( 'Too expensive', 'subly' ),
+				'not_using'     => __( "I wasn't using it", 'subly' ),
+				'found_better'  => __( 'I found something better', 'subly' ),
+				'quality'       => __( "It wasn't what I expected", 'subly' ),
+				'temporary'     => __( 'Only pausing for now', 'subly' ),
+				'other'         => __( 'Something else', 'subly' ),
 			)
 		);
 	}
 
 	public function handle_submission(): void {
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$action = isset( $_POST['easysubscription_action'] ) ? sanitize_key( wp_unslash( $_POST['easysubscription_action'] ) ) : '';
+		$action = isset( $_POST['subly_action'] ) ? sanitize_key( wp_unslash( $_POST['subly_action'] ) ) : '';
 
 		if ( 'cancel_survey' !== $action ) {
 			return;
 		}
 
-		$id = absint( $_POST['easysubscription_subscription'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$id = absint( $_POST['subly_subscription'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'easysubscription_survey_' . $id ) ) {
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'subly_survey_' . $id ) ) {
 			return;
 		}
 
@@ -64,8 +64,8 @@ class Cancellation_Survey {
 			return;
 		}
 
-		$reason = sanitize_key( wp_unslash( $_POST['easysubscription_reason'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$detail = sanitize_textarea_field( wp_unslash( $_POST['easysubscription_detail'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$reason = sanitize_key( wp_unslash( $_POST['subly_reason'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$detail = sanitize_textarea_field( wp_unslash( $_POST['subly_detail'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( ! array_key_exists( $reason, $this->reasons() ) ) {
 			return;
@@ -86,9 +86,9 @@ class Cancellation_Survey {
 			array( 'reason' => $reason )
 		);
 
-		do_action( 'easysubscription_cancellation_reason_recorded', $subscription, $reason, $detail );
+		do_action( 'subly_cancellation_reason_recorded', $subscription, $reason, $detail );
 
-		wp_safe_redirect( add_query_arg( 'easysubscription_thanks', '1', wc_get_account_endpoint_url( 'subscriptions' ) ) );
+		wp_safe_redirect( add_query_arg( 'subly_thanks', '1', wc_get_account_endpoint_url( 'subscriptions' ) ) );
 		exit;
 	}
 
@@ -107,7 +107,7 @@ class Cancellation_Survey {
 	public function tally(): array {
 		$counts = array_fill_keys( array_keys( $this->reasons() ), 0 );
 
-		foreach ( \EasySubscription\Data\Subscription_Query::get(
+		foreach ( \Subly\Data\Subscription_Query::get(
 			array(
 				'limit'  => -1,
 				'status' => null,

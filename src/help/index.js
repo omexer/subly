@@ -4,19 +4,19 @@
 import { useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Button, Card, CardContent, Skeleton } from '@easysubscription/ui';
-import { registerRoute } from '@easysubscription/shell';
+import { Button, Card, CardContent, Skeleton } from '@subly/ui';
+import { registerRoute } from '@subly/shell';
 
 function Heading() {
 	return (
-		<div className="es-mb-6">
-			<h2 className="es-text-2xl es-font-semibold es-tracking-tight">
-				{ __( 'Help', 'easysubscription' ) }
+		<div className="sb-mb-6">
+			<h2 className="sb-text-2xl sb-font-semibold sb-tracking-tight">
+				{ __( 'Help', 'subly' ) }
 			</h2>
-			<p className="es-mt-1 es-text-sm es-text-muted-foreground">
+			<p className="sb-mt-1 sb-text-sm sb-text-muted-foreground">
 				{ __(
 					'Where to look first, and the report to send if you still need a hand.',
-					'easysubscription'
+					'subly'
 				) }
 			</p>
 		</div>
@@ -46,7 +46,7 @@ export function Help( { onFail } ) {
 	const field = useRef( null );
 
 	useEffect( () => {
-		apiFetch( { path: '/easysubscription/v1/help' } )
+		apiFetch( { path: '/subly/v1/help' } )
 			.then( setData )
 			.catch( () => onFail() );
 		// Loaded once: onFail is a new closure on every render.
@@ -67,8 +67,8 @@ export function Help( { onFail } ) {
 		return (
 			<div>
 				<Heading />
-				<Skeleton className="es-mb-6 es-h-40" />
-				<Skeleton className="es-h-64" />
+				<Skeleton className="sb-mb-6 sb-h-40" />
+				<Skeleton className="sb-h-64" />
 			</div>
 		);
 	}
@@ -79,30 +79,30 @@ export function Help( { onFail } ) {
 		<div>
 			<Heading />
 
-			<h2 className="es-mb-3 es-text-base es-font-semibold">
-				{ __( 'Check these first', 'easysubscription' ) }
+			<h2 className="sb-mb-3 sb-text-base sb-font-semibold">
+				{ __( 'Check these first', 'subly' ) }
 			</h2>
-			<div className="es-mb-8 es-grid es-gap-4 es-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+			<div className="sb-mb-8 sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
 				{ data.tiles.map( ( tile, index ) => (
 					<Card
 						key={ tile.url }
-						className="es-flex es-flex-col es-gap-3 es-p-5"
+						className="sb-flex sb-flex-col sb-gap-3 sb-p-5"
 					>
-						<div className="es-flex es-items-center es-gap-3">
+						<div className="sb-flex sb-items-center sb-gap-3">
 							<span
-								className="es-grid es-h-8 es-w-8 es-shrink-0 es-place-items-center es-rounded-full es-bg-accent es-text-sm es-font-semibold es-text-primary"
+								className="sb-grid sb-h-8 sb-w-8 sb-shrink-0 sb-place-items-center sb-rounded-full sb-bg-accent sb-text-sm sb-font-semibold sb-text-primary"
 								aria-hidden="true"
 							>
 								{ index + 1 }
 							</span>
-							<h3 className="es-text-sm es-font-medium">
+							<h3 className="sb-text-sm sb-font-medium">
 								{ tile.title }
 							</h3>
 						</div>
-						<p className="es-text-sm es-text-muted-foreground">
+						<p className="sb-text-sm sb-text-muted-foreground">
 							{ tile.body }
 						</p>
-						<div className="es-mt-auto">
+						<div className="sb-mt-auto">
 							<Button asChild variant="outline" size="sm">
 								<a href={ tile.url }>{ tile.label }</a>
 							</Button>
@@ -111,16 +111,16 @@ export function Help( { onFail } ) {
 				) ) }
 			</div>
 
-			<h2 className="es-mb-3 es-text-base es-font-semibold">
-				{ __( 'System report', 'easysubscription' ) }
+			<h2 className="sb-mb-3 sb-text-base sb-font-semibold">
+				{ __( 'System report', 'subly' ) }
 			</h2>
 			<Card>
-				<CardContent className="es-flex es-flex-col es-gap-3 es-p-5">
-					<div className="es-flex es-flex-wrap es-items-center es-justify-between es-gap-3">
-						<p className="es-text-sm es-text-muted-foreground">
+				<CardContent className="sb-flex sb-flex-col sb-gap-3 sb-p-5">
+					<div className="sb-flex sb-flex-wrap sb-items-center sb-justify-between sb-gap-3">
+						<p className="sb-text-sm sb-text-muted-foreground">
 							{ __(
 								'Paste this into your support request. It contains no keys and no customer data.',
-								'easysubscription'
+								'subly'
 							) }
 						</p>
 						<Button
@@ -132,17 +132,17 @@ export function Help( { onFail } ) {
 							}
 						>
 							{ copied
-								? __( 'Copied', 'easysubscription' )
-								: __( 'Copy report', 'easysubscription' ) }
+								? __( 'Copied', 'subly' )
+								: __( 'Copy report', 'subly' ) }
 						</Button>
 					</div>
 					<textarea
 						ref={ field }
 						readOnly
-						aria-label={ __( 'System report', 'easysubscription' ) }
+						aria-label={ __( 'System report', 'subly' ) }
 						rows={ Math.min( 24, lines ) }
 						value={ data.report }
-						className="es-w-full es-rounded-md es-border es-border-input es-bg-muted/40 es-p-3 es-font-mono es-text-xs"
+						className="sb-w-full sb-rounded-md sb-border sb-border-input sb-bg-muted/40 sb-p-3 sb-font-mono sb-text-xs"
 					/>
 				</CardContent>
 			</Card>
@@ -151,7 +151,7 @@ export function Help( { onFail } ) {
 }
 
 registerRoute( {
-	page: 'easysubscription-help',
-	title: __( 'Help', 'easysubscription' ),
+	page: 'subly-help',
+	title: __( 'Help', 'subly' ),
 	render: ( ctx ) => <Help onFail={ ctx.fail } />,
 } );

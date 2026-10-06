@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Gateways;
+namespace Subly\Gateways;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

@@ -1,5 +1,5 @@
 /**
- * The Integrations route: what EasySubscription can connect to, and whether each connection is live.
+ * The Integrations route: what Subly can connect to, and whether each connection is live.
  */
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
@@ -10,19 +10,19 @@ import {
 	Card,
 	CardContent,
 	Skeleton,
-} from '@easysubscription/ui';
-import { registerRoute } from '@easysubscription/shell';
+} from '@subly/ui';
+import { registerRoute } from '@subly/shell';
 
 function Heading() {
 	return (
-		<div className="es-mb-6">
-			<h2 className="es-text-2xl es-font-semibold es-tracking-tight">
-				{ __( 'Integrations', 'easysubscription' ) }
+		<div className="sb-mb-6">
+			<h2 className="sb-text-2xl sb-font-semibold sb-tracking-tight">
+				{ __( 'Integrations', 'subly' ) }
 			</h2>
-			<p className="es-mt-1 es-text-sm es-text-muted-foreground">
+			<p className="sb-mt-1 sb-text-sm sb-text-muted-foreground">
 				{ __(
 					'Hand a subscription to the plugin that delivers what it pays for, and take it back when it ends.',
-					'easysubscription'
+					'subly'
 				) }
 			</p>
 		</div>
@@ -35,7 +35,7 @@ function TileIcon( { title, icon } ) {
 
 	return (
 		<span
-			className="es-grid es-h-10 es-w-10 es-shrink-0 es-place-items-center es-overflow-hidden es-rounded-md es-bg-accent es-font-semibold es-text-primary"
+			className="sb-grid sb-h-10 sb-w-10 sb-shrink-0 sb-place-items-center sb-overflow-hidden sb-rounded-md sb-bg-accent sb-font-semibold sb-text-primary"
 			aria-hidden="true"
 		>
 			{ icon && ! broken ? (
@@ -94,27 +94,27 @@ function Tile( { item, installer, onInstalled } ) {
 				setBusy( false );
 				setError(
 					result?.data?.message ||
-						__( 'That did not work.', 'easysubscription' )
+						__( 'That did not work.', 'subly' )
 				);
 			} )
 			.catch( () => {
 				setBusy( false );
-				setError( __( 'That did not work.', 'easysubscription' ) );
+				setError( __( 'That did not work.', 'subly' ) );
 			} );
 	};
 
 	return (
-		<Card className="es-flex es-flex-col es-gap-3 es-p-5">
-			<div className="es-flex es-items-center es-gap-3">
+		<Card className="sb-flex sb-flex-col sb-gap-3 sb-p-5">
+			<div className="sb-flex sb-items-center sb-gap-3">
 				<TileIcon title={ item.title } icon={ item.icon } />
-				<div className="es-min-w-0">
-					<h3 className="es-text-sm es-font-medium">
+				<div className="sb-min-w-0">
+					<h3 className="sb-text-sm sb-font-medium">
 						{ item.title }
 					</h3>
-					<p className="es-text-xs es-text-muted-foreground">
+					<p className="sb-text-xs sb-text-muted-foreground">
 						{ sprintf(
 							/* translators: %s: the plugin an integration needs */
-							__( 'Needs %s', 'easysubscription' ),
+							__( 'Needs %s', 'subly' ),
 							item.requires
 						) }
 					</p>
@@ -122,37 +122,37 @@ function Tile( { item, installer, onInstalled } ) {
 			</div>
 
 			{ item.description ? (
-				<p className="es-text-sm es-text-muted-foreground">
+				<p className="sb-text-sm sb-text-muted-foreground">
 					{ item.description }
 				</p>
 			) : null }
 
 			{ item.hint ? (
-				<p className="es-text-xs es-text-muted-foreground">
+				<p className="sb-text-xs sb-text-muted-foreground">
 					{ item.hint }
 				</p>
 			) : null }
 
-			<div className="es-mt-auto es-flex es-flex-wrap es-items-center es-justify-between es-gap-2">
+			<div className="sb-mt-auto sb-flex sb-flex-wrap sb-items-center sb-justify-between sb-gap-2">
 				<Badge variant={ item.active ? 'success' : 'secondary' }>
 					{ item.active
-						? __( 'Connected', 'easysubscription' )
-						: __( 'Not active', 'easysubscription' ) }
+						? __( 'Connected', 'subly' )
+						: __( 'Not active', 'subly' ) }
 				</Badge>
-				<span className="es-flex es-flex-wrap es-gap-2">
+				<span className="sb-flex sb-flex-wrap sb-gap-2">
 					{ item.configure_url ? (
 						<Button asChild variant="outline" size="sm">
 							<a href={ item.configure_url }>
 								{ item.configure_label ||
-									__( 'Settings', 'easysubscription' ) }
+									__( 'Settings', 'subly' ) }
 							</a>
 						</Button>
 					) : null }
 					{ item.install && installer ? (
 						<Button size="sm" disabled={ busy } onClick={ run }>
 							{ busy
-								? __( 'Installing…', 'easysubscription' )
-								: __( 'Install', 'easysubscription' ) }
+								? __( 'Installing…', 'subly' )
+								: __( 'Install', 'subly' ) }
 						</Button>
 					) : null }
 					{ ! item.install && item.get_url ? (
@@ -162,7 +162,7 @@ function Tile( { item, installer, onInstalled } ) {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								{ __( 'Get it', 'easysubscription' ) }{ ' ' }
+								{ __( 'Get it', 'subly' ) }{ ' ' }
 								<span aria-hidden="true">↗</span>
 							</a>
 						</Button>
@@ -171,7 +171,7 @@ function Tile( { item, installer, onInstalled } ) {
 			</div>
 
 			{ error ? (
-				<p className="es-text-xs es-text-destructive" role="alert">
+				<p className="sb-text-xs sb-text-destructive" role="alert">
 					{ error }
 				</p>
 			) : null }
@@ -184,7 +184,7 @@ export function Integrations( { onFail } ) {
 
 	const load = useCallback(
 		() =>
-			apiFetch( { path: '/easysubscription/v1/integrations' } ).then(
+			apiFetch( { path: '/subly/v1/integrations' } ).then(
 				setData
 			),
 		[]
@@ -200,10 +200,10 @@ export function Integrations( { onFail } ) {
 		return (
 			<div>
 				<Heading />
-				<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
-					<Skeleton className="es-h-40" />
-					<Skeleton className="es-h-40" />
-					<Skeleton className="es-h-40" />
+				<div className="sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+					<Skeleton className="sb-h-40" />
+					<Skeleton className="sb-h-40" />
+					<Skeleton className="sb-h-40" />
 				</div>
 			</div>
 		);
@@ -214,17 +214,17 @@ export function Integrations( { onFail } ) {
 			<div>
 				<Heading />
 				<Card>
-					<CardContent className="es-flex es-flex-col es-items-center es-gap-2 es-p-10 es-text-center">
-						<p className="es-font-medium">
+					<CardContent className="sb-flex sb-flex-col sb-items-center sb-gap-2 sb-p-10 sb-text-center">
+						<p className="sb-font-medium">
 							{ __(
 								'Nothing to connect yet',
-								'easysubscription'
+								'subly'
 							) }
 						</p>
-						<p className="es-max-w-md es-text-sm es-text-muted-foreground">
+						<p className="sb-max-w-md sb-text-sm sb-text-muted-foreground">
 							{ __(
-								'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. EasySubscription Pro adds them.',
-								'easysubscription'
+								'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. Subly Pro adds them.',
+								'subly'
 							) }
 						</p>
 					</CardContent>
@@ -246,11 +246,11 @@ export function Integrations( { onFail } ) {
 		<div>
 			<Heading />
 			{ [ ...groups ].map( ( [ category, items ] ) => (
-				<section key={ category } className="es-mb-8">
-					<h2 className="es-mb-3 es-text-base es-font-semibold">
+				<section key={ category } className="sb-mb-8">
+					<h2 className="sb-mb-3 sb-text-base sb-font-semibold">
 						{ category }
 					</h2>
-					<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
+					<div className="sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fill,minmax(260px,1fr))]">
 						{ items.map( ( item ) => (
 							<Tile
 								key={ item.title }
@@ -262,10 +262,10 @@ export function Integrations( { onFail } ) {
 					</div>
 				</section>
 			) ) }
-			<p className="es-text-sm es-text-muted-foreground">
+			<p className="sb-text-sm sb-text-muted-foreground">
 				{ __(
 					'An integration only does anything while the plugin it connects to is active, and only for products you have configured it on.',
-					'easysubscription'
+					'subly'
 				) }
 			</p>
 		</div>
@@ -273,7 +273,7 @@ export function Integrations( { onFail } ) {
 }
 
 registerRoute( {
-	page: 'easysubscription-integrations',
-	title: __( 'Integrations', 'easysubscription' ),
+	page: 'subly-integrations',
+	title: __( 'Integrations', 'subly' ),
 	render: ( ctx ) => <Integrations onFail={ ctx.fail } />,
 } );

@@ -1,8 +1,8 @@
 /**
- * EasySubscription's shared admin UI: shadcn/ui components, plus the few composites every EasySubscription
+ * Subly's shared admin UI: shadcn/ui components, plus the few composites every Subly
  * screen needs.
  *
- * Published on a global rather than as a package. EasySubscription Pro builds separately and cannot
+ * Published on a global rather than as a package. Subly Pro builds separately and cannot
  * import from this plugin at build time, so it consumes these as an external, the same way
  * everything consumes wp.components.
  */
@@ -35,10 +35,10 @@ import { Card, CardContent } from './components/ui/card';
 
 function toneFor( delta ) {
 	if ( typeof delta !== 'number' ) {
-		return 'es-text-muted-foreground';
+		return 'sb-text-muted-foreground';
 	}
 
-	return delta < 0 ? 'es-text-destructive' : 'es-text-success';
+	return delta < 0 ? 'sb-text-destructive' : 'sb-text-success';
 }
 
 export function Stat( { label, value, meta, delta, children } ) {
@@ -46,16 +46,16 @@ export function Stat( { label, value, meta, delta, children } ) {
 
 	return (
 		<Card>
-			<CardContent className="es-p-5">
-				<span className="es-block es-text-sm es-text-muted-foreground">
+			<CardContent className="sb-p-5">
+				<span className="sb-block sb-text-sm sb-text-muted-foreground">
 					{ label }
 				</span>
-				<span className="es-mt-1 es-block es-text-3xl es-font-semibold es-tabular-nums es-leading-tight">
+				<span className="sb-mt-1 sb-block sb-text-3xl sb-font-semibold sb-tabular-nums sb-leading-tight">
 					{ value }
 				</span>
 				{ meta ? (
 					<span
-						className={ `es-mt-1.5 es-block es-text-xs ${ tone }` }
+						className={ `sb-mt-1.5 sb-block sb-text-xs ${ tone }` }
 					>
 						{ meta }
 					</span>
@@ -88,17 +88,17 @@ export function Sparkline( { points, label } ) {
 
 	return (
 		<svg
-			className="es-mt-3 es-block es-h-12 es-w-full es-overflow-visible"
+			className="sb-mt-3 sb-block sb-h-12 sb-w-full sb-overflow-visible"
 			viewBox="0 0 100 100"
 			preserveAspectRatio="none"
 			role="img"
-			aria-label={ label || __( 'Trend over time', 'easysubscription' ) }
+			aria-label={ label || __( 'Trend over time', 'subly' ) }
 			focusable="false"
 		>
 			<polyline
 				points={ coords.join( ' ' ) }
 				fill="none"
-				stroke="hsl(var(--es-primary))"
+				stroke="hsl(var(--sb-primary))"
 				strokeWidth="2"
 				strokeLinecap="round"
 				strokeLinejoin="round"
@@ -115,19 +115,19 @@ export function StatusBar( { parts } ) {
 
 	if ( ! total ) {
 		return (
-			<p className="es-text-sm es-text-muted-foreground">
-				{ __( 'Nothing to show yet.', 'easysubscription' ) }
+			<p className="sb-text-sm sb-text-muted-foreground">
+				{ __( 'Nothing to show yet.', 'subly' ) }
 			</p>
 		);
 	}
 
 	return (
 		<div>
-			<div className="es-flex es-h-2.5 es-overflow-hidden es-rounded-full es-bg-muted">
+			<div className="sb-flex sb-h-2.5 sb-overflow-hidden sb-rounded-full sb-bg-muted">
 				{ rows.map( ( part ) => (
 					<span
 						key={ part.key }
-						className="es-h-full"
+						className="sb-h-full"
 						style={ {
 							width: `${ ( part.count / total ) * 100 }%`,
 							background: part.colour,
@@ -136,19 +136,19 @@ export function StatusBar( { parts } ) {
 					/>
 				) ) }
 			</div>
-			<ul className="es-mt-3.5 es-flex es-flex-wrap es-gap-x-5 es-gap-y-2 es-text-sm">
+			<ul className="sb-mt-3.5 sb-flex sb-flex-wrap sb-gap-x-5 sb-gap-y-2 sb-text-sm">
 				{ rows.map( ( part ) => (
 					<li
 						key={ part.key }
-						className="es-flex es-items-center es-gap-2"
+						className="sb-flex sb-items-center sb-gap-2"
 					>
 						<span
-							className="es-h-2.5 es-w-2.5 es-shrink-0 es-rounded-sm"
+							className="sb-h-2.5 sb-w-2.5 sb-shrink-0 sb-rounded-sm"
 							style={ { background: part.colour } }
 							aria-hidden="true"
 						/>
 						<span>{ part.label }</span>
-						<span className="es-tabular-nums es-text-muted-foreground">
+						<span className="sb-tabular-nums sb-text-muted-foreground">
 							{ part.count }
 						</span>
 					</li>

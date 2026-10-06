@@ -1,19 +1,19 @@
 <?php
 /**
- * On EasySubscription screens, notices where money or renewals are at risk (and feedback on what the merchant just did)
+ * On Subly screens, notices where money or renewals are at risk (and feedback on what the merchant just did)
  * stay under the header; every other notice, ours included, goes in the header's bell.
  *
- * @package EasySubscription
+ * @package Subly
  */
 
-use EasySubscription\Admin\App_Host;
-use EasySubscription\Admin\Notices;
-use EasySubscription\Admin\Page_Shell;
-use EasySubscription\Admin\Settings_Page;
-use EasySubscription\Billing\Renewal_Tax_Repair;
-use EasySubscription\Checkout\Guest_Checkout;
-use EasySubscription\Product\Product_Types;
-use EasySubscription\Product\Variable_Subscription;
+use Subly\Admin\App_Host;
+use Subly\Admin\Notices;
+use Subly\Admin\Page_Shell;
+use Subly\Admin\Settings_Page;
+use Subly\Billing\Renewal_Tax_Repair;
+use Subly\Checkout\Guest_Checkout;
+use Subly\Product\Product_Types;
+use Subly\Product\Variable_Subscription;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -22,22 +22,22 @@ require_once ABSPATH . 'wp-admin/includes/screen.php';
 
 global $wp_filter;
 
-$plugin = \EasySubscription\Plugin::instance();
+$plugin = \Subly\Plugin::instance();
 $own    = $plugin->get( 'admin_notices' );
 
 if ( ! $own instanceof Notices ) {
-	easysubscription_test_abort( 'the notices service is not registered' );
+	subly_test_abort( 'the notices service is not registered' );
 }
 
 $options = array(
-	'easysubscription_paypal_enabled'                            => 'yes',
-	'easysubscription_paypal_client_id'                          => 'client-harness',
-	'easysubscription_paypal_secret'                             => 'secret-harness',
-	'easysubscription_paypal_webhook_id'                         => '',
-	'easysubscription_guest_checkout'                            => Guest_Checkout::REQUIRE,
+	'subly_paypal_enabled'                            => 'yes',
+	'subly_paypal_client_id'                          => 'client-harness',
+	'subly_paypal_secret'                             => 'secret-harness',
+	'subly_paypal_webhook_id'                         => '',
+	'subly_guest_checkout'                            => Guest_Checkout::REQUIRE,
 	'woocommerce_enable_signup_and_login_from_checkout' => 'no',
 	'woocommerce_enable_checkout_login_reminder'       => 'no',
-	'easysubscription_setup_notice_dismissed'                    => null,
+	'subly_setup_notice_dismissed'                    => null,
 );
 $saved = array();
 foreach ( $options as $name => $value ) {
@@ -46,7 +46,7 @@ foreach ( $options as $name => $value ) {
 }
 
 $tax_cache      = get_transient( Renewal_Tax_Repair::CACHE );
-$dismissed_meta = get_user_meta( 1, 'easysubscription_dismissed_notices', true );
+$dismissed_meta = get_user_meta( 1, 'subly_dismissed_notices', true );
 $saved_screen   = $GLOBALS['current_screen'] ?? null;
 $saved_product  = $GLOBALS['product_object'] ?? null;
 $saved_hooks    = array();
@@ -71,12 +71,12 @@ $check( 'feedback is important, and marked as feedback', str_contains( Notices::
 $gateway = $printed( array( $plugin->get( 'gateway_notice' ), 'render' ) );
 $check( 'PayPal renewals not recorded', $marked( $gateway ) && str_contains( $gateway, 'PayPal renewals will not be recorded.' ), $gateway );
 
-update_option( 'easysubscription_paypal_secret', '' );
+update_option( 'subly_paypal_secret', '' );
 $gateway = $printed( array( $plugin->get( 'gateway_notice' ), 'render' ) );
 $check( 'PayPal not offered at checkout', $marked( $gateway ) && str_contains( $gateway, 'not offering a payment method at checkout' ), $gateway );
-update_option( 'easysubscription_paypal_secret', 'secret-harness' );
+update_option( 'subly_paypal_secret', 'secret-harness' );
 
-delete_user_meta( 1, 'easysubscription_dismissed_notices' );
+delete_user_meta( 1, 'subly_dismissed_notices' );
 set_transient( Renewal_Tax_Repair::CACHE, array( PHP_INT_MAX ), HOUR_IN_SECONDS );
 $tax = $printed( array( $plugin->get( 'tax_repair' ), 'notice' ) );
 $check( 'tax added twice', $marked( $tax ) && str_contains( $tax, 'tax added twice' ) && ! str_contains( $tax, Notices::FEEDBACK ), $tax );
@@ -87,12 +87,12 @@ $check( 'customers turned away at checkout', $marked( $guest ) && str_contains( 
 set_current_screen( 'product' );
 $GLOBALS['product_object'] = new Variable_Subscription();
 $unsupported               = static fn(): bool => false;
-add_filter( 'easysubscription_variable_subscriptions_supported', $unsupported );
+add_filter( 'subly_variable_subscriptions_supported', $unsupported );
 $variable = $printed( array( $plugin->get( 'product_types' ), 'warn_unsupported_variable' ) );
-remove_filter( 'easysubscription_variable_subscriptions_supported', $unsupported );
+remove_filter( 'subly_variable_subscriptions_supported', $unsupported );
 $check( 'a variable subscription that will never renew', $marked( $variable ) && str_contains( $variable, 'charged once and never again' ), $variable );
 
-$_GET   = array( 'easysubscription_test' => 'pass' );
+$_GET   = array( 'subly_test' => 'pass' );
 $result = new ReflectionMethod( $plugin->get( 'admin_menu' ), 'render_test_result' );
 $tested = $printed( static fn() => $result->invoke( $plugin->get( 'admin_menu' ) ) );
 $_GET   = array();
@@ -100,11 +100,11 @@ $check( 'the test renewal result is feedback', $marked( $tested ) && str_contain
 
 set_current_screen( 'plugins' );
 $setup = $printed( array( $plugin->get( 'setup' ), 'activation_notice' ) );
-$check( 'our own "EasySubscription is active" tip is not important', '' !== $setup && ! $marked( $setup ), $setup );
+$check( 'our own "Subly is active" tip is not important', '' !== $setup && ! $marked( $setup ), $setup );
 
 // ---------------------------------------------------------------- sorting them on our screens
 
-echo "\n2. On an EasySubscription screen\n";
+echo "\n2. On an Subly screen\n";
 
 foreach ( array_keys( $saved_hooks ) as $hook ) {
 	remove_all_actions( $hook );
@@ -122,17 +122,17 @@ $note = static function ( string $who, string $html ) use ( &$runs ): callable {
 require_once __DIR__ . '/stand-ins/notice-tip.php';
 
 // Another plugin's callbacks live outside our plugin folders; a temp file stands in for one.
-$foreign_file = trailingslashit( get_temp_dir() ) . 'es-foreign-notices-' . wp_generate_password( 8, false ) . '.php';
-file_put_contents( $foreign_file, '<?php function easysubscription_test_foreign_note( $who, $html ) { return static function () use ( $who, $html ) { $GLOBALS["es_test_runs"][] = $who; echo $html; }; }' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+$foreign_file = trailingslashit( get_temp_dir() ) . 'sb-foreign-notices-' . wp_generate_password( 8, false ) . '.php';
+file_put_contents( $foreign_file, '<?php function subly_test_foreign_note( $who, $html ) { return static function () use ( $who, $html ) { $GLOBALS["subly_test_runs"][] = $who; echo $html; }; }' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 require $foreign_file;
 unlink( $foreign_file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
-$GLOBALS['es_test_runs'] = &$runs;
+$GLOBALS['subly_test_runs'] = &$runs;
 
-add_action( 'admin_notices', easysubscription_test_foreign_note( 'other', '<div class="notice notice-warning"><p>Milo Subscriptions: Staging Site Detected</p></div><div class="updated"><p>A second one.</p></div>' ) );
-add_action( 'admin_notices', 'easysubscription_harness_tip', 5 );
+add_action( 'admin_notices', subly_test_foreign_note( 'other', '<div class="notice notice-warning"><p>Milo Subscriptions: Staging Site Detected</p></div><div class="updated"><p>A second one.</p></div>' ) );
+add_action( 'admin_notices', 'subly_harness_tip', 5 );
 add_action( 'admin_notices', array( $plugin->get( 'gateway_notice' ), 'render' ), 20 );
 add_action( 'admin_notices', $note( 'silent', '  ' ) );
-add_action( 'all_admin_notices', easysubscription_test_foreign_note( 'core', '<div class="notice notice-error"><p>WordPress core says hello.</p></div>' ) );
+add_action( 'all_admin_notices', subly_test_foreign_note( 'core', '<div class="notice notice-error"><p>WordPress core says hello.</p></div>' ) );
 
 $notices = new Notices();
 $notices->register();
@@ -141,11 +141,11 @@ remove_action( 'admin_footer', array( $notices, 'render_leftovers' ), 99 );
 
 set_current_screen( 'dashboard' );
 $notices->collect();
-$check( 'elsewhere in the admin, nothing is taken off the notice hooks', false !== has_action( 'admin_notices', 'easysubscription_harness_tip' ) );
+$check( 'elsewhere in the admin, nothing is taken off the notice hooks', false !== has_action( 'admin_notices', 'subly_harness_tip' ) );
 
-set_current_screen( 'toplevel_page_easysubscription' );
+set_current_screen( 'toplevel_page_subly' );
 $notices->collect();
-$check( 'on ours, our own callbacks are taken off', false === has_action( 'admin_notices', 'easysubscription_harness_tip' ) && false === has_action( 'admin_notices', array( $plugin->get( 'gateway_notice' ), 'render' ) ) );
+$check( 'on ours, our own callbacks are taken off', false === has_action( 'admin_notices', 'subly_harness_tip' ) && false === has_action( 'admin_notices', array( $plugin->get( 'gateway_notice' ), 'render' ) ) );
 
 $top = $printed( static fn() => do_action( 'admin_notices' ) ) . $printed( static fn() => do_action( 'all_admin_notices' ) );
 $check( 'they print where WordPress puts them, untouched', str_contains( $top, '<div class="notice notice-warning"><p>Milo Subscriptions: Staging Site Detected</p></div><div class="updated"><p>A second one.</p></div>' ) && str_contains( $top, 'WordPress core says hello.' ), $top );
@@ -158,12 +158,12 @@ $shell = $printed(
 		Page_Shell::close();
 	}
 );
-preg_match( '#<header class="easysubscription-shell__bar">(.*?)</header>#s', $shell, $header );
+preg_match( '#<header class="subly-shell__bar">(.*?)</header>#s', $shell, $header );
 $header = $header[1] ?? '';
 $after  = (string) strstr( $shell, '<hr class="wp-header-end">' );
 
-$check( 'the header has the bell, before Help', str_contains( $header, '<details class="easysubscription-notify"' ) && strpos( $header, 'easysubscription-notify' ) < strpos( $header, Page_Shell::header_links()['help'] ), $header );
-$check( 'counting the notices put in it', str_contains( $header, 'aria-label="1 notification"' ) && str_contains( $header, '<span class="easysubscription-notify__count" aria-hidden="true">1</span>' ), $header );
+$check( 'the header has the bell, before Help', str_contains( $header, '<details class="subly-notify"' ) && strpos( $header, 'subly-notify' ) < strpos( $header, Page_Shell::header_links()['help'] ), $header );
+$check( 'counting the notices put in it', str_contains( $header, 'aria-label="1 notification"' ) && str_contains( $header, '<span class="subly-notify__count" aria-hidden="true">1</span>' ), $header );
 $check( 'which holds our own tip, and nothing of another plugin\'s or WordPress\'s', str_contains( $header, 'test licence mode' ) && ! str_contains( $header, 'Milo Subscriptions' ) && ! str_contains( $header, 'WordPress core says hello.' ), $header );
 $check( 'but not the important one', ! str_contains( $header, 'PayPal renewals' ) );
 $check( 'which stays in view, under the page heading', $marked( $after ) && str_contains( $after, 'PayPal renewals will not be recorded.' ) && 1 === substr_count( $shell, 'PayPal renewals will not be recorded.' ), $after );
@@ -183,7 +183,7 @@ $quiet = $printed(
 		Page_Shell::close();
 	}
 );
-$check( 'with nothing to tuck, there is no bell', ! str_contains( $quiet, 'easysubscription-notify' ) && ! str_contains( $quiet, 'notification' ), $quiet );
+$check( 'with nothing to tuck, there is no bell', ! str_contains( $quiet, 'subly-notify' ) && ! str_contains( $quiet, 'notification' ), $quiet );
 
 // ---------------------------------------------------------------- the body class the stylesheet keys on
 
@@ -197,7 +197,7 @@ $body_on      = static function ( ?string $page ) use ( $plugin, $host ): string
 	$GLOBALS['wp_scripts']  = null;
 	$GLOBALS['wp_styles']   = null;
 	$GLOBALS['plugin_page'] = $page;
-	$plugin->get( 'admin_assets' )->enqueue( 'easysubscription_page_' . $page );
+	$plugin->get( 'admin_assets' )->enqueue( 'subly_page_' . $page );
 	$host->enqueue();
 	return (string) apply_filters( 'admin_body_class', '' );
 };
@@ -221,9 +221,9 @@ foreach ( $saved_hooks as $hook => $object ) {
 $GLOBALS['current_screen'] = $saved_screen; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 $GLOBALS['product_object'] = $saved_product; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 false === $tax_cache ? delete_transient( Renewal_Tax_Repair::CACHE ) : set_transient( Renewal_Tax_Repair::CACHE, $tax_cache, HOUR_IN_SECONDS );
-'' === $dismissed_meta ? delete_user_meta( 1, 'easysubscription_dismissed_notices' ) : update_user_meta( 1, 'easysubscription_dismissed_notices', $dismissed_meta );
+'' === $dismissed_meta ? delete_user_meta( 1, 'subly_dismissed_notices' ) : update_user_meta( 1, 'subly_dismissed_notices', $dismissed_meta );
 foreach ( $saved as $name => $value ) {
 	null === $value ? delete_option( $name ) : update_option( $name, $value );
 }
 
-easysubscription_test_done( $fail );
+subly_test_done( $fail );

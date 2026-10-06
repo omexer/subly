@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Lifecycle;
+namespace Subly\Lifecycle;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Cancellation_Policy {
 
-	public const OPTION        = 'easysubscription_allow_cancellation';
-	public const OPTION_WHEN   = 'easysubscription_cancellation_effective';
+	public const OPTION        = 'subly_allow_cancellation';
+	public const OPTION_WHEN   = 'subly_cancellation_effective';
 	public const AT_PERIOD_END = 'period_end';
 	public const IMMEDIATELY   = 'immediate';
 
@@ -28,7 +28,7 @@ final class Cancellation_Policy {
 	 * The store's setting, then anything the customer agreed to, such as a minimum term.
 	 */
 	public static function allows( Subscription $subscription ): bool {
-		return self::is_offered() && (bool) apply_filters( 'easysubscription_can_cancel', true, $subscription, get_current_user_id() );
+		return self::is_offered() && (bool) apply_filters( 'subly_can_cancel', true, $subscription, get_current_user_id() );
 	}
 
 	public static function is_immediate(): bool {

@@ -2,35 +2,35 @@
 /**
  * Paying a period early charges now and leaves the schedule where it was.
  *
- * @package EasySubscription
+ * @package Subly
  */
 
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
-use EasySubscription\Gateways\Test_Gateway;
-use EasySubscription\Lifecycle\Early_Renewal;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
+use Subly\Gateways\Test_Gateway;
+use Subly\Lifecycle\Early_Renewal;
 
 require __DIR__ . '/bootstrap.php';
 
 $approve = true;
-\EasySubscription\Plugin::instance()->get( 'gateways' )->add(
-	new class( $approve ) implements \EasySubscription\Gateways\Recurring_Gateway {
+\Subly\Plugin::instance()->get( 'gateways' )->add(
+	new class( $approve ) implements \Subly\Gateways\Recurring_Gateway {
 		public function __construct( public bool &$approve ) {}
 		public function id(): string { return Test_Gateway::ID; }
 		public function title(): string { return 'Harness'; }
-		public function model(): \EasySubscription\Gateways\Gateway_Model { return \EasySubscription\Gateways\Gateway_Model::Tokenized; }
+		public function model(): \Subly\Gateways\Gateway_Model { return \Subly\Gateways\Gateway_Model::Tokenized; }
 		public function supports( string $f ): bool { return true; }
-		public function create_mandate( Subscription $s, \WC_Order $o ): \EasySubscription\Gateways\Charge_Result { return \EasySubscription\Gateways\Charge_Result::success( 'm' ); }
-		public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): \EasySubscription\Gateways\Charge_Result {
-			return $this->approve ? \EasySubscription\Gateways\Charge_Result::success( 'c' . $r->get_id() ) : \EasySubscription\Gateways\Charge_Result::hard_decline( 'card_declined', 'Declined by the harness.' );
+		public function create_mandate( Subscription $s, \WC_Order $o ): \Subly\Gateways\Charge_Result { return \Subly\Gateways\Charge_Result::success( 'm' ); }
+		public function charge_renewal( Subscription $s, \WC_Order $r, string $k ): \Subly\Gateways\Charge_Result {
+			return $this->approve ? \Subly\Gateways\Charge_Result::success( 'c' . $r->get_id() ) : \Subly\Gateways\Charge_Result::hard_decline( 'card_declined', 'Declined by the harness.' );
 		}
-		public function reconcile( Subscription $s, string $k ): ?\EasySubscription\Gateways\Charge_Result { return null; }
+		public function reconcile( Subscription $s, string $k ): ?\Subly\Gateways\Charge_Result { return null; }
 		public function cancel_mandate( Subscription $s ): bool { return true; }
 		public function update_payment_method( Subscription $s, string $t ): bool { return true; }
 	}
 );
 
-$product = easysubscription_test_product();
+$product = subly_test_product();
 
 $make = function () use ( $product ) {
 	$s = new Subscription();
@@ -67,7 +67,7 @@ $s = wc_get_order( $s->get_id() );
 $check( 'the renewal date did not move forward from the period paid for', substr( (string) $s->get_next_payment(), 0, 10 ) === gmdate( 'Y-m-d', strtotime( $due_before . ' UTC +1 month' ) ), array( $due_before, $s->get_next_payment() ) );
 
 global $wpdb;
-$orders = $wpdb->get_col( $wpdb->prepare( "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key='_easysubscription_subscription_id' AND meta_value=%d", $s->get_id() ) );
+$orders = $wpdb->get_col( $wpdb->prepare( "SELECT order_id FROM {$wpdb->prefix}wc_orders_meta WHERE meta_key='_subly_subscription_id' AND meta_value=%d", $s->get_id() ) );
 $check( 'exactly one renewal order was raised', 1 === count( $orders ), $orders );
 if ( $orders ) {
 	$check( 'and it was paid', in_array( wc_get_order( (int) $orders[0] )->get_status(), array( 'processing', 'completed' ), true ), wc_get_order( (int) $orders[0] )->get_status() );
@@ -79,10 +79,10 @@ $r       = Early_Renewal::charge( $decline );
 $check( 'a decline is reported honestly', ! $r['ok'] && str_contains( $r['message'], 'declined' ), $r );
 
 $paypal = $make();
-$paypal->set_payment_method( 'easysubscription_paypal' );
+$paypal->set_payment_method( 'subly_paypal' );
 $paypal->save();
 $check( 'never offered for a gateway that bills on its own plan', ! Early_Renewal::is_available_for( $paypal ) );
 
 delete_option( Early_Renewal::OPTION );
 foreach ( array( $s, $decline, $paypal ) as $x ) { $x->delete( true ); }
-easysubscription_test_done( $fail );
+subly_test_done( $fail );

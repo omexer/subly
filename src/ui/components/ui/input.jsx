@@ -7,7 +7,7 @@ export const Input = forwardRef(
 			ref={ ref }
 			type={ type }
 			className={ cn(
-				'es-h-9 es-w-full es-rounded-md es-border es-border-input es-bg-background es-px-3 es-py-1 es-text-sm es-shadow-sm es-transition-colors placeholder:es-text-muted-foreground focus-visible:es-outline-none focus-visible:es-ring-2 focus-visible:es-ring-ring disabled:es-cursor-not-allowed disabled:es-opacity-50',
+				'sb-h-9 sb-w-full sb-rounded-md sb-border sb-border-input sb-bg-background sb-px-3 sb-py-1 sb-text-sm sb-shadow-sm sb-transition-colors placeholder:sb-text-muted-foreground focus-visible:sb-outline-none focus-visible:sb-ring-2 focus-visible:sb-ring-ring disabled:sb-cursor-not-allowed disabled:sb-opacity-50',
 				className
 			) }
 			{ ...props }
@@ -21,7 +21,7 @@ export const Select = forwardRef(
 		<select
 			ref={ ref }
 			className={ cn(
-				'es-h-9 es-rounded-md es-border es-border-input es-bg-background es-px-3 es-text-sm es-shadow-sm focus-visible:es-outline-none focus-visible:es-ring-2 focus-visible:es-ring-ring disabled:es-opacity-50',
+				'sb-h-9 sb-rounded-md sb-border sb-border-input sb-bg-background sb-px-3 sb-text-sm sb-shadow-sm focus-visible:sb-outline-none focus-visible:sb-ring-2 focus-visible:sb-ring-ring disabled:sb-opacity-50',
 				className
 			) }
 			{ ...props }
@@ -39,7 +39,7 @@ export const Checkbox = forwardRef( ( { className, ...props }, ref ) => (
 		ref={ ref }
 		type="checkbox"
 		className={ cn(
-			'es-h-4 es-w-4 es-shrink-0 es-cursor-pointer es-rounded es-border-input es-accent-primary',
+			'sb-h-4 sb-w-4 sb-shrink-0 sb-cursor-pointer sb-rounded sb-border-input sb-accent-primary',
 			className
 		) }
 		{ ...props }

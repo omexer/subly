@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Gateways;
+namespace Subly\Gateways;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,7 +24,7 @@ class Gateway_Registry {
 		$this->add( new Manual_Gateway() );
 
 		// Never present on a production site unless the constant is deliberately defined.
-		if ( defined( 'EASYSUBSCRIPTION_ENABLE_TEST_GATEWAY' ) ) {
+		if ( defined( 'SUBLY_ENABLE_TEST_GATEWAY' ) ) {
 			$this->add( new Test_Gateway() );
 		}
 
@@ -33,7 +33,7 @@ class Gateway_Registry {
 		 *
 		 * @param Gateway_Registry $registry
 		 */
-		do_action( 'easysubscription_register_gateways', $this );
+		do_action( 'subly_register_gateways', $this );
 	}
 
 	public function add( Recurring_Gateway $gateway ): void {
@@ -49,11 +49,11 @@ class Gateway_Registry {
 	 */
 	public function all(): array {
 		/**
-		 * Filter the gateways EasySubscription will consider for recurring payments.
+		 * Filter the gateways Subly will consider for recurring payments.
 		 *
 		 * @param array<string, Recurring_Gateway> $gateways
 		 */
-		return apply_filters( 'easysubscription_available_gateways', $this->gateways );
+		return apply_filters( 'subly_available_gateways', $this->gateways );
 	}
 
 	/**
@@ -75,7 +75,7 @@ class Gateway_Registry {
 		 * @param Subscription           $subscription
 		 * @param Gateway_Registry       $registry
 		 */
-		$gateway = apply_filters( 'easysubscription_gateway_for_subscription', $gateway, $subscription, $this );
+		$gateway = apply_filters( 'subly_gateway_for_subscription', $gateway, $subscription, $this );
 
 		return $gateway instanceof Recurring_Gateway ? $gateway : $this->get( Manual_Gateway::ID );
 	}

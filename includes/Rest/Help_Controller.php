@@ -1,9 +1,9 @@
 <?php
 
-namespace EasySubscription\Rest;
+namespace Subly\Rest;
 
-use EasySubscription\Admin\Help_Page;
-use EasySubscription\Admin\Menu;
+use Subly\Admin\Help_Page;
+use Subly\Admin\Menu;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Help_Controller {
 
-	public const NAMESPACE = 'easysubscription/v1';
+	public const NAMESPACE = 'subly/v1';
 
 	public function __construct( private readonly Help_Page $page ) {}
 

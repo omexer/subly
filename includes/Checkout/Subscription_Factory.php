@@ -1,13 +1,13 @@
 <?php
 
-namespace EasySubscription\Checkout;
+namespace Subly\Checkout;
 
-use EasySubscription\Billing\Renewal_Scheduler;
-use EasySubscription\Data\Activity_Repository;
-use EasySubscription\Data\Charge_Slot_Repository;
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
-use EasySubscription\Product\Subscription_Product;
+use Subly\Billing\Renewal_Scheduler;
+use Subly\Data\Activity_Repository;
+use Subly\Data\Charge_Slot_Repository;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
+use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -61,7 +61,7 @@ class Subscription_Factory {
 			 * @param \WC_Product     $product
 			 * @param \WC_Order       $order
 			 */
-			if ( ! apply_filters( 'easysubscription_create_subscription_for_item', true, $item, $product, $order ) ) {
+			if ( ! apply_filters( 'subly_create_subscription_for_item', true, $item, $product, $order ) ) {
 				continue;
 			}
 
@@ -109,7 +109,7 @@ class Subscription_Factory {
 		$subscription->set_next_payment( $first_renewal->format( 'Y-m-d H:i:s' ) );
 
 		// Pin the origin site so a cloned staging copy refuses to bill real customers.
-		$subscription->update_meta_data( '_easysubscription_site_url', get_option( 'siteurl' ) );
+		$subscription->update_meta_data( '_subly_site_url', get_option( 'siteurl' ) );
 
 		// The recurring amount, not what the first order came to: a trial makes that zero
 		// and a one-off coupon would otherwise discount every renewal for ever.
@@ -152,7 +152,7 @@ class Subscription_Factory {
 			$this->slots->mark_paid( (int) $slot->id, $order->get_id() );
 		}
 
-		$order->update_meta_data( '_easysubscription_subscription_id', $subscription->get_id() );
+		$order->update_meta_data( '_subly_subscription_id', $subscription->get_id() );
 		$order->save();
 
 		$this->activity->log(
@@ -174,9 +174,9 @@ class Subscription_Factory {
 		 * @param Subscription $subscription
 		 * @param \WC_Product  $product
 		 */
-		do_action( 'easysubscription_configure_subscription', $subscription, $product );
+		do_action( 'subly_configure_subscription', $subscription, $product );
 
-		do_action( 'easysubscription_subscription_created', $subscription, $order );
+		do_action( 'subly_subscription_created', $subscription, $order );
 
 		return $subscription;
 	}
@@ -232,11 +232,11 @@ class Subscription_Factory {
 
 		$this->scheduler->schedule_next( $subscription );
 
-		do_action( 'easysubscription_subscription_activated', $subscription );
+		do_action( 'subly_subscription_activated', $subscription );
 	}
 
 	private function existing_for_order( \WC_Order $order ): ?Subscription {
-		$id = (int) $order->get_meta( '_easysubscription_subscription_id' );
+		$id = (int) $order->get_meta( '_subly_subscription_id' );
 
 		if ( ! $id ) {
 			return null;

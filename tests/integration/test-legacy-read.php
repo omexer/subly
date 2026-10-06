@@ -2,13 +2,13 @@
 /**
  * A subscription reads back through WooCommerce's legacy post store (HPOS off, or sync on) with every field intact.
  *
- * @package EasySubscription
+ * @package Subly
  */
 
 use Automattic\WooCommerce\Internal\DataStores\Orders\OrdersTableDataStore;
 use Automattic\WooCommerce\Utilities\OrderUtil;
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
 
 require __DIR__ . '/bootstrap.php';
 
@@ -119,4 +119,4 @@ if ( get_post( $id ) ) {
 }
 $parent->delete( true );
 
-easysubscription_test_done( $fail );
+subly_test_done( $fail );

@@ -1,15 +1,15 @@
 <?php
 
-namespace EasySubscription\Emails;
+namespace Subly\Emails;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Shared plumbing for every EasySubscription email.
+ * Shared plumbing for every Subly email.
  *
  * Extends WC_Email so each one inherits the merchant's own header, footer, colours and
  * template overrides. Subclasses describe content; they never render markup.
@@ -24,7 +24,7 @@ abstract class Subscription_Email extends \WC_Email {
 	protected ?\WC_Order $related_order = null;
 
 	public function __construct() {
-		$this->template_base  = EASYSUBSCRIPTION_PATH . 'templates/';
+		$this->template_base  = SUBLY_PATH . 'templates/';
 		$this->template_html  = 'emails/subscription-email.php';
 		$this->template_plain = 'emails/plain/subscription-email.php';
 		$this->placeholders   = array( '{subscription_number}' => '' );
@@ -99,7 +99,7 @@ abstract class Subscription_Email extends \WC_Email {
 
 		return array(
 			'email_heading'      => $this->get_heading(),
-			'intro'              => $loaded ? $this->intro() : __( 'This is a preview. Real messages include the subscription details here.', 'easysubscription' ),
+			'intro'              => $loaded ? $this->intro() : __( 'This is a preview. Real messages include the subscription details here.', 'subly' ),
 			'facts'              => $loaded ? $this->facts() : array(),
 			'cta'                => $loaded ? $this->call_to_action() : null,
 			'outro'              => $loaded ? $this->outro() : '',

@@ -55,8 +55,8 @@ function field( id, kind, value, extra = {} ) {
 		value,
 		placeholder: '',
 		custom_attributes: {},
-		easysubscription_show_if: '',
-		easysubscription_joins: '',
+		subly_show_if: '',
+		subly_joins: '',
 		joined: [],
 		...extra,
 	};
@@ -77,7 +77,7 @@ const PAGES = {
 						help: 'Customers can cancel from <strong>My Account</strong>.',
 					} ),
 					field( 'cancel_when', 'select', 'end', {
-						easysubscription_show_if: 'allow_cancel',
+						subly_show_if: 'allow_cancel',
 						options: [
 							{ value: 'end', label: 'End of billing cycle' },
 							{ value: 'now', label: 'Immediately' },
@@ -85,11 +85,11 @@ const PAGES = {
 					} ),
 					field( 'allow_pause', 'checkbox', 'yes' ),
 					field( 'pause_length', 'number', '3', {
-						easysubscription_show_if: 'allow_pause',
+						subly_show_if: 'allow_pause',
 						joined: [
 							field( 'pause_unit', 'select', 'month', {
-								easysubscription_show_if: 'allow_pause',
-								easysubscription_joins: 'pause_length',
+								subly_show_if: 'allow_pause',
+								subly_joins: 'pause_length',
 								options: [
 									{ value: 'day', label: 'Days' },
 									{ value: 'month', label: 'Months' },
@@ -98,10 +98,10 @@ const PAGES = {
 						],
 					} ),
 					field( 'pause_reason', 'checkbox', 'yes', {
-						easysubscription_show_if: 'allow_pause',
+						subly_show_if: 'allow_pause',
 					} ),
 					field( 'reason_prompt', 'text', 'Why?', {
-						easysubscription_show_if: 'pause_reason',
+						subly_show_if: 'pause_reason',
 					} ),
 				],
 			},
@@ -118,8 +118,8 @@ const PAGES = {
 				anchor: 'general',
 				rows: [
 					{
-						type: 'easysubscription_status',
-						html: '<div class="easysubscription-checks">Renewal queue</div>',
+						type: 'subly_status',
+						html: '<div class="subly-checks">Renewal queue</div>',
 					},
 				],
 			},
@@ -144,13 +144,13 @@ PAGES.notifications = {
 			anchor: 'notifications',
 			rows: [
 				field(
-					'woocommerce_easysubscription_renewal_reminder_settings[enabled]',
+					'woocommerce_subly_renewal_reminder_settings[enabled]',
 					'checkbox',
 					'yes',
 					{
 						title: 'Renewal reminder',
-						easysubscription_email:
-							'easysubscription_renewal_reminder',
+						subly_email:
+							'subly_renewal_reminder',
 						preview_url:
 							'/wp-admin/?preview_woocommerce_mail=true&type=Reminder',
 					}
@@ -169,9 +169,9 @@ function respond() {
 			return saveReply( options );
 		}
 
-		if ( options.path.startsWith( '/easysubscription/v1/settings/' ) ) {
+		if ( options.path.startsWith( '/subly/v1/settings/' ) ) {
 			const section = options.path
-				.slice( '/easysubscription/v1/settings/'.length )
+				.slice( '/subly/v1/settings/'.length )
 				.split( '?' )[ 0 ];
 
 			return Promise.resolve( PAGES[ section ] );
@@ -263,7 +263,7 @@ async function save() {
 }
 
 beforeAll( () => {
-	window.easysubscription = {
+	window.subly = {
 		shell: {
 			registerRoute: ( registered ) => {
 				route = registered;
@@ -278,7 +278,7 @@ beforeEach( () => {
 	window.history.replaceState(
 		{},
 		'',
-		'/wp-admin/admin.php?page=easysubscription-settings'
+		'/wp-admin/admin.php?page=subly-settings'
 	);
 	apiFetch.mockReset();
 	respond();
@@ -301,7 +301,7 @@ afterEach( () => {
 } );
 
 test( 'registers itself with the shell for the Settings page', () => {
-	expect( route.page ).toBe( 'easysubscription-settings' );
+	expect( route.page ).toBe( 'subly-settings' );
 	expect( route.title ).toBe( 'Settings' );
 } );
 
@@ -323,9 +323,9 @@ test( 'draws a section from its fields', async () => {
 	);
 	expect( el( '#pause_unit' ).value ).toBe( 'month' );
 	expect(
-		el( '#pause_length' ).closest( '.easysubscription-settings__control' )
+		el( '#pause_length' ).closest( '.subly-settings__control' )
 	).toBe(
-		el( '#pause_unit' ).closest( '.easysubscription-settings__control' )
+		el( '#pause_unit' ).closest( '.subly-settings__control' )
 	);
 	expect( el( 'label[for="pause_unit"]' ).className ).toBe(
 		'screen-reader-text'
@@ -339,8 +339,8 @@ test( 'draws a section from its fields', async () => {
 test( 'draws PHP-rendered rows as they come', async () => {
 	await render( '' );
 
-	expect( el( '.easysubscription-settings__row--wide' ).innerHTML ).toBe(
-		'<div class="easysubscription-checks">Renewal queue</div>'
+	expect( el( '.subly-settings__row--wide' ).innerHTML ).toBe(
+		'<div class="subly-checks">Renewal queue</div>'
 	);
 	expect(
 		Array.from( container.querySelectorAll( 'h2' ) ).map(
@@ -357,7 +357,7 @@ test( 'switching sections keeps unsaved edits, without reloading the page', asyn
 
 	expect( setParams ).toHaveBeenLastCalledWith( {} );
 	expect( el( '#role_after' ) ).not.toBeNull();
-	expect( el( '.easysubscription-settings__save-note' ).textContent ).toBe(
+	expect( el( '.subly-settings__save-note' ).textContent ).toBe(
 		'You have unsaved changes.'
 	);
 
@@ -371,7 +371,7 @@ test( 'switching sections keeps unsaved edits, without reloading the page', asyn
 
 	const fetched = apiFetch.mock.calls.filter( ( [ options ] ) =>
 		options.path.startsWith(
-			'/easysubscription/v1/settings/customer_controls'
+			'/subly/v1/settings/customer_controls'
 		)
 	);
 
@@ -383,13 +383,13 @@ test( 'a notice from the last page load is shown until the next section', async 
 	await render();
 	MENU.notices = [];
 
-	expect( el( '.easysubscription-notice--good' ).textContent ).toBe(
+	expect( el( '.subly-notice--good' ).textContent ).toBe(
 		'Licence activated.'
 	);
 
 	await click( link( 'General' ) );
 
-	expect( el( '.easysubscription-notice--good' ) ).toBeNull();
+	expect( el( '.subly-notice--good' ) ).toBeNull();
 } );
 
 test( 'a listed group shows its sections under it once open', async () => {
@@ -459,7 +459,7 @@ test( 'saving sends only the fields that changed', async () => {
 
 	expect( posts ).toHaveLength( 1 );
 	expect( posts[ 0 ][ 0 ].path ).toBe(
-		'/easysubscription/v1/settings/customer_controls'
+		'/subly/v1/settings/customer_controls'
 	);
 	expect( posts[ 0 ][ 0 ].data ).toEqual( {
 		values: { cancel_when: 'now', pause_length: '6' },
@@ -467,7 +467,7 @@ test( 'saving sends only the fields that changed', async () => {
 	expect( el( '[role="status"]' ).textContent ).toBe( 'Settings saved.' );
 	expect( el( 'button[type="submit"]' ).disabled ).toBe( true );
 	expect(
-		el( '.easysubscription-settings__save-note' ).textContent
+		el( '.subly-settings__save-note' ).textContent
 	).not.toBe( 'You have unsaved changes.' );
 } );
 
@@ -509,7 +509,7 @@ test( 'warnings the store raised on save are shown instead of the toast', async 
 test( 'a refused save shows why and keeps the edits', async () => {
 	saveReply = () =>
 		Promise.reject( {
-			code: 'easysubscription_unknown_setting',
+			code: 'subly_unknown_setting',
 			message: 'Not saved: cancel_when is not a setting on this page.',
 		} );
 
@@ -529,7 +529,7 @@ test( 'leaving the route with unsaved changes asks first', async () => {
 
 	const away = document.createElement( 'a' );
 
-	away.href = 'admin.php?page=easysubscription';
+	away.href = 'admin.php?page=subly';
 	// Stands in for the shell, which routes the link itself.
 	away.addEventListener( 'click', ( event ) => event.preventDefault() );
 	document.body.appendChild( away );
@@ -566,7 +566,7 @@ test( 'leaving the route with unsaved changes asks first', async () => {
 
 test( 'a section that cannot load says so', async () => {
 	apiFetch.mockImplementation( ( options ) =>
-		options.path.startsWith( '/easysubscription/v1/settings/' )
+		options.path.startsWith( '/subly/v1/settings/' )
 			? Promise.reject( {
 					message: 'There is no such settings section.',
 			  } )
@@ -582,7 +582,7 @@ test( 'a section that cannot load says so', async () => {
 
 test( 'an email row offers its preview in a new tab, and nothing to edit it with', async () => {
 	await render(
-		'section=notifications&email=easysubscription_renewal_reminder'
+		'section=notifications&email=subly_renewal_reminder'
 	);
 
 	const preview = Array.from( container.querySelectorAll( 'a' ) ).find(
@@ -598,7 +598,7 @@ test( 'an email row offers its preview in a new tab, and nothing to edit it with
 		'Preview Renewal reminder (opens in a new tab)'
 	);
 	expect(
-		el( '#plain_switch' ).closest( '.easysubscription-settings__row' )
+		el( '#plain_switch' ).closest( '.subly-settings__row' )
 			.textContent
 	).not.toContain( 'Preview' );
 	expect( container.textContent ).not.toContain( 'Edit' );
@@ -633,7 +633,7 @@ describe( 'with an email editor registered', () => {
 		await render( 'section=notifications' );
 
 		expect(
-			el( '#plain_switch' ).closest( '.easysubscription-settings__row' )
+			el( '#plain_switch' ).closest( '.subly-settings__row' )
 				.textContent
 		).not.toContain( 'Edit' );
 
@@ -641,10 +641,10 @@ describe( 'with an email editor registered', () => {
 
 		expect( setParams ).toHaveBeenLastCalledWith( {
 			section: 'notifications',
-			email: 'easysubscription_renewal_reminder',
+			email: 'subly_renewal_reminder',
 		} );
 		expect( el( '#editing' ).textContent ).toBe(
-			'easysubscription_renewal_reminder'
+			'subly_renewal_reminder'
 		);
 
 		await click( button( 'Back' ) );
@@ -657,7 +657,7 @@ describe( 'with an email editor registered', () => {
 
 	test( 'leaving an editor with unsaved edits asks first', async () => {
 		await render(
-			'section=notifications&email=easysubscription_renewal_reminder'
+			'section=notifications&email=subly_renewal_reminder'
 		);
 		await click( button( 'Dirty' ) );
 

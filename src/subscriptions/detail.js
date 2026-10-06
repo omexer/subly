@@ -14,7 +14,7 @@ import {
 	Input,
 	Skeleton,
 	Stat,
-} from '@easysubscription/ui';
+} from '@subly/ui';
 import {
 	daysAgo,
 	describeSchedule,
@@ -26,9 +26,9 @@ import {
 
 function Fact( { label, children } ) {
 	return (
-		<div className="es-flex es-justify-between es-gap-4 es-border-b es-border-border es-py-2.5 last:es-border-0">
-			<span className="es-text-muted-foreground">{ label }</span>
-			<span className="es-text-right">{ children }</span>
+		<div className="sb-flex sb-justify-between sb-gap-4 sb-border-b sb-border-border sb-py-2.5 last:sb-border-0">
+			<span className="sb-text-muted-foreground">{ label }</span>
+			<span className="sb-text-right">{ children }</span>
 		</div>
 	);
 }
@@ -42,13 +42,13 @@ function Fact( { label, children } ) {
 function entryLabel( type ) {
 	switch ( type ) {
 		case 'status_change':
-			return __( 'Status', 'easysubscription' );
+			return __( 'Status', 'subly' );
 		case 'charge_attempt':
-			return __( 'Charge', 'easysubscription' );
+			return __( 'Charge', 'subly' );
 		case 'schedule_change':
-			return __( 'Schedule', 'easysubscription' );
+			return __( 'Schedule', 'subly' );
 		default:
-			return __( 'Note', 'easysubscription' );
+			return __( 'Note', 'subly' );
 	}
 }
 
@@ -89,12 +89,12 @@ export function Detail( { id, onBack, onFail } ) {
 		setBusy( true );
 
 		return Promise.all( [
-			apiFetch( { path: `/easysubscription/v1/subscriptions/${ id }` } ),
+			apiFetch( { path: `/subly/v1/subscriptions/${ id }` } ),
 			apiFetch( {
-				path: `/easysubscription/v1/subscriptions/${ id }/activity`,
+				path: `/subly/v1/subscriptions/${ id }/activity`,
 			} ).catch( () => [] ),
 			apiFetch( {
-				path: `/easysubscription/v1/subscriptions/${ id }/panels`,
+				path: `/subly/v1/subscriptions/${ id }/panels`,
 			} ).catch( () => ( {} ) ),
 		] )
 			.then( ( [ subscription, entries, extra ] ) => {
@@ -121,10 +121,10 @@ export function Detail( { id, onBack, onFail } ) {
 							ok: false,
 							message: __(
 								'That could not be reloaded.',
-								'easysubscription'
+								'subly'
 							),
 						} );
-					} else if ( 'easysubscription_not_found' === error?.code ) {
+					} else if ( 'subly_not_found' === error?.code ) {
 						setMissing( true );
 					} else {
 						onFail();
@@ -150,14 +150,14 @@ export function Detail( { id, onBack, onFail } ) {
 		setNotice( null );
 
 		apiFetch( {
-			path: `/easysubscription/v1/subscriptions/${ id }/actions`,
+			path: `/subly/v1/subscriptions/${ id }/actions`,
 			method: 'POST',
 			data: { action },
 		} )
 			.then( () => {
 				setNotice( {
 					ok: true,
-					message: __( 'Done.', 'easysubscription' ),
+					message: __( 'Done.', 'subly' ),
 				} );
 
 				return load();
@@ -168,7 +168,7 @@ export function Detail( { id, onBack, onFail } ) {
 					ok: false,
 					message:
 						error?.message ||
-						__( 'That did not work.', 'easysubscription' ),
+						__( 'That did not work.', 'subly' ),
 				} );
 			} );
 	};
@@ -178,7 +178,7 @@ export function Detail( { id, onBack, onFail } ) {
 		setNotice( null );
 
 		apiFetch( {
-			path: `/easysubscription/v1/subscriptions/${ id }`,
+			path: `/subly/v1/subscriptions/${ id }`,
 			method: 'POST',
 			data: {
 				next_payment: dates.next_payment
@@ -194,7 +194,7 @@ export function Detail( { id, onBack, onFail } ) {
 					ok: true,
 					message: __(
 						'The schedule was changed.',
-						'easysubscription'
+						'subly'
 					),
 				} );
 
@@ -208,7 +208,7 @@ export function Detail( { id, onBack, onFail } ) {
 						error?.message ||
 						__(
 							'That date could not be read.',
-							'easysubscription'
+							'subly'
 						),
 				} );
 			} );
@@ -217,11 +217,11 @@ export function Detail( { id, onBack, onFail } ) {
 	if ( missing ) {
 		return (
 			<Card>
-				<CardContent className="es-p-6">
+				<CardContent className="sb-p-6">
 					<p>
 						{ __(
 							'No subscription with that id.',
-							'easysubscription'
+							'subly'
 						) }
 					</p>
 				</CardContent>
@@ -230,27 +230,27 @@ export function Detail( { id, onBack, onFail } ) {
 	}
 
 	if ( ! data ) {
-		return <Skeleton className="es-my-4 es-h-64" />;
+		return <Skeleton className="sb-my-4 sb-h-64" />;
 	}
 
-	let nextMeta = __( 'Nothing scheduled', 'easysubscription' );
+	let nextMeta = __( 'Nothing scheduled', 'subly' );
 
 	// The date only moves once the provider confirms, so "overdue" would mislead.
 	if ( data.payment_pending ) {
-		nextMeta = __( 'Waiting for the payment', 'easysubscription' );
+		nextMeta = __( 'Waiting for the payment', 'subly' );
 	} else if ( data.next_payment ) {
 		nextMeta = whenDue( data.next_payment );
 	}
 
 	return (
-		<div className={ busy ? 'es-opacity-60 es-transition-opacity' : '' }>
-			<div className="es-mb-4 es-flex es-flex-wrap es-items-start es-gap-3">
+		<div className={ busy ? 'sb-opacity-60 sb-transition-opacity' : '' }>
+			<div className="sb-mb-4 sb-flex sb-flex-wrap sb-items-start sb-gap-3">
 				<div>
-					<div className="es-flex es-flex-wrap es-items-center es-gap-2">
-						<h2 className="es-m-0 es-text-xl es-font-semibold">
+					<div className="sb-flex sb-flex-wrap sb-items-center sb-gap-2">
+						<h2 className="sb-m-0 sb-text-xl sb-font-semibold">
 							{ sprintf(
 								/* translators: %d: subscription id. */
-								__( 'Subscription #%d', 'easysubscription' ),
+								__( 'Subscription #%d', 'subly' ),
 								data.id
 							) }
 						</h2>
@@ -258,7 +258,7 @@ export function Detail( { id, onBack, onFail } ) {
 							{ data.status_label }
 						</Badge>
 					</div>
-					<p className="es-mt-1 es-text-sm es-text-muted-foreground">
+					<p className="sb-mt-1 sb-text-sm sb-text-muted-foreground">
 						{ data.customer_name || data.customer_email || '—' }
 						{ data.customer_name && data.customer_email
 							? ` · ${ data.customer_email }`
@@ -271,19 +271,19 @@ export function Detail( { id, onBack, onFail } ) {
 						variant="ghost"
 						size="sm"
 						onClick={ onBack }
-						className="es-ml-auto"
+						className="sb-ml-auto"
 					>
-						{ __( '← All subscriptions', 'easysubscription' ) }
+						{ __( '← All subscriptions', 'subly' ) }
 					</Button>
 				) : null }
 			</div>
 
 			{ notice ? (
 				<div
-					className={ `es-mb-4 es-rounded-lg es-border es-p-3 es-text-sm ${
+					className={ `sb-mb-4 sb-rounded-lg sb-border sb-p-3 sb-text-sm ${
 						notice.ok
-							? 'es-border-success es-text-success'
-							: 'es-border-destructive es-text-destructive'
+							? 'sb-border-success sb-text-success'
+							: 'sb-border-destructive sb-text-destructive'
 					}` }
 					role="status"
 				>
@@ -293,46 +293,46 @@ export function Detail( { id, onBack, onFail } ) {
 
 			{ data.payment_pending ? (
 				<div
-					className="es-mb-4 es-rounded-lg es-border es-p-3 es-text-sm"
+					className="sb-mb-4 sb-rounded-lg sb-border sb-p-3 sb-text-sm"
 					role="status"
 				>
 					<strong>
-						{ __( 'Payment processing', 'easysubscription' ) }
+						{ __( 'Payment processing', 'subly' ) }
 					</strong>{ ' ' }
 					{ sprintf(
 						/* translators: 1: renewal order number, 2: how long ago, such as "3 days ago". */
 						__(
 							'Renewal order #%1$s was submitted %2$s and is waiting for the payment provider to confirm it.',
-							'easysubscription'
+							'subly'
 						),
 						data.payment_pending_order.number,
 						daysAgo( data.payment_pending_since )
 					) }{ ' ' }
 					<a href={ data.payment_pending_order.url }>
-						{ __( 'View order', 'easysubscription' ) }
+						{ __( 'View order', 'subly' ) }
 					</a>
 				</div>
 			) : null }
 
-			<div className="es-mb-4 es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+			<div className="sb-mb-4 sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 				<Stat
-					label={ __( 'Recurring total', 'easysubscription' ) }
+					label={ __( 'Recurring total', 'subly' ) }
 					value={ data.total_formatted }
 					meta={ describeSchedule( data ) }
 				/>
 				<Stat
-					label={ __( 'Next payment', 'easysubscription' ) }
+					label={ __( 'Next payment', 'subly' ) }
 					value={ data.next_payment_formatted || '—' }
 					meta={ nextMeta }
 				/>
 				<Stat
-					label={ __( 'Payments made', 'easysubscription' ) }
+					label={ __( 'Payments made', 'subly' ) }
 					value={ String( Number( data.period_index || 0 ) + 1 ) }
 					meta={
 						formatDay( data.date_created )
 							? sprintf(
 									/* translators: %s: date the subscription started. */
-									__( 'since %s', 'easysubscription' ),
+									__( 'since %s', 'subly' ),
 									formatDay( data.date_created )
 							  )
 							: ''
@@ -340,36 +340,36 @@ export function Detail( { id, onBack, onFail } ) {
 				/>
 			</div>
 
-			<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
+			<div className="sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{ __( 'Details', 'easysubscription' ) }
+							{ __( 'Details', 'subly' ) }
 						</CardTitle>
 					</CardHeader>
-					<CardContent className="es-text-sm">
-						<Fact label={ __( 'Customer', 'easysubscription' ) }>
+					<CardContent className="sb-text-sm">
+						<Fact label={ __( 'Customer', 'subly' ) }>
 							{ data.customer_name || data.customer_email || '—' }
 						</Fact>
-						<Fact label={ __( 'Email', 'easysubscription' ) }>
+						<Fact label={ __( 'Email', 'subly' ) }>
 							{ data.customer_email || '—' }
 						</Fact>
 						<Fact
-							label={ __( 'Payment method', 'easysubscription' ) }
+							label={ __( 'Payment method', 'subly' ) }
 						>
 							{ data.payment_method_title ||
 								data.payment_method ||
 								'—' }
 						</Fact>
-						<Fact label={ __( 'Trial ends', 'easysubscription' ) }>
+						<Fact label={ __( 'Trial ends', 'subly' ) }>
 							{ formatDay( data.trial_end ) || '—' }
 						</Fact>
-						<Fact label={ __( 'Ends', 'easysubscription' ) }>
+						<Fact label={ __( 'Ends', 'subly' ) }>
 							{ formatDay( data.end_date ) ||
-								__( 'Not set', 'easysubscription' ) }
+								__( 'Not set', 'subly' ) }
 						</Fact>
 						<Fact
-							label={ __( 'Parent order', 'easysubscription' ) }
+							label={ __( 'Parent order', 'subly' ) }
 						>
 							{ data.parent_order_id
 								? `#${ data.parent_order_id }`
@@ -381,11 +381,11 @@ export function Detail( { id, onBack, onFail } ) {
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{ __( 'Things you can do', 'easysubscription' ) }
+							{ __( 'Things you can do', 'subly' ) }
 						</CardTitle>
 					</CardHeader>
-					<CardContent className="es-flex es-flex-col es-gap-5">
-						<div className="es-flex es-flex-wrap es-items-center es-gap-2">
+					<CardContent className="sb-flex sb-flex-col sb-gap-5">
+						<div className="sb-flex sb-flex-wrap sb-items-center sb-gap-2">
 							{ data.billable && ! data.payment_pending ? (
 								<Button
 									disabled={ busy }
@@ -396,14 +396,14 @@ export function Detail( { id, onBack, onFail } ) {
 												/* translators: %s: recurring total. */
 												__(
 													'This charges the customer %s right now. Continue?',
-													'easysubscription'
+													'subly'
 												),
 												data.total_formatted
 											)
 										)
 									}
 								>
-									{ __( 'Renew now', 'easysubscription' ) }
+									{ __( 'Renew now', 'subly' ) }
 								</Button>
 							) : null }
 							<Button
@@ -411,41 +411,41 @@ export function Detail( { id, onBack, onFail } ) {
 								disabled={ busy }
 								onClick={ () => act( 'reactivate' ) }
 							>
-								{ __( 'Reactivate', 'easysubscription' ) }
+								{ __( 'Reactivate', 'subly' ) }
 							</Button>
 						</div>
 
 						{ data.billable && ! data.payment_pending ? (
-							<p className="es-m-0 es-text-xs es-text-muted-foreground">
+							<p className="sb-m-0 sb-text-xs sb-text-muted-foreground">
 								{ __(
 									'Charging now takes the next payment immediately and moves the schedule on. It does not skip the queue for a failed one - the activity log below says what happened last.',
-									'easysubscription'
+									'subly'
 								) }
 							</p>
 						) : null }
 
-						<div className="es-flex es-flex-col es-gap-2 es-border-t es-pt-4">
-							<h4 className="es-m-0 es-text-sm es-font-medium">
+						<div className="sb-flex sb-flex-col sb-gap-2 sb-border-t sb-pt-4">
+							<h4 className="sb-m-0 sb-text-sm sb-font-medium">
 								{ __(
 									'Change the schedule',
-									'easysubscription'
+									'subly'
 								) }
 							</h4>
-							<p className="es-m-0 es-mb-1 es-text-xs es-text-muted-foreground">
+							<p className="sb-m-0 sb-mb-1 sb-text-xs sb-text-muted-foreground">
 								{ __(
 									'Moving the next payment changes when the customer is next charged; nothing is charged by saving. An end date stops renewals on or after it.',
-									'easysubscription'
+									'subly'
 								) }
 							</p>
 
 							<label
-								className="es-text-xs es-text-muted-foreground"
-								htmlFor="easysubscription-next-payment"
+								className="sb-text-xs sb-text-muted-foreground"
+								htmlFor="subly-next-payment"
 							>
-								{ __( 'Next payment', 'easysubscription' ) }
+								{ __( 'Next payment', 'subly' ) }
 							</label>
 							<Input
-								id="easysubscription-next-payment"
+								id="subly-next-payment"
 								type="datetime-local"
 								value={ dates.next_payment }
 								onChange={ ( event ) =>
@@ -457,13 +457,13 @@ export function Detail( { id, onBack, onFail } ) {
 							/>
 
 							<label
-								className="es-text-xs es-text-muted-foreground"
-								htmlFor="easysubscription-end-date"
+								className="sb-text-xs sb-text-muted-foreground"
+								htmlFor="subly-end-date"
 							>
-								{ __( 'Ends', 'easysubscription' ) }
+								{ __( 'Ends', 'subly' ) }
 							</label>
 							<Input
-								id="easysubscription-end-date"
+								id="subly-end-date"
 								type="datetime-local"
 								value={ dates.end_date }
 								onChange={ ( event ) =>
@@ -479,26 +479,26 @@ export function Detail( { id, onBack, onFail } ) {
 								size="sm"
 								disabled={ busy }
 								onClick={ saveDates }
-								className="es-mt-1 es-self-start"
+								className="sb-mt-1 sb-self-start"
 							>
 								{ __(
 									'Save the schedule',
-									'easysubscription'
+									'subly'
 								) }
 							</Button>
 						</div>
 
-						<div className="es-flex es-flex-col es-items-start es-gap-2 es-border-t es-pt-4">
-							<h4 className="es-m-0 es-text-sm es-font-medium">
+						<div className="sb-flex sb-flex-col sb-items-start sb-gap-2 sb-border-t sb-pt-4">
+							<h4 className="sb-m-0 sb-text-sm sb-font-medium">
 								{ __(
 									'End this subscription',
-									'easysubscription'
+									'subly'
 								) }
 							</h4>
-							<p className="es-m-0 es-text-xs es-text-muted-foreground">
+							<p className="sb-m-0 sb-text-xs sb-text-muted-foreground">
 								{ __(
 									'Billing stops and the customer keeps what the last payment covered. This cannot be undone.',
-									'easysubscription'
+									'subly'
 								) }
 							</p>
 							<Button
@@ -510,14 +510,14 @@ export function Detail( { id, onBack, onFail } ) {
 										'cancel',
 										__(
 											'Cancel this subscription? It cannot be reactivated afterwards.',
-											'easysubscription'
+											'subly'
 										)
 									)
 								}
 							>
 								{ __(
 									'Cancel subscription',
-									'easysubscription'
+									'subly'
 								) }
 							</Button>
 						</div>
@@ -525,43 +525,43 @@ export function Detail( { id, onBack, onFail } ) {
 				</Card>
 			</div>
 
-			<Card className="es-mt-4">
+			<Card className="sb-mt-4">
 				<CardHeader>
 					<CardTitle>
-						{ __( 'Activity', 'easysubscription' ) }
+						{ __( 'Activity', 'subly' ) }
 					</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{ activity.length ? (
-						<div className="es-flex es-flex-col es-gap-5">
+						<div className="sb-flex sb-flex-col sb-gap-5">
 							{ byDay( activity ).map( ( group ) => (
 								<div key={ group.day }>
-									<h4 className="es-m-0 es-mb-2 es-text-xs es-font-semibold es-uppercase es-tracking-wide es-text-muted-foreground">
+									<h4 className="sb-m-0 sb-mb-2 sb-text-xs sb-font-semibold sb-uppercase sb-tracking-wide sb-text-muted-foreground">
 										{ formatDay( group.day ) || group.day }
 									</h4>
-									<ol className="es-m-0 es-flex es-list-none es-flex-col es-gap-2 es-p-0 es-text-sm">
+									<ol className="sb-m-0 sb-flex sb-list-none sb-flex-col sb-gap-2 sb-p-0 sb-text-sm">
 										{ group.entries.map(
 											( entry, index ) => (
 												<li
 													key={ `${ entry.date }-${ index }` }
-													className="es-flex es-gap-3"
+													className="sb-flex sb-gap-3"
 												>
-													<span className="es-w-20 es-shrink-0 es-whitespace-nowrap es-tabular-nums es-text-muted-foreground">
+													<span className="sb-w-20 sb-shrink-0 sb-whitespace-nowrap sb-tabular-nums sb-text-muted-foreground">
 														{ formatTime(
 															entry.date
 														) }
 													</span>
-													<span className="es-w-20 es-shrink-0">
+													<span className="sb-w-20 sb-shrink-0">
 														<Badge variant="secondary">
 															{ entryLabel(
 																entry.type
 															) }
 														</Badge>
 													</span>
-													<span className="es-min-w-0">
+													<span className="sb-min-w-0">
 														{ entry.message }
 														{ entry.actor ? (
-															<span className="es-text-muted-foreground">
+															<span className="sb-text-muted-foreground">
 																{ ' · ' }
 																{ entry.actor }
 															</span>
@@ -575,10 +575,10 @@ export function Detail( { id, onBack, onFail } ) {
 							) ) }
 						</div>
 					) : (
-						<p className="es-m-0 es-text-sm es-text-muted-foreground">
+						<p className="sb-m-0 sb-text-sm sb-text-muted-foreground">
 							{ __(
 								'Nothing has happened to this subscription yet. Charges, status changes and schedule edits are all recorded here.',
-								'easysubscription'
+								'subly'
 							) }
 						</p>
 					) }
@@ -587,8 +587,8 @@ export function Detail( { id, onBack, onFail } ) {
 
 			{ panels ? (
 				<div
-					className="es-mt-4"
-					// Drawn by other plugins' PHP on easysubscription_admin_subscription_detail, as the server screen draws it.
+					className="sb-mt-4"
+					// Drawn by other plugins' PHP on subly_admin_subscription_detail, as the server screen draws it.
 					dangerouslySetInnerHTML={ { __html: panels } }
 				/>
 			) : null }

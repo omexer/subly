@@ -1,12 +1,12 @@
 <?php
 
-namespace EasySubscription\Frontend\MyAccount;
+namespace Subly\Frontend\MyAccount;
 
-use EasySubscription\Data\Activity_Repository;
-use EasySubscription\Data\Subscription_Query;
-use EasySubscription\Domain\Subscription;
-use EasySubscription\Domain\Subscription_Status;
-use EasySubscription\Lifecycle\Cancellation_Policy;
+use Subly\Data\Activity_Repository;
+use Subly\Data\Subscription_Query;
+use Subly\Domain\Subscription;
+use Subly\Domain\Subscription_Status;
+use Subly\Lifecycle\Cancellation_Policy;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -47,11 +47,11 @@ class Account_Endpoint {
 
 			// Sit directly under Orders, where customers already look.
 			if ( 'orders' === $key ) {
-				$new[ self::ENDPOINT ] = __( 'Subscriptions', 'easysubscription' );
+				$new[ self::ENDPOINT ] = __( 'Subscriptions', 'subly' );
 			}
 		}
 
-		return isset( $new[ self::ENDPOINT ] ) ? $new : $new + array( self::ENDPOINT => __( 'Subscriptions', 'easysubscription' ) );
+		return isset( $new[ self::ENDPOINT ] ) ? $new : $new + array( self::ENDPOINT => __( 'Subscriptions', 'subly' ) );
 	}
 
 	/**
@@ -64,7 +64,7 @@ class Account_Endpoint {
 			$subscription = $this->owned_subscription( $id );
 
 			if ( ! $subscription ) {
-				wc_print_notice( __( 'That subscription could not be found.', 'easysubscription' ), 'error' );
+				wc_print_notice( __( 'That subscription could not be found.', 'subly' ), 'error' );
 				return;
 			}
 
@@ -75,7 +75,7 @@ class Account_Endpoint {
 					'endpoint'     => self::ENDPOINT,
 				),
 				'',
-				EASYSUBSCRIPTION_PATH . 'templates/'
+				SUBLY_PATH . 'templates/'
 			);
 
 			return;
@@ -88,7 +88,7 @@ class Account_Endpoint {
 				'endpoint'      => self::ENDPOINT,
 			),
 			'',
-			EASYSUBSCRIPTION_PATH . 'templates/'
+			SUBLY_PATH . 'templates/'
 		);
 	}
 
@@ -97,34 +97,34 @@ class Account_Endpoint {
 	 * survey is shown, which makes survey-as-a-barrier structurally impossible.
 	 */
 	public function handle_actions(): void {
-		if ( ! isset( $_POST['easysubscription_action'], $_POST['easysubscription_subscription'] ) ) {
+		if ( ! isset( $_POST['subly_action'], $_POST['subly_subscription'] ) ) {
 			return;
 		}
 
-		$action = sanitize_key( wp_unslash( $_POST['easysubscription_action'] ) );
-		$id     = absint( wp_unslash( $_POST['easysubscription_subscription'] ) );
+		$action = sanitize_key( wp_unslash( $_POST['subly_action'] ) );
+		$id     = absint( wp_unslash( $_POST['subly_subscription'] ) );
 
-		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'easysubscription_' . $action . '_' . $id ) ) {
-			wc_add_notice( __( 'That request has expired. Please try again.', 'easysubscription' ), 'error' );
+		if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['_wpnonce'] ?? '' ) ), 'subly_' . $action . '_' . $id ) ) {
+			wc_add_notice( __( 'That request has expired. Please try again.', 'subly' ), 'error' );
 			return;
 		}
 
 		// Never trust the ID in the request: re-check ownership server side.
 		$subscription = $this->owned_subscription( $id );
 		if ( ! $subscription ) {
-			wc_add_notice( __( 'That subscription could not be found.', 'easysubscription' ), 'error' );
+			wc_add_notice( __( 'That subscription could not be found.', 'subly' ), 'error' );
 			return;
 		}
 
 		if ( 'auto_renew' === $action ) {
-			$wanted = isset( $_POST['easysubscription_auto_renew'] ) ? sanitize_key( wp_unslash( $_POST['easysubscription_auto_renew'] ) ) : 'on';
+			$wanted = isset( $_POST['subly_auto_renew'] ) ? sanitize_key( wp_unslash( $_POST['subly_auto_renew'] ) ) : 'on';
 
 			$this->set_auto_renew( $subscription, 'on' === $wanted );
 			return;
 		}
 
 		if ( 'renew_early' === $action ) {
-			$result = \EasySubscription\Lifecycle\Early_Renewal::charge( $subscription );
+			$result = \Subly\Lifecycle\Early_Renewal::charge( $subscription );
 
 			wc_add_notice( $result['message'], $result['ok'] ? 'success' : 'error' );
 			wp_safe_redirect( wc_get_account_endpoint_url( self::ENDPOINT . '/' . $subscription->get_id() ) );
@@ -137,13 +137,13 @@ class Account_Endpoint {
 	}
 
 	private function set_auto_renew( Subscription $subscription, bool $on ): void {
-		if ( ! \EasySubscription\Lifecycle\Auto_Renewal::is_offered() ) {
+		if ( ! \Subly\Lifecycle\Auto_Renewal::is_offered() ) {
 			return;
 		}
 
-		$auto = \EasySubscription\Plugin::instance()->get( 'auto_renewal' );
+		$auto = \Subly\Plugin::instance()->get( 'auto_renewal' );
 
-		if ( ! $auto instanceof \EasySubscription\Lifecycle\Auto_Renewal ) {
+		if ( ! $auto instanceof \Subly\Lifecycle\Auto_Renewal ) {
 			return;
 		}
 
@@ -152,14 +152,14 @@ class Account_Endpoint {
 		if ( Status_Presenter::pays_by_link( $subscription ) ) {
 			wc_add_notice(
 				$on
-					? __( 'Renewal is back on. At the end of each period we will send you a renewal to pay.', 'easysubscription' )
-					: __( 'Renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be asked to pay again.', 'easysubscription' )
+					? __( 'Renewal is back on. At the end of each period we will send you a renewal to pay.', 'subly' )
+					: __( 'Renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be asked to pay again.', 'subly' )
 			);
 		} else {
 			wc_add_notice(
 				$on
-					? __( 'Automatic renewal is back on. Your subscription will keep renewing.', 'easysubscription' )
-					: __( 'Automatic renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be charged again.', 'easysubscription' )
+					? __( 'Automatic renewal is back on. Your subscription will keep renewing.', 'subly' )
+					: __( 'Automatic renewal is off. Your subscription stays active until the end of the period you have paid for, and you will not be charged again.', 'subly' )
 			);
 		}
 
@@ -178,8 +178,8 @@ class Account_Endpoint {
 		 * @param Subscription $subscription
 		 */
 		return (string) apply_filters(
-			'easysubscription_cancel_refused_message',
-			__( 'This subscription cannot be cancelled online. Please contact us.', 'easysubscription' ),
+			'subly_cancel_refused_message',
+			__( 'This subscription cannot be cancelled online. Please contact us.', 'subly' ),
 			$subscription
 		);
 	}
@@ -193,10 +193,10 @@ class Account_Endpoint {
 		$target = $immediately ? Subscription_Status::Cancelled : Subscription_Status::PendingCancel;
 
 		try {
-			$subscription->transition_to( $target, __( 'Cancelled by the customer.', 'easysubscription' ) );
+			$subscription->transition_to( $target, __( 'Cancelled by the customer.', 'subly' ) );
 			$subscription->save();
 		} catch ( \InvalidArgumentException $e ) {
-			wc_add_notice( __( 'This subscription can no longer be cancelled.', 'easysubscription' ), 'error' );
+			wc_add_notice( __( 'This subscription can no longer be cancelled.', 'subly' ), 'error' );
 			return;
 		}
 
@@ -206,12 +206,12 @@ class Account_Endpoint {
 			$immediately ? 'Cancelled immediately by the customer.' : 'Cancellation scheduled for the end of the period.'
 		);
 
-		do_action( 'easysubscription_subscription_cancelled', $subscription, 'customer' );
+		do_action( 'subly_subscription_cancelled', $subscription, 'customer' );
 
 		wc_add_notice(
 			$immediately
-				? __( 'Your subscription has been cancelled.', 'easysubscription' )
-				: __( 'Your subscription will end when the current period finishes. You will not be charged again.', 'easysubscription' )
+				? __( 'Your subscription has been cancelled.', 'subly' )
+				: __( 'Your subscription will end when the current period finishes. You will not be charged again.', 'subly' )
 		);
 
 		wp_safe_redirect( add_query_arg( 'cancelled', '1', wc_get_account_endpoint_url( self::ENDPOINT . '/' . $subscription->get_id() ) ) );

@@ -1,6 +1,6 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -11,9 +11,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Notices {
 
-	public const IMPORTANT = 'easysubscription-notice--important';
+	public const IMPORTANT = 'subly-notice--important';
 
-	public const FEEDBACK = 'easysubscription-notice--feedback';
+	public const FEEDBACK = 'subly-notice--feedback';
 
 	private const HOOKS = array( 'admin_notices', 'all_admin_notices', 'user_admin_notices' );
 
@@ -52,7 +52,7 @@ class Notices {
 		self::$current = $this;
 
 		add_action( 'in_admin_header', array( $this, 'collect' ), 1 );
-		// Last resort: a EasySubscription screen that draws no shell would otherwise swallow them.
+		// Last resort: a Subly screen that draws no shell would otherwise swallow them.
 		add_action( 'admin_footer', array( $this, 'render_leftovers' ), 99 );
 	}
 
@@ -110,19 +110,19 @@ class Notices {
 
 		$label = sprintf(
 			/* translators: %d: number of notifications */
-			_n( '%d notification', '%d notifications', $notices->count, 'easysubscription' ),
+			_n( '%d notification', '%d notifications', $notices->count, 'subly' ),
 			$notices->count
 		);
 
 		printf(
-			'<details class="easysubscription-notify" data-easysubscription-notify><summary class="easysubscription-notify__bell" aria-label="%s" title="%s">%s<span class="easysubscription-notify__count" aria-hidden="true">%s</span></summary>'
-				. '<div class="easysubscription-notify__panel" id="easysubscription-other-notices" role="region" aria-label="%s"><p class="easysubscription-notify__head">%s</p><div class="easysubscription-notify__list">',
+			'<details class="subly-notify" data-subly-notify><summary class="subly-notify__bell" aria-label="%s" title="%s">%s<span class="subly-notify__count" aria-hidden="true">%s</span></summary>'
+				. '<div class="subly-notify__panel" id="subly-other-notices" role="region" aria-label="%s"><p class="subly-notify__head">%s</p><div class="subly-notify__list">',
 			esc_attr( $label ),
 			esc_attr( $label ),
 			wp_kses( self::bell(), Allowed_Html::svg() ),
 			esc_html( number_format_i18n( $notices->count ) ),
-			esc_attr__( 'Notifications', 'easysubscription' ),
-			esc_html__( 'Notifications', 'easysubscription' )
+			esc_attr__( 'Notifications', 'subly' ),
+			esc_html__( 'Notifications', 'subly' )
 		);
 
 		echo wp_kses( $notices->html, Allowed_Html::form() );
@@ -154,7 +154,7 @@ class Notices {
 
 		$this->shown = true;
 
-		echo '<div class="easysubscription-other-notices">' . wp_kses( $this->html, Allowed_Html::form() ) . '</div>';
+		echo '<div class="subly-other-notices">' . wp_kses( $this->html, Allowed_Html::form() ) . '</div>';
 	}
 
 	public static function bell(): string {
@@ -163,7 +163,7 @@ class Notices {
 	}
 
 	/**
-	 * Whether a notice callback belongs to EasySubscription or an EasySubscription extension.
+	 * Whether a notice callback belongs to Subly or an Subly extension.
 	 *
 	 * @param callable $callback
 	 */
@@ -184,14 +184,14 @@ class Notices {
 
 		$class = $reflection instanceof \ReflectionMethod ? $reflection->getDeclaringClass()->getName() : '';
 
-		if ( str_starts_with( $class, 'EasySubscription' ) ) {
+		if ( str_starts_with( $class, 'Subly' ) ) {
 			return true;
 		}
 
 		$file = wp_normalize_path( (string) $reflection->getFileName() );
 
 		// A plugin folder named for us: the free plugin, Pro, and add-ons, however their zip unpacked.
-		return str_starts_with( $file, wp_normalize_path( trailingslashit( WP_PLUGIN_DIR ) ) . 'easysubscription' );
+		return str_starts_with( $file, wp_normalize_path( trailingslashit( WP_PLUGIN_DIR ) ) . 'subly' );
 	}
 
 	private static function is_important( string $html ): bool {

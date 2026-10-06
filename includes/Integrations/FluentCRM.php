@@ -1,37 +1,37 @@
 <?php
 
-namespace EasySubscription\Integrations;
+namespace Subly\Integrations;
 
-use EasySubscription\Data\Subscription_Query;
-use EasySubscription\Domain\Subscription;
+use Subly\Data\Subscription_Query;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Applies FluentCRM tags and lists to the customer while the subscription is live; only what EasySubscription added is ever removed.
+ * Applies FluentCRM tags and lists to the customer while the subscription is live; only what Subly added is ever removed.
  */
 class FluentCRM implements Integration {
 
-	public const PRODUCT_TAGS  = '_easysubscription_fluentcrm_tags';
-	public const PRODUCT_LISTS = '_easysubscription_fluentcrm_lists';
+	public const PRODUCT_TAGS  = '_subly_fluentcrm_tags';
+	public const PRODUCT_LISTS = '_subly_fluentcrm_lists';
 
-	public const USER_TAGS  = '_easysubscription_fluentcrm_added_tags';
-	public const USER_LISTS = '_easysubscription_fluentcrm_added_lists';
+	public const USER_TAGS  = '_subly_fluentcrm_added_tags';
+	public const USER_LISTS = '_subly_fluentcrm_added_lists';
 
-	/** When EasySubscription started recording what it added; subscriptions created before it are treated as having added everything. */
-	public const OPTION_SINCE = 'easysubscription_fluentcrm_tracked_since';
+	/** When Subly started recording what it added; subscriptions created before it are treated as having added everything. */
+	public const OPTION_SINCE = 'subly_fluentcrm_tracked_since';
 
-	/** EasySubscription Pro 0.48 and older register their own copy. */
-	private const PRO_COPY = 'EasySubscriptionPro\Integrations\FluentCRM';
+	/** Subly Pro 0.48 and older register their own copy. */
+	private const PRO_COPY = 'SublyPro\Integrations\FluentCRM';
 
 	public function slug(): string {
 		return 'fluentcrm';
 	}
 
 	public function title(): string {
-		return __( 'FluentCRM', 'easysubscription' );
+		return __( 'FluentCRM', 'subly' );
 	}
 
 	public function is_available(): bool {
@@ -63,10 +63,10 @@ class FluentCRM implements Integration {
 			'slug'        => 'fluent-crm',
 			'url'         => '',
 			'active'      => $integration->is_available(),
-			'category'    => __( 'Email and CRM', 'easysubscription' ),
-			'description' => __( 'Gives the contact your chosen lists and tags while the subscription is live.', 'easysubscription' ),
+			'category'    => __( 'Email and CRM', 'subly' ),
+			'description' => __( 'Gives the contact your chosen lists and tags while the subscription is live.', 'subly' ),
 			'icon'        => '',
-			'hint'        => __( 'Set per product in the subscription product\'s settings.', 'easysubscription' ),
+			'hint'        => __( 'Set per product in the subscription product\'s settings.', 'subly' ),
 		);
 
 		return $integrations;
@@ -97,7 +97,7 @@ class FluentCRM implements Integration {
 		}
 
 		do_action(
-			'easysubscription_integration_granted',
+			'subly_integration_granted',
 			$this->slug(),
 			$subscription,
 			array(
@@ -142,7 +142,7 @@ class FluentCRM implements Integration {
 		}
 
 		do_action(
-			'easysubscription_integration_revoked',
+			'subly_integration_revoked',
 			$this->slug(),
 			$subscription,
 			array(
@@ -160,21 +160,21 @@ class FluentCRM implements Integration {
 		Integrations::render_multiselect(
 			array(
 				'id'          => self::PRODUCT_TAGS,
-				'label'       => __( 'FluentCRM tags', 'easysubscription' ),
+				'label'       => __( 'FluentCRM tags', 'subly' ),
 				'options'     => $this->options( 'tags' ),
 				'value'       => $product ? (array) $product->get_meta( self::PRODUCT_TAGS ) : array(),
-				'empty'       => __( 'No FluentCRM tags found.', 'easysubscription' ),
-				'description' => __( 'Applied while the subscription is active or trialling, and removed when it is not. Tags and lists the contact already had are left alone.', 'easysubscription' ),
+				'empty'       => __( 'No FluentCRM tags found.', 'subly' ),
+				'description' => __( 'Applied while the subscription is active or trialling, and removed when it is not. Tags and lists the contact already had are left alone.', 'subly' ),
 			)
 		);
 
 		Integrations::render_multiselect(
 			array(
 				'id'      => self::PRODUCT_LISTS,
-				'label'   => __( 'FluentCRM lists', 'easysubscription' ),
+				'label'   => __( 'FluentCRM lists', 'subly' ),
 				'options' => $this->options( 'lists' ),
 				'value'   => $product ? (array) $product->get_meta( self::PRODUCT_LISTS ) : array(),
-				'empty'   => __( 'No FluentCRM lists found.', 'easysubscription' ),
+				'empty'   => __( 'No FluentCRM lists found.', 'subly' ),
 			)
 		);
 	}
@@ -200,7 +200,7 @@ class FluentCRM implements Integration {
 
 		// FluentCRM's FCApi wrapper only has __call, so method_exists() is always false on it.
 		if ( ! is_object( $api ) || ! is_callable( array( $api, 'createOrUpdate' ) ) ) {
-			do_action( 'easysubscription_integration_unsupported', $this->slug(), 'createOrUpdate' );
+			do_action( 'subly_integration_unsupported', $this->slug(), 'createOrUpdate' );
 			return null;
 		}
 
@@ -248,7 +248,7 @@ class FluentCRM implements Integration {
 		}
 
 		if ( ! method_exists( $contact, $method ) ) {
-			do_action( 'easysubscription_integration_unsupported', $this->slug(), $method );
+			do_action( 'subly_integration_unsupported', $this->slug(), $method );
 			return false;
 		}
 
@@ -279,7 +279,7 @@ class FluentCRM implements Integration {
 	}
 
 	/**
-	 * What this subscription may take back: what it releases, narrowed to what EasySubscription added.
+	 * What this subscription may take back: what it releases, narrowed to what Subly added.
 	 *
 	 * @return int[]
 	 */
@@ -308,7 +308,7 @@ class FluentCRM implements Integration {
 		return array_values( array_intersect( $ids, $added ) );
 	}
 
-	/** Created before EasySubscription recorded what it added, so whatever its products configure counts as added. */
+	/** Created before Subly recorded what it added, so whatever its products configure counts as added. */
 	private function untracked( Subscription $subscription ): bool {
 		$created = $subscription->get_date_created();
 

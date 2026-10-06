@@ -1,6 +1,6 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -26,7 +26,7 @@ class Gateway_Notice {
 		}
 
 		$this->notice(
-			__( 'EasySubscription is not offering a payment method at checkout.', 'easysubscription' ),
+			__( 'Subly is not offering a payment method at checkout.', 'subly' ),
 			$this->paypal_credentials(),
 			'paypal'
 		);
@@ -35,7 +35,7 @@ class Gateway_Notice {
 		// alongside "not offered at checkout" would send the merchant looking for the
 		// wrong thing entirely.
 		$this->notice(
-			__( 'PayPal renewals will not be recorded.', 'easysubscription' ),
+			__( 'PayPal renewals will not be recorded.', 'subly' ),
 			$this->paypal_webhook(),
 			'paypal'
 		);
@@ -58,7 +58,7 @@ class Gateway_Notice {
 		printf(
 			'</ul><p><a class="button" href="%s">%s</a></p></div>',
 			esc_url( Settings_Page::section_url( $section ) ),
-			esc_html__( 'Finish setting it up', 'easysubscription' )
+			esc_html__( 'Finish setting it up', 'subly' )
 		);
 	}
 
@@ -68,15 +68,15 @@ class Gateway_Notice {
 	 * @return string[]
 	 */
 	private function paypal_credentials(): array {
-		if ( 'yes' !== get_option( 'easysubscription_paypal_enabled', 'no' ) ) {
+		if ( 'yes' !== get_option( 'subly_paypal_enabled', 'no' ) ) {
 			return array();
 		}
 
 		$missing = array();
 
 		foreach ( array(
-			'easysubscription_paypal_client_id' => __( 'client ID', 'easysubscription' ),
-			'easysubscription_paypal_secret'    => __( 'secret', 'easysubscription' ),
+			'subly_paypal_client_id' => __( 'client ID', 'subly' ),
+			'subly_paypal_secret'    => __( 'secret', 'subly' ),
 		) as $option => $label ) {
 			if ( '' === (string) get_option( $option, '' ) ) {
 				$missing[] = $label;
@@ -90,21 +90,21 @@ class Gateway_Notice {
 		return array(
 			sprintf(
 				/* translators: %s: the PayPal fields that are empty. */
-				__( 'PayPal is switched on but has no %s. Until it does, PayPal is not offered at checkout.', 'easysubscription' ),
-				implode( __( ' and ', 'easysubscription' ), $missing )
+				__( 'PayPal is switched on but has no %s. Until it does, PayPal is not offered at checkout.', 'subly' ),
+				implode( __( ' and ', 'subly' ), $missing )
 			),
 		);
 	}
 
 	/**
 	 * The webhook ID does not gate the checkout: PayPal bills on its own schedule and
-	 * tells EasySubscription by webhook, and an unverifiable webhook is rejected, so every renewal
+	 * tells Subly by webhook, and an unverifiable webhook is rejected, so every renewal
 	 * goes unrecorded while the customer is charged.
 	 *
 	 * @return string[]
 	 */
 	private function paypal_webhook(): array {
-		if ( 'yes' !== get_option( 'easysubscription_paypal_enabled', 'no' ) || '' !== (string) get_option( 'easysubscription_paypal_webhook_id', '' ) ) {
+		if ( 'yes' !== get_option( 'subly_paypal_enabled', 'no' ) || '' !== (string) get_option( 'subly_paypal_webhook_id', '' ) ) {
 			return array();
 		}
 
@@ -115,7 +115,7 @@ class Gateway_Notice {
 		}
 
 		return array(
-			__( 'PayPal is switched on but has no webhook ID. Customers can pay, and PayPal will keep charging them, but EasySubscription cannot verify what PayPal sends back — so renewals are rejected and never show against the subscription.', 'easysubscription' ),
+			__( 'PayPal is switched on but has no webhook ID. Customers can pay, and PayPal will keep charging them, but Subly cannot verify what PayPal sends back — so renewals are rejected and never show against the subscription.', 'subly' ),
 		);
 	}
 }

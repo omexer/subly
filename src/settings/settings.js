@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import { Skeleton, cn } from '@easysubscription/ui';
+import { Skeleton, cn } from '@subly/ui';
 import { Row } from './field';
 import { getEmailEditor } from './extend';
 import { fieldsOf, isShown } from './visibility';
 
-export const PAGE = 'easysubscription-settings';
+export const PAGE = 'subly-settings';
 
 const GENERAL = 'general';
 const SAVED_FOR = 4000;
@@ -45,7 +45,7 @@ function isPlainClick( event ) {
 function messageOf( error ) {
 	return (
 		error?.message ||
-		__( 'That did not work. Try again.', 'easysubscription' )
+		__( 'That did not work. Try again.', 'subly' )
 	);
 }
 
@@ -63,8 +63,8 @@ function Nav( { groups, section, group, onPick } ) {
 
 	return (
 		<nav
-			className="easysubscription-settings__nav"
-			aria-label={ __( 'Settings sections', 'easysubscription' ) }
+			className="subly-settings__nav"
+			aria-label={ __( 'Settings sections', 'subly' ) }
 		>
 			<ul>
 				{ groups.map( ( item ) => {
@@ -74,7 +74,7 @@ function Nav( { groups, section, group, onPick } ) {
 						<li key={ item.id }>
 							<a
 								className={ cn(
-									'easysubscription-settings__tab',
+									'subly-settings__tab',
 									here && 'is-current'
 								) }
 								href={ sectionUrl( item.sections[ 0 ].id ) }
@@ -102,12 +102,12 @@ function Nav( { groups, section, group, onPick } ) {
 								<span>{ item.label }</span>
 							</a>
 							{ here && item.list ? (
-								<ul className="easysubscription-settings__subnav">
+								<ul className="subly-settings__subnav">
 									{ item.sections.map( ( entry ) => (
 										<li key={ entry.id }>
 											<a
 												className={ cn(
-													'easysubscription-settings__subtab',
+													'subly-settings__subtab',
 													entry.id === section &&
 														'is-current'
 												) }
@@ -139,28 +139,28 @@ function Cards( { page, valueOf, onChange, onEdit } ) {
 	return page.cards.map( ( card, index ) => (
 		<section
 			key={ `${ card.anchor }-${ index }` }
-			className="easysubscription-settings__card"
+			className="subly-settings__card"
 			id={
 				card.anchor
-					? `easysubscription-section-${ card.anchor }`
+					? `subly-section-${ card.anchor }`
 					: undefined
 			}
 		>
 			{ card.title || card.desc ? (
-				<header className="easysubscription-settings__card-head">
+				<header className="subly-settings__card-head">
 					{ card.title ? <h2>{ card.title }</h2> : null }
 					{ card.desc ? (
 						<p dangerouslySetInnerHTML={ { __html: card.desc } } />
 					) : null }
 				</header>
 			) : null }
-			<div className="easysubscription-settings__rows">
+			<div className="subly-settings__rows">
 				{ card.rows.map( ( row, at ) => {
 					if ( ! row.id ) {
 						return (
 							<div
 								key={ `html-${ at }` }
-								className="easysubscription-settings__row easysubscription-settings__row--wide"
+								className="subly-settings__row subly-settings__row--wide"
 								// Drawn and escaped by the same PHP callbacks as the PHP page.
 								dangerouslySetInnerHTML={ { __html: row.html } }
 							/>
@@ -184,11 +184,11 @@ function Cards( { page, valueOf, onChange, onEdit } ) {
 
 function Loading() {
 	return (
-		<section className="easysubscription-settings__card" aria-busy="true">
+		<section className="subly-settings__card" aria-busy="true">
 			{ [ 0, 1, 2 ].map( ( key ) => (
-				<div key={ key } className="easysubscription-settings__row">
-					<Skeleton className="es-h-10 es-w-3/5" />
-					<Skeleton className="es-h-6 es-w-10" />
+				<div key={ key } className="subly-settings__row">
+					<Skeleton className="sb-h-10 sb-w-3/5" />
+					<Skeleton className="sb-h-6 sb-w-10" />
 				</div>
 			) ) }
 		</section>
@@ -213,7 +213,7 @@ export function Settings( { params, setParams } ) {
 
 	useEffect( () => {
 		apiFetch( {
-			path: withQuery( '/easysubscription/v1/settings', query.current ),
+			path: withQuery( '/subly/v1/settings', query.current ),
 		} ).then( setMenu, ( error ) => setFailure( messageOf( error ) ) );
 	}, [] );
 
@@ -226,7 +226,7 @@ export function Settings( { params, setParams } ) {
 
 		apiFetch( {
 			path: withQuery(
-				`/easysubscription/v1/settings/${ encodeURIComponent(
+				`/subly/v1/settings/${ encodeURIComponent(
 					section
 				) }`,
 				query.current
@@ -294,7 +294,7 @@ export function Settings( { params, setParams } ) {
 		! window.confirm(
 			__(
 				'You have unsaved changes to this email. Leave without saving them?',
-				'easysubscription'
+				'subly'
 			)
 		);
 
@@ -330,7 +330,7 @@ export function Settings( { params, setParams } ) {
 		setToast( '' );
 
 		apiFetch( {
-			path: `/easysubscription/v1/settings/${ encodeURIComponent(
+			path: `/subly/v1/settings/${ encodeURIComponent(
 				section
 			) }`,
 			method: 'POST',
@@ -350,7 +350,7 @@ export function Settings( { params, setParams } ) {
 					if ( result.errors?.length ) {
 						setErrors( result.errors );
 					} else {
-						setToast( __( 'Settings saved.', 'easysubscription' ) );
+						setToast( __( 'Settings saved.', 'subly' ) );
 					}
 				},
 				( error ) => setErrors( [ messageOf( error ) ] )
@@ -371,7 +371,7 @@ export function Settings( { params, setParams } ) {
 	if ( failure ) {
 		return (
 			<div
-				className="easysubscription-notice easysubscription-notice--bad"
+				className="subly-notice subly-notice--bad"
 				role="alert"
 			>
 				{ failure }
@@ -391,12 +391,12 @@ export function Settings( { params, setParams } ) {
 			{ ( menu?.notices || [] ).map( ( notice ) => (
 				<div
 					key={ notice.message }
-					className={ `easysubscription-notice easysubscription-notice--${ notice.type }` }
+					className={ `subly-notice subly-notice--${ notice.type }` }
 				>
 					{ notice.message }
 				</div>
 			) ) }
-			<div className="easysubscription-settings">
+			<div className="subly-settings">
 				{ menu ? (
 					<Nav
 						groups={ menu.groups }
@@ -406,10 +406,10 @@ export function Settings( { params, setParams } ) {
 					/>
 				) : (
 					<nav
-						className="easysubscription-settings__nav"
+						className="subly-settings__nav"
 						aria-busy="true"
 					>
-						<Skeleton className="es-h-64 es-w-full" />
+						<Skeleton className="sb-h-64 sb-w-full" />
 					</nav>
 				) }
 				{ email ? (
@@ -420,7 +420,7 @@ export function Settings( { params, setParams } ) {
 					/>
 				) : (
 					<form
-						className="easysubscription-settings__main"
+						className="subly-settings__main"
 						method="post"
 						action=""
 						onSubmit={ onSubmit }
@@ -437,48 +437,48 @@ export function Settings( { params, setParams } ) {
 						) }
 						{ errors.length ? (
 							<div
-								className="easysubscription-notice easysubscription-notice--bad"
+								className="subly-notice subly-notice--bad"
 								role="alert"
 							>
 								{ errors.map( ( error ) => (
-									<p key={ error } className="es-m-0">
+									<p key={ error } className="sb-m-0">
 										{ error }
 									</p>
 								) ) }
 							</div>
 						) : null }
-						<div className="easysubscription-settings__save">
-							<span className="easysubscription-settings__save-note">
+						<div className="subly-settings__save">
+							<span className="subly-settings__save-note">
 								{ dirty
 									? __(
 											'You have unsaved changes.',
-											'easysubscription'
+											'subly'
 									  )
 									: __(
 											'Changes apply to new renewals and purchases from the moment you save.',
-											'easysubscription'
+											'subly'
 									  ) }
 							</span>
 							<button
 								type="submit"
-								className="button button-primary easysubscription-btn easysubscription-btn--primary"
+								className="button button-primary subly-btn subly-btn--primary"
 								disabled={ ! pending || saving }
 							>
 								{ saving
-									? __( 'Saving…', 'easysubscription' )
-									: __( 'Save changes', 'easysubscription' ) }
+									? __( 'Saving…', 'subly' )
+									: __( 'Save changes', 'subly' ) }
 							</button>
 						</div>
 					</form>
 				) }
 			</div>
 			<div
-				className="es-fixed es-bottom-24 es-right-8 es-z-50"
+				className="sb-fixed sb-bottom-24 sb-right-8 sb-z-50"
 				role="status"
 				aria-live="polite"
 			>
 				{ toast ? (
-					<div className="easysubscription-notice easysubscription-notice--good es-m-0 es-shadow-lg">
+					<div className="subly-notice subly-notice--good sb-m-0 sb-shadow-lg">
 						{ toast }
 					</div>
 				) : null }
@@ -519,7 +519,7 @@ function useLeaveGuard( dirty ) {
 			const leave = window.confirm(
 				__(
 					'You have unsaved changes. Leave without saving them?',
-					'easysubscription'
+					'subly'
 				)
 			);
 

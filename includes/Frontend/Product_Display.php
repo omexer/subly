@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Frontend;
+namespace Subly\Frontend;
 
-use EasySubscription\Product\Subscription_Product;
+use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -37,7 +37,7 @@ class Product_Display {
 		 *
 		 * @param string $text
 		 */
-		return (string) apply_filters( 'easysubscription_subscribe_button_text', __( 'Subscribe', 'easysubscription' ) );
+		return (string) apply_filters( 'subly_subscribe_button_text', __( 'Subscribe', 'subly' ) );
 	}
 
 	/**
@@ -98,12 +98,12 @@ class Product_Display {
 			return $price_html;
 		}
 
-		return $price_html . '<span class="easysubscription-cart-terms">' . esc_html( wp_strip_all_tags( $this->disclosure->price_line( $product ) ) ) . '</span>';
+		return $price_html . '<span class="subly-cart-terms">' . esc_html( wp_strip_all_tags( $this->disclosure->price_line( $product ) ) ) . '</span>';
 	}
 
 	public function on_checkout_totals(): void {
 		foreach ( $this->subscription_products_in_cart() as $product ) {
-			echo '<tr class="easysubscription-recurring-total"><th>' . esc_html__( 'Recurring', 'easysubscription' ) . '</th><td>'
+			echo '<tr class="subly-recurring-total"><th>' . esc_html__( 'Recurring', 'subly' ) . '</th><td>'
 				. wp_kses_post( $this->disclosure->price_line( $product ) ) . '</td></tr>';
 		}
 	}
@@ -119,7 +119,7 @@ class Product_Display {
 		}
 
 		// Amounts arrive wrapped in <bdi> so RTL cannot reorder them.
-		echo '<p class="easysubscription-checkout-consent">' . wp_kses( $this->disclosure->sentence( reset( $products ) ), array( 'bdi' => array() ) ) . '</p>';
+		echo '<p class="subly-checkout-consent">' . wp_kses( $this->disclosure->sentence( reset( $products ) ), array( 'bdi' => array() ) ) . '</p>';
 	}
 
 	public function styles(): void {
@@ -127,18 +127,18 @@ class Product_Display {
 			return;
 		}
 
-		wp_register_style( 'easysubscription-frontend', false, array(), EASYSUBSCRIPTION_VERSION );
-		wp_enqueue_style( 'easysubscription-frontend' );
+		wp_register_style( 'subly-frontend', false, array(), SUBLY_VERSION );
+		wp_enqueue_style( 'subly-frontend' );
 		wp_add_inline_style(
-			'easysubscription-frontend',
-			'.easysubscription-disclosure{margin:1em 0}
-			 .easysubscription-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
-			 .easysubscription-cart-terms{display:block;font-size:.85em;opacity:.8}
-			 .easysubscription-checkout-consent{margin:0 0 1em;font-size:.9em}
-			 .easysubscription-blocks-disclosure{padding:1em 0;border-top:1px solid rgba(0,0,0,.1)}
-			 .easysubscription-blocks-disclosure__price{font-weight:600;margin:0 0 .35em}
-			 .easysubscription-blocks-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
-			 .easysubscription-blocks-disclosure__consent{margin:.75em 0 0;font-size:.85em}'
+			'subly-frontend',
+			'.subly-disclosure{margin:1em 0}
+			 .subly-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
+			 .subly-cart-terms{display:block;font-size:.85em;opacity:.8}
+			 .subly-checkout-consent{margin:0 0 1em;font-size:.9em}
+			 .subly-blocks-disclosure{padding:1em 0;border-top:1px solid rgba(0,0,0,.1)}
+			 .subly-blocks-disclosure__price{font-weight:600;margin:0 0 .35em}
+			 .subly-blocks-disclosure__facts{list-style:none;margin:0;padding:0;font-size:.9em;line-height:1.6;opacity:.85}
+			 .subly-blocks-disclosure__consent{margin:.75em 0 0;font-size:.85em}'
 		);
 	}
 

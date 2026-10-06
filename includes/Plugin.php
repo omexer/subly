@@ -1,69 +1,69 @@
 <?php
 
-namespace EasySubscription;
+namespace Subly;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-use EasySubscription\Billing\Lock;
-use EasySubscription\Billing\Renewal_Order_Factory;
-use EasySubscription\Billing\Renewal_Processor;
-use EasySubscription\Billing\Renewal_Scheduler;
-use EasySubscription\Billing\Renewal_Tax_Repair;
-use EasySubscription\Data\Activity_Repository;
-use EasySubscription\Data\Charge_Slot_Repository;
-use EasySubscription\Data\Cleanup;
-use EasySubscription\Data\Migrator;
-use EasySubscription\Data\Order_Type;
-use EasySubscription\Data\Stats;
-use EasySubscription\Rest\Dashboard_Controller;
-use EasySubscription\Rest\Help_Controller;
-use EasySubscription\Rest\Integrations_Controller;
-use EasySubscription\Rest\Overview_Controller;
-use EasySubscription\Rest\Settings_Controller;
-use EasySubscription\Rest\Subscriptions_Controller;
-use EasySubscription\Checkout\Cart_Validation;
-use EasySubscription\Checkout\Guest_Checkout;
-use EasySubscription\Checkout\Store_Api;
-use EasySubscription\Checkout\Subscription_Factory;
-use EasySubscription\Checkout\Initial_Payment;
-use EasySubscription\Checkout\Renewal_Order_Pay;
-use EasySubscription\Checkout\Trial_Payment;
-use EasySubscription\Frontend\Disclosure;
-use EasySubscription\Frontend\Product_Display;
-use EasySubscription\Gateways\Gateway_Registry;
-use EasySubscription\Gateways\PayPal\PayPal_Checkout_Gateway;
-use EasySubscription\Gateways\PayPal\PayPal_Client;
-use EasySubscription\Gateways\PayPal\PayPal_Plans;
-use EasySubscription\Gateways\PayPal\PayPal_Gateway;
-use EasySubscription\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
-use EasySubscription\Integrations\FluentCRM;
-use EasySubscription\Integrations\Integrations;
-use EasySubscription\Product\Product_Meta_Fields;
-use EasySubscription\Product\Product_Types;
-use EasySubscription\Admin\App_Host;
-use EasySubscription\Admin\Assets as Admin_Assets;
-use EasySubscription\Admin\Help_Page;
-use EasySubscription\Admin\Integration_Installer;
-use EasySubscription\Admin\Integrations_Page;
-use EasySubscription\Admin\Gateway_Notice;
-use EasySubscription\Blocks\Gateway_Support;
-use EasySubscription\Admin\Menu;
-use EasySubscription\Admin\Notice_Dismissals;
-use EasySubscription\Admin\Notices;
-use EasySubscription\Admin\Settings;
-use EasySubscription\Admin\Settings_Page;
-use EasySubscription\Admin\Setup_Guide;
-use EasySubscription\Emails\Mailer;
-use EasySubscription\Emails\Notification_Settings;
-use EasySubscription\Privacy\Personal_Data;
-use EasySubscription\Lifecycle\Auto_Renewal;
-use EasySubscription\Lifecycle\Cancellation_Survey;
-use EasySubscription\Lifecycle\Role_Management;
-use EasySubscription\Frontend\Downloadable_Access;
-use EasySubscription\Frontend\MyAccount\Account_Endpoint;
-use EasySubscription\Frontend\MyAccount\Assets as Account_Assets;
+use Subly\Billing\Lock;
+use Subly\Billing\Renewal_Order_Factory;
+use Subly\Billing\Renewal_Processor;
+use Subly\Billing\Renewal_Scheduler;
+use Subly\Billing\Renewal_Tax_Repair;
+use Subly\Data\Activity_Repository;
+use Subly\Data\Charge_Slot_Repository;
+use Subly\Data\Cleanup;
+use Subly\Data\Migrator;
+use Subly\Data\Order_Type;
+use Subly\Data\Stats;
+use Subly\Rest\Dashboard_Controller;
+use Subly\Rest\Help_Controller;
+use Subly\Rest\Integrations_Controller;
+use Subly\Rest\Overview_Controller;
+use Subly\Rest\Settings_Controller;
+use Subly\Rest\Subscriptions_Controller;
+use Subly\Checkout\Cart_Validation;
+use Subly\Checkout\Guest_Checkout;
+use Subly\Checkout\Store_Api;
+use Subly\Checkout\Subscription_Factory;
+use Subly\Checkout\Initial_Payment;
+use Subly\Checkout\Renewal_Order_Pay;
+use Subly\Checkout\Trial_Payment;
+use Subly\Frontend\Disclosure;
+use Subly\Frontend\Product_Display;
+use Subly\Gateways\Gateway_Registry;
+use Subly\Gateways\PayPal\PayPal_Checkout_Gateway;
+use Subly\Gateways\PayPal\PayPal_Client;
+use Subly\Gateways\PayPal\PayPal_Plans;
+use Subly\Gateways\PayPal\PayPal_Gateway;
+use Subly\Gateways\PayPal\Webhook_Controller as PayPal_Webhooks;
+use Subly\Integrations\FluentCRM;
+use Subly\Integrations\Integrations;
+use Subly\Product\Product_Meta_Fields;
+use Subly\Product\Product_Types;
+use Subly\Admin\App_Host;
+use Subly\Admin\Assets as Admin_Assets;
+use Subly\Admin\Help_Page;
+use Subly\Admin\Integration_Installer;
+use Subly\Admin\Integrations_Page;
+use Subly\Admin\Gateway_Notice;
+use Subly\Blocks\Gateway_Support;
+use Subly\Admin\Menu;
+use Subly\Admin\Notice_Dismissals;
+use Subly\Admin\Notices;
+use Subly\Admin\Settings;
+use Subly\Admin\Settings_Page;
+use Subly\Admin\Setup_Guide;
+use Subly\Emails\Mailer;
+use Subly\Emails\Notification_Settings;
+use Subly\Privacy\Personal_Data;
+use Subly\Lifecycle\Auto_Renewal;
+use Subly\Lifecycle\Cancellation_Survey;
+use Subly\Lifecycle\Role_Management;
+use Subly\Frontend\Downloadable_Access;
+use Subly\Frontend\MyAccount\Account_Endpoint;
+use Subly\Frontend\MyAccount\Assets as Account_Assets;
 
 /**
  * Service registration. Deliberately a plain registry rather than a DI container —
@@ -195,7 +195,7 @@ final class Plugin {
 		);
 
 		add_action(
-			'easysubscription_register_gateways',
+			'subly_register_gateways',
 			function ( Gateway_Registry $registry ): void {
 				if ( $this->services['paypal_client']->is_enabled() ) {
 					$registry->add( new PayPal_Gateway( $this->services['paypal_client'] ) );
@@ -309,16 +309,16 @@ final class Plugin {
 		$this->services['integrations'] = new Integrations();
 		add_action( 'plugins_loaded', array( $this->services['integrations'], 'register' ), 20, 0 );
 
-		add_filter( 'easysubscription_admin_integrations', array( FluentCRM::class, 'describe' ) );
+		add_filter( 'subly_admin_integrations', array( FluentCRM::class, 'describe' ) );
 
 		/**
-		 * Fires once EasySubscription Free is loaded and its public API is available.
+		 * Fires once Subly Free is loaded and its public API is available.
 		 *
-		 * EasySubscription Pro boots from this hook; see Developer Guide 4.
+		 * Subly Pro boots from this hook; see Developer Guide 4.
 		 *
 		 * @param string $version Free plugin version.
 		 */
-		do_action( 'easysubscription_loaded', EASYSUBSCRIPTION_VERSION );
+		do_action( 'subly_loaded', SUBLY_VERSION );
 	}
 
 	public function get( string $id ): ?object {

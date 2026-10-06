@@ -1,6 +1,6 @@
 <?php
 
-namespace EasySubscription\Domain;
+namespace Subly\Domain;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -14,28 +14,28 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 enum Subscription_Status: string {
 
-	case Pending       = 'es-pending';
-	case Trialling     = 'es-trialling';
-	case Active        = 'es-active';
-	case OnHold        = 'es-on-hold';
-	case PendingCancel = 'es-pending-cancel';
-	case Cancelled     = 'es-cancelled';
-	case Expired       = 'es-expired';
-	case Switched      = 'es-switched';
+	case Pending       = 'subly-pending';
+	case Trialling     = 'subly-trialling';
+	case Active        = 'subly-active';
+	case OnHold        = 'subly-on-hold';
+	case PendingCancel = 'subly-cancelling';
+	case Cancelled     = 'subly-cancelled';
+	case Expired       = 'subly-expired';
+	case Switched      = 'subly-switched';
 
 	/**
 	 * Human label, translated at call time rather than at file scope.
 	 */
 	public function label(): string {
 		return match ( $this ) {
-			self::Pending       => __( 'Pending', 'easysubscription' ),
-			self::Trialling     => __( 'Free trial', 'easysubscription' ),
-			self::Active        => __( 'Active', 'easysubscription' ),
-			self::OnHold        => __( 'On hold', 'easysubscription' ),
-			self::PendingCancel => __( 'Cancelling', 'easysubscription' ),
-			self::Cancelled     => __( 'Cancelled', 'easysubscription' ),
-			self::Expired       => __( 'Ended', 'easysubscription' ),
-			self::Switched      => __( 'Switched', 'easysubscription' ),
+			self::Pending       => __( 'Pending', 'subly' ),
+			self::Trialling     => __( 'Free trial', 'subly' ),
+			self::Active        => __( 'Active', 'subly' ),
+			self::OnHold        => __( 'On hold', 'subly' ),
+			self::PendingCancel => __( 'Cancelling', 'subly' ),
+			self::Cancelled     => __( 'Cancelled', 'subly' ),
+			self::Expired       => __( 'Ended', 'subly' ),
+			self::Switched      => __( 'Switched', 'subly' ),
 		};
 	}
 

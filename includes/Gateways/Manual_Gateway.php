@@ -1,29 +1,29 @@
 <?php
 
-namespace EasySubscription\Gateways;
+namespace Subly\Gateways;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * Manual renewal: EasySubscription raises the renewal order and the customer pays it themselves.
+ * Manual renewal: Subly raises the renewal order and the customer pays it themselves.
  *
  * This is the fallback for offline methods (BACS, cheque, COD) and for any gateway that
  * cannot be charged off-session.
  */
 class Manual_Gateway implements Recurring_Gateway {
 
-	public const ID = 'easysubscription_manual';
+	public const ID = 'subly_manual';
 
 	public function id(): string {
 		return self::ID;
 	}
 
 	public function title(): string {
-		return __( 'Manual renewal', 'easysubscription' );
+		return __( 'Manual renewal', 'subly' );
 	}
 
 	public function model(): Gateway_Model {

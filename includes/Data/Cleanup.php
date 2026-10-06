@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Data;
+namespace Subly\Data;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -47,8 +47,8 @@ class Cleanup {
 		}
 
 		// phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- our own tables, never cached.
-		$wpdb->delete( $wpdb->prefix . 'easysubscription_charge_slot', array( 'subscription_id' => $order_id ), array( '%d' ) );
-		$wpdb->delete( $wpdb->prefix . 'easysubscription_activity', array( 'subscription_id' => $order_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'subly_charge_slot', array( 'subscription_id' => $order_id ), array( '%d' ) );
+		$wpdb->delete( $wpdb->prefix . 'subly_activity', array( 'subscription_id' => $order_id ), array( '%d' ) );
 		// phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	}
 
@@ -73,7 +73,7 @@ class Cleanup {
 
 		$removed = 0;
 
-		foreach ( array( 'easysubscription_charge_slot', 'easysubscription_activity' ) as $table ) {
+		foreach ( array( 'subly_charge_slot', 'subly_activity' ) as $table ) {
 			// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- a one-off sweep of our own table.
 			$ids = (array) $wpdb->get_col( $wpdb->prepare( 'SELECT DISTINCT subscription_id FROM %i', $wpdb->prefix . $table ) );
 

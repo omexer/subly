@@ -1,11 +1,11 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
-use EasySubscription\Billing\Renewal_Scheduler;
-use EasySubscription\Data\Migrator;
-use EasySubscription\Data\Subscription_Query;
-use EasySubscription\Gateways\Gateway_Registry;
+use Subly\Billing\Renewal_Scheduler;
+use Subly\Data\Migrator;
+use Subly\Data\Subscription_Query;
+use Subly\Gateways\Gateway_Registry;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,8 +30,8 @@ class Help_Page {
 	public function add_page(): void {
 		add_submenu_page(
 			Menu::PARENT,
-			__( 'Help', 'easysubscription' ),
-			__( 'Help', 'easysubscription' ),
+			__( 'Help', 'subly' ),
+			__( 'Help', 'subly' ),
 			Menu::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
@@ -44,13 +44,13 @@ class Help_Page {
 	public function report(): array {
 		global $wpdb;
 
-		$scheduler = \EasySubscription\Plugin::instance()->get( 'scheduler' );
-		$gateways  = \EasySubscription\Plugin::instance()->get( 'gateways' );
+		$scheduler = \Subly\Plugin::instance()->get( 'scheduler' );
+		$gateways  = \Subly\Plugin::instance()->get( 'gateways' );
 		$migrator  = new Migrator();
 
 		$rows = array(
-			'EasySubscription'     => defined( 'EASYSUBSCRIPTION_VERSION' ) ? EASYSUBSCRIPTION_VERSION : '?',
-			'EasySubscription Pro' => defined( 'EASYSUBSCRIPTION_PRO_VERSION' ) ? EASYSUBSCRIPTION_PRO_VERSION : __( 'not installed', 'easysubscription' ),
+			'Subly'     => defined( 'SUBLY_VERSION' ) ? SUBLY_VERSION : '?',
+			'Subly Pro' => defined( 'SUBLY_PRO_VERSION' ) ? SUBLY_PRO_VERSION : __( 'not installed', 'subly' ),
 			'WordPress'            => get_bloginfo( 'version' ),
 			'WooCommerce'          => defined( 'WC_VERSION' ) ? WC_VERSION : '?',
 			'PHP'                  => PHP_VERSION,
@@ -91,7 +91,7 @@ class Help_Page {
 		 *
 		 * @param array $rows
 		 */
-		return (array) apply_filters( 'easysubscription_support_report', $rows );
+		return (array) apply_filters( 'subly_support_report', $rows );
 	}
 
 	/**
@@ -103,24 +103,24 @@ class Help_Page {
 		return array(
 			array(
 				'icon'  => '1',
-				'title' => __( 'Run the setup checks', 'easysubscription' ),
-				'body'  => __( 'Home runs a real renewal end to end without charging anyone. If renewals are the problem, that test usually says why.', 'easysubscription' ),
-				'label' => __( 'Open Home', 'easysubscription' ),
+				'title' => __( 'Run the setup checks', 'subly' ),
+				'body'  => __( 'Home runs a real renewal end to end without charging anyone. If renewals are the problem, that test usually says why.', 'subly' ),
+				'label' => __( 'Open Home', 'subly' ),
 				'url'   => admin_url( 'admin.php?page=' . Menu::SLUG ),
 			),
 			array(
 				'icon'  => '2',
-				'title' => __( 'Read the activity log', 'easysubscription' ),
-				'body'  => __( 'Every subscription records each charge attempt and status change, with the reason. Open one and scroll to Activity.', 'easysubscription' ),
-				'label' => __( 'All subscriptions', 'easysubscription' ),
+				'title' => __( 'Read the activity log', 'subly' ),
+				'body'  => __( 'Every subscription records each charge attempt and status change, with the reason. Open one and scroll to Activity.', 'subly' ),
+				'label' => __( 'All subscriptions', 'subly' ),
 				'url'   => admin_url( 'admin.php?page=' . Menu::LIST_SLUG ),
 			),
 			array(
 				'icon'  => '3',
-				'title' => __( 'Check renewal health', 'easysubscription' ),
-				'body'  => __( 'Settings shows whether the renewal queue is running, any charge whose outcome is unknown, and the double-charge safeguard.', 'easysubscription' ),
-				'label' => __( 'Open settings', 'easysubscription' ),
-				'url'   => admin_url( 'admin.php?page=wc-settings&tab=easysubscription' ),
+				'title' => __( 'Check renewal health', 'subly' ),
+				'body'  => __( 'Settings shows whether the renewal queue is running, any charge whose outcome is unknown, and the double-charge safeguard.', 'subly' ),
+				'label' => __( 'Open settings', 'subly' ),
+				'url'   => admin_url( 'admin.php?page=wc-settings&tab=subly' ),
 			),
 		);
 	}
@@ -142,7 +142,7 @@ class Help_Page {
 
 	public function render(): void {
 		if ( ! current_user_can( Menu::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'easysubscription' ) );
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subly' ) );
 		}
 
 		App_Host::start( self::SLUG );
@@ -155,16 +155,16 @@ class Help_Page {
 		$text   = self::report_text( $report );
 
 		Page_Shell::open(
-			__( 'Help', 'easysubscription' ),
-			__( 'Where to look first, and the report to send if you still need a hand.', 'easysubscription' )
+			__( 'Help', 'subly' ),
+			__( 'Where to look first, and the report to send if you still need a hand.', 'subly' )
 		);
 
-		echo '<h2 class="easysubscription-section-title">' . esc_html__( 'Check these first', 'easysubscription' ) . '</h2>';
-		echo '<div class="easysubscription-grid">';
+		echo '<h2 class="subly-section-title">' . esc_html__( 'Check these first', 'subly' ) . '</h2>';
+		echo '<div class="subly-grid">';
 
 		foreach ( $this->tiles() as $tile ) {
 			printf(
-				'<div class="easysubscription-tile"><div class="easysubscription-tile__top"><span class="easysubscription-tile__icon" aria-hidden="true">%s</span><h3 class="easysubscription-tile__title">%s</h3></div><p class="easysubscription-tile__body">%s</p><div class="easysubscription-tile__foot"><a class="easysubscription-btn easysubscription-btn--sm" href="%s">%s</a></div></div>',
+				'<div class="subly-tile"><div class="subly-tile__top"><span class="subly-tile__icon" aria-hidden="true">%s</span><h3 class="subly-tile__title">%s</h3></div><p class="subly-tile__body">%s</p><div class="subly-tile__foot"><a class="subly-btn subly-btn--sm" href="%s">%s</a></div></div>',
 				esc_html( $tile['icon'] ),
 				esc_html( $tile['title'] ),
 				esc_html( $tile['body'] ),
@@ -175,17 +175,17 @@ class Help_Page {
 
 		echo '</div>';
 
-		echo '<h2 class="easysubscription-section-title">' . esc_html__( 'System report', 'easysubscription' ) . '</h2>';
-		echo '<div class="easysubscription-card easysubscription-report-card">';
-		echo '<div class="easysubscription-report-card__head"><p class="easysubscription-lede">' . esc_html__( 'Paste this into your support request. It contains no keys and no customer data.', 'easysubscription' ) . '</p>';
+		echo '<h2 class="subly-section-title">' . esc_html__( 'System report', 'subly' ) . '</h2>';
+		echo '<div class="subly-card subly-report-card">';
+		echo '<div class="subly-report-card__head"><p class="subly-lede">' . esc_html__( 'Paste this into your support request. It contains no keys and no customer data.', 'subly' ) . '</p>';
 		printf(
-			'<button type="button" class="easysubscription-btn easysubscription-btn--primary easysubscription-btn--sm" data-easysubscription-copy="easysubscription-report" data-easysubscription-copied="%s">%s</button></div>',
-			esc_attr__( 'Copied', 'easysubscription' ),
-			esc_html__( 'Copy report', 'easysubscription' )
+			'<button type="button" class="subly-btn subly-btn--primary subly-btn--sm" data-subly-copy="subly-report" data-subly-copied="%s">%s</button></div>',
+			esc_attr__( 'Copied', 'subly' ),
+			esc_html__( 'Copy report', 'subly' )
 		);
 
 		printf(
-			'<textarea id="easysubscription-report" readonly rows="%d" class="easysubscription-report">%s</textarea>',
+			'<textarea id="subly-report" readonly rows="%d" class="subly-report">%s</textarea>',
 			(int) min( 24, count( $report ) + 1 ),
 			esc_textarea( $text )
 		);

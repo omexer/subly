@@ -1,13 +1,13 @@
 <?php
 
-namespace EasySubscription\Admin;
+namespace Subly\Admin;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
 /**
- * What EasySubscription can connect to, and whether each connection is live.
+ * What Subly can connect to, and whether each connection is live.
  *
  * FluentCRM is built in and extensions add the rest. This screen exists so a merchant can
  * see what is possible and what is missing, rather than discovering that an integration
@@ -24,8 +24,8 @@ class Integrations_Page {
 	public function add_page(): void {
 		add_submenu_page(
 			Menu::PARENT,
-			__( 'Integrations', 'easysubscription' ),
-			__( 'Integrations', 'easysubscription' ),
+			__( 'Integrations', 'subly' ),
+			__( 'Integrations', 'subly' ),
 			Menu::CAPABILITY,
 			self::SLUG,
 			array( $this, 'render' )
@@ -43,7 +43,7 @@ class Integrations_Page {
 		 *
 		 * @param array $integrations
 		 */
-		$integrations = (array) apply_filters( 'easysubscription_admin_integrations', array() );
+		$integrations = (array) apply_filters( 'subly_admin_integrations', array() );
 
 		usort(
 			$integrations,
@@ -55,7 +55,7 @@ class Integrations_Page {
 
 	public function render(): void {
 		if ( ! current_user_can( Menu::CAPABILITY ) ) {
-			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'easysubscription' ) );
+			wp_die( esc_html__( 'You do not have permission to manage subscriptions.', 'subly' ) );
 		}
 
 		App_Host::start( self::SLUG );
@@ -67,15 +67,15 @@ class Integrations_Page {
 		$integrations = $this->integrations();
 
 		Page_Shell::open(
-			__( 'Integrations', 'easysubscription' ),
-			__( 'Hand a subscription to the plugin that delivers what it pays for, and take it back when it ends.', 'easysubscription' )
+			__( 'Integrations', 'subly' ),
+			__( 'Hand a subscription to the plugin that delivers what it pays for, and take it back when it ends.', 'subly' )
 		);
 
 		if ( ! $integrations ) {
 			printf(
-				'<div class="easysubscription-card"><div class="easysubscription-empty"><p class="easysubscription-empty__title">%s</p><p>%s</p></div></div>',
-				esc_html__( 'Nothing to connect yet', 'easysubscription' ),
-				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. EasySubscription Pro adds them.', 'easysubscription' )
+				'<div class="subly-card"><div class="subly-empty"><p class="subly-empty__title">%s</p><p>%s</p></div></div>',
+				esc_html__( 'Nothing to connect yet', 'subly' ),
+				esc_html__( 'Integrations hand a subscription to the plugin that grants what it pays for — a course, a mailing list, a licence key. Subly Pro adds them.', 'subly' )
 			);
 
 			Page_Shell::close();
@@ -86,12 +86,12 @@ class Integrations_Page {
 
 		foreach ( $integrations as $integration ) {
 			$category              = (string) ( $integration['category'] ?? '' );
-			$category              = '' !== $category ? $category : __( 'Other', 'easysubscription' );
+			$category              = '' !== $category ? $category : __( 'Other', 'subly' );
 			$groups[ $category ][] = $integration;
 		}
 
 		foreach ( $groups as $category => $items ) {
-			echo '<h2 class="easysubscription-section-title">' . esc_html( $category ) . '</h2><div class="easysubscription-grid">';
+			echo '<h2 class="subly-section-title">' . esc_html( $category ) . '</h2><div class="subly-grid">';
 
 			foreach ( $items as $integration ) {
 				$this->render_tile( $integration );
@@ -100,7 +100,7 @@ class Integrations_Page {
 			echo '</div>';
 		}
 
-		echo '<p class="easysubscription-lede" style="margin-top:24px">' . esc_html__( 'An integration only does anything while the plugin it connects to is active, and only for products you have configured it on.', 'easysubscription' ) . '</p>';
+		echo '<p class="subly-lede" style="margin-top:24px">' . esc_html__( 'An integration only does anything while the plugin it connects to is active, and only for products you have configured it on.', 'subly' ) . '</p>';
 
 		Page_Shell::close();
 	}
@@ -113,36 +113,36 @@ class Integrations_Page {
 		$title       = (string) ( $integration['title'] ?? '' );
 		$description = (string) ( $integration['description'] ?? '' );
 
-		echo '<div class="easysubscription-tile"><div class="easysubscription-tile__top">';
+		echo '<div class="subly-tile"><div class="subly-tile__top">';
 
 		$this->render_icon( $integration );
 
 		printf(
-			'<div><h3 class="easysubscription-tile__title">%s</h3><p class="easysubscription-tile__meta">%s</p></div></div>',
+			'<div><h3 class="subly-tile__title">%s</h3><p class="subly-tile__meta">%s</p></div></div>',
 			esc_html( $title ),
 			esc_html(
 				sprintf(
 					/* translators: %s: the plugin an integration needs */
-					__( 'Needs %s', 'easysubscription' ),
+					__( 'Needs %s', 'subly' ),
 					(string) ( $integration['requires'] ?? $title )
 				)
 			)
 		);
 
 		if ( '' !== $description ) {
-			echo '<p class="easysubscription-tile__body">' . esc_html( $description ) . '</p>';
+			echo '<p class="subly-tile__body">' . esc_html( $description ) . '</p>';
 		}
 
 		$hint = (string) ( $integration['hint'] ?? '' );
 
 		if ( '' !== $hint ) {
-			echo '<p class="easysubscription-tile__meta">' . esc_html( $hint ) . '</p>';
+			echo '<p class="subly-tile__meta">' . esc_html( $hint ) . '</p>';
 		}
 
 		printf(
-			'<div class="easysubscription-tile__foot"><span class="easysubscription-badge %s">%s</span><span class="easysubscription-tile__action">',
-			$active ? 'easysubscription-badge--good' : '',
-			esc_html( $active ? __( 'Connected', 'easysubscription' ) : __( 'Not active', 'easysubscription' ) )
+			'<div class="subly-tile__foot"><span class="subly-badge %s">%s</span><span class="subly-tile__action">',
+			$active ? 'subly-badge--good' : '',
+			esc_html( $active ? __( 'Connected', 'subly' ) : __( 'Not active', 'subly' ) )
 		);
 
 		$this->render_configure( $integration );
@@ -163,12 +163,12 @@ class Integrations_Page {
 		$first = strtoupper( function_exists( 'mb_substr' ) ? mb_substr( $title, 0, 1 ) : substr( $title, 0, 1 ) );
 
 		if ( '' === $icon ) {
-			printf( '<span class="easysubscription-tile__icon" aria-hidden="true">%s</span>', esc_html( $first ) );
+			printf( '<span class="subly-tile__icon" aria-hidden="true">%s</span>', esc_html( $first ) );
 			return;
 		}
 
 		printf(
-			'<span class="easysubscription-tile__icon" aria-hidden="true" data-initial="%s"><img src="%s" alt="" width="40" height="40" loading="lazy" onerror="this.parentNode.textContent=this.parentNode.dataset.initial"></span>',
+			'<span class="subly-tile__icon" aria-hidden="true" data-initial="%s"><img src="%s" alt="" width="40" height="40" loading="lazy" onerror="this.parentNode.textContent=this.parentNode.dataset.initial"></span>',
 			esc_attr( $first ),
 			esc_url( $icon )
 		);
@@ -186,9 +186,9 @@ class Integrations_Page {
 
 		if ( '' !== $slug && current_user_can( 'install_plugins' ) && current_user_can( 'activate_plugins' ) ) {
 			printf(
-				'<button type="button" class="easysubscription-btn easysubscription-btn--primary easysubscription-btn--sm easysubscription-install" data-slug="%s">%s</button>',
+				'<button type="button" class="subly-btn subly-btn--primary subly-btn--sm subly-install" data-slug="%s">%s</button>',
 				esc_attr( $slug ),
-				esc_html__( 'Install', 'easysubscription' )
+				esc_html__( 'Install', 'subly' )
 			);
 
 			return;
@@ -201,9 +201,9 @@ class Integrations_Page {
 		}
 
 		printf(
-			'<a class="easysubscription-btn easysubscription-btn--sm" href="%s" target="_blank" rel="noopener noreferrer">%s <span aria-hidden="true">&#8599;</span></a>',
+			'<a class="subly-btn subly-btn--sm" href="%s" target="_blank" rel="noopener noreferrer">%s <span aria-hidden="true">&#8599;</span></a>',
 			esc_url( $url ),
-			esc_html__( 'Get it', 'easysubscription' )
+			esc_html__( 'Get it', 'subly' )
 		);
 	}
 
@@ -220,9 +220,9 @@ class Integrations_Page {
 		$label = (string) ( $integration['configure_label'] ?? '' );
 
 		printf(
-			'<a class="easysubscription-btn easysubscription-btn--sm" href="%s">%s</a>',
+			'<a class="subly-btn subly-btn--sm" href="%s">%s</a>',
 			esc_url( $url ),
-			esc_html( '' !== $label ? $label : __( 'Settings', 'easysubscription' ) )
+			esc_html( '' !== $label ? $label : __( 'Settings', 'subly' ) )
 		);
 	}
 }

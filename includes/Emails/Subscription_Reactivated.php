@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Emails;
+namespace Subly\Emails;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -14,20 +14,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Subscription_Reactivated extends Subscription_Email {
 
 	public function __construct() {
-		$this->id             = 'easysubscription_subscription_reactivated';
-		$this->title          = __( 'Subscription reactivated', 'easysubscription' );
-		$this->description    = __( 'Sent to the customer when a paused or cancelled subscription becomes active again.', 'easysubscription' );
+		$this->id             = 'subly_subscription_reactivated';
+		$this->title          = __( 'Subscription reactivated', 'subly' );
+		$this->description    = __( 'Sent to the customer when a paused or cancelled subscription becomes active again.', 'subly' );
 		$this->customer_email = true;
 
 		parent::__construct();
 	}
 
 	public function get_default_subject(): string {
-		return __( 'Your subscription is active again', 'easysubscription' );
+		return __( 'Your subscription is active again', 'subly' );
 	}
 
 	public function get_default_heading(): string {
-		return __( 'Your subscription is active again', 'easysubscription' );
+		return __( 'Your subscription is active again', 'subly' );
 	}
 
 	public function trigger( Subscription $subscription ): void {
@@ -40,12 +40,12 @@ class Subscription_Reactivated extends Subscription_Email {
 		$next = $this->subscription->get_next_payment();
 
 		if ( ! $next ) {
-			return __( 'Your subscription is active again.', 'easysubscription' );
+			return __( 'Your subscription is active again.', 'subly' );
 		}
 
 		return sprintf(
 			/* translators: 1: amount, 2: date */
-			__( 'Your subscription is active again. The next payment of %1$s is due on %2$s.', 'easysubscription' ),
+			__( 'Your subscription is active again. The next payment of %1$s is due on %2$s.', 'subly' ),
 			$this->amount( $this->subscription->get_total() ),
 			$this->date( $next )
 		);
@@ -53,9 +53,9 @@ class Subscription_Reactivated extends Subscription_Email {
 
 	protected function facts(): array {
 		return array(
-			__( 'Subscription', 'easysubscription' ) => '#' . $this->subscription->get_id(),
-			__( 'Amount', 'easysubscription' )       => $this->amount( $this->subscription->get_total() ),
-			__( 'Next payment', 'easysubscription' ) => $this->date( $this->subscription->get_next_payment() ),
+			__( 'Subscription', 'subly' ) => '#' . $this->subscription->get_id(),
+			__( 'Amount', 'subly' )       => $this->amount( $this->subscription->get_total() ),
+			__( 'Next payment', 'subly' ) => $this->date( $this->subscription->get_next_payment() ),
 		);
 	}
 
@@ -63,12 +63,12 @@ class Subscription_Reactivated extends Subscription_Email {
 		$url = $this->manage_url();
 
 		return $url ? array(
-			'label' => __( 'Manage your subscription', 'easysubscription' ),
+			'label' => __( 'Manage your subscription', 'subly' ),
 			'url'   => $url,
 		) : null;
 	}
 
 	protected function outro(): string {
-		return __( 'You can change or cancel it at any time from your account.', 'easysubscription' );
+		return __( 'You can change or cancel it at any time from your account.', 'subly' );
 	}
 }

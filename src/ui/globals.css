@@ -7,36 +7,36 @@
  * to restyle, and a plugin that redefines --background for the whole page is a plugin
  * that breaks the next one.
  */
-.easysubscription-ui {
-	--es-background: 0 0% 100%;
-	--es-foreground: 240 10% 12%;
-	--es-card: 0 0% 100%;
-	--es-card-foreground: 240 10% 12%;
-	--es-primary: 243 75% 59%;
-	--es-primary-foreground: 0 0% 100%;
-	--es-secondary: 240 5% 96%;
-	--es-secondary-foreground: 240 6% 25%;
-	--es-muted: 240 5% 96%;
-	--es-muted-foreground: 240 4% 46%;
-	--es-accent: 240 5% 96%;
-	--es-accent-foreground: 240 6% 25%;
-	--es-destructive: 0 72% 45%;
-	--es-destructive-foreground: 0 0% 100%;
-	--es-success: 136 100% 22%;
-	--es-success-foreground: 0 0% 100%;
-	--es-border: 240 6% 90%;
-	--es-input: 240 6% 90%;
-	--es-ring: 243 75% 59%;
-	--es-radius: 0.65rem;
+.subly-ui {
+	--sb-background: 0 0% 100%;
+	--sb-foreground: 240 10% 12%;
+	--sb-card: 0 0% 100%;
+	--sb-card-foreground: 240 10% 12%;
+	--sb-primary: 243 75% 59%;
+	--sb-primary-foreground: 0 0% 100%;
+	--sb-secondary: 240 5% 96%;
+	--sb-secondary-foreground: 240 6% 25%;
+	--sb-muted: 240 5% 96%;
+	--sb-muted-foreground: 240 4% 46%;
+	--sb-accent: 240 5% 96%;
+	--sb-accent-foreground: 240 6% 25%;
+	--sb-destructive: 0 72% 45%;
+	--sb-destructive-foreground: 0 0% 100%;
+	--sb-success: 136 100% 22%;
+	--sb-success-foreground: 0 0% 100%;
+	--sb-border: 240 6% 90%;
+	--sb-input: 240 6% 90%;
+	--sb-ring: 243 75% 59%;
+	--sb-radius: 0.65rem;
 
-	color: hsl( var( --es-foreground ) );
+	color: hsl( var( --sb-foreground ) );
 	font-size: 14px;
 	line-height: 1.5;
 }
 
-:where(.easysubscription-ui) *,
-:where(.easysubscription-ui) *::before,
-:where(.easysubscription-ui) *::after {
+:where(.subly-ui) *,
+:where(.subly-ui) *::before,
+:where(.subly-ui) *::after {
 	box-sizing: border-box;
 }
 
@@ -45,63 +45,63 @@
 
 /* Tailwind's border utilities set a width and nothing else; preflight is what normally
    supplies the style and colour. Without this every border class draws nothing.
-   Zero specificity through :where(), or this reset ties with .es-border and wins on order,
+   Zero specificity through :where(), or this reset ties with .sb-border and wins on order,
    which left every outline button and bordered panel with no border at all. */
-:where(.easysubscription-ui) :where(*, *::before, *::after) {
+:where(.subly-ui) :where(*, *::before, *::after) {
 	border-width: 0;
 	border-style: solid;
-	border-color: hsl( var( --es-border ) );
+	border-color: hsl( var( --sb-border ) );
 }
 
 /* The browser's and wp-admin's own button, input and link styles would otherwise show
    through every component built from those elements. */
-:where(.easysubscription-ui) :where(button, input, select, textarea) {
+:where(.subly-ui) :where(button, input, select, textarea) {
 	margin: 0;
 	font: inherit;
 	color: inherit;
 	letter-spacing: inherit;
 }
 
-:where(.easysubscription-ui) button {
+:where(.subly-ui) button {
 	background: transparent;
 	box-shadow: none;
 	cursor: pointer;
 	line-height: inherit;
 }
 
-:where(.easysubscription-ui) button:disabled {
+:where(.subly-ui) button:disabled {
 	cursor: default;
 }
 
-:where(.easysubscription-ui) a {
+:where(.subly-ui) a {
 	color: inherit;
 	text-decoration: none;
 	box-shadow: none;
 }
 
-:where(.easysubscription-ui) :where(a, button):focus-visible {
-	outline: 2px solid hsl( var( --es-ring ) );
+:where(.subly-ui) :where(a, button):focus-visible {
+	outline: 2px solid hsl( var( --sb-ring ) );
 	outline-offset: 2px;
 }
 
-:where(.easysubscription-ui) svg {
+:where(.subly-ui) svg {
 	display: inline-block;
 	vertical-align: middle;
 }
 
-:where(.easysubscription-ui) input[type="checkbox"] {
+:where(.subly-ui) input[type="checkbox"] {
 	border-width: 1px;
 }
-.easysubscription-ui h2,
-.easysubscription-ui h3,
-.easysubscription-ui p,
-.easysubscription-ui ul,
-.easysubscription-ui ol {
+.subly-ui h2,
+.subly-ui h3,
+.subly-ui p,
+.subly-ui ul,
+.subly-ui ol {
 	margin: 0;
 	padding: 0;
 }
 
-.easysubscription-ui ul,
-.easysubscription-ui ol {
+.subly-ui ul,
+.subly-ui ol {
 	list-style: none;
 }

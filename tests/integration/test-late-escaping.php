@@ -4,17 +4,17 @@
  * These checks prove the tag lists drop nothing real: the product panel (with Pro's rows when Pro is
  * active), WooCommerce's own settings fields, the header icons, and the product-type script.
  *
- * @package EasySubscription
+ * @package Subly
  */
 
-use EasySubscription\Admin\Allowed_Html;
-use EasySubscription\Admin\Settings_Page;
-use EasySubscription\Product\Product_Meta_Fields;
+use Subly\Admin\Allowed_Html;
+use Subly\Admin\Settings_Page;
+use Subly\Product\Product_Meta_Fields;
 
 require __DIR__ . '/bootstrap.php';
 require_once WC_ABSPATH . 'includes/admin/wc-meta-box-functions.php';
 
-$pro   = (bool) did_action( 'easysubscription_pro_loaded' );
+$pro   = (bool) did_action( 'subly_pro_loaded' );
 $label = $pro ? 'with Pro' : 'without Pro';
 
 /**
@@ -59,7 +59,7 @@ echo "\n1. The product panel ({$label})\n";
 
 wp_set_current_user( 1 );
 
-foreach ( array( 'easysubscription_subscription', 'easysubscription_variable_subscription' ) as $type ) {
+foreach ( array( 'subly_subscription', 'subly_variable_subscription' ) as $type ) {
 	$classname = WC_Product_Factory::get_product_classname( 0, $type );
 	$product   = new $classname();
 	$product->set_name( 'ES escaping ' . $type );
@@ -85,16 +85,16 @@ foreach ( array( 'easysubscription_subscription', 'easysubscription_variable_sub
 
 echo "\n2. WooCommerce's own settings fields\n";
 
-$screen = \EasySubscription\Plugin::instance()->get( 'settings_page' );
+$screen = \Subly\Plugin::instance()->get( 'settings_page' );
 $woo    = null;
 foreach ( WC_Admin_Settings::get_settings_pages() as $candidate ) {
-	if ( $candidate instanceof WC_Settings_Page && 'easysubscription' === $candidate->get_id() ) {
+	if ( $candidate instanceof WC_Settings_Page && 'subly' === $candidate->get_id() ) {
 		$woo = $candidate;
 	}
 }
 
 if ( ! $woo || ! $screen instanceof Settings_Page ) {
-	easysubscription_test_abort( 'the settings tab or screen is not registered' );
+	subly_test_abort( 'the settings tab or screen is not registered' );
 }
 
 $ours    = array( 'checkbox', 'select', 'textarea', 'text', 'password', 'number', 'email', 'url', 'title', 'sectionend' );
@@ -119,8 +119,8 @@ $check( 'at least one field is drawn by WooCommerce itself, so the check above r
 echo "\n3. Icons and scripts\n";
 
 ob_start();
-\EasySubscription\Admin\Page_Shell::open( 'Harness' );
-\EasySubscription\Admin\Page_Shell::close();
+\Subly\Admin\Page_Shell::open( 'Harness' );
+\Subly\Admin\Page_Shell::close();
 $shell = (string) ob_get_clean();
 $shapes = array_values( preg_grep( '/^(svg|rect|circle|path)\[/', $inventory( $shell ) ) );
 $check( 'the header icons keep their shapes', in_array( 'rect[height=17 rx=3 width=17 x=3.5 y=3.5]', $shapes, true ) && in_array( 'circle[cx=12 cy=12 r=3]', $shapes, true ) && (bool) preg_grep( '/^svg\[.*viewbox=0 0 24 24/', $shapes ), $shapes );
@@ -129,8 +129,8 @@ set_current_screen( 'product' );
 wp_enqueue_script( 'wc-admin-product-meta-boxes', WC()->plugin_url() . '/assets/js/admin/meta-boxes-product.js', array(), WC_VERSION, false );
 do_action( 'admin_enqueue_scripts', 'post.php' );
 $inline = implode( "\n", (array) wp_scripts()->get_data( 'wc-admin-product-meta-boxes', 'after' ) );
-$check( 'the product-type script is added after WooCommerce\'s product script, not printed', str_contains( $inline, "woocommerce-product-type-change" ) && str_contains( $inline, '"easysubscription_subscription"' ), $inline );
+$check( 'the product-type script is added after WooCommerce\'s product script, not printed', str_contains( $inline, "woocommerce-product-type-change" ) && str_contains( $inline, '"subly_subscription"' ), $inline );
 set_current_screen( 'dashboard' );
 
 
-easysubscription_test_done( $fail );
+subly_test_done( $fail );

@@ -1,6 +1,6 @@
 <?php
 
-namespace EasySubscription\Product;
+namespace Subly\Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

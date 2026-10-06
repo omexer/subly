@@ -1,8 +1,8 @@
 <?php
 
-namespace EasySubscription\Emails;
+namespace Subly\Emails;
 
-use EasySubscription\Domain\Subscription;
+use Subly\Domain\Subscription;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,20 +17,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Renewal_Reminder extends Subscription_Email {
 
 	public function __construct() {
-		$this->id             = 'easysubscription_renewal_reminder';
-		$this->title          = __( 'Upcoming renewal', 'easysubscription' );
-		$this->description    = __( 'Sent to the customer before a subscription is charged. How far ahead is set under EasySubscription → Settings → Email Notifications.', 'easysubscription' );
+		$this->id             = 'subly_renewal_reminder';
+		$this->title          = __( 'Upcoming renewal', 'subly' );
+		$this->description    = __( 'Sent to the customer before a subscription is charged. How far ahead is set under Subly → Settings → Email Notifications.', 'subly' );
 		$this->customer_email = true;
 
 		parent::__construct();
 	}
 
 	public function get_default_subject(): string {
-		return __( 'Your subscription renews soon', 'easysubscription' );
+		return __( 'Your subscription renews soon', 'subly' );
 	}
 
 	public function get_default_heading(): string {
-		return __( 'Your subscription renews soon', 'easysubscription' );
+		return __( 'Your subscription renews soon', 'subly' );
 	}
 
 	public function trigger( Subscription $subscription ): void {
@@ -40,14 +40,14 @@ class Renewal_Reminder extends Subscription_Email {
 	}
 
 	protected function intro(): string {
-		$trialling = 'es-trialling' === $this->subscription->get_status();
+		$trialling = 'subly-trialling' === $this->subscription->get_status();
 
 		return sprintf(
 			$trialling
 				/* translators: 1: amount, 2: date */
-				? __( 'Your free trial ends on %2$s, and your first payment of %1$s will be taken that day.', 'easysubscription' )
+				? __( 'Your free trial ends on %2$s, and your first payment of %1$s will be taken that day.', 'subly' )
 				/* translators: 1: amount, 2: date */
-				: __( "We'll charge %1\$s on %2\$s to renew your subscription.", 'easysubscription' ),
+				: __( "We'll charge %1\$s on %2\$s to renew your subscription.", 'subly' ),
 			$this->amount( $this->subscription->get_total() ),
 			$this->date( $this->subscription->get_next_payment() )
 		);
@@ -55,10 +55,10 @@ class Renewal_Reminder extends Subscription_Email {
 
 	protected function facts(): array {
 		return array(
-			__( 'Subscription', 'easysubscription' ) => '#' . $this->subscription->get_id(),
-			__( 'Amount', 'easysubscription' )       => $this->amount( $this->subscription->get_total() ),
-			__( 'Payment date', 'easysubscription' ) => $this->date( $this->subscription->get_next_payment() ),
-			__( 'Paid with', 'easysubscription' )    => (string) $this->subscription->get_payment_method_title(),
+			__( 'Subscription', 'subly' ) => '#' . $this->subscription->get_id(),
+			__( 'Amount', 'subly' )       => $this->amount( $this->subscription->get_total() ),
+			__( 'Payment date', 'subly' ) => $this->date( $this->subscription->get_next_payment() ),
+			__( 'Paid with', 'subly' )    => (string) $this->subscription->get_payment_method_title(),
 		);
 	}
 
@@ -66,12 +66,12 @@ class Renewal_Reminder extends Subscription_Email {
 		$url = $this->manage_url();
 
 		return $url ? array(
-			'label' => __( 'Manage your subscription', 'easysubscription' ),
+			'label' => __( 'Manage your subscription', 'subly' ),
 			'url'   => $url,
 		) : null;
 	}
 
 	protected function outro(): string {
-		return __( 'Nothing to do if you want it to continue. You can change or cancel it any time before that date.', 'easysubscription' );
+		return __( 'Nothing to do if you want it to continue. You can change or cancel it any time before that date.', 'subly' );
 	}
 }

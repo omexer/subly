@@ -1,5 +1,5 @@
 /**
- * The EasySubscription home screen.
+ * The Subly home screen.
  *
  * What a merchant needs on arrival, in the order they need it: finish setting up, see
  * how the business is doing, see what needs them, and get to everything else.
@@ -18,21 +18,21 @@ import {
 	Select,
 	Skeleton,
 	Stat,
-} from '@easysubscription/ui';
-import { registerRoute } from '@easysubscription/shell';
+} from '@subly/ui';
+import { registerRoute } from '@subly/shell';
 
 const TONE = {
-	bad: 'es-bg-destructive',
-	warn: 'es-bg-amber-500',
-	good: 'es-bg-success',
+	bad: 'sb-bg-destructive',
+	warn: 'sb-bg-amber-500',
+	good: 'sb-bg-success',
 };
 
 function statusVariant( status ) {
-	if ( 'es-active' === status || 'es-trialling' === status ) {
+	if ( 'subly-active' === status || 'subly-trialling' === status ) {
 		return 'success';
 	}
 
-	return 'es-on-hold' === status ? 'destructive' : 'secondary';
+	return 'subly-on-hold' === status ? 'destructive' : 'secondary';
 }
 
 function initials( name ) {
@@ -52,94 +52,94 @@ function CreateProduct( { create } ) {
 		<form
 			method="post"
 			action={ create.url }
-			className="es-mt-3 es-flex es-flex-wrap es-items-end es-gap-2"
+			className="sb-mt-3 sb-flex sb-flex-wrap sb-items-end sb-gap-2"
 		>
 			<input type="hidden" name="_wpnonce" value={ create.nonce } />
 			<input
 				type="hidden"
 				name="action"
-				value="easysubscription_create_product"
+				value="subly_create_product"
 			/>
 			<label
-				htmlFor="easysubscription-new-name"
-				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
+				htmlFor="subly-new-name"
+				className="sb-flex sb-flex-col sb-gap-1 sb-text-xs sb-text-muted-foreground"
 			>
-				{ __( 'Name', 'easysubscription' ) }
+				{ __( 'Name', 'subly' ) }
 				<Input
-					id="easysubscription-new-name"
-					name="easysubscription_name"
+					id="subly-new-name"
+					name="subly_name"
 					required
-					className="es-w-48"
+					className="sb-w-48"
 				/>
 			</label>
 			<label
-				htmlFor="easysubscription-new-price"
-				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
+				htmlFor="subly-new-price"
+				className="sb-flex sb-flex-col sb-gap-1 sb-text-xs sb-text-muted-foreground"
 			>
-				{ __( 'Price', 'easysubscription' ) }
+				{ __( 'Price', 'subly' ) }
 				<Input
-					id="easysubscription-new-price"
-					name="easysubscription_price"
+					id="subly-new-price"
+					name="subly_price"
 					required
 					inputMode="decimal"
-					className="es-w-24"
+					className="sb-w-24"
 				/>
 			</label>
 			<label
-				htmlFor="easysubscription-new-interval"
-				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
+				htmlFor="subly-new-interval"
+				className="sb-flex sb-flex-col sb-gap-1 sb-text-xs sb-text-muted-foreground"
 			>
-				{ __( 'Every', 'easysubscription' ) }
-				<span className="es-flex es-gap-1">
+				{ __( 'Every', 'subly' ) }
+				<span className="sb-flex sb-gap-1">
 					<Input
-						id="easysubscription-new-interval"
-						name="easysubscription_interval"
+						id="subly-new-interval"
+						name="subly_interval"
 						type="number"
 						min="1"
 						max="365"
 						defaultValue="1"
-						className="es-w-16"
+						className="sb-w-16"
 					/>
 					<Select
-						name="easysubscription_period"
+						name="subly_period"
 						defaultValue="month"
 						aria-label={ __(
 							'Billing period',
-							'easysubscription'
+							'subly'
 						) }
 					>
 						<option value="day">
-							{ __( 'Days', 'easysubscription' ) }
+							{ __( 'Days', 'subly' ) }
 						</option>
 						<option value="week">
-							{ __( 'Weeks', 'easysubscription' ) }
+							{ __( 'Weeks', 'subly' ) }
 						</option>
 						<option value="month">
-							{ __( 'Months', 'easysubscription' ) }
+							{ __( 'Months', 'subly' ) }
 						</option>
 						<option value="year">
-							{ __( 'Years', 'easysubscription' ) }
+							{ __( 'Years', 'subly' ) }
 						</option>
 					</Select>
 				</span>
 			</label>
 			<label
-				htmlFor="easysubscription-new-trial"
-				className="es-flex es-flex-col es-gap-1 es-text-xs es-text-muted-foreground"
+				htmlFor="subly-new-trial"
+				className="sb-flex sb-flex-col sb-gap-1 sb-text-xs sb-text-muted-foreground"
 			>
-				{ __( 'Free trial (days)', 'easysubscription' ) }
+				{ __( 'Free trial (days)', 'subly' ) }
 				<Input
-					id="easysubscription-new-trial"
-					name="easysubscription_trial"
+					id="subly-new-trial"
+					name="subly_trial"
 					type="number"
 					min="0"
 					max="365"
 					defaultValue="0"
-					className="es-w-24"
+					className="sb-w-24"
 				/>
 			</label>
 			<Button type="submit" size="sm">
-				{ __( 'Create it', 'easysubscription' ) }
+				{ __( 'Create it', 'subly' ) }
 			</Button>
 		</form>
 	);
@@ -152,72 +152,72 @@ function Setup( { setup, create } ) {
 	const next = setup.steps.findIndex( ( step ) => ! step.done );
 
 	return (
-		<Card className="es-mb-6 es-overflow-hidden">
-			<div className="es-flex es-flex-wrap es-items-center es-justify-between es-gap-4 es-border-b es-border-border es-bg-accent/40 es-px-5 es-py-4">
+		<Card className="sb-mb-6 sb-overflow-hidden">
+			<div className="sb-flex sb-flex-wrap sb-items-center sb-justify-between sb-gap-4 sb-border-b sb-border-border sb-bg-accent/40 sb-px-5 sb-py-4">
 				<div>
-					<h2 className="es-text-base es-font-semibold">
+					<h2 className="sb-text-base sb-font-semibold">
 						{ __(
 							'Get your first subscription running',
-							'easysubscription'
+							'subly'
 						) }
 					</h2>
-					<p className="es-mt-1 es-text-sm es-text-muted-foreground">
+					<p className="sb-mt-1 sb-text-sm sb-text-muted-foreground">
 						{ sprintf(
 							/* translators: 1: steps done, 2: steps in total. */
-							__( '%1$d of %2$d done', 'easysubscription' ),
+							__( '%1$d of %2$d done', 'subly' ),
 							setup.done,
 							setup.total
 						) }
 					</p>
 				</div>
 				<div
-					className="es-h-2 es-w-48 es-overflow-hidden es-rounded-full es-bg-muted"
+					className="sb-h-2 sb-w-48 sb-overflow-hidden sb-rounded-full sb-bg-muted"
 					role="progressbar"
 					aria-valuenow={ percent }
 					aria-valuemin="0"
 					aria-valuemax="100"
-					aria-label={ __( 'Setup progress', 'easysubscription' ) }
+					aria-label={ __( 'Setup progress', 'subly' ) }
 				>
 					<div
-						className="es-h-full es-rounded-full es-bg-primary es-transition-all"
+						className="sb-h-full sb-rounded-full sb-bg-primary sb-transition-all"
 						style={ { width: `${ percent }%` } }
 					/>
 				</div>
 			</div>
 
-			<ol className="es-divide-y es-divide-border">
+			<ol className="sb-divide-y sb-divide-border">
 				{ setup.steps.map( ( step, index ) => (
 					<li
 						key={ step.title }
-						className={ `es-flex es-gap-4 es-px-5 es-py-4 ${
-							index === next ? 'es-bg-background' : ''
+						className={ `sb-flex sb-gap-4 sb-px-5 sb-py-4 ${
+							index === next ? 'sb-bg-background' : ''
 						}` }
 					>
 						<span
-							className={ `es-mt-0.5 es-grid es-h-6 es-w-6 es-shrink-0 es-place-items-center es-rounded-full es-text-xs es-font-semibold ${
+							className={ `sb-mt-0.5 sb-grid sb-h-6 sb-w-6 sb-shrink-0 sb-place-items-center sb-rounded-full sb-text-xs sb-font-semibold ${
 								step.done
-									? 'es-bg-primary es-text-primary-foreground'
-									: 'es-border es-border-border es-text-muted-foreground'
+									? 'sb-bg-primary sb-text-primary-foreground'
+									: 'sb-border sb-border-border sb-text-muted-foreground'
 							}` }
 							aria-hidden="true"
 						>
 							{ step.done ? '✓' : index + 1 }
 						</span>
-						<div className="es-min-w-0 es-flex-1">
+						<div className="sb-min-w-0 sb-flex-1">
 							<p
-								className={ `es-text-sm es-font-medium ${
-									step.done ? 'es-text-muted-foreground' : ''
+								className={ `sb-text-sm sb-font-medium ${
+									step.done ? 'sb-text-muted-foreground' : ''
 								}` }
 							>
 								{ step.title }
 								{ step.done ? (
-									<span className="es-sr-only">
+									<span className="sb-sr-only">
 										{ ' ' }
-										({ __( 'done', 'easysubscription' ) })
+										({ __( 'done', 'subly' ) })
 									</span>
 								) : null }
 							</p>
-							<p className="es-mt-0.5 es-text-sm es-text-muted-foreground">
+							<p className="sb-mt-0.5 sb-text-sm sb-text-muted-foreground">
 								{ step.detail }
 							</p>
 							{ 'create_product' === step.form && ! step.done ? (
@@ -231,7 +231,7 @@ function Setup( { setup, create } ) {
 									index === next ? 'default' : 'outline'
 								}
 								size="sm"
-								className="es-self-start"
+								className="sb-self-start"
 							>
 								<a href={ step.action.url }>
 									{ step.action.label }
@@ -251,7 +251,7 @@ export function Dashboard( { onFail } ) {
 	useEffect( () => {
 		let live = true;
 
-		apiFetch( { path: '/easysubscription/v1/dashboard' } )
+		apiFetch( { path: '/subly/v1/dashboard' } )
 			.then( ( result ) => {
 				if ( live ) {
 					setData( result );
@@ -268,13 +268,13 @@ export function Dashboard( { onFail } ) {
 
 	if ( ! data ) {
 		return (
-			<div className="es-grid es-gap-4">
-				<Skeleton className="es-h-10 es-w-72" />
-				<Skeleton className="es-h-48" />
-				<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
-					<Skeleton className="es-h-24" />
-					<Skeleton className="es-h-24" />
-					<Skeleton className="es-h-24" />
+			<div className="sb-grid sb-gap-4">
+				<Skeleton className="sb-h-10 sb-w-72" />
+				<Skeleton className="sb-h-48" />
+				<div className="sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+					<Skeleton className="sb-h-24" />
+					<Skeleton className="sb-h-24" />
+					<Skeleton className="sb-h-24" />
 				</div>
 			</div>
 		);
@@ -285,29 +285,29 @@ export function Dashboard( { onFail } ) {
 
 	return (
 		<div>
-			<div className="es-mb-6 es-flex es-flex-wrap es-items-end es-justify-between es-gap-4">
+			<div className="sb-mb-6 sb-flex sb-flex-wrap sb-items-end sb-justify-between sb-gap-4">
 				<div>
-					<h2 className="es-text-2xl es-font-semibold es-tracking-tight">
+					<h2 className="sb-text-2xl sb-font-semibold sb-tracking-tight">
 						{ data.greeting }
 					</h2>
-					<p className="es-mt-1 es-text-sm es-text-muted-foreground">
+					<p className="sb-mt-1 sb-text-sm sb-text-muted-foreground">
 						{ __(
 							'Here is how your subscriptions are doing.',
-							'easysubscription'
+							'subly'
 						) }
 					</p>
 				</div>
-				<div className="es-flex es-flex-wrap es-gap-2">
+				<div className="sb-flex sb-flex-wrap sb-gap-2">
 					<Button asChild variant="outline">
 						<a href={ links.list }>
-							{ __( 'All subscriptions', 'easysubscription' ) }
+							{ __( 'All subscriptions', 'subly' ) }
 						</a>
 					</Button>
 					<Button asChild>
 						<a href={ links.new_product }>
 							{ __(
 								'New subscription product',
-								'easysubscription'
+								'subly'
 							) }
 						</a>
 					</Button>
@@ -316,63 +316,63 @@ export function Dashboard( { onFail } ) {
 
 			{ setupDone ? null : <Setup setup={ setup } create={ create } /> }
 
-			<div className="es-mb-6 es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
+			<div className="sb-mb-6 sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 				<Stat
 					label={ __(
 						'Monthly recurring revenue',
-						'easysubscription'
+						'subly'
 					) }
 					value={ stats.mrr }
 				/>
 				<Stat
-					label={ __( 'Active subscriptions', 'easysubscription' ) }
+					label={ __( 'Active subscriptions', 'subly' ) }
 					value={ stats.active }
 				/>
 				<Stat
-					label={ __( 'On a free trial', 'easysubscription' ) }
+					label={ __( 'On a free trial', 'subly' ) }
 					value={ stats.trialling }
 				/>
 				<Stat
-					label={ __( 'On hold', 'easysubscription' ) }
+					label={ __( 'On hold', 'subly' ) }
 					value={ stats.on_hold }
 					meta={
 						stats.on_hold
-							? __( 'Payments failed', 'easysubscription' )
-							: __( 'Nothing failing', 'easysubscription' )
+							? __( 'Payments failed', 'subly' )
+							: __( 'Nothing failing', 'subly' )
 					}
 					delta={ stats.on_hold ? -1 : undefined }
 				/>
 			</div>
 
-			<div className="es-mb-6 es-grid es-gap-4 lg:es-grid-cols-[2fr_3fr]">
+			<div className="sb-mb-6 sb-grid sb-gap-4 lg:sb-grid-cols-[2fr_3fr]">
 				<Card>
 					<CardHeader>
 						<CardTitle>
-							{ __( 'Needs your attention', 'easysubscription' ) }
+							{ __( 'Needs your attention', 'subly' ) }
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
 						{ attention.length ? (
-							<ul className="es-flex es-flex-col es-gap-2">
+							<ul className="sb-flex sb-flex-col sb-gap-2">
 								{ attention.map( ( item ) => (
 									<li key={ item.key }>
 										<a
 											href={ item.url }
-											className="es-flex es-items-center es-gap-3 es-rounded-md es-border es-border-border es-px-3 es-py-2.5 es-text-sm es-text-foreground es-no-underline hover:es-bg-muted/60"
+											className="sb-flex sb-items-center sb-gap-3 sb-rounded-md sb-border sb-border-border sb-px-3 sb-py-2.5 sb-text-sm sb-text-foreground sb-no-underline hover:sb-bg-muted/60"
 										>
 											<span
-												className={ `es-h-2 es-w-2 es-shrink-0 es-rounded-full ${
+												className={ `sb-h-2 sb-w-2 sb-shrink-0 sb-rounded-full ${
 													TONE[ item.tone ] ||
-													'es-bg-muted-foreground'
+													'sb-bg-muted-foreground'
 												}` }
 												aria-hidden="true"
 											/>
-											<span className="es-flex-1">
+											<span className="sb-flex-1">
 												{ item.label }
 											</span>
 											<span
 												aria-hidden="true"
-												className="es-text-muted-foreground"
+												className="sb-text-muted-foreground"
 											>
 												→
 											</span>
@@ -381,23 +381,23 @@ export function Dashboard( { onFail } ) {
 								) ) }
 							</ul>
 						) : (
-							<div className="es-flex es-flex-col es-items-center es-py-6 es-text-center">
+							<div className="sb-flex sb-flex-col sb-items-center sb-py-6 sb-text-center">
 								<span
-									className="es-mb-2 es-grid es-h-10 es-w-10 es-place-items-center es-rounded-full es-bg-success/10 es-text-success"
+									className="sb-mb-2 sb-grid sb-h-10 sb-w-10 sb-place-items-center sb-rounded-full sb-bg-success/10 sb-text-success"
 									aria-hidden="true"
 								>
 									✓
 								</span>
-								<p className="es-text-sm es-font-medium">
+								<p className="sb-text-sm sb-font-medium">
 									{ __(
 										'Nothing needs you right now',
-										'easysubscription'
+										'subly'
 									) }
 								</p>
-								<p className="es-mt-1 es-text-sm es-text-muted-foreground">
+								<p className="sb-mt-1 sb-text-sm sb-text-muted-foreground">
 									{ __(
 										'Failed payments and subscriptions about to end will show up here.',
-										'easysubscription'
+										'subly'
 									) }
 								</p>
 							</div>
@@ -406,38 +406,38 @@ export function Dashboard( { onFail } ) {
 				</Card>
 
 				<Card>
-					<CardHeader className="es-flex-row es-items-center es-justify-between es-space-y-0">
+					<CardHeader className="sb-flex-row sb-items-center sb-justify-between sb-space-y-0">
 						<CardTitle>
-							{ __( 'Recent subscriptions', 'easysubscription' ) }
+							{ __( 'Recent subscriptions', 'subly' ) }
 						</CardTitle>
 						<a
 							href={ links.list }
-							className="es-text-sm es-font-medium es-text-primary es-no-underline hover:es-underline"
+							className="sb-text-sm sb-font-medium sb-text-primary sb-no-underline hover:sb-underline"
 						>
-							{ __( 'View all', 'easysubscription' ) }
+							{ __( 'View all', 'subly' ) }
 						</a>
 					</CardHeader>
-					<CardContent className="es-px-2">
+					<CardContent className="sb-px-2">
 						{ recent.length ? (
-							<ul className="es-flex es-flex-col">
+							<ul className="sb-flex sb-flex-col">
 								{ recent.map( ( row ) => (
 									<li key={ row.id }>
 										<a
 											href={ row.url }
-											className="es-flex es-items-center es-gap-3 es-rounded-md es-px-3 es-py-2.5 es-text-foreground es-no-underline hover:es-bg-muted/60"
+											className="sb-flex sb-items-center sb-gap-3 sb-rounded-md sb-px-3 sb-py-2.5 sb-text-foreground sb-no-underline hover:sb-bg-muted/60"
 										>
 											<span
-												className="es-grid es-h-9 es-w-9 es-shrink-0 es-place-items-center es-rounded-full es-bg-accent es-text-xs es-font-semibold es-text-primary"
+												className="sb-grid sb-h-9 sb-w-9 sb-shrink-0 sb-place-items-center sb-rounded-full sb-bg-accent sb-text-xs sb-font-semibold sb-text-primary"
 												aria-hidden="true"
 											>
 												{ initials( row.customer ) }
 											</span>
-											<span className="es-min-w-0 es-flex-1">
-												<span className="es-block es-truncate es-text-sm es-font-medium">
+											<span className="sb-min-w-0 sb-flex-1">
+												<span className="sb-block sb-truncate sb-text-sm sb-font-medium">
 													{ row.customer ||
 														`#${ row.id }` }
 												</span>
-												<span className="es-block es-truncate es-text-xs es-text-muted-foreground">
+												<span className="sb-block sb-truncate sb-text-xs sb-text-muted-foreground">
 													{ row.product } ·{ ' ' }
 													{ row.created }
 												</span>
@@ -449,7 +449,7 @@ export function Dashboard( { onFail } ) {
 											>
 												{ row.status_label }
 											</Badge>
-											<span className="es-w-24 es-text-right es-text-sm es-tabular-nums">
+											<span className="sb-w-24 sb-text-right sb-text-sm sb-tabular-nums">
 												{ row.total }
 											</span>
 										</a>
@@ -457,10 +457,10 @@ export function Dashboard( { onFail } ) {
 								) ) }
 							</ul>
 						) : (
-							<p className="es-px-3 es-py-6 es-text-center es-text-sm es-text-muted-foreground">
+							<p className="sb-px-3 sb-py-6 sb-text-center sb-text-sm sb-text-muted-foreground">
 								{ __(
 									'Your first subscription will appear here the moment someone buys one.',
-									'easysubscription'
+									'subly'
 								) }
 							</p>
 						) }
@@ -468,48 +468,48 @@ export function Dashboard( { onFail } ) {
 				</Card>
 			</div>
 
-			<div className="es-grid es-gap-4 es-grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
+			<div className="sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fit,minmax(240px,1fr))]">
 				{ [
 					{
 						href: links.integrations,
-						title: __( 'Integrations', 'easysubscription' ),
+						title: __( 'Integrations', 'subly' ),
 						body: __(
 							'Connect courses, mailing lists and licence keys to a subscription.',
-							'easysubscription'
+							'subly'
 						),
 					},
 					{
 						href: links.settings,
-						title: __( 'Settings', 'easysubscription' ),
+						title: __( 'Settings', 'subly' ),
 						body: __(
 							'Payment methods, renewals, grace periods and customer access.',
-							'easysubscription'
+							'subly'
 						),
 					},
 					{
 						href: links.help,
-						title: __( 'Help', 'easysubscription' ),
+						title: __( 'Help', 'subly' ),
 						body: __(
 							'Guides, the system report, and what to check before you ask.',
-							'easysubscription'
+							'subly'
 						),
 					},
 				].map( ( link ) => (
 					<a
 						key={ link.title }
 						href={ link.href }
-						className="es-group es-rounded-lg es-border es-border-border es-bg-card es-p-5 es-text-foreground es-no-underline es-transition-shadow hover:es-shadow-md"
+						className="sb-group sb-rounded-lg sb-border sb-border-border sb-bg-card sb-p-5 sb-text-foreground sb-no-underline sb-transition-shadow hover:sb-shadow-md"
 					>
-						<span className="es-flex es-items-center es-justify-between es-text-sm es-font-semibold">
+						<span className="sb-flex sb-items-center sb-justify-between sb-text-sm sb-font-semibold">
 							{ link.title }
 							<span
 								aria-hidden="true"
-								className="es-text-muted-foreground group-hover:es-text-primary"
+								className="sb-text-muted-foreground group-hover:sb-text-primary"
 							>
 								→
 							</span>
 						</span>
-						<span className="es-mt-1 es-block es-text-sm es-text-muted-foreground">
+						<span className="sb-mt-1 sb-block sb-text-sm sb-text-muted-foreground">
 							{ link.body }
 						</span>
 					</a>
@@ -520,7 +520,7 @@ export function Dashboard( { onFail } ) {
 }
 
 registerRoute( {
-	page: 'easysubscription',
-	title: __( 'Home', 'easysubscription' ),
+	page: 'subly',
+	title: __( 'Home', 'subly' ),
 	render: ( ctx ) => <Dashboard onFail={ ctx.fail } />,
 } );

@@ -1,5 +1,5 @@
 /**
- * Important EasySubscription notices stay under the header as compact cards; every other notice goes in the bell.
+ * Important Subly notices stay under the header as compact cards; every other notice goes in the bell.
  */
 const ADMIN = 'http://localhost/wp-admin/admin.php';
 
@@ -10,7 +10,7 @@ let act;
 let added;
 
 const important = ( id, text, extra = '' ) =>
-	`<div id="${ id }" class="notice notice-warning easysubscription-notice--important ${ extra }"><p><strong>${ text }</strong></p><ul><li>Why it matters, at some length so the card needs its details to show the whole story of what went wrong.</li><li>Second reason.</li></ul><p><a class="button" href="admin.php?page=elsewhere">Fix ${ id }</a></p></div>`;
+	`<div id="${ id }" class="notice notice-warning subly-notice--important ${ extra }"><p><strong>${ text }</strong></p><ul><li>Why it matters, at some length so the card needs its details to show the whole story of what went wrong.</li><li>Second reason.</li></ul><p><a class="button" href="admin.php?page=elsewhere">Fix ${ id }</a></p></div>`;
 
 const SERVER = `
 	<ul id="adminmenu"><li><ul class="wp-submenu">
@@ -19,9 +19,9 @@ const SERVER = `
 	</ul></li></ul>
 	<div id="wpbody-content">
 		<div class="notice notice-info" id="top-other"><p>Another plugin, printed at the top.</p></div>
-		<div id="easysubscription-app" class="easysubscription-ui" data-page="first"></div><div id="easysubscription-fallback">
-			<header><details class="easysubscription-notify" data-easysubscription-notify><summary class="easysubscription-notify__bell">1</summary>
-				<div class="easysubscription-notify__panel"><div class="easysubscription-notify__list"><div class="notice notice-warning" id="tucked"><p>EasySubscription Pro is in test licence mode.</p></div><script>window.ranTucked = true;</script></div></div>
+		<div id="subly-app" class="subly-ui" data-page="first"></div><div id="subly-fallback">
+			<header><details class="subly-notify" data-subly-notify><summary class="subly-notify__bell">1</summary>
+				<div class="subly-notify__panel"><div class="subly-notify__list"><div class="notice notice-warning" id="tucked"><p>Subly Pro is in test licence mode.</p></div><script>window.ranTucked = true;</script></div></div>
 			</details></header>
 			<div class="wrap">
 				<h1>First</h1>
@@ -30,7 +30,7 @@ const SERVER = `
 				${ important( 'b', 'Tax added twice.' ) }
 				${ important( 'c', 'WooPayments cannot renew.' ) }
 				${ important( 'd', 'Unapplied plans.' ) }
-				<div id="saved" class="notice notice-success is-dismissible easysubscription-notice--important easysubscription-notice--feedback"><p>3 subscriptions updated.</p></div>
+				<div id="saved" class="notice notice-success is-dismissible subly-notice--important subly-notice--feedback"><p>3 subscriptions updated.</p></div>
 				<p>Server first</p>
 			</div>
 		</div>
@@ -94,8 +94,8 @@ const ids = ( selector ) =>
 	[ ...document.querySelectorAll( `${ selector } > [id]` ) ].map(
 		( node ) => node.id
 	);
-const bell = () => $( '.easysubscription-notify__bell' );
-const panel = () => $( '#easysubscription-notify-panel' );
+const bell = () => $( '.subly-notify__bell' );
+const panel = () => $( '#subly-notify-panel' );
 
 beforeEach( () => {
 	added = [];
@@ -108,8 +108,8 @@ beforeEach( () => {
 	);
 	window.history.replaceState( {}, '', `${ ADMIN }?page=first` );
 	document.body.innerHTML = SERVER;
-	document.body.className = 'js easysubscription-app-page';
-	window.easysubscriptionShellData = { links: {} };
+	document.body.className = 'js subly-app-page';
+	window.sublyShellData = { links: {} };
 	window.scrollTo = jest.fn();
 } );
 
@@ -128,12 +128,12 @@ describe( 'notices on an app page', () => {
 	it( 'keeps three important notices under the header and puts the rest in the bell', async () => {
 		await boot();
 
-		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+		expect( ids( '.subly-alerts' ) ).toEqual( [
 			'a',
 			'b',
 			'c',
 		] );
-		expect( ids( '.easysubscription-notify__list' ) ).toEqual( [
+		expect( ids( '.subly-notify__list' ) ).toEqual( [
 			'd',
 			'saved',
 			'tucked',
@@ -141,10 +141,10 @@ describe( 'notices on an app page', () => {
 		] );
 		expect( bell().textContent ).toBe( '4' );
 		expect( bell().getAttribute( 'aria-label' ) ).toBe( '4 notifications' );
-		expect( $( '.easysubscription-alerts__more' ).textContent ).toBe(
+		expect( $( '.subly-alerts__more' ).textContent ).toBe(
 			'and 2 more'
 		);
-		expect( $( '#easysubscription-fallback' ).hidden ).toBe( true );
+		expect( $( '#subly-fallback' ).hidden ).toBe( true );
 	} );
 
 	it( 'draws each important notice as one compact card, with its action on the row and its details a click away', async () => {
@@ -152,27 +152,27 @@ describe( 'notices on an app page', () => {
 
 		const card = $( '#a' );
 
-		expect( card.classList.contains( 'easysubscription-alert' ) ).toBe(
+		expect( card.classList.contains( 'subly-alert' ) ).toBe(
 			true
 		);
 		expect(
-			card.classList.contains( 'easysubscription-alert--warning' )
+			card.classList.contains( 'subly-alert--warning' )
 		).toBe( true );
 		expect(
-			card.querySelector( '.easysubscription-alert__icon svg' )
+			card.querySelector( '.subly-alert__icon svg' )
 		).not.toBeNull();
 		expect(
-			card.querySelector( '.easysubscription-alert__title' ).textContent
+			card.querySelector( '.subly-alert__title' ).textContent
 		).toBe( 'PayPal renewals will not be recorded.' );
 		expect(
-			card.querySelector( '.easysubscription-alert__detail' ).textContent
+			card.querySelector( '.subly-alert__detail' ).textContent
 		).toContain( 'Why it matters' );
 		expect(
-			card.querySelector( '.easysubscription-alert__actions a.button' )
+			card.querySelector( '.subly-alert__actions a.button' )
 				.textContent
 		).toBe( 'Fix a' );
 
-		const more = card.querySelector( '.easysubscription-alert__more' );
+		const more = card.querySelector( '.subly-alert__more' );
 		expect( more.getAttribute( 'aria-expanded' ) ).toBe( 'false' );
 
 		await fire( more, 'click' );
@@ -183,34 +183,34 @@ describe( 'notices on an app page', () => {
 
 	it( 'takes the first sentence as the title when a notice has no bold lead, and keeps its own dismiss link as the close button', async () => {
 		document.querySelector( '#b' ).outerHTML =
-			'<div id="b" class="notice notice-error easysubscription-notice--important"><p>EasySubscription: 2 subscriptions renew with tax added twice. Customers may be owed refunds.</p><p><a class="button button-primary" href="#review">Review and repair</a> <a class="button" href="admin-post.php?action=easysubscription_dismiss_notice&amp;notice=x">Dismiss</a></p></div>';
+			'<div id="b" class="notice notice-error subly-notice--important"><p>Subly: 2 subscriptions renew with tax added twice. Customers may be owed refunds.</p><p><a class="button button-primary" href="#review">Review and repair</a> <a class="button" href="admin-post.php?action=subly_dismiss_notice&amp;notice=x">Dismiss</a></p></div>';
 
 		await boot();
 
 		const card = $( '#b' );
 
 		expect(
-			card.querySelector( '.easysubscription-alert__title' ).textContent
+			card.querySelector( '.subly-alert__title' ).textContent
 		).toBe(
-			'EasySubscription: 2 subscriptions renew with tax added twice.'
+			'Subly: 2 subscriptions renew with tax added twice.'
 		);
 		expect(
 			card
-				.querySelector( '.easysubscription-alert__detail' )
+				.querySelector( '.subly-alert__detail' )
 				.textContent.trim()
 		).toBe( 'Customers may be owed refunds.' );
 		expect(
-			card.querySelector( '.easysubscription-alert__more' )
+			card.querySelector( '.subly-alert__more' )
 		).toBeNull();
 		expect(
-			card.classList.contains( 'easysubscription-alert--error' )
+			card.classList.contains( 'subly-alert--error' )
 		).toBe( true );
 
 		const dismiss = card.querySelector(
-			'.easysubscription-alert__dismiss'
+			'.subly-alert__dismiss'
 		);
 		expect( dismiss.getAttribute( 'href' ) ).toContain(
-			'action=easysubscription_dismiss_notice'
+			'action=subly_dismiss_notice'
 		);
 		expect( dismiss.textContent ).toBe( 'Dismiss' );
 	} );
@@ -227,37 +227,37 @@ describe( 'notices on an app page', () => {
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.easysubscription-notify__list' ) ).toContain( 'late' );
+		expect( ids( '.subly-notify__list' ) ).toContain( 'late' );
 		expect( bell().textContent ).toBe( '5' );
 
 		// What WordPress does on ready: every notice, ours too, under the header marker.
 		await act( async () => {
-			const marker = $( '.easysubscription-app__landing .wp-header-end' );
+			const marker = $( '.subly-app__landing .wp-header-end' );
 			[ ...document.querySelectorAll( 'div.notice' ) ].forEach(
 				( node ) => marker.after( node )
 			);
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+		expect( ids( '.subly-alerts' ) ).toEqual( [
 			'a',
 			'b',
 			'c',
 		] );
-		expect( ids( '.easysubscription-notify__list' ) ).toEqual( [
+		expect( ids( '.subly-notify__list' ) ).toEqual( [
 			'd',
 			'saved',
 			'tucked',
 			'top-other',
 			'late',
 		] );
-		expect( ids( '.easysubscription-app__landing' ) ).toEqual( [] );
+		expect( ids( '.subly-app__landing' ) ).toEqual( [] );
 
 		await fire( $( 'a[href="admin.php?page=second"]' ), 'click' );
 		await act( async () => Promise.resolve() );
 
-		expect( $( '.easysubscription-app__route #route-own' ) ).not.toBeNull();
-		expect( ids( '.easysubscription-notify__list' ) ).not.toContain(
+		expect( $( '.subly-app__route #route-own' ) ).not.toBeNull();
+		expect( ids( '.subly-notify__list' ) ).not.toContain(
 			'route-own'
 		);
 	} );
@@ -277,12 +277,12 @@ describe( 'notices on an app page', () => {
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+		expect( ids( '.subly-alerts' ) ).toEqual( [
 			'b',
 			'c',
 			'd',
 		] );
-		expect( $( '.easysubscription-alerts__more' ).textContent ).toBe(
+		expect( $( '.subly-alerts__more' ).textContent ).toBe(
 			'and 1 more'
 		);
 		expect( bell().textContent ).toBe( '2' );
@@ -293,7 +293,7 @@ describe( 'notices on an app page', () => {
 
 		expect( bell().getAttribute( 'aria-expanded' ) ).toBe( 'false' );
 		expect( bell().getAttribute( 'aria-controls' ) ).toBe(
-			'easysubscription-notify-panel'
+			'subly-notify-panel'
 		);
 		expect( panel().hidden ).toBe( true );
 
@@ -342,7 +342,7 @@ describe( 'notices on an app page', () => {
 
 	it( 'opens the centre from “and N more”', async () => {
 		await boot();
-		await fire( $( '.easysubscription-alerts__more' ), 'click' );
+		await fire( $( '.subly-alerts__more' ), 'click' );
 
 		expect( panel().hidden ).toBe( false );
 		expect( panel().contains( $( '#d' ) ) ).toBe( true );
@@ -353,21 +353,21 @@ describe( 'notices on an app page', () => {
 		await fire( $( 'a[href="admin.php?page=second"]' ), 'click' );
 
 		expect( $( '#saved' ) ).toBeNull();
-		expect( ids( '.easysubscription-alerts' ) ).toEqual( [
+		expect( ids( '.subly-alerts' ) ).toEqual( [
 			'a',
 			'b',
 			'c',
 		] );
-		expect( ids( '.easysubscription-notify__list' ) ).toEqual( [
+		expect( ids( '.subly-notify__list' ) ).toEqual( [
 			'd',
 			'tucked',
 			'top-other',
 		] );
-		expect( $( '#easysubscription-fallback' ) ).toBeNull();
+		expect( $( '#subly-fallback' ) ).toBeNull();
 	} );
 
 	it( 'shows no bell when there is nothing to put in it', async () => {
-		document.body.innerHTML = `<div id="wpbody-content"><div id="easysubscription-app" data-page="first"></div><div id="easysubscription-fallback"><div class="wrap"><hr class="wp-header-end">${ important(
+		document.body.innerHTML = `<div id="wpbody-content"><div id="subly-app" data-page="first"></div><div id="subly-fallback"><div class="wrap"><hr class="wp-header-end">${ important(
 			'a',
 			'Only one.'
 		) }</div></div></div>`;
@@ -375,8 +375,8 @@ describe( 'notices on an app page', () => {
 		await boot();
 
 		expect( bell() ).toBeNull();
-		expect( ids( '.easysubscription-alerts' ) ).toEqual( [ 'a' ] );
-		expect( $( '.easysubscription-alerts__more' ) ).toBeNull();
+		expect( ids( '.subly-alerts' ) ).toEqual( [ 'a' ] );
+		expect( $( '.subly-alerts__more' ) ).toBeNull();
 	} );
 
 	it( 'puts every notice back where the server printed it when the first route fails', async () => {
@@ -400,12 +400,12 @@ describe( 'notices on an app page', () => {
 			root = app.boot();
 		} );
 
-		expect( $( '#easysubscription-fallback' ).hidden ).toBe( false );
+		expect( $( '#subly-fallback' ).hidden ).toBe( false );
 		expect(
-			document.body.classList.contains( 'easysubscription-app-page' )
+			document.body.classList.contains( 'subly-app-page' )
 		).toBe( false );
-		expect( $( '.easysubscription-notify__list #tucked' ) ).not.toBeNull();
+		expect( $( '.subly-notify__list #tucked' ) ).not.toBeNull();
 		expect( $( '#wpbody-content > #top-other' ) ).not.toBeNull();
-		expect( $( '#easysubscription-fallback .wrap > #a' ) ).not.toBeNull();
+		expect( $( '#subly-fallback .wrap > #a' ) ).not.toBeNull();
 	} );
 } );
