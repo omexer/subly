@@ -37,7 +37,7 @@ if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; the
 
 # Only the files a version bump touches may be uncommitted; anything else belongs in its own commit.
 # grep, not a case statement: bash 3.2, which macOS ships, ends $( ) at a case pattern's ")".
-unrelated="$(git diff --name-only HEAD | grep -vxF -e "$main" -e tools/phpstan-bootstrap.php -e readme.txt -e docs/USER-GUIDE.md -e docs/HANDOVER.md -e docs/FEATURES.md || true)"
+unrelated="$(git diff --name-only HEAD | grep -vxF -e "$main" -e tools/phpstan-bootstrap.php -e readme.txt -e docs/USER-GUIDE.md -e docs/FEATURES.md || true)"
 [ -z "$unrelated" ] || fail "commit or stash these first: $(echo "$unrelated" | tr '\n' ' ')"
 
 echo "== version =="

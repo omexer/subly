@@ -100,7 +100,7 @@ Verification key:
 | Self-test renewal (creates, renews, deletes) | Run | |
 | Health panel: queue, unresolved charges, payments awaiting confirmation, ledger index, renewal tax | Run | Unresolved flips on after an hour; "Payments awaiting confirmation" after 10 days pending; "Renewal tax" lists affected subscriptions with a Repair action (Settings → General → Health) |
 | Renewal tax Repair action | Run (suite) | Nonce'd, capability-checked, idempotent; adds a note that the customer may be owed a refund. Lists only live subscriptions created before the fix, in tax-inclusive stores, with no tax lines, not repriced by Pro |
-| Nine transactional emails (six customer, three merchant) | Run | Merchant mail goes to the merchant, not the customer. "Subscription started" may send twice — see HANDOVER |
+| Nine transactional emails (six customer, three merchant) | Run | Merchant mail goes to the merchant, not the customer. "Subscription started" may send twice |
 | Privacy exporter and eraser | Wired | Refuses to erase an active subscription |
 
 ## Access — Free
@@ -148,7 +148,7 @@ Verification key:
 | **Members-only content** | Run (suite) | Per-post panel and `[subly_restricted]` shortcode; kept out of excerpts, feeds, REST, search and the Latest Posts block. On hold does not unlock |
 | **Win-back campaign** | Run (suite) | Up to three emails, single-use personal coupons, signed come-back link, confirmed unsubscribe |
 | **Anniversary thank-yous** | Run (suite) | Daily scan, 7-day window so enabling it never floods; renewal discount or personal store coupon |
-| **Retention offer on cancellation** | Run (suite) | Whether its coupon discounts renewals is unverified — see HANDOVER |
+| **Retention offer on cancellation** | Run (suite) | Whether its coupon discounts renewals is unverified |
 | **Subscription webhooks** | Run (suite) | WooCommerce's own webhooks, resource `subly_subscription`; see Pro's `docs/WEBHOOKS.md` |
 | **WhatsApp notifications** | Mocked | Meta Cloud API faked; opt-in at checkout and My Account; exactly-once per event |
 | **REST API**: pause and resume, reports, health | Run | 401 / 404 / 409 / 400 paths all proven. The subscriptions routes themselves are free. |

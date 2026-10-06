@@ -35,7 +35,7 @@ required = {
 # Documentation lines that name the free version; "Subly Pro" versions are left alone.
 optional = {
     path: [(rf'(?<!Pro )\bSubly {o}\b', f'Subly {new}'), (rf'\*\*Free {o} ·', f'**Free {new} ·')]
-    for path in ('docs/USER-GUIDE.md', 'docs/HANDOVER.md', 'docs/FEATURES.md')
+    for path in ('docs/USER-GUIDE.md', 'docs/FEATURES.md')
 }
 
 for path, rules in {**required, **optional}.items():
