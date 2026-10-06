@@ -4,13 +4,7 @@
 import { useCallback, useEffect, useState } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
-import {
-	Badge,
-	Button,
-	Card,
-	CardContent,
-	Skeleton,
-} from '@subly/ui';
+import { Badge, Button, Card, CardContent, Skeleton } from '@subly/ui';
 import { registerRoute } from '@subly/shell';
 
 function Heading() {
@@ -93,8 +87,7 @@ function Tile( { item, installer, onInstalled } ) {
 
 				setBusy( false );
 				setError(
-					result?.data?.message ||
-						__( 'That did not work.', 'subly' )
+					result?.data?.message || __( 'That did not work.', 'subly' )
 				);
 			} )
 			.catch( () => {
@@ -183,10 +176,7 @@ export function Integrations( { onFail } ) {
 	const [ data, setData ] = useState( null );
 
 	const load = useCallback(
-		() =>
-			apiFetch( { path: '/subly/v1/integrations' } ).then(
-				setData
-			),
+		() => apiFetch( { path: '/subly/v1/integrations' } ).then( setData ),
 		[]
 	);
 
@@ -216,10 +206,7 @@ export function Integrations( { onFail } ) {
 				<Card>
 					<CardContent className="sb-flex sb-flex-col sb-items-center sb-gap-2 sb-p-10 sb-text-center">
 						<p className="sb-font-medium">
-							{ __(
-								'Nothing to connect yet',
-								'subly'
-							) }
+							{ __( 'Nothing to connect yet', 'subly' ) }
 						</p>
 						<p className="sb-max-w-md sb-text-sm sb-text-muted-foreground">
 							{ __(

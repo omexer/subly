@@ -46,17 +46,11 @@ const STATUSES = [
 
 function respond( { rows = ROWS, total = rows.length } = {} ) {
 	apiFetch.mockImplementation( ( options ) => {
-		if (
-			options.path.startsWith(
-				'/subly/v1/subscriptions/statuses'
-			)
-		) {
+		if ( options.path.startsWith( '/subly/v1/subscriptions/statuses' ) ) {
 			return Promise.resolve( STATUSES );
 		}
 
-		if (
-			options.path.startsWith( '/subly/v1/subscriptions?' )
-		) {
+		if ( options.path.startsWith( '/subly/v1/subscriptions?' ) ) {
 			return Promise.resolve( {
 				json: () => Promise.resolve( rows ),
 				headers: { get: () => String( total ) },
@@ -159,8 +153,7 @@ describe( 'the subscriptions list', () => {
 		} );
 
 		const bulk = apiFetch.mock.calls.find(
-			( call ) =>
-				'/subly/v1/subscriptions/actions' === call[ 0 ].path
+			( call ) => '/subly/v1/subscriptions/actions' === call[ 0 ].path
 		);
 
 		expect( bulk[ 0 ].data ).toEqual( {

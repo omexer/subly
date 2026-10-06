@@ -125,9 +125,7 @@ describe( 'the subscription detail screen', () => {
 
 		apiFetch.mockClear();
 
-		const field = container.querySelector(
-			'#subly-next-payment'
-		);
+		const field = container.querySelector( '#subly-next-payment' );
 
 		expect( field.value ).toBe( '2026-10-12T09:00' );
 

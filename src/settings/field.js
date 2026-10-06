@@ -43,10 +43,7 @@ export function Control( { field, value, onChange, described } ) {
 						onChange( event.target.checked ? 'yes' : 'no' )
 					}
 				/>
-				<span
-					className="subly-switch__track"
-					aria-hidden="true"
-				/>
+				<span className="subly-switch__track" aria-hidden="true" />
 			</span>
 		);
 	}
@@ -112,10 +109,7 @@ export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 			) }
 		>
 			<div className="subly-settings__label">
-				<label
-					className="subly-settings__title"
-					htmlFor={ field.id }
-				>
+				<label className="subly-settings__title" htmlFor={ field.id }>
 					{ field.title }
 				</label>
 				{ field.help ? (
@@ -140,10 +134,7 @@ export function Row( { field, valueOf, onChange, onEdit, stacked } ) {
 							{ ' ' }
 							{ sprintf(
 								/* translators: %s: the email's name, such as "Renewal reminder" */
-								__(
-									'%s (opens in a new tab)',
-									'subly'
-								),
+								__( '%s (opens in a new tab)', 'subly' ),
 								field.title
 							) }
 						</span>

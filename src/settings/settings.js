@@ -43,10 +43,7 @@ function isPlainClick( event ) {
 }
 
 function messageOf( error ) {
-	return (
-		error?.message ||
-		__( 'That did not work. Try again.', 'subly' )
-	);
+	return error?.message || __( 'That did not work. Try again.', 'subly' );
 }
 
 function Nav( { groups, section, group, onPick } ) {
@@ -140,11 +137,7 @@ function Cards( { page, valueOf, onChange, onEdit } ) {
 		<section
 			key={ `${ card.anchor }-${ index }` }
 			className="subly-settings__card"
-			id={
-				card.anchor
-					? `subly-section-${ card.anchor }`
-					: undefined
-			}
+			id={ card.anchor ? `subly-section-${ card.anchor }` : undefined }
 		>
 			{ card.title || card.desc ? (
 				<header className="subly-settings__card-head">
@@ -226,9 +219,7 @@ export function Settings( { params, setParams } ) {
 
 		apiFetch( {
 			path: withQuery(
-				`/subly/v1/settings/${ encodeURIComponent(
-					section
-				) }`,
+				`/subly/v1/settings/${ encodeURIComponent( section ) }`,
 				query.current
 			),
 		} ).then(
@@ -330,9 +321,7 @@ export function Settings( { params, setParams } ) {
 		setToast( '' );
 
 		apiFetch( {
-			path: `/subly/v1/settings/${ encodeURIComponent(
-				section
-			) }`,
+			path: `/subly/v1/settings/${ encodeURIComponent( section ) }`,
 			method: 'POST',
 			data: { values: changed },
 		} )
@@ -370,10 +359,7 @@ export function Settings( { params, setParams } ) {
 
 	if ( failure ) {
 		return (
-			<div
-				className="subly-notice subly-notice--bad"
-				role="alert"
-			>
+			<div className="subly-notice subly-notice--bad" role="alert">
 				{ failure }
 			</div>
 		);
@@ -405,10 +391,7 @@ export function Settings( { params, setParams } ) {
 						onPick={ pick }
 					/>
 				) : (
-					<nav
-						className="subly-settings__nav"
-						aria-busy="true"
-					>
+					<nav className="subly-settings__nav" aria-busy="true">
 						<Skeleton className="sb-h-64 sb-w-full" />
 					</nav>
 				) }
@@ -450,10 +433,7 @@ export function Settings( { params, setParams } ) {
 						<div className="subly-settings__save">
 							<span className="subly-settings__save-note">
 								{ dirty
-									? __(
-											'You have unsaved changes.',
-											'subly'
-									  )
+									? __( 'You have unsaved changes.', 'subly' )
 									: __(
 											'Changes apply to new renewals and purchases from the moment you save.',
 											'subly'

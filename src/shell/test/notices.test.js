@@ -128,11 +128,7 @@ describe( 'notices on an app page', () => {
 	it( 'keeps three important notices under the header and puts the rest in the bell', async () => {
 		await boot();
 
-		expect( ids( '.subly-alerts' ) ).toEqual( [
-			'a',
-			'b',
-			'c',
-		] );
+		expect( ids( '.subly-alerts' ) ).toEqual( [ 'a', 'b', 'c' ] );
 		expect( ids( '.subly-notify__list' ) ).toEqual( [
 			'd',
 			'saved',
@@ -141,9 +137,7 @@ describe( 'notices on an app page', () => {
 		] );
 		expect( bell().textContent ).toBe( '4' );
 		expect( bell().getAttribute( 'aria-label' ) ).toBe( '4 notifications' );
-		expect( $( '.subly-alerts__more' ).textContent ).toBe(
-			'and 2 more'
-		);
+		expect( $( '.subly-alerts__more' ).textContent ).toBe( 'and 2 more' );
 		expect( $( '#subly-fallback' ).hidden ).toBe( true );
 	} );
 
@@ -152,24 +146,19 @@ describe( 'notices on an app page', () => {
 
 		const card = $( '#a' );
 
-		expect( card.classList.contains( 'subly-alert' ) ).toBe(
+		expect( card.classList.contains( 'subly-alert' ) ).toBe( true );
+		expect( card.classList.contains( 'subly-alert--warning' ) ).toBe(
 			true
 		);
-		expect(
-			card.classList.contains( 'subly-alert--warning' )
-		).toBe( true );
-		expect(
-			card.querySelector( '.subly-alert__icon svg' )
-		).not.toBeNull();
-		expect(
-			card.querySelector( '.subly-alert__title' ).textContent
-		).toBe( 'PayPal renewals will not be recorded.' );
+		expect( card.querySelector( '.subly-alert__icon svg' ) ).not.toBeNull();
+		expect( card.querySelector( '.subly-alert__title' ).textContent ).toBe(
+			'PayPal renewals will not be recorded.'
+		);
 		expect(
 			card.querySelector( '.subly-alert__detail' ).textContent
 		).toContain( 'Why it matters' );
 		expect(
-			card.querySelector( '.subly-alert__actions a.button' )
-				.textContent
+			card.querySelector( '.subly-alert__actions a.button' ).textContent
 		).toBe( 'Fix a' );
 
 		const more = card.querySelector( '.subly-alert__more' );
@@ -189,26 +178,16 @@ describe( 'notices on an app page', () => {
 
 		const card = $( '#b' );
 
-		expect(
-			card.querySelector( '.subly-alert__title' ).textContent
-		).toBe(
+		expect( card.querySelector( '.subly-alert__title' ).textContent ).toBe(
 			'Subly: 2 subscriptions renew with tax added twice.'
 		);
 		expect(
-			card
-				.querySelector( '.subly-alert__detail' )
-				.textContent.trim()
+			card.querySelector( '.subly-alert__detail' ).textContent.trim()
 		).toBe( 'Customers may be owed refunds.' );
-		expect(
-			card.querySelector( '.subly-alert__more' )
-		).toBeNull();
-		expect(
-			card.classList.contains( 'subly-alert--error' )
-		).toBe( true );
+		expect( card.querySelector( '.subly-alert__more' ) ).toBeNull();
+		expect( card.classList.contains( 'subly-alert--error' ) ).toBe( true );
 
-		const dismiss = card.querySelector(
-			'.subly-alert__dismiss'
-		);
+		const dismiss = card.querySelector( '.subly-alert__dismiss' );
 		expect( dismiss.getAttribute( 'href' ) ).toContain(
 			'action=subly_dismiss_notice'
 		);
@@ -239,11 +218,7 @@ describe( 'notices on an app page', () => {
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.subly-alerts' ) ).toEqual( [
-			'a',
-			'b',
-			'c',
-		] );
+		expect( ids( '.subly-alerts' ) ).toEqual( [ 'a', 'b', 'c' ] );
 		expect( ids( '.subly-notify__list' ) ).toEqual( [
 			'd',
 			'saved',
@@ -257,9 +232,7 @@ describe( 'notices on an app page', () => {
 		await act( async () => Promise.resolve() );
 
 		expect( $( '.subly-app__route #route-own' ) ).not.toBeNull();
-		expect( ids( '.subly-notify__list' ) ).not.toContain(
-			'route-own'
-		);
+		expect( ids( '.subly-notify__list' ) ).not.toContain( 'route-own' );
 	} );
 
 	it( 'counts a notice that is dismissed away', async () => {
@@ -277,14 +250,8 @@ describe( 'notices on an app page', () => {
 			await Promise.resolve();
 		} );
 
-		expect( ids( '.subly-alerts' ) ).toEqual( [
-			'b',
-			'c',
-			'd',
-		] );
-		expect( $( '.subly-alerts__more' ).textContent ).toBe(
-			'and 1 more'
-		);
+		expect( ids( '.subly-alerts' ) ).toEqual( [ 'b', 'c', 'd' ] );
+		expect( $( '.subly-alerts__more' ).textContent ).toBe( 'and 1 more' );
 		expect( bell().textContent ).toBe( '2' );
 	} );
 
@@ -353,11 +320,7 @@ describe( 'notices on an app page', () => {
 		await fire( $( 'a[href="admin.php?page=second"]' ), 'click' );
 
 		expect( $( '#saved' ) ).toBeNull();
-		expect( ids( '.subly-alerts' ) ).toEqual( [
-			'a',
-			'b',
-			'c',
-		] );
+		expect( ids( '.subly-alerts' ) ).toEqual( [ 'a', 'b', 'c' ] );
 		expect( ids( '.subly-notify__list' ) ).toEqual( [
 			'd',
 			'tucked',
@@ -401,9 +364,9 @@ describe( 'notices on an app page', () => {
 		} );
 
 		expect( $( '#subly-fallback' ).hidden ).toBe( false );
-		expect(
-			document.body.classList.contains( 'subly-app-page' )
-		).toBe( false );
+		expect( document.body.classList.contains( 'subly-app-page' ) ).toBe(
+			false
+		);
 		expect( $( '.subly-notify__list #tucked' ) ).not.toBeNull();
 		expect( $( '#wpbody-content > #top-other' ) ).not.toBeNull();
 		expect( $( '#subly-fallback .wrap > #a' ) ).not.toBeNull();

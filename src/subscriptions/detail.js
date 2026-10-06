@@ -167,8 +167,7 @@ export function Detail( { id, onBack, onFail } ) {
 				setNotice( {
 					ok: false,
 					message:
-						error?.message ||
-						__( 'That did not work.', 'subly' ),
+						error?.message || __( 'That did not work.', 'subly' ),
 				} );
 			} );
 	};
@@ -192,10 +191,7 @@ export function Detail( { id, onBack, onFail } ) {
 			.then( () => {
 				setNotice( {
 					ok: true,
-					message: __(
-						'The schedule was changed.',
-						'subly'
-					),
+					message: __( 'The schedule was changed.', 'subly' ),
 				} );
 
 				return load();
@@ -206,10 +202,7 @@ export function Detail( { id, onBack, onFail } ) {
 					ok: false,
 					message:
 						error?.message ||
-						__(
-							'That date could not be read.',
-							'subly'
-						),
+						__( 'That date could not be read.', 'subly' ),
 				} );
 			} );
 	};
@@ -218,12 +211,7 @@ export function Detail( { id, onBack, onFail } ) {
 		return (
 			<Card>
 				<CardContent className="sb-p-6">
-					<p>
-						{ __(
-							'No subscription with that id.',
-							'subly'
-						) }
-					</p>
+					<p>{ __( 'No subscription with that id.', 'subly' ) }</p>
 				</CardContent>
 			</Card>
 		);
@@ -296,9 +284,7 @@ export function Detail( { id, onBack, onFail } ) {
 					className="sb-mb-4 sb-rounded-lg sb-border sb-p-3 sb-text-sm"
 					role="status"
 				>
-					<strong>
-						{ __( 'Payment processing', 'subly' ) }
-					</strong>{ ' ' }
+					<strong>{ __( 'Payment processing', 'subly' ) }</strong>{ ' ' }
 					{ sprintf(
 						/* translators: 1: renewal order number, 2: how long ago, such as "3 days ago". */
 						__(
@@ -343,9 +329,7 @@ export function Detail( { id, onBack, onFail } ) {
 			<div className="sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fit,minmax(320px,1fr))]">
 				<Card>
 					<CardHeader>
-						<CardTitle>
-							{ __( 'Details', 'subly' ) }
-						</CardTitle>
+						<CardTitle>{ __( 'Details', 'subly' ) }</CardTitle>
 					</CardHeader>
 					<CardContent className="sb-text-sm">
 						<Fact label={ __( 'Customer', 'subly' ) }>
@@ -354,9 +338,7 @@ export function Detail( { id, onBack, onFail } ) {
 						<Fact label={ __( 'Email', 'subly' ) }>
 							{ data.customer_email || '—' }
 						</Fact>
-						<Fact
-							label={ __( 'Payment method', 'subly' ) }
-						>
+						<Fact label={ __( 'Payment method', 'subly' ) }>
 							{ data.payment_method_title ||
 								data.payment_method ||
 								'—' }
@@ -368,9 +350,7 @@ export function Detail( { id, onBack, onFail } ) {
 							{ formatDay( data.end_date ) ||
 								__( 'Not set', 'subly' ) }
 						</Fact>
-						<Fact
-							label={ __( 'Parent order', 'subly' ) }
-						>
+						<Fact label={ __( 'Parent order', 'subly' ) }>
 							{ data.parent_order_id
 								? `#${ data.parent_order_id }`
 								: '—' }
@@ -426,10 +406,7 @@ export function Detail( { id, onBack, onFail } ) {
 
 						<div className="sb-flex sb-flex-col sb-gap-2 sb-border-t sb-pt-4">
 							<h4 className="sb-m-0 sb-text-sm sb-font-medium">
-								{ __(
-									'Change the schedule',
-									'subly'
-								) }
+								{ __( 'Change the schedule', 'subly' ) }
 							</h4>
 							<p className="sb-m-0 sb-mb-1 sb-text-xs sb-text-muted-foreground">
 								{ __(
@@ -481,19 +458,13 @@ export function Detail( { id, onBack, onFail } ) {
 								onClick={ saveDates }
 								className="sb-mt-1 sb-self-start"
 							>
-								{ __(
-									'Save the schedule',
-									'subly'
-								) }
+								{ __( 'Save the schedule', 'subly' ) }
 							</Button>
 						</div>
 
 						<div className="sb-flex sb-flex-col sb-items-start sb-gap-2 sb-border-t sb-pt-4">
 							<h4 className="sb-m-0 sb-text-sm sb-font-medium">
-								{ __(
-									'End this subscription',
-									'subly'
-								) }
+								{ __( 'End this subscription', 'subly' ) }
 							</h4>
 							<p className="sb-m-0 sb-text-xs sb-text-muted-foreground">
 								{ __(
@@ -515,10 +486,7 @@ export function Detail( { id, onBack, onFail } ) {
 									)
 								}
 							>
-								{ __(
-									'Cancel subscription',
-									'subly'
-								) }
+								{ __( 'Cancel subscription', 'subly' ) }
 							</Button>
 						</div>
 					</CardContent>
@@ -527,9 +495,7 @@ export function Detail( { id, onBack, onFail } ) {
 
 			<Card className="sb-mt-4">
 				<CardHeader>
-					<CardTitle>
-						{ __( 'Activity', 'subly' ) }
-					</CardTitle>
+					<CardTitle>{ __( 'Activity', 'subly' ) }</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{ activity.length ? (

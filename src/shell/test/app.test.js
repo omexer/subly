@@ -121,13 +121,12 @@ describe( 'the app shell', () => {
 
 		expect( host().textContent ).toContain( 'Route one' );
 		expect(
-			host().querySelector( '.subly-crumbs__current' )
-				.textContent
+			host().querySelector( '.subly-crumbs__current' ).textContent
 		).toBe( 'First route' );
 		expect( fallback().hidden ).toBe( true );
-		expect(
-			host().querySelector( '.subly-alerts' ).textContent
-		).toContain( 'Saved.' );
+		expect( host().querySelector( '.subly-alerts' ).textContent ).toContain(
+			'Saved.'
+		);
 		expect(
 			host().querySelector( '.subly-notify__bell' ).textContent
 		).toBe( '1' );
@@ -135,9 +134,9 @@ describe( 'the app shell', () => {
 			host().querySelector( '.subly-notify__list' ).textContent
 		).toBe( 'Elsewhere' );
 		expect( fallback().textContent ).toContain( 'Inline hint' );
-		expect(
-			document.body.classList.contains( 'subly-app-page' )
-		).toBe( true );
+		expect( document.body.classList.contains( 'subly-app-page' ) ).toBe(
+			true
+		);
 		expect( document.title ).toBe( 'First route ‹ Shop — WordPress' );
 		expect(
 			host()
@@ -153,9 +152,7 @@ describe( 'the app shell', () => {
 			{ page: 'first', title: 'First', render: () => <p>Route one</p> },
 		] );
 
-		expect(
-			host().querySelector( '.subly-shell__upgrade' )
-		).toBeNull();
+		expect( host().querySelector( '.subly-shell__upgrade' ) ).toBeNull();
 	} );
 
 	it( 'moves to another route in place, dropping the server render and the first page’s notices', async () => {
@@ -239,12 +236,11 @@ describe( 'the app shell', () => {
 		expect( host().childElementCount ).toBe( 0 );
 		expect( fallback().textContent ).toContain( 'Saved.' );
 		expect(
-			fallback().querySelector( '.subly-notify__list' )
-				.textContent
+			fallback().querySelector( '.subly-notify__list' ).textContent
 		).toBe( 'Elsewhere' );
-		expect(
-			document.body.classList.contains( 'subly-app-page' )
-		).toBe( false );
+		expect( document.body.classList.contains( 'subly-app-page' ) ).toBe(
+			false
+		);
 		expect(
 			fallback()
 				.querySelector( 'hr' )

@@ -127,7 +127,8 @@ $check( 'the header icons keep their shapes', in_array( 'rect[height=17 rx=3 wid
 
 set_current_screen( 'product' );
 wp_enqueue_script( 'wc-admin-product-meta-boxes', WC()->plugin_url() . '/assets/js/admin/meta-boxes-product.js', array(), WC_VERSION, false );
-do_action( 'admin_enqueue_scripts', 'post.php' );
+// Ours only: other admin_enqueue_scripts callbacks need wp-admin functions WP-CLI does not load.
+\Subly\Plugin::instance()->get( 'product_types' )->show_standard_fields();
 $inline = implode( "\n", (array) wp_scripts()->get_data( 'wc-admin-product-meta-boxes', 'after' ) );
 $check( 'the product-type script is added after WooCommerce\'s product script, not printed', str_contains( $inline, "woocommerce-product-type-change" ) && str_contains( $inline, '"subly_subscription"' ), $inline );
 set_current_screen( 'dashboard' );

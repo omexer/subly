@@ -141,7 +141,9 @@ describe( 'the home screen', () => {
 			a.textContent.includes( 'on hold after a failed payment' )
 		);
 
-		expect( link.getAttribute( 'href' ) ).toBe( '/list?status=subly-on-hold' );
+		expect( link.getAttribute( 'href' ) ).toBe(
+			'/list?status=subly-on-hold'
+		);
 		expect( container.textContent ).not.toContain(
 			'Nothing needs you right now'
 		);

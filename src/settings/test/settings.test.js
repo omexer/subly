@@ -149,8 +149,7 @@ PAGES.notifications = {
 					'yes',
 					{
 						title: 'Renewal reminder',
-						subly_email:
-							'subly_renewal_reminder',
+						subly_email: 'subly_renewal_reminder',
 						preview_url:
 							'/wp-admin/?preview_woocommerce_mail=true&type=Reminder',
 					}
@@ -322,9 +321,7 @@ test( 'draws a section from its fields', async () => {
 		'allow_cancel-help'
 	);
 	expect( el( '#pause_unit' ).value ).toBe( 'month' );
-	expect(
-		el( '#pause_length' ).closest( '.subly-settings__control' )
-	).toBe(
+	expect( el( '#pause_length' ).closest( '.subly-settings__control' ) ).toBe(
 		el( '#pause_unit' ).closest( '.subly-settings__control' )
 	);
 	expect( el( 'label[for="pause_unit"]' ).className ).toBe(
@@ -370,9 +367,7 @@ test( 'switching sections keeps unsaved edits, without reloading the page', asyn
 	expect( el( 'button[type="submit"]' ).disabled ).toBe( false );
 
 	const fetched = apiFetch.mock.calls.filter( ( [ options ] ) =>
-		options.path.startsWith(
-			'/subly/v1/settings/customer_controls'
-		)
+		options.path.startsWith( '/subly/v1/settings/customer_controls' )
 	);
 
 	expect( fetched ).toHaveLength( 1 );
@@ -466,9 +461,9 @@ test( 'saving sends only the fields that changed', async () => {
 	} );
 	expect( el( '[role="status"]' ).textContent ).toBe( 'Settings saved.' );
 	expect( el( 'button[type="submit"]' ).disabled ).toBe( true );
-	expect(
-		el( '.subly-settings__save-note' ).textContent
-	).not.toBe( 'You have unsaved changes.' );
+	expect( el( '.subly-settings__save-note' ).textContent ).not.toBe(
+		'You have unsaved changes.'
+	);
 } );
 
 test( 'shows the value the store kept, when it changed what was sent', async () => {
@@ -581,9 +576,7 @@ test( 'a section that cannot load says so', async () => {
 } );
 
 test( 'an email row offers its preview in a new tab, and nothing to edit it with', async () => {
-	await render(
-		'section=notifications&email=subly_renewal_reminder'
-	);
+	await render( 'section=notifications&email=subly_renewal_reminder' );
 
 	const preview = Array.from( container.querySelectorAll( 'a' ) ).find(
 		( a ) => a.textContent.startsWith( 'Preview' )
@@ -598,8 +591,7 @@ test( 'an email row offers its preview in a new tab, and nothing to edit it with
 		'Preview Renewal reminder (opens in a new tab)'
 	);
 	expect(
-		el( '#plain_switch' ).closest( '.subly-settings__row' )
-			.textContent
+		el( '#plain_switch' ).closest( '.subly-settings__row' ).textContent
 	).not.toContain( 'Preview' );
 	expect( container.textContent ).not.toContain( 'Edit' );
 	// Without an editor, an email in the address is ignored and the list is drawn.
@@ -633,8 +625,7 @@ describe( 'with an email editor registered', () => {
 		await render( 'section=notifications' );
 
 		expect(
-			el( '#plain_switch' ).closest( '.subly-settings__row' )
-				.textContent
+			el( '#plain_switch' ).closest( '.subly-settings__row' ).textContent
 		).not.toContain( 'Edit' );
 
 		await click( el( 'button[aria-label="Edit Renewal reminder"]' ) );
@@ -643,9 +634,7 @@ describe( 'with an email editor registered', () => {
 			section: 'notifications',
 			email: 'subly_renewal_reminder',
 		} );
-		expect( el( '#editing' ).textContent ).toBe(
-			'subly_renewal_reminder'
-		);
+		expect( el( '#editing' ).textContent ).toBe( 'subly_renewal_reminder' );
 
 		await click( button( 'Back' ) );
 
@@ -656,9 +645,7 @@ describe( 'with an email editor registered', () => {
 	} );
 
 	test( 'leaving an editor with unsaved edits asks first', async () => {
-		await render(
-			'section=notifications&email=subly_renewal_reminder'
-		);
+		await render( 'section=notifications&email=subly_renewal_reminder' );
 		await click( button( 'Dirty' ) );
 
 		const confirm = jest

@@ -55,11 +55,7 @@ function CreateProduct( { create } ) {
 			className="sb-mt-3 sb-flex sb-flex-wrap sb-items-end sb-gap-2"
 		>
 			<input type="hidden" name="_wpnonce" value={ create.nonce } />
-			<input
-				type="hidden"
-				name="action"
-				value="subly_create_product"
-			/>
+			<input type="hidden" name="action" value="subly_create_product" />
 			<label
 				htmlFor="subly-new-name"
 				className="sb-flex sb-flex-col sb-gap-1 sb-text-xs sb-text-muted-foreground"
@@ -103,23 +99,14 @@ function CreateProduct( { create } ) {
 					<Select
 						name="subly_period"
 						defaultValue="month"
-						aria-label={ __(
-							'Billing period',
-							'subly'
-						) }
+						aria-label={ __( 'Billing period', 'subly' ) }
 					>
-						<option value="day">
-							{ __( 'Days', 'subly' ) }
-						</option>
-						<option value="week">
-							{ __( 'Weeks', 'subly' ) }
-						</option>
+						<option value="day">{ __( 'Days', 'subly' ) }</option>
+						<option value="week">{ __( 'Weeks', 'subly' ) }</option>
 						<option value="month">
 							{ __( 'Months', 'subly' ) }
 						</option>
-						<option value="year">
-							{ __( 'Years', 'subly' ) }
-						</option>
+						<option value="year">{ __( 'Years', 'subly' ) }</option>
 					</Select>
 				</span>
 			</label>
@@ -156,10 +143,7 @@ function Setup( { setup, create } ) {
 			<div className="sb-flex sb-flex-wrap sb-items-center sb-justify-between sb-gap-4 sb-border-b sb-border-border sb-bg-accent/40 sb-px-5 sb-py-4">
 				<div>
 					<h2 className="sb-text-base sb-font-semibold">
-						{ __(
-							'Get your first subscription running',
-							'subly'
-						) }
+						{ __( 'Get your first subscription running', 'subly' ) }
 					</h2>
 					<p className="sb-mt-1 sb-text-sm sb-text-muted-foreground">
 						{ sprintf(
@@ -305,10 +289,7 @@ export function Dashboard( { onFail } ) {
 					</Button>
 					<Button asChild>
 						<a href={ links.new_product }>
-							{ __(
-								'New subscription product',
-								'subly'
-							) }
+							{ __( 'New subscription product', 'subly' ) }
 						</a>
 					</Button>
 				</div>
@@ -318,10 +299,7 @@ export function Dashboard( { onFail } ) {
 
 			<div className="sb-mb-6 sb-grid sb-gap-4 sb-grid-cols-[repeat(auto-fit,minmax(200px,1fr))]">
 				<Stat
-					label={ __(
-						'Monthly recurring revenue',
-						'subly'
-					) }
+					label={ __( 'Monthly recurring revenue', 'subly' ) }
 					value={ stats.mrr }
 				/>
 				<Stat

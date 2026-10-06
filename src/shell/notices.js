@@ -183,10 +183,7 @@ export function compact( node ) {
 		bar.prepend( more );
 	}
 
-	node.classList.add(
-		'subly-alert',
-		`subly-alert--${ tone }`
-	);
+	node.classList.add( 'subly-alert', `subly-alert--${ tone }` );
 	node.prepend( icon, text, bar );
 	closer.forEach( ( el ) => node.appendChild( el ) );
 }

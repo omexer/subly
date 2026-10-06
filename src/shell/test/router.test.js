@@ -52,7 +52,9 @@ describe( 'the router', () => {
 		);
 		expect( window.history.length ).toBe( before + 1 );
 		expect( router.current().page ).toBe( 'list' );
-		expect( router.current().params.toString() ).toBe( 'status=subly-active' );
+		expect( router.current().params.toString() ).toBe(
+			'status=subly-active'
+		);
 		expect( seen ).toHaveBeenCalledWith(
 			expect.objectContaining( { page: 'list', kind: 'navigate' } )
 		);

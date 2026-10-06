@@ -198,10 +198,7 @@ function NoticeCentre( { count, open, setOpen, listRef } ) {
 					>
 						<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.9 1.9 0 0 0 3.4 0" />
 					</svg>
-					<span
-						className="subly-notify__count"
-						aria-hidden="true"
-					>
+					<span className="subly-notify__count" aria-hidden="true">
 						{ count }
 					</span>
 				</button>
@@ -219,10 +216,7 @@ function NoticeCentre( { count, open, setOpen, listRef } ) {
 				<p className="subly-notify__head">
 					{ __( 'Notifications', 'subly' ) }
 				</p>
-				<div
-					ref={ listRef }
-					className="subly-notify__list"
-				/>
+				<div ref={ listRef } className="subly-notify__list" />
 			</div>
 		</div>
 	);
@@ -381,25 +375,16 @@ export function Shell( { fallback, links } ) {
 						className="subly-crumbs"
 						aria-label={ __( 'Breadcrumb', 'subly' ) }
 					>
-						<a
-							className="subly-crumbs__home"
-							href={ links.home }
-						>
+						<a className="subly-crumbs__home" href={ links.home }>
 							<img
 								className="subly-logo"
 								src={ links.logo }
 								width="92"
 								height="28"
-								alt={ __(
-									'Subly',
-									'subly'
-								) }
+								alt={ __( 'Subly', 'subly' ) }
 							/>
 						</a>
-						<span
-							className="subly-crumbs__sep"
-							aria-hidden="true"
-						>
+						<span className="subly-crumbs__sep" aria-hidden="true">
 							/
 						</span>
 						<span
@@ -449,10 +434,7 @@ export function Shell( { fallback, links } ) {
 								{ __( 'Upgrade to Pro', 'subly' ) }
 								<span className="screen-reader-text">
 									{ ' ' }
-									{ __(
-										'(opens in a new tab)',
-										'subly'
-									) }
+									{ __( '(opens in a new tab)', 'subly' ) }
 								</span>
 							</a>
 						) : null }

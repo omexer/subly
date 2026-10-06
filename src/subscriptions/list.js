@@ -275,8 +275,7 @@ export function List( {
 				setNotice( {
 					ok: false,
 					message:
-						error?.message ||
-						__( 'That did not work.', 'subly' ),
+						error?.message || __( 'That did not work.', 'subly' ),
 				} );
 			} );
 	};
@@ -285,10 +284,7 @@ export function List( {
 		// This charges a real customer, so it names the amount and asks first.
 		const question = sprintf(
 			/* translators: %s: recurring total. */
-			__(
-				'This charges the customer %s right now. Continue?',
-				'subly'
-			),
+			__( 'This charges the customer %s right now. Continue?', 'subly' ),
 			row.total_formatted
 		);
 
@@ -321,8 +317,7 @@ export function List( {
 				setNotice( {
 					ok: false,
 					message:
-						error?.message ||
-						__( 'That did not work.', 'subly' ),
+						error?.message || __( 'That did not work.', 'subly' ),
 				} );
 			} );
 	};
@@ -417,10 +412,7 @@ export function List( {
 							onChange={ ( event ) =>
 								setBulk( event.target.value )
 							}
-							aria-label={ __(
-								'Bulk action',
-								'subly'
-							) }
+							aria-label={ __( 'Bulk action', 'subly' ) }
 							className="sb-h-8"
 						>
 							{ BULK.map( ( item ) => (
@@ -469,10 +461,7 @@ export function List( {
 								</TableHead>
 								<SortHeader
 									column="id"
-									label={ __(
-										'Subscription',
-										'subly'
-									) }
+									label={ __( 'Subscription', 'subly' ) }
 									sort={ query }
 									onSort={ set }
 								/>
@@ -481,19 +470,13 @@ export function List( {
 								</TableHead>
 								<SortHeader
 									column="next_payment"
-									label={ __(
-										'Next payment',
-										'subly'
-									) }
+									label={ __( 'Next payment', 'subly' ) }
 									sort={ query }
 									onSort={ set }
 								/>
 								<SortHeader
 									column="total"
-									label={ __(
-										'Recurring total',
-										'subly'
-									) }
+									label={ __( 'Recurring total', 'subly' ) }
 									sort={ query }
 									onSort={ set }
 									className="sb-text-right"
@@ -553,10 +536,7 @@ export function List( {
 											>
 												{ row.customer_name ||
 													row.customer_email ||
-													__(
-														'Guest',
-														'subly'
-													) }
+													__( 'Guest', 'subly' ) }
 											</a>
 											{ row.customer_name &&
 											row.customer_email ? (
@@ -721,10 +701,7 @@ export function List( {
 								<span className="sb-text-muted-foreground">
 									{ sprintf(
 										/* translators: 1: current page, 2: total pages. */
-										__(
-											'Page %1$d of %2$d',
-											'subly'
-										),
+										__( 'Page %1$d of %2$d', 'subly' ),
 										query.page,
 										pages
 									) }

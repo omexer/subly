@@ -31,12 +31,7 @@ export function describeSchedule( row ) {
 				? __( 'every day', 'subly' )
 				: sprintf(
 						/* translators: %d: number of days. */
-						_n(
-							'every %d day',
-							'every %d days',
-							count,
-							'subly'
-						),
+						_n( 'every %d day', 'every %d days', count, 'subly' ),
 						count
 				  );
 		case 'week':
@@ -44,12 +39,7 @@ export function describeSchedule( row ) {
 				? __( 'every week', 'subly' )
 				: sprintf(
 						/* translators: %d: number of weeks. */
-						_n(
-							'every %d week',
-							'every %d weeks',
-							count,
-							'subly'
-						),
+						_n( 'every %d week', 'every %d weeks', count, 'subly' ),
 						count
 				  );
 		case 'year':
@@ -57,12 +47,7 @@ export function describeSchedule( row ) {
 				? __( 'every year', 'subly' )
 				: sprintf(
 						/* translators: %d: number of years. */
-						_n(
-							'every %d year',
-							'every %d years',
-							count,
-							'subly'
-						),
+						_n( 'every %d year', 'every %d years', count, 'subly' ),
 						count
 				  );
 		case 'month':

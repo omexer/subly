@@ -27,9 +27,7 @@ let container;
 
 async function render( query, setParams ) {
 	apiFetch.mockImplementation( ( options ) => {
-		if (
-			options.path.startsWith( '/subly/v1/subscriptions?' )
-		) {
+		if ( options.path.startsWith( '/subly/v1/subscriptions?' ) ) {
 			return Promise.resolve( {
 				json: () => Promise.resolve( [ ROW ] ),
 				headers: { get: () => '1' },
