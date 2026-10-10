@@ -61,6 +61,12 @@ $dismissed_meta = get_user_meta( 1, 'subly_dismissed_notices', true );
 delete_user_meta( 1, 'subly_dismissed_notices' );
 delete_transient( Renewal_Tax_Repair::CACHE );
 
+// The notice is for Subly's screens, WooCommerce → Settings and the orders screens.
+require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
+require_once ABSPATH . 'wp-admin/includes/screen.php';
+$saved_screen = $GLOBALS['current_screen'] ?? null;
+set_current_screen( 'woocommerce_page_wc-orders' );
+
 $harness = new class() implements \Subly\Gateways\Recurring_Gateway {
 	public string $next = 'pending';
 	public function id(): string { return Test_Gateway::ID; }
@@ -311,5 +317,6 @@ foreach ( $saved as $name => $value ) {
 WC_Cache_Helper::invalidate_cache_group( 'taxes' );
 delete_transient( Renewal_Tax_Repair::CACHE );
 '' === $dismissed_meta ? delete_user_meta( 1, 'subly_dismissed_notices' ) : update_user_meta( 1, 'subly_dismissed_notices', $dismissed_meta );
+$GLOBALS['current_screen'] = $saved_screen; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 subly_test_done( $fail );

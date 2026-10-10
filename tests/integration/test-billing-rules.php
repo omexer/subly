@@ -121,7 +121,7 @@ $roles     = static function () use ( $user ): array {
 };
 $downloads = function () use ( $user, $product ): int {
 	wp_set_current_user( $user );
-	$left = apply_filters( 'woocommerce_customer_get_downloadable_products', array( array( 'product_id' => $product->get_id() ) ) );
+	$left = apply_filters( 'woocommerce_customer_available_downloads', array( array( 'product_id' => $product->get_id() ) ), $user );
 	wp_set_current_user( 1 );
 	return count( (array) $left );
 };
