@@ -215,7 +215,7 @@ class Renewal_Tax_Repair {
 	}
 
 	public function notice(): void {
-		if ( ! current_user_can( Menu::CAPABILITY ) ) {
+		if ( ! current_user_can( Menu::CAPABILITY ) || ! Notices::in_context( true ) ) {
 			return;
 		}
 

@@ -49,12 +49,21 @@ class Notices {
 	}
 
 	/**
-	 * Subly's own screens and WooCommerce → Settings: where a setup notice is about the page in front of the merchant.
+	 * Subly's own screens and WooCommerce → Settings, plus the orders screens when asked: where a notice is about the page in front of the merchant.
 	 */
-	public static function in_context(): bool {
+	public static function in_context( bool $with_orders = false ): bool {
 		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
 
-		return $screen && ( str_contains( (string) $screen->id, Menu::SLUG ) || 'woocommerce_page_wc-settings' === $screen->id );
+		if ( ! $screen ) {
+			return false;
+		}
+
+		if ( str_contains( (string) $screen->id, Menu::SLUG ) || 'woocommerce_page_wc-settings' === $screen->id ) {
+			return true;
+		}
+
+		// The orders list and an order's screen, with and without HPOS.
+		return $with_orders && in_array( $screen->id, array( 'woocommerce_page_wc-orders', 'edit-shop_order', 'shop_order' ), true );
 	}
 
 	public function register(): void {

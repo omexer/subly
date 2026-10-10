@@ -104,7 +104,7 @@ class Guest_Checkout {
 			&& 'yes' !== get_option( 'woocommerce_enable_checkout_login_reminder', 'no' );
 
 		// Asked even when all is well, so a fixed setting that breaks again shows again.
-		if ( ! Notice_Dismissals::shows( self::NOTICE_UNREACHABLE, (int) $unreachable ) || ! $unreachable ) {
+		if ( ! Notice_Dismissals::shows_problem( self::NOTICE_UNREACHABLE, $unreachable ? 'unreachable' : '' ) ) {
 			return;
 		}
 
@@ -112,7 +112,7 @@ class Guest_Checkout {
 			'<div class="%s"><p>%s</p><p><a class="button-link" href="%s">%s</a></p></div>',
 			esc_attr( Notices::important( 'warning' ) ),
 			esc_html__( 'Subly requires customers to log in before buying a subscription, but WooCommerce is not offering a login or sign-up on the checkout page. Customers will be turned away with no way forward.', 'subly' ),
-			esc_url( Notice_Dismissals::url( self::NOTICE_UNREACHABLE, 1 ) ),
+			esc_url( Notice_Dismissals::problem_url( self::NOTICE_UNREACHABLE, 'unreachable' ) ),
 			esc_html__( 'Dismiss', 'subly' )
 		);
 	}

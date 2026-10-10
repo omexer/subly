@@ -29,8 +29,8 @@ class Gateway_Notice {
 			'subly_paypal_credentials',
 			__( 'Subly is not offering a payment method at checkout.', 'subly' ),
 			$this->paypal_credentials(),
-			// One more missing field is a new problem, so a dismissed notice comes back for it.
-			count( self::missing_credentials() ),
+			// A different field missing is a different problem, so a dismissed notice comes back for it.
+			Notice_Dismissals::problem_key( array_keys( self::missing_credentials() ) ),
 			'paypal'
 		);
 
@@ -41,7 +41,7 @@ class Gateway_Notice {
 			'subly_paypal_webhook',
 			__( 'PayPal renewals will not be recorded.', 'subly' ),
 			$this->paypal_webhook(),
-			count( $this->paypal_webhook() ),
+			$this->paypal_webhook() ? 'webhook_id' : '',
 			'paypal'
 		);
 	}
@@ -49,9 +49,9 @@ class Gateway_Notice {
 	/**
 	 * @param string[] $lines
 	 */
-	private function notice( string $id, string $heading, array $lines, int $problems, string $section ): void {
+	private function notice( string $id, string $heading, array $lines, string $problem, string $section ): void {
 		// Asked even with nothing to say, so a fixed problem that comes back shows again.
-		if ( ! Notice_Dismissals::shows( $id, $problems ) || ! $lines ) {
+		if ( ! Notice_Dismissals::shows_problem( $id, $lines ? $problem : '' ) ) {
 			return;
 		}
 
@@ -65,7 +65,7 @@ class Gateway_Notice {
 			'</ul><p><a class="button" href="%s">%s</a> <a class="button-link" href="%s">%s</a></p></div>',
 			esc_url( Settings_Page::section_url( $section ) ),
 			esc_html__( 'Finish setting it up', 'subly' ),
-			esc_url( Notice_Dismissals::url( $id, $problems ) ),
+			esc_url( Notice_Dismissals::problem_url( $id, $problem ) ),
 			esc_html__( 'Dismiss', 'subly' )
 		);
 	}
@@ -92,7 +92,7 @@ class Gateway_Notice {
 	}
 
 	/**
-	 * @return string[]
+	 * @return array<string, string> Option name => what to call it.
 	 */
 	private static function missing_credentials(): array {
 		if ( 'yes' !== get_option( 'subly_paypal_enabled', 'no' ) ) {
@@ -106,7 +106,7 @@ class Gateway_Notice {
 			'subly_paypal_secret'    => __( 'secret', 'subly' ),
 		) as $option => $label ) {
 			if ( '' === (string) get_option( $option, '' ) ) {
-				$missing[] = $label;
+				$missing[ $option ] = $label;
 			}
 		}
 

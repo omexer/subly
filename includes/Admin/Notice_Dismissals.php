@@ -7,7 +7,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Per-user dismissal of a notice about a count of things, which comes back once the count grows past what was dismissed.
+ * Per-user dismissal of a notice, which comes back once the count grows past what was dismissed, or the problem is a different one.
  */
 final class Notice_Dismissals {
 
@@ -37,6 +37,51 @@ final class Notice_Dismissals {
 		return $count > $at;
 	}
 
+	/**
+	 * Whether the current user should see a notice about this problem. '' means none; call it then too, so a recurrence shows.
+	 */
+	public static function shows_problem( string $notice, string $problem ): bool {
+		$user_id   = get_current_user_id();
+		$dismissed = self::dismissed( $user_id );
+		$at        = (string) ( $dismissed[ $notice ] ?? '' );
+
+		if ( $user_id && '' === $problem && '' !== $at ) {
+			unset( $dismissed[ $notice ] );
+			update_user_meta( $user_id, self::META, $dismissed );
+		}
+
+		return '' !== $problem && $problem !== $at;
+	}
+
+	/**
+	 * A key for a problem made of parts, the same whatever order they are listed in.
+	 *
+	 * @param string[] $parts
+	 */
+	public static function problem_key( array $parts ): string {
+		if ( ! $parts ) {
+			return '';
+		}
+
+		sort( $parts );
+
+		return substr( md5( implode( '|', $parts ) ), 0, 12 );
+	}
+
+	public static function problem_url( string $notice, string $problem ): string {
+		return wp_nonce_url(
+			add_query_arg(
+				array(
+					'action'  => self::ACTION,
+					'notice'  => $notice,
+					'problem' => $problem,
+				),
+				admin_url( 'admin-post.php' )
+			),
+			self::ACTION . '_' . $notice
+		);
+	}
+
 	public static function url( string $notice, int $count ): string {
 		return wp_nonce_url(
 			add_query_arg(
@@ -60,7 +105,7 @@ final class Notice_Dismissals {
 
 		$user_id              = get_current_user_id();
 		$dismissed            = self::dismissed( $user_id );
-		$dismissed[ $notice ] = absint( $_GET['count'] ?? 0 );
+		$dismissed[ $notice ] = isset( $_GET['problem'] ) ? sanitize_key( wp_unslash( $_GET['problem'] ) ) : absint( $_GET['count'] ?? 0 );
 
 		update_user_meta( $user_id, self::META, $dismissed );
 
@@ -69,7 +114,7 @@ final class Notice_Dismissals {
 	}
 
 	/**
-	 * @return array<string, int>
+	 * @return array<string, int|string>
 	 */
 	private static function dismissed( int $user_id ): array {
 		$stored = $user_id ? get_user_meta( $user_id, self::META, true ) : array();
