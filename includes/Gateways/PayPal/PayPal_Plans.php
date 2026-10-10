@@ -3,7 +3,7 @@
 namespace Subly\Gateways\PayPal;
 
 use Subly\Domain\Billing_Schedule;
-use Subly\Product\Subscription_Product;
+use Subly\Product\Line_Terms;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -13,14 +13,14 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Maps a WooCommerce product onto a PayPal product + billing plan.
  *
  * PayPal will not bill an arbitrary amount on a schedule; it bills a *plan* it already
- * knows about. So every subscription product needs a plan created once at PayPal and
- * cached against the product, and a new plan whenever price or schedule changes.
+ * knows about. So every set of terms a product is sold on needs a plan created once at
+ * PayPal and cached against the product, and a new plan whenever price or schedule changes.
  */
 class PayPal_Plans {
 
 	private const META_PRODUCT = '_subly_paypal_product_id';
-	private const META_PLAN    = '_subly_paypal_plan_id';
-	private const META_HASH    = '_subly_paypal_plan_hash';
+	// Fingerprint => plan id: one product sold on several terms needs a plan for each.
+	public const META_PLANS = '_subly_paypal_plans';
 
 	public function __construct( private readonly PayPal_Client $client ) {}
 
@@ -29,12 +29,14 @@ class PayPal_Plans {
 	 *
 	 * @return array{ok: bool, plan_id: string, error: string}
 	 */
-	public function plan_for( \WC_Product $product ): array {
-		$hash = $this->fingerprint( $product );
+	public function plan_for( \WC_Product $product, ?Line_Terms $terms = null ): array {
+		$terms  = $terms ?? Line_Terms::for_product( $product );
+		$cycles = $this->total_cycles( $product, $terms );
+		$hash   = $this->fingerprint( $product, $terms, $cycles );
 
-		$cached = (string) $product->get_meta( self::META_PLAN );
-		if ( '' !== $cached && $hash === (string) $product->get_meta( self::META_HASH ) ) {
-			return $this->ok( $cached );
+		$cached = $this->cached_plans( $product );
+		if ( isset( $cached[ $hash ] ) ) {
+			return $this->ok( $cached[ $hash ] );
 		}
 
 		$paypal_product = $this->paypal_product_for( $product );
@@ -42,39 +44,63 @@ class PayPal_Plans {
 			return $this->fail( $paypal_product['error'] );
 		}
 
-		$plan = $this->create_plan( $product, $paypal_product['id'] );
+		$plan = $this->create_plan( $product, $terms, $cycles, $paypal_product['id'] );
 		if ( ! $plan['ok'] ) {
 			return $this->fail( $plan['error'] );
 		}
 
-		$product->update_meta_data( self::META_PLAN, $plan['id'] );
-		$product->update_meta_data( self::META_HASH, $hash );
+		$product->update_meta_data( self::META_PLANS, array( $hash => $plan['id'] ) + $this->cached_plans( $product ) );
 		$product->save();
 
 		return $this->ok( $plan['id'] );
 	}
 
 	/**
-	 * Price and schedule together. A change to either needs a new plan, because PayPal
-	 * plans are immutable in the ways that matter to us.
+	 * @return array<string, string>
 	 */
-	private function fingerprint( \WC_Product $product ): string {
-		$schedule = Subscription_Product::schedule( $product );
+	private function cached_plans( \WC_Product $product ): array {
+		$plans = $product->get_meta( self::META_PLANS );
+
+		return is_array( $plans ) ? array_filter( $plans, 'is_string' ) : array();
+	}
+
+	/**
+	 * Everything a PayPal plan is built from. A change to any of it needs a new plan,
+	 * because PayPal plans are immutable in the ways that matter to us.
+	 */
+	private function fingerprint( \WC_Product $product, Line_Terms $terms, int $cycles ): string {
+		$schedule = $terms->schedule();
 
 		return sha1(
 			implode(
 				'|',
 				array(
-					$product->get_price(),
+					$product->get_id(),
 					get_woocommerce_currency(),
+					(string) $terms->recurring_price()->minor(),
 					$schedule->period(),
 					$schedule->interval(),
 					$schedule->trial_length(),
 					$schedule->trial_period(),
-					(string) Subscription_Product::signup_fee( $product )->minor(),
+					(string) $terms->signup_fee()->minor(),
+					$cycles,
 				)
 			)
 		);
+	}
+
+	private function total_cycles( \WC_Product $product, Line_Terms $terms ): int {
+		/**
+		 * How many payments PayPal should take before it stops on its own.
+		 *
+		 * PayPal owns this schedule, so a limit Subly knows about — a payment cap, an
+		 * instalment plan — has to be built into the plan or PayPal bills past the end.
+		 *
+		 * @param int         $total_cycles 0 bills forever.
+		 * @param \WC_Product $product
+		 * @param Line_Terms  $terms        The terms being sold; its order_item() is the order line, when there is one.
+		 */
+		return max( 0, (int) apply_filters( 'subly_paypal_total_cycles', 0, $product, $terms ) );
 	}
 
 	/**
@@ -120,8 +146,8 @@ class PayPal_Plans {
 	/**
 	 * @return array{ok: bool, id: string, error: string}
 	 */
-	private function create_plan( \WC_Product $product, string $paypal_product_id ): array {
-		$schedule = Subscription_Product::schedule( $product );
+	private function create_plan( \WC_Product $product, Line_Terms $terms, int $total_cycles, string $paypal_product_id ): array {
+		$schedule = $terms->schedule();
 		$currency = get_woocommerce_currency();
 		$cycles   = array();
 		$sequence = 1;
@@ -144,17 +170,6 @@ class PayPal_Plans {
 			);
 		}
 
-		/**
-		 * How many payments PayPal should take before it stops on its own.
-		 *
-		 * PayPal owns this schedule, so a limit Subly knows about — a payment cap, an
-		 * instalment plan — has to be built into the plan or PayPal bills past the end.
-		 *
-		 * @param int          $total_cycles 0 bills forever.
-		 * @param \WC_Product  $product
-		 */
-		$total_cycles = max( 0, (int) apply_filters( 'subly_paypal_total_cycles', 0, $product ) );
-
 		$cycles[] = array(
 			'tenure_type'    => 'REGULAR',
 			'sequence'       => $sequence,
@@ -166,7 +181,7 @@ class PayPal_Plans {
 			),
 			'pricing_scheme' => array(
 				'fixed_price' => array(
-					'value'         => wc_format_decimal( $product->get_price(), wc_get_price_decimals() ),
+					'value'         => $terms->recurring_price()->decimal(),
 					'currency_code' => $currency,
 				),
 			),
@@ -183,7 +198,7 @@ class PayPal_Plans {
 			),
 		);
 
-		$fee = Subscription_Product::signup_fee( $product );
+		$fee = $terms->signup_fee();
 		if ( ! $fee->is_zero() ) {
 			$payload['payment_preferences']['setup_fee'] = array(
 				'value'         => $fee->decimal(),

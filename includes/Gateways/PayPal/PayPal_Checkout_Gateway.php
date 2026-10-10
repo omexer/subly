@@ -2,6 +2,7 @@
 
 namespace Subly\Gateways\PayPal;
 
+use Subly\Product\Line_Terms;
 use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -96,13 +97,19 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 			return $this->abort( $order, __( 'A renewal cannot be paid with PayPal.', 'subly' ) );
 		}
 
-		$product = $this->subscription_product_in( $order );
+		if ( ! $order instanceof \WC_Order ) {
+			return $this->abort( null, __( 'This order does not contain a subscription.', 'subly' ) );
+		}
 
-		if ( ! $product ) {
+		$item    = $this->subscription_item_in( $order );
+		$product = $item ? $item->get_product() : null;
+		$terms   = $item && $product ? Line_Terms::for_order_item( $item, $product ) : null;
+
+		if ( ! $product || ! $terms ) {
 			return $this->abort( $order, __( 'This order does not contain a subscription.', 'subly' ) );
 		}
 
-		$plan = $this->plans->plan_for( $product );
+		$plan = $this->plans->plan_for( $product, $terms );
 		if ( ! $plan['ok'] ) {
 			return $this->abort( $order, $plan['error'] );
 		}
@@ -235,12 +242,10 @@ class PayPal_Checkout_Gateway extends \WC_Payment_Gateway {
 		return $subscription instanceof \Subly\Domain\Subscription ? $subscription : null;
 	}
 
-	private function subscription_product_in( \WC_Order $order ): ?\WC_Product {
+	private function subscription_item_in( \WC_Order $order ): ?\WC_Order_Item_Product {
 		foreach ( $order->get_items() as $item ) {
-			$product = $item->get_product();
-
-			if ( $product && Subscription_Product::is_subscription( $product ) ) {
-				return $product;
+			if ( $item instanceof \WC_Order_Item_Product && Subscription_Product::order_item_is_subscription( $item, $order ) ) {
+				return $item;
 			}
 		}
 
