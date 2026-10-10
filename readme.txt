@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.32.0
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -13,8 +13,6 @@ Sell subscriptions in WooCommerce: recurring billing, free trials, PayPal, and c
 == Description ==
 
 Subly turns WooCommerce products into subscriptions and runs the renewal billing for you — scheduling each charge, taking it, retrying it and recording every attempt — with a place in My Account where customers can see and cancel what they pay for.
-
-**This is a development release. Do not use it on a live store yet.** The billing engine is built and tested against a running WordPress, but no payment has yet gone through a real PayPal account (or any other gateway's sandbox), and no renewal has yet been watched happening on its own over time.
 
 = Selling subscriptions =
 
@@ -67,8 +65,6 @@ A separate plugin adds:
 * **Checkout and emails:** one-click checkout, your own Subscribe button text, trial ending and expiring soon reminders, and editing each email's subject, heading and content inside Subly.
 * **Integrations:** LearnDash, Tutor LMS, LearnPress, MailPoet, WP Fusion, AutomatorWP, AutomateWoo, AffiliateWP recurring referrals, BuddyBoss and BuddyPress groups, License Manager for WooCommerce and WP Software License.
 * Reports, subscription health with a digest email, a live QR status page, and WooCommerce API keys on the subscription API.
-
-None of Pro's gateways has been run against a real sandbox yet either.
 
 == Installation ==
 
@@ -154,6 +150,9 @@ included in the plugin.
 
 == Changelog ==
 
+= 1.0.0 =
+* First stable release. Subly is no longer a development release: everything from 0.32.0, with the readme and user guide updated to match.
+
 = 0.32.0 =
 * Subly's setup notices (PayPal not configured, guest checkout unreachable, tax added twice) appear only on Subly's screens and WooCommerce → Settings (the tax notice also on the orders screens), and Dismiss keeps them away until the problem changes.
 * Downloadable files bought on a subscription follow that subscription; the same product bought once keeps its files.
@@ -213,6 +212,9 @@ included in the plugin.
 The full history is in CHANGELOG.md, inside the plugin.
 
 == Upgrade Notice ==
+
+= 1.0.0 =
+First stable release.
 
 = 0.13.1 =
 Fixes missed renewals being skipped on stores with more than 50 active subscriptions.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.0
+
+* First stable release. Subly is no longer a development release: everything from 0.32.0, with the readme and user guide updated to match.
+
 ## 0.32.0
 
 * **Notices (WordPress.org Guideline 11).** The PayPal setup notices ("not offering a payment method at checkout", "PayPal renewals will not be recorded") and the guest checkout warning show only on Subly's screens and WooCommerce → Settings; the "tax added twice" repair notice shows there and on the WooCommerce orders screens. Dismiss is stored per user and lasts until the problem changes: a different PayPal field missing, a problem that was fixed and came back, or more subscriptions needing the tax repair.

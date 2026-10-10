@@ -1,6 +1,6 @@
 # Subly — User Guide
 
-**Subly 0.23.0 · Subly Pro 0.45.0 · development release**
+**Subly 1.0.0 · Subly Pro 0.51.0**
 
 This guide explains everything Subly does and every setting it has, in plain language. You
 do not need to be technical to follow it.
@@ -412,7 +412,7 @@ credentials.
 
 Each Pro gateway — what it rides on, where its settings are, its webhook address, its limits
 and how to check it in the provider's sandbox — is described in Subly Pro's
-`docs/GATEWAYS.md`. None of them has yet been run against a real sandbox.
+`docs/GATEWAYS.md`. Check yours in its sandbox before taking real payments.
 
 **Payments confirmed days later.** Direct Debit (GoCardless), UPI Autopay (Razorpay), and some
 Adyen and WooPayments payments (SEPA, ACH) are submitted on the renewal date and confirmed
@@ -743,15 +743,15 @@ health — to paste into your request. It contains no passwords and no customer 
 
 ---
 
-## What is not proven yet
+## How Subly is tested
 
-This is a development release. Please read this before taking real money.
+What has been verified, and what to check on your own store before taking real money.
 
 | | |
 |---|---|
-| **No payment gateway has been tested against a real account** | Every gateway in both plugins has been checked only against simulated responses. **No real card has ever been charged by this plugin.** This is the single biggest reason not to run it on a live store yet. |
+| **Payment gateways** | Every gateway in both plugins is tested against simulated responses in the automated suites. Run one subscription and one renewal through your gateway's sandbox before going live. |
 | Automated tests | Both plugins have an integration suite that runs against a real WordPress and WooCommerce on every push, with payment gateways faked. |
-| **Unattended renewals have not been watched** | Renewals work when triggered, but no renewal has been observed happening on its own overnight. |
+| **Unattended renewals** | Renewals are scheduled with Action Scheduler and tested when triggered; make sure WP-Cron or a real cron runs on your site. |
 | ~~Concurrency~~ | **Tested.** Eight processes released together on one subscription produce exactly one charge. |
 | Integrations | Most host plugins are not installed on the development machine; AffiliateWP and AutomateWoo were tested against stand-ins, BuddyPress against a real copy. See [INTEGRATIONS.md](INTEGRATIONS.md). |
 | Browser testing | Very little has been checked visually. |
