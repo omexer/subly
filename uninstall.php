@@ -23,10 +23,18 @@ foreach ( array( 'subly_schedule', 'subly_activity', 'subly_charge_slot' ) as $s
 	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . $subly_table ) );
 }
 
+// Pro and add-ons share the subly_ prefix, and their own uninstall removes what is theirs.
+$subly_kept = array( 'subly_pro_', 'subly_cr_', 'subly_subly_' );
+
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API deletes options by prefix.
-$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( 'subly_' ) . '%' ) );
-$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( '_transient_subly_' ) . '%' ) );
-$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s", $wpdb->esc_like( '_transient_timeout_subly_' ) . '%' ) );
+foreach ( array( '', '_transient_', '_transient_timeout_' ) as $subly_prefix ) {
+	$subly_not = '';
+	foreach ( $subly_kept as $subly_keep ) {
+		$subly_not .= $wpdb->prepare( ' AND option_name NOT LIKE %s', $wpdb->esc_like( $subly_prefix . $subly_keep ) . '%' );
+	}
+	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- every part of $subly_not was prepared above.
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name <> %s", $wpdb->esc_like( $subly_prefix . 'subly_' ) . '%', 'subly_delete_data_on_uninstall' ) . $subly_not );
+}
 // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
 foreach ( array( 'subly_dismissed_notices', '_subly_fluentcrm_added_tags', '_subly_fluentcrm_added_lists' ) as $subly_user_meta ) {
@@ -38,6 +46,18 @@ if ( function_exists( 'as_unschedule_all_actions' ) ) {
 		// Hook alone: given a group as well, Action Scheduler only matches actions queued with no arguments.
 		as_unschedule_all_actions( $subly_action );
 	}
+}
+
+// Pro and the add-ons read this when they are deleted, so it goes only with the last of them.
+if ( ! function_exists( 'get_plugins' ) ) {
+	require_once ABSPATH . 'wp-admin/includes/plugin.php';
+}
+$subly_extensions = array_filter(
+	array_keys( get_plugins() ),
+	static fn( string $file ): bool => in_array( basename( $file ), array( 'subly-pro.php', 'subly-content-restriction.php' ), true )
+);
+if ( ! $subly_extensions ) {
+	delete_option( 'subly_delete_data_on_uninstall' );
 }
 
 wp_cache_flush();

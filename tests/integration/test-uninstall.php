@@ -55,6 +55,21 @@ $check( 'and keeps the settings', (bool) $wpdb->get_var( "SELECT COUNT(*) FROM {
 $check( 'and the queued work', $queued_actions === $still_queued(), $still_queued() );
 
 // --- 2. the real thing ---------------------------------------------------------------
+// Pro's and the add-on's settings share the prefix; free deleted first must leave them for their own uninstall.
+$theirs = array( 'subly_pro_sbt_probe', 'subly_cr_sbt_probe', 'subly_subly_sbt_probe' );
+foreach ( $theirs as $name ) {
+	update_option( $name, 'kept' );
+}
+set_transient( 'subly_pro_sbt_probe', 'kept', HOUR_IN_SECONDS );
+set_transient( 'subly_cr_sbt_probe', 'kept', HOUR_IN_SECONDS );
+set_transient( 'subly_sbt_probe', 'gone', HOUR_IN_SECONDS );
+
+// An add-on still installed: a plugin file by the add-on's name, which is all uninstall looks for.
+$stand_in = WP_PLUGIN_DIR . '/subly-cr-harness-' . wp_generate_password( 6, false ) . '/subly-content-restriction.php';
+wp_mkdir_p( dirname( $stand_in ) );
+file_put_contents( $stand_in, "<?php\n/**\n * Plugin Name: Subly Content Restriction harness\n */\n" ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
+wp_clean_plugins_cache( false );
+
 update_option( 'subly_delete_data_on_uninstall', 'yes' );
 // WP_UNINSTALL_PLUGIN is already defined, so run the file's body a second time directly.
 include SUBLY_PATH . 'uninstall.php';
@@ -62,7 +77,24 @@ include SUBLY_PATH . 'uninstall.php';
 foreach ( $tables as $t ) {
 	$check( "drops {$t}", ! $exists( $t ) );
 }
-$check( 'removes every setting', 0 === (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE 'subly\_%'" ) );
+$left = $wpdb->get_col( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE 'subly\_%' AND option_name NOT LIKE 'subly\_pro\_%' AND option_name NOT LIKE 'subly\_cr\_%' AND option_name NOT LIKE 'subly\_subly\_%'" );
+$check( 'removes every setting of its own, but the switch an extension still installed reads', array( 'subly_delete_data_on_uninstall' ) === $left, $left );
+$check( "leaves Pro's and the add-on's settings for their own uninstall", array( 'kept', 'kept', 'kept' ) === array_map( static fn( $n ) => get_option( $n ), $theirs ) );
+$check( 'and their transients', 'kept' === get_transient( 'subly_pro_sbt_probe' ) && 'kept' === get_transient( 'subly_cr_sbt_probe' ) && false === get_transient( 'subly_sbt_probe' ) );
+
+unlink( $stand_in ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
+rmdir( dirname( $stand_in ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_rmdir
+wp_clean_plugins_cache( false );
+$pro_installed = (bool) array_filter( array_keys( get_plugins() ), static fn( $f ) => 'subly-pro.php' === basename( $f ) );
+include SUBLY_PATH . 'uninstall.php';
+$check( $pro_installed ? 'with Pro still installed, the switch stays' : 'with no extension left, the switch goes too', $pro_installed === ( 'yes' === get_option( 'subly_delete_data_on_uninstall' ) ) );
+
+foreach ( $theirs as $name ) {
+	delete_option( $name );
+}
+delete_transient( 'subly_pro_sbt_probe' );
+delete_transient( 'subly_cr_sbt_probe' );
+delete_option( 'subly_delete_data_on_uninstall' );
 $check( "leaves Pro's delivery table alone", $delivery_rows === ( $exists( 'subly_delivery' ) ? (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}subly_delivery" ) : -1 ) );
 $check( 'leaves subscriptions alone', wc_get_order( $planted->get_id() ) instanceof \Subly\Domain\Subscription );
 $check( 'unschedules everything it queued, pending-renewal settlement included', array() === $still_queued(), $still_queued() );
