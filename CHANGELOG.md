@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.32.0
+
+* **Notices (WordPress.org Guideline 11).** The PayPal setup notices ("not offering a payment method at checkout", "PayPal renewals will not be recorded") and the guest checkout warning show only on Subly's screens and WooCommerce → Settings. Dismiss is stored per user and lasts until the problem changes: another missing PayPal field, or a problem that was fixed and came back.
+* **One subscription per order, at checkout too.** A cart holding more than one subscription line (a saved cart merged at login is never checked line by line) is refused at both checkouts until all but one are removed.
+* **PayPal plans per set of terms.** The billing plan is cached in the product meta `_subly_paypal_plans` (fingerprint => plan id) instead of `_subly_paypal_plan_id` / `_subly_paypal_plan_hash`. The fingerprint covers product, currency, recurring price, period, interval, trial length and unit, sign-up fee and total cycles, so two schedules of one product get two plans, and a change to the payment cap now makes a new plan. The plan bills the order line's price. The first PayPal checkout after updating creates a fresh plan per product; existing PayPal subscriptions stay on theirs.
+* The Settings menu no longer lists a Content Restriction section; it moves to its own add-on.
+* `@subly/ui` gains `Switch`: a checkbox with `role="switch"`, taking every input prop plus `onCheckedChange( checked )`.
+
+### For developers: a cart line can be a subscription
+
+A normal simple or variable product's line can now be sold as a subscription, on terms of its own, through the cart, both checkouts, PayPal, the created subscription and its renewals. With nothing hooked in, every path answers as before.
+
+* **`subly_cart_item_is_subscription( bool $recurring, array $cart_item, string $cart_key )`** is now asked for **every** cart line; `$recurring` defaults to whether the product is a subscription product. Return true to make a normal product's line recurring, false to sell a subscription product once. Read by the one-subscription rule, mixed-cart rule, first payment, trial payment step, guest checkout, PayPal's availability and every cart disclosure.
+* **`subly_adding_subscription( bool $recurring, int $product_id, int $variation_id, array $cart_item_data )`** is now asked for every product added to the cart (classic and Store API); same default. `$cart_item_data` is what the Store API route passes; the classic form passes none, so read the request there.
+* **`subly_create_subscription_for_item( bool $create, WC_Order_Item_Product $item, WC_Product $product, WC_Order $order )`** is now asked for every product line of an order; same default. Answer it as the cart line was answered, from what the order line carries (stamp your own meta on it in `woocommerce_checkout_create_order_line_item`). Read by `Subscription_Factory`, the zero-total payment step and PayPal checkout. Helper: `Subscription_Product::order_item_is_subscription( $item, $order )`.
+* **New `subly_line_terms( array $terms, WC_Product $product, ?array $cart_item, ?WC_Order_Item_Product $order_item )`.** The terms one line is sold on: `price` (float, per period, as product prices are entered), `period` and `trial_period` (`day`|`week`|`month`|`year`), `interval` (int ≥ 1), `trial_length` (int ≥ 0) and `signup_fee` (float). Defaults are the product's own settings, with `price` from `subly_cart_recurring_price` for a cart line and the product's recurring price otherwise. Fired for a cart line (`$cart_item` set; resolved once per line per request, before the cart lowers the line's price to today's amount, so the product's price is still the catalogue price), for an order line (`$order_item` set) when the subscription is created and when PayPal prices its plan, and for the product page (both null). Missing or invalid keys fall back to the defaults. Read through `Subly\Product\Line_Terms::for_cart_item()`, `for_order_item()` and `for_product()`.
+* **`subly_configure_subscription( Subscription $subscription, WC_Product $product, ?WC_Order_Item_Product $item )`**: the order line is the new third argument. Callers outside a checkout may still pass two, so give it a default of null.
+* **`subly_disclosure_lines`, `subly_disclosure_price_line`, `subly_disclosure_sentence`** receive the `Line_Terms` they were written from as a third argument; its `cart_item()` / `order_item()` is the line, if any. `Disclosure::lines()`, `price_line()`, `sentence()` and `render()` take optional `Line_Terms`, so an extension can render the disclosure for terms the customer is choosing on the product page.
+* **`subly_paypal_total_cycles( int $cycles, WC_Product $product, Line_Terms $terms )`**: the terms are the new third argument.
+* `Initial_Payment::first_payment()` takes optional `Line_Terms`; `Subscription_Product::cart_subscription_items()` and `cart_item_is_subscription()` are new.
+
 ## 0.31.0
 
 * **EasySubscription is now Subly.** New name, slug (`subly`) and prefixes throughout. Settings and data from EasySubscription are not carried over.

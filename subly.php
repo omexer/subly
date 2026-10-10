@@ -3,7 +3,7 @@
  * Plugin Name: Subly – Subscriptions for WooCommerce
  * Plugin URI:  https://github.com/omexer/subly
  * Description: Turn any WooCommerce product into a subscription and let it bill itself.
- * Version:     0.31.0
+ * Version:     0.32.0
  * Author:      Omexer
  * Author URI:  https://omexer.com
  * Text Domain: subly
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SUBLY_VERSION', '0.31.0' );
+define( 'SUBLY_VERSION', '0.32.0' );
 define( 'SUBLY_FILE', __FILE__ );
 define( 'SUBLY_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SUBLY_URL', plugin_dir_url( __FILE__ ) );

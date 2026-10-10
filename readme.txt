@@ -4,7 +4,7 @@ Tags: woocommerce, subscriptions, recurring payments, billing, memberships
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.31.0
+Stable tag: 0.32.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -153,6 +153,12 @@ included in the plugin.
 4. The subscription terms as a customer sees them on the product page.
 
 == Changelog ==
+
+= 0.32.0 =
+* Subly's setup notices (PayPal not configured, guest checkout unreachable) appear only on Subly's screens and WooCommerce → Settings, and Dismiss keeps them away until the problem changes.
+* Checkout refuses a cart holding more than one subscription, with a message saying so.
+* PayPal: one product sold on different terms gets a PayPal plan for each.
+* For developers: a cart line can be a subscription on terms of its own (new `subly_line_terms` filter). See CHANGELOG.md.
 
 = 0.31.0 =
 * **EasySubscription is now Subly.** New name, slug (`subly`) and prefixes throughout. Settings and data from EasySubscription are not carried over.
