@@ -2,6 +2,7 @@
 
 namespace Subly\Checkout;
 
+use Subly\Admin\Notice_Dismissals;
 use Subly\Admin\Notices;
 use Subly\Product\Subscription_Product;
 
@@ -26,6 +27,8 @@ class Guest_Checkout {
 
 	public const ALLOW   = 'create_account';
 	public const REQUIRE = 'require_login';
+
+	private const NOTICE_UNREACHABLE = 'subly_guest_checkout_unreachable';
 
 	public function register(): void {
 		add_action( 'woocommerce_checkout_process', array( $this, 'validate_classic' ) );
@@ -92,19 +95,26 @@ class Guest_Checkout {
 	 * Warn when the store's own settings make a subscription impossible to buy.
 	 */
 	public function warn_if_unreachable(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) || self::REQUIRE !== self::mode() ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) || ! Notices::in_context() ) {
 			return;
 		}
 
-		if ( 'yes' === get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' )
-			|| 'yes' === get_option( 'woocommerce_enable_checkout_login_reminder', 'no' ) ) {
+		$unreachable = self::REQUIRE === self::mode()
+			&& 'yes' !== get_option( 'woocommerce_enable_signup_and_login_from_checkout', 'no' )
+			&& 'yes' !== get_option( 'woocommerce_enable_checkout_login_reminder', 'no' );
+
+		// Asked even when all is well, so a fixed setting that breaks again shows again.
+		if ( ! Notice_Dismissals::shows( self::NOTICE_UNREACHABLE, (int) $unreachable ) || ! $unreachable ) {
 			return;
 		}
 
-		echo '<div class="' . esc_attr( Notices::important( 'warning', true ) ) . '"><p>' . esc_html__(
-			'Subly requires customers to log in before buying a subscription, but WooCommerce is not offering a login or sign-up on the checkout page. Customers will be turned away with no way forward.',
-			'subly'
-		) . '</p></div>';
+		printf(
+			'<div class="%s"><p>%s</p><p><a class="button-link" href="%s">%s</a></p></div>',
+			esc_attr( Notices::important( 'warning' ) ),
+			esc_html__( 'Subly requires customers to log in before buying a subscription, but WooCommerce is not offering a login or sign-up on the checkout page. Customers will be turned away with no way forward.', 'subly' ),
+			esc_url( Notice_Dismissals::url( self::NOTICE_UNREACHABLE, 1 ) ),
+			esc_html__( 'Dismiss', 'subly' )
+		);
 	}
 
 	private function blocking_error( string $email = '' ): string {

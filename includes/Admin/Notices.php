@@ -48,6 +48,15 @@ class Notices {
 		return self::important( $type, $dismissible ) . ' ' . self::FEEDBACK;
 	}
 
+	/**
+	 * Subly's own screens and WooCommerce → Settings: where a setup notice is about the page in front of the merchant.
+	 */
+	public static function in_context(): bool {
+		$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+
+		return $screen && ( str_contains( (string) $screen->id, Menu::SLUG ) || 'woocommerce_page_wc-settings' === $screen->id );
+	}
+
 	public function register(): void {
 		self::$current = $this;
 

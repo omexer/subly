@@ -21,13 +21,16 @@ class Gateway_Notice {
 	}
 
 	public function render(): void {
-		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+		if ( ! current_user_can( 'manage_woocommerce' ) || ! Notices::in_context() ) {
 			return;
 		}
 
 		$this->notice(
+			'subly_paypal_credentials',
 			__( 'Subly is not offering a payment method at checkout.', 'subly' ),
 			$this->paypal_credentials(),
+			// One more missing field is a new problem, so a dismissed notice comes back for it.
+			count( self::missing_credentials() ),
 			'paypal'
 		);
 
@@ -35,8 +38,10 @@ class Gateway_Notice {
 		// alongside "not offered at checkout" would send the merchant looking for the
 		// wrong thing entirely.
 		$this->notice(
+			'subly_paypal_webhook',
 			__( 'PayPal renewals will not be recorded.', 'subly' ),
 			$this->paypal_webhook(),
+			count( $this->paypal_webhook() ),
 			'paypal'
 		);
 	}
@@ -44,21 +49,24 @@ class Gateway_Notice {
 	/**
 	 * @param string[] $lines
 	 */
-	private function notice( string $heading, array $lines, string $section ): void {
-		if ( ! $lines ) {
+	private function notice( string $id, string $heading, array $lines, int $problems, string $section ): void {
+		// Asked even with nothing to say, so a fixed problem that comes back shows again.
+		if ( ! Notice_Dismissals::shows( $id, $problems ) || ! $lines ) {
 			return;
 		}
 
-		echo '<div class="' . esc_attr( Notices::important( 'warning', true ) ) . '"><p><strong>' . esc_html( $heading ) . '</strong></p><ul style="list-style:disc;margin-left:20px">';
+		echo '<div class="' . esc_attr( Notices::important( 'warning' ) ) . '"><p><strong>' . esc_html( $heading ) . '</strong></p><ul style="list-style:disc;margin-left:20px">';
 
 		foreach ( $lines as $line ) {
 			echo '<li>' . esc_html( $line ) . '</li>';
 		}
 
 		printf(
-			'</ul><p><a class="button" href="%s">%s</a></p></div>',
+			'</ul><p><a class="button" href="%s">%s</a> <a class="button-link" href="%s">%s</a></p></div>',
 			esc_url( Settings_Page::section_url( $section ) ),
-			esc_html__( 'Finish setting it up', 'subly' )
+			esc_html__( 'Finish setting it up', 'subly' ),
+			esc_url( Notice_Dismissals::url( $id, $problems ) ),
+			esc_html__( 'Dismiss', 'subly' )
 		);
 	}
 
@@ -68,6 +76,25 @@ class Gateway_Notice {
 	 * @return string[]
 	 */
 	private function paypal_credentials(): array {
+		$missing = self::missing_credentials();
+
+		if ( ! $missing ) {
+			return array();
+		}
+
+		return array(
+			sprintf(
+				/* translators: %s: the PayPal fields that are empty. */
+				__( 'PayPal is switched on but has no %s. Until it does, PayPal is not offered at checkout.', 'subly' ),
+				implode( __( ' and ', 'subly' ), $missing )
+			),
+		);
+	}
+
+	/**
+	 * @return string[]
+	 */
+	private static function missing_credentials(): array {
 		if ( 'yes' !== get_option( 'subly_paypal_enabled', 'no' ) ) {
 			return array();
 		}
@@ -83,17 +110,7 @@ class Gateway_Notice {
 			}
 		}
 
-		if ( ! $missing ) {
-			return array();
-		}
-
-		return array(
-			sprintf(
-				/* translators: %s: the PayPal fields that are empty. */
-				__( 'PayPal is switched on but has no %s. Until it does, PayPal is not offered at checkout.', 'subly' ),
-				implode( __( ' and ', 'subly' ), $missing )
-			),
-		);
+		return $missing;
 	}
 
 	/**

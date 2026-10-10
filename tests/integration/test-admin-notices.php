@@ -65,6 +65,10 @@ $marked  = static fn( string $html ): bool => 1 === preg_match( '/class="[^"]*\b
 
 echo "\n1. Important notices carry the marker\n";
 
+// The setup notices show only on our screens, and only to someone who has not dismissed them.
+delete_user_meta( 1, 'subly_dismissed_notices' );
+set_current_screen( 'toplevel_page_subly' );
+
 $check( 'the shared helper keeps WordPress\'s classes and adds the marker', 'notice notice-warning is-dismissible ' . Notices::IMPORTANT === Notices::important( 'warning', true ) );
 $check( 'feedback is important, and marked as feedback', str_contains( Notices::feedback( 'success' ), Notices::IMPORTANT ) && str_contains( Notices::feedback( 'success' ), Notices::FEEDBACK ) && ! str_contains( Notices::important( 'error' ), Notices::FEEDBACK ) );
 

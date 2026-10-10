@@ -11,11 +11,19 @@
 
 require __DIR__ . '/bootstrap.php';
 
+require_once ABSPATH . 'wp-admin/includes/class-wp-screen.php';
+require_once ABSPATH . 'wp-admin/includes/screen.php';
+
 $keys   = array( 'subly_paypal_enabled', 'subly_paypal_client_id', 'subly_paypal_secret', 'subly_paypal_webhook_id' );
 $before = array();
 foreach ( $keys as $key ) {
 	$before[ $key ] = get_option( $key, null );
 }
+
+$saved_screen   = $GLOBALS['current_screen'] ?? null;
+$dismissed_meta = get_user_meta( 1, 'subly_dismissed_notices', true );
+delete_user_meta( 1, 'subly_dismissed_notices' );
+set_current_screen( 'toplevel_page_subly' );
 
 $render = static function (): string {
 	ob_start();
@@ -44,6 +52,8 @@ update_option( 'subly_paypal_secret', 'SX' );
 update_option( 'subly_paypal_webhook_id', 'WH-1' );
 $check( 'a complete setup shows nothing', '' === $render(), $render() );
 
+$GLOBALS['current_screen'] = $saved_screen; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+'' === $dismissed_meta ? delete_user_meta( 1, 'subly_dismissed_notices' ) : update_user_meta( 1, 'subly_dismissed_notices', $dismissed_meta );
 foreach ( $before as $key => $value ) {
 	null === $value ? delete_option( $key ) : update_option( $key, $value );
 }
