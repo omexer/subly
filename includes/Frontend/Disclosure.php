@@ -4,6 +4,7 @@ namespace Subly\Frontend;
 
 use Subly\Domain\Billing_Schedule;
 use Subly\Domain\Money;
+use Subly\Product\Line_Terms;
 use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -23,15 +24,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Disclosure {
 
 	/**
-	 * Structured lines for a product. Callers render; this decides what is true.
+	 * Structured lines for a product, or for one line of it when $terms are given. Callers render; this decides what is true.
 	 *
 	 * @return array<int, array{key: string, text: string}>
 	 */
-	public function lines( \WC_Product $product, ?\DateTimeImmutable $now = null ): array {
+	public function lines( \WC_Product $product, ?\DateTimeImmutable $now = null, ?Line_Terms $terms = null ): array {
 		$now      = $now ?? new \DateTimeImmutable( 'now', new \DateTimeZone( 'UTC' ) );
-		$schedule = Subscription_Product::schedule( $product );
-		$price    = Subscription_Product::recurring_price( $product );
-		$fee      = Subscription_Product::signup_fee( $product );
+		$terms    = $terms ?? Line_Terms::for_product( $product );
+		$schedule = $terms->schedule();
+		$price    = $terms->recurring_price();
+		$fee      = $terms->signup_fee();
 
 		$lines = array();
 
@@ -79,23 +81,27 @@ class Disclosure {
 		/**
 		 * Filter the disclosure lines.
 		 *
-		 * @param array        $lines
-		 * @param \WC_Product  $product
+		 * @param array       $lines
+		 * @param \WC_Product $product
+		 * @param Line_Terms  $terms   What they were written from; its cart_item() or order_item() is the line, if any.
 		 */
-		return apply_filters( 'subly_disclosure_lines', $lines, $product );
+		return apply_filters( 'subly_disclosure_lines', $lines, $product, $terms );
 	}
 
 	/**
 	 * The headline price, e.g. "$29.00 / month".
 	 */
-	public function price_line( \WC_Product $product ): string {
+	public function price_line( \WC_Product $product, ?Line_Terms $terms = null ): string {
+		$terms = $terms ?? Line_Terms::for_product( $product );
+
 		/**
 		 * Filter the headline price line, e.g. to state an instalment plan instead.
 		 *
 		 * @param string      $line
 		 * @param \WC_Product $product
+		 * @param Line_Terms  $terms
 		 */
-		return (string) apply_filters( 'subly_disclosure_price_line', $this->default_price_line( $product ), $product );
+		return (string) apply_filters( 'subly_disclosure_price_line', $this->default_price_line( $terms ), $product, $terms );
 	}
 
 	/**
@@ -112,26 +118,30 @@ class Disclosure {
 			return $woo_html;
 		}
 
-		$line = $this->price_line( $product );
+		$terms = Line_Terms::for_product( $product );
+		$line  = $this->price_line( $product, $terms );
 
-		if ( $line !== $this->default_price_line( $product ) ) {
+		if ( $line !== $this->default_price_line( $terms ) ) {
 			return $line;
 		}
 
-		return $woo_html . ' <span class="subly-price-interval">' . esc_html( Subscription_Product::schedule( $product )->describe() ) . '</span>';
+		return $woo_html . ' <span class="subly-price-interval">' . esc_html( $terms->schedule()->describe() ) . '</span>';
 	}
 
-	private function default_price_line( \WC_Product $product ): string {
+	private function default_price_line( Line_Terms $terms ): string {
 		return sprintf(
 			/* translators: 1: price, 2: billing interval such as "every month" */
 			__( '%1$s %2$s', 'subly' ),
-			$this->amount( Subscription_Product::recurring_price( $product ) ),
-			Subscription_Product::schedule( $product )->describe()
+			$this->amount( $terms->recurring_price() ),
+			$terms->schedule()->describe()
 		);
 	}
 
-	public function render( \WC_Product $product ): string {
-		if ( ! Subscription_Product::is_subscription( $product ) ) {
+	/**
+	 * With $terms, for a line the caller has decided is recurring, whatever the product is.
+	 */
+	public function render( \WC_Product $product, ?Line_Terms $terms = null ): string {
+		if ( null === $terms && ! Subscription_Product::is_subscription( $product ) ) {
 			return '';
 		}
 
@@ -140,7 +150,7 @@ class Disclosure {
 		$html  = '<div class="subly-disclosure" role="group" aria-label="' . esc_attr__( 'Subscription terms', 'subly' ) . '">';
 		$html .= '<ul class="subly-disclosure__facts">';
 
-		foreach ( $this->lines( $product ) as $line ) {
+		foreach ( $this->lines( $product, null, $terms ) as $line ) {
 			$html .= '<li class="subly-disclosure__fact subly-disclosure__fact--' . esc_attr( $line['key'] ) . '">' . wp_kses_post( $line['text'] ) . '</li>';
 		}
 
@@ -151,19 +161,22 @@ class Disclosure {
 	 * The one place prose is used: the line beside the Place Order button, which has to
 	 * be readable in a single glance. This is the sentence that legally matters.
 	 */
-	public function sentence( \WC_Product $product ): string {
+	public function sentence( \WC_Product $product, ?Line_Terms $terms = null ): string {
+		$terms = $terms ?? Line_Terms::for_product( $product );
+
 		/**
 		 * Filter the checkout sentence, for terms the default wording would misstate.
 		 *
 		 * @param string      $sentence
 		 * @param \WC_Product $product
+		 * @param Line_Terms  $terms
 		 */
-		return (string) apply_filters( 'subly_disclosure_sentence', $this->default_sentence( $product ), $product );
+		return (string) apply_filters( 'subly_disclosure_sentence', $this->default_sentence( $terms ), $product, $terms );
 	}
 
-	private function default_sentence( \WC_Product $product ): string {
-		$schedule = Subscription_Product::schedule( $product );
-		$price    = Subscription_Product::recurring_price( $product );
+	private function default_sentence( Line_Terms $terms ): string {
+		$schedule = $terms->schedule();
+		$price    = $terms->recurring_price();
 
 		if ( $schedule->has_trial() ) {
 			return sprintf(

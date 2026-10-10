@@ -3,6 +3,7 @@
 namespace Subly\Checkout;
 
 use Subly\Frontend\Disclosure;
+use Subly\Product\Line_Terms;
 use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -51,9 +52,11 @@ class Store_Api {
 	 * @return array<string, mixed>
 	 */
 	public function cart_data(): array {
-		$products = $this->subscription_products_in_cart();
+		$items = Subscription_Product::cart_subscription_items();
+		$key   = (string) array_key_first( $items );
+		$terms = $items ? Line_Terms::for_cart_item( $items[ $key ], $key ) : null;
 
-		if ( empty( $products ) ) {
+		if ( ! $terms ) {
 			return array(
 				'has_subscription' => false,
 				'price_line'       => '',
@@ -62,16 +65,16 @@ class Store_Api {
 			);
 		}
 
-		$product = reset( $products );
+		$product = $items[ $key ]['data'];
 
 		return array(
 			'has_subscription' => true,
-			'price_line'       => $this->plain( $this->disclosure->price_line( $product ) ),
+			'price_line'       => $this->plain( $this->disclosure->price_line( $product, $terms ) ),
 			'lines'            => array_map(
 				fn( array $line ): string => $this->plain( $line['text'] ),
-				$this->disclosure->lines( $product )
+				$this->disclosure->lines( $product, null, $terms )
 			),
-			'consent'          => $this->plain( $this->disclosure->sentence( $product ) ),
+			'consent'          => $this->plain( $this->disclosure->sentence( $product, $terms ) ),
 		);
 	}
 
@@ -118,15 +121,27 @@ class Store_Api {
 	 * Mirror the classic one-subscription-per-cart rule onto the Store API route.
 	 *
 	 * @param \WC_Product $product
+	 * @param array       $request
 	 */
 	public function validate_add_to_cart( $product, $request ): void {
-		if ( ! Subscription_Product::is_subscription( $product ) || ! Subscription_Product::cart_has_subscription() ) {
+		if ( ! $product instanceof \WC_Product || ! Subscription_Product::cart_has_subscription() ) {
+			return;
+		}
+
+		$is_variation = $product->is_type( 'variation' );
+		$recurring    = Cart_Validation::adding_subscription(
+			$is_variation ? $product->get_parent_id() : $product->get_id(),
+			$is_variation ? $product->get_id() : 0,
+			(array) ( $request['cart_item_data'] ?? array() )
+		);
+
+		if ( ! $recurring ) {
 			return;
 		}
 
 		throw new \Automattic\WooCommerce\StoreApi\Exceptions\RouteException(
 			'subly_one_subscription_per_order',
-			esc_html__( 'You can only sign up for one subscription at a time. Please complete this order first, then start the next subscription.', 'subly' ),
+			esc_html( Cart_Validation::one_subscription_message() ),
 			400
 		);
 	}
@@ -143,24 +158,5 @@ class Store_Api {
 			SUBLY_VERSION,
 			true
 		);
-	}
-
-	/**
-	 * @return \WC_Product[]
-	 */
-	private function subscription_products_in_cart(): array {
-		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
-			return array();
-		}
-
-		$products = array();
-
-		foreach ( WC()->cart->get_cart() as $item ) {
-			if ( Subscription_Product::is_subscription( $item['data'] ?? null ) ) {
-				$products[] = $item['data'];
-			}
-		}
-
-		return $products;
 	}
 }

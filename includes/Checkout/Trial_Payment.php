@@ -2,6 +2,7 @@
 
 namespace Subly\Checkout;
 
+use Subly\Product\Line_Terms;
 use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -42,9 +43,9 @@ final class Trial_Payment {
 		}
 
 		foreach ( $cart->get_cart() as $key => $item ) {
-			$product = $item['data'] ?? null;
+			$terms = Subscription_Product::cart_item_is_subscription( $item, (string) $key ) ? Line_Terms::for_cart_item( $item, (string) $key ) : null;
 
-			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'subly_cart_item_is_subscription', true, $item, $key ) && self::renews_for_money( $product, $cart->get_applied_coupons() ) ) {
+			if ( $terms && self::renews_for_money( $item['data'], $terms, $cart->get_applied_coupons() ) ) {
 				return true;
 			}
 		}
@@ -73,9 +74,9 @@ final class Trial_Payment {
 		}
 
 		foreach ( $order->get_items() as $item ) {
-			$product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
+			$terms = $item instanceof \WC_Order_Item_Product && Subscription_Product::order_item_is_subscription( $item, $order ) ? Line_Terms::for_order_item( $item ) : null;
 
-			if ( Subscription_Product::is_subscription( $product ) && apply_filters( 'subly_create_subscription_for_item', true, $item, $product, $order ) && self::renews_for_money( $product, $order->get_coupon_codes() ) ) {
+			if ( $terms && self::renews_for_money( $item->get_product(), $terms, $order->get_coupon_codes() ) ) {
 				return true;
 			}
 		}
@@ -86,7 +87,7 @@ final class Trial_Payment {
 	/**
 	 * @param string[] $coupon_codes The checkout's coupons, some of which may carry forward.
 	 */
-	private static function renews_for_money( \WC_Product $product, array $coupon_codes ): bool {
+	private static function renews_for_money( \WC_Product $product, Line_Terms $terms, array $coupon_codes ): bool {
 		/**
 		 * What each renewal of this product will charge, once anything carried forward from checkout applies.
 		 *
@@ -94,7 +95,7 @@ final class Trial_Payment {
 		 * @param \WC_Product $product
 		 * @param string[]    $coupon_codes
 		 */
-		$amount = (float) apply_filters( 'subly_checkout_renewal_amount', (float) Subscription_Product::recurring_price( $product )->decimal(), $product, $coupon_codes );
+		$amount = (float) apply_filters( 'subly_checkout_renewal_amount', (float) $terms->recurring_price()->decimal(), $product, $coupon_codes );
 
 		return $amount > 0;
 	}

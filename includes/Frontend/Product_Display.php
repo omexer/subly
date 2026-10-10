@@ -2,6 +2,7 @@
 
 namespace Subly\Frontend;
 
+use Subly\Product\Line_Terms;
 use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -92,19 +93,21 @@ class Product_Display {
 	 * Per line item, because a cart can hold recurring and one-off products together.
 	 */
 	public function on_cart_line( $price_html, $cart_item, $cart_item_key ) {
-		$product = $cart_item['data'] ?? null;
+		$terms = is_array( $cart_item ) && Subscription_Product::cart_item_is_subscription( $cart_item, (string) $cart_item_key )
+			? Line_Terms::for_cart_item( $cart_item, (string) $cart_item_key )
+			: null;
 
-		if ( ! Subscription_Product::is_subscription( $product ) ) {
+		if ( ! $terms ) {
 			return $price_html;
 		}
 
-		return $price_html . '<span class="subly-cart-terms">' . esc_html( wp_strip_all_tags( $this->disclosure->price_line( $product ) ) ) . '</span>';
+		return $price_html . '<span class="subly-cart-terms">' . esc_html( wp_strip_all_tags( $this->disclosure->price_line( $cart_item['data'], $terms ) ) ) . '</span>';
 	}
 
 	public function on_checkout_totals(): void {
-		foreach ( $this->subscription_products_in_cart() as $product ) {
+		foreach ( $this->subscription_lines_in_cart() as list( $product, $terms ) ) {
 			echo '<tr class="subly-recurring-total"><th>' . esc_html__( 'Recurring', 'subly' ) . '</th><td>'
-				. wp_kses_post( $this->disclosure->price_line( $product ) ) . '</td></tr>';
+				. wp_kses_post( $this->disclosure->price_line( $product, $terms ) ) . '</td></tr>';
 		}
 	}
 
@@ -112,14 +115,16 @@ class Product_Display {
 	 * The sentence next to the Place Order button — the one that legally matters.
 	 */
 	public function before_place_order(): void {
-		$products = $this->subscription_products_in_cart();
+		$lines = $this->subscription_lines_in_cart();
 
-		if ( empty( $products ) ) {
+		if ( empty( $lines ) ) {
 			return;
 		}
 
+		list( $product, $terms ) = $lines[0];
+
 		// Amounts arrive wrapped in <bdi> so RTL cannot reorder them.
-		echo '<p class="subly-checkout-consent">' . wp_kses( $this->disclosure->sentence( reset( $products ) ), array( 'bdi' => array() ) ) . '</p>';
+		echo '<p class="subly-checkout-consent">' . wp_kses( $this->disclosure->sentence( $product, $terms ), array( 'bdi' => array() ) ) . '</p>';
 	}
 
 	public function styles(): void {
@@ -143,21 +148,19 @@ class Product_Display {
 	}
 
 	/**
-	 * @return \WC_Product[]
+	 * @return array<int, array{0: \WC_Product, 1: Line_Terms}>
 	 */
-	private function subscription_products_in_cart(): array {
-		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
-			return array();
-		}
+	private function subscription_lines_in_cart(): array {
+		$lines = array();
 
-		$products = array();
+		foreach ( Subscription_Product::cart_subscription_items() as $key => $item ) {
+			$terms = Line_Terms::for_cart_item( $item, $key );
 
-		foreach ( WC()->cart->get_cart() as $item ) {
-			if ( Subscription_Product::is_subscription( $item['data'] ?? null ) ) {
-				$products[] = $item['data'];
+			if ( $terms ) {
+				$lines[] = array( $item['data'], $terms );
 			}
 		}
 
-		return $products;
+		return $lines;
 	}
 }

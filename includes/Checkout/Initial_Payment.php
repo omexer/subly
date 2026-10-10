@@ -2,6 +2,7 @@
 
 namespace Subly\Checkout;
 
+use Subly\Product\Line_Terms;
 use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,9 +18,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 final class Initial_Payment {
 
-	/** @var array<string, float> Base prices for this request, so a second run cannot re-add the fee. */
-	private array $base_prices = array();
-
 	public function register(): void {
 		add_action( 'woocommerce_before_calculate_totals', array( $this, 'apply' ), 20 );
 	}
@@ -33,53 +31,33 @@ final class Initial_Payment {
 		}
 
 		foreach ( $cart->get_cart() as $key => $item ) {
-			$product = $item['data'] ?? null;
-
-			if ( ! $product instanceof \WC_Product || ! Subscription_Product::is_subscription( $product ) ) {
+			// A line bought once is not on a trial and owes no sign-up fee, whatever the product's own schedule says.
+			if ( ! Subscription_Product::cart_item_is_subscription( $item, (string) $key ) ) {
 				continue;
 			}
 
-			// A line bought once is not on a trial and owes no sign-up fee, whatever the
-			// product's own schedule says. Documented on Subscription_Product.
-			if ( ! apply_filters( 'subly_cart_item_is_subscription', true, $item, $key ) ) {
-				continue;
-			}
+			// Resolved once per line per request, so a second run cannot re-add the fee.
+			$terms = Line_Terms::for_cart_item( $item, (string) $key );
 
-			if ( ! isset( $this->base_prices[ $key ] ) ) {
-				/**
-				 * The price per period for this cart line, before today's adjustments.
-				 *
-				 * The seam for anything that lets one product be bought on more than one
-				 * schedule: the choice lives on the cart item, not on the product.
-				 *
-				 * @param float       $price
-				 * @param \WC_Product $product
-				 * @param array       $item    The cart item.
-				 * @param string      $key     Its cart key.
-				 */
-				$this->base_prices[ $key ] = (float) apply_filters(
-					'subly_cart_recurring_price',
-					(float) $product->get_price( 'edit' ),
-					$product,
-					$item,
-					$key
-				);
+			if ( ! $terms ) {
+				continue;
 			}
 
 			// Everything that asks what this product costs per period must keep getting the
 			// recurring price, not the one-off amount being charged today.
-			Subscription_Product::remember_recurring_price( $product, $this->base_prices[ $key ] );
+			Subscription_Product::remember_recurring_price( $item['data'], $terms->price() );
 
-			$product->set_price( (string) self::first_payment( $product, $this->base_prices[ $key ] ) );
+			$item['data']->set_price( (string) self::first_payment( $item['data'], $terms->price(), $terms ) );
 		}
 	}
 
 	/**
 	 * What the customer pays today for one of these.
 	 */
-	public static function first_payment( \WC_Product $product, float $recurring ): float {
-		$fee = (float) Subscription_Product::signup_fee( $product )->decimal();
+	public static function first_payment( \WC_Product $product, float $recurring, ?Line_Terms $terms = null ): float {
+		$terms = $terms ?? Line_Terms::for_product( $product );
+		$fee   = (float) $terms->signup_fee()->decimal();
 
-		return ( Subscription_Product::schedule( $product )->has_trial() ? 0.0 : $recurring ) + $fee;
+		return ( $terms->schedule()->has_trial() ? 0.0 : $recurring ) + $fee;
 	}
 }

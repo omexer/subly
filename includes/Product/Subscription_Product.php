@@ -109,31 +109,76 @@ class Subscription_Product {
 	 * Does the cart contain anything recurring?
 	 */
 	public static function cart_has_subscription(): bool {
+		return array() !== self::cart_subscription_items();
+	}
+
+	/**
+	 * The cart's recurring lines, by cart key.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function cart_subscription_items(): array {
 		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return array();
+		}
+
+		$items = array();
+
+		foreach ( WC()->cart->get_cart() as $key => $item ) {
+			if ( self::cart_item_is_subscription( $item, (string) $key ) ) {
+				$items[ (string) $key ] = $item;
+			}
+		}
+
+		return $items;
+	}
+
+	/**
+	 * @param array<string, mixed> $item
+	 */
+	public static function cart_item_is_subscription( array $item, string $key = '' ): bool {
+		$product = $item['data'] ?? null;
+
+		if ( ! $product instanceof \WC_Product ) {
 			return false;
 		}
 
-		foreach ( WC()->cart->get_cart() as $key => $item ) {
-			if ( ! self::is_subscription( $item['data'] ?? null ) ) {
-				continue;
-			}
+		/**
+		 * Whether this cart line is recurring.
+		 *
+		 * Asked for every line. A subscription product can be sold as a one-off, and a line
+		 * bought that way is no more recurring than a bag of coffee; a normal product's line
+		 * can be sold as a subscription, on terms from `subly_line_terms`.
+		 *
+		 * @param bool   $recurring Whether the product is a subscription product.
+		 * @param array  $item
+		 * @param string $key
+		 */
+		return (bool) apply_filters( 'subly_cart_item_is_subscription', self::is_subscription( $product ), $item, $key );
+	}
 
-			/**
-			 * Whether this cart line is actually recurring.
-			 *
-			 * A subscription product can be sold as a one-off, and a line bought that way
-			 * is no more recurring than a bag of coffee.
-			 *
-			 * @param bool   $recurring
-			 * @param array  $item
-			 * @param string $key
-			 */
-			if ( apply_filters( 'subly_cart_item_is_subscription', true, $item, $key ) ) {
-				return true;
-			}
+	/**
+	 * @param \WC_Order_Item $item
+	 */
+	public static function order_item_is_subscription( $item, \WC_Order $order ): bool {
+		$product = $item instanceof \WC_Order_Item_Product ? $item->get_product() : null;
+
+		if ( ! $product instanceof \WC_Product ) {
+			return false;
 		}
 
-		return false;
+		/**
+		 * Whether this order line starts a subscription.
+		 *
+		 * Asked for every product line. Answer as the cart line was answered by
+		 * `subly_cart_item_is_subscription`, from what the line carries.
+		 *
+		 * @param bool                   $create  Whether the product is a subscription product.
+		 * @param \WC_Order_Item_Product $item
+		 * @param \WC_Product            $product
+		 * @param \WC_Order              $order
+		 */
+		return (bool) apply_filters( 'subly_create_subscription_for_item', self::is_subscription( $product ), $item, $product, $order );
 	}
 
 	private static function resolve( $product ): ?\WC_Product {

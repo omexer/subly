@@ -55,6 +55,10 @@ class Cart_Validation {
 	}
 
 	public function validate_classic_cart(): void {
+		if ( self::holds_more_than_one() ) {
+			wc_add_notice( self::one_at_a_time_message(), 'error' );
+		}
+
 		if ( $this->is_mixed_and_refused() ) {
 			wc_add_notice( self::mixed_cart_message(), 'error' );
 		}
@@ -64,14 +68,22 @@ class Cart_Validation {
 	 * @param \WP_Error $errors
 	 */
 	public function validate_store_api_cart( $errors ): void {
-		if ( $errors instanceof \WP_Error && $this->is_mixed_and_refused() ) {
+		if ( ! $errors instanceof \WP_Error ) {
+			return;
+		}
+
+		if ( self::holds_more_than_one() ) {
+			$errors->add( 'subly_one_subscription_per_order', self::one_at_a_time_message() );
+		}
+
+		if ( $this->is_mixed_and_refused() ) {
 			$errors->add( 'subly_mixed_cart', self::mixed_cart_message() );
 		}
 	}
 
 	private function refusal( bool $recurring ): ?string {
 		if ( $recurring && Subscription_Product::cart_has_subscription() ) {
-			return __( 'You can only sign up for one subscription at a time. Please complete this order first, then start the next subscription.', 'subly' );
+			return self::one_subscription_message();
 		}
 
 		if ( self::allows_mixed() ) {
@@ -94,6 +106,19 @@ class Cart_Validation {
 		return ! self::allows_mixed() && Subscription_Product::cart_has_subscription() && self::cart_has_one_time_item();
 	}
 
+	public static function one_subscription_message(): string {
+		return __( 'You can only sign up for one subscription at a time. Please complete this order first, then start the next subscription.', 'subly' );
+	}
+
+	// Lines are added one at a time and each is checked, but a saved cart merged at login is not.
+	private static function holds_more_than_one(): bool {
+		return count( Subscription_Product::cart_subscription_items() ) > 1;
+	}
+
+	private static function one_at_a_time_message(): string {
+		return __( 'You can only sign up for one subscription at a time. Please remove all but one subscription from your cart.', 'subly' );
+	}
+
 	private static function mixed_cart_message(): string {
 		return __( 'Subscriptions are checked out on their own. Please remove either the subscription or the other products from your cart.', 'subly' );
 	}
@@ -102,20 +127,17 @@ class Cart_Validation {
 	 * @param array<string, mixed> $item_data
 	 */
 	public static function adding_subscription( int $product_id, int $variation_id = 0, array $item_data = array() ): bool {
-		if ( ! Subscription_Product::is_subscription( $product_id ) ) {
-			return false;
-		}
-
 		/**
-		 * Whether the line being added is recurring, for a product that can also be
-		 * bought once. The choice is in the request, not on the product.
+		 * Whether the line being added is recurring. The choice is in the request, not on
+		 * the product: a subscription product can be bought once, and a normal product can
+		 * be subscribed to. Asked for every product added.
 		 *
-		 * @param bool  $recurring
+		 * @param bool  $recurring    Whether the product is a subscription product.
 		 * @param int   $product_id
 		 * @param int   $variation_id
-		 * @param array $item_data
+		 * @param array $item_data    The cart item data being added, where the route passes it.
 		 */
-		return (bool) apply_filters( 'subly_adding_subscription', true, $product_id, $variation_id, $item_data );
+		return (bool) apply_filters( 'subly_adding_subscription', Subscription_Product::is_subscription( $product_id ), $product_id, $variation_id, $item_data );
 	}
 
 	/**
@@ -127,7 +149,7 @@ class Cart_Validation {
 		}
 
 		foreach ( WC()->cart->get_cart() as $key => $item ) {
-			if ( ! Subscription_Product::is_subscription( $item['data'] ?? null ) || ! apply_filters( 'subly_cart_item_is_subscription', true, $item, $key ) ) {
+			if ( ! Subscription_Product::cart_item_is_subscription( $item, (string) $key ) ) {
 				return true;
 			}
 		}

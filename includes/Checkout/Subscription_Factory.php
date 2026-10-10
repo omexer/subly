@@ -7,6 +7,7 @@ use Subly\Data\Activity_Repository;
 use Subly\Data\Charge_Slot_Repository;
 use Subly\Domain\Subscription;
 use Subly\Domain\Subscription_Status;
+use Subly\Product\Line_Terms;
 use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -44,28 +45,18 @@ class Subscription_Factory {
 		}
 
 		foreach ( $order->get_items() as $item ) {
+			if ( ! $item instanceof \WC_Order_Item_Product || ! Subscription_Product::order_item_is_subscription( $item, $order ) ) {
+				continue;
+			}
+
 			$product = $item->get_product();
+			$terms   = $product ? Line_Terms::for_order_item( $item, $product ) : null;
 
-			if ( ! $product || ! Subscription_Product::is_subscription( $product ) ) {
+			if ( ! $product || ! $terms ) {
 				continue;
 			}
 
-			/**
-			 * Whether this line starts a subscription.
-			 *
-			 * A subscription product can be sold as a one-off — buy it once, or subscribe
-			 * and save — and that choice is made on the line, not on the product.
-			 *
-			 * @param bool            $create
-			 * @param \WC_Order_Item  $item
-			 * @param \WC_Product     $product
-			 * @param \WC_Order       $order
-			 */
-			if ( ! apply_filters( 'subly_create_subscription_for_item', true, $item, $product, $order ) ) {
-				continue;
-			}
-
-			$this->create( $order, $item, $product );
+			$this->create( $order, $item, $product, $terms );
 
 			// One subscription per order in R1; the cart rule already enforces this.
 			break;
@@ -81,8 +72,8 @@ class Subscription_Factory {
 		}
 	}
 
-	private function create( \WC_Order $order, $item, \WC_Product $product ): Subscription {
-		$schedule = Subscription_Product::schedule( $product );
+	private function create( \WC_Order $order, \WC_Order_Item_Product $item, \WC_Product $product, Line_Terms $terms ): Subscription {
+		$schedule = $terms->schedule();
 		$now      = new \DateTimeImmutable( 'now', new \DateTimeZone( 'UTC' ) );
 
 		$subscription = new Subscription();
@@ -114,7 +105,7 @@ class Subscription_Factory {
 		// The recurring amount, not what the first order came to: a trial makes that zero
 		// and a one-off coupon would otherwise discount every renewal for ever.
 		$quantity  = max( 1, (int) $item->get_quantity() );
-		$recurring = $this->line_total_excluding_tax( $order, $product, $quantity );
+		$recurring = $this->line_total_excluding_tax( $order, $product, $quantity, $terms );
 
 		$copy = new \WC_Order_Item_Product();
 		$copy->set_props(
@@ -162,20 +153,21 @@ class Subscription_Factory {
 		);
 
 		/**
+		 * Fires once the subscription exists, so extensions can stamp their own
+		 * configuration onto it from the product and the order line it was bought from.
+		 *
+		 * @param Subscription                $subscription
+		 * @param \WC_Product                 $product
+		 * @param \WC_Order_Item_Product|null $item     The order line. Null when fired from outside a checkout.
+		 */
+		do_action( 'subly_configure_subscription', $subscription, $product, $item );
+
+		/**
 		 * Fires when a subscription has been created from a checkout.
 		 *
 		 * @param Subscription $subscription
 		 * @param \WC_Order    $order
 		 */
-		/**
-		 * Fires once the subscription exists, so extensions can stamp their own
-		 * configuration onto it from the product it was bought from.
-		 *
-		 * @param Subscription $subscription
-		 * @param \WC_Product  $product
-		 */
-		do_action( 'subly_configure_subscription', $subscription, $product );
-
 		do_action( 'subly_subscription_created', $subscription, $order );
 
 		return $subscription;
@@ -184,8 +176,8 @@ class Subscription_Factory {
 	/**
 	 * Line totals are stored without tax, as WooCommerce's cart stored the checkout's; renewals add tax back for the customer's address.
 	 */
-	private function line_total_excluding_tax( \WC_Order $order, \WC_Product $product, int $quantity ): string {
-		$unit = Subscription_Product::recurring_price( $product )->decimal();
+	private function line_total_excluding_tax( \WC_Order $order, \WC_Product $product, int $quantity, Line_Terms $terms ): string {
+		$unit = $terms->recurring_price()->decimal();
 
 		return wc_format_decimal(
 			wc_get_price_excluding_tax(
