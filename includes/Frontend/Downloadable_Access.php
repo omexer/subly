@@ -4,6 +4,7 @@ namespace Subly\Frontend;
 
 use Subly\Data\Subscription_Query;
 use Subly\Domain\Subscription_Status;
+use Subly\Product\Subscription_Product;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -19,12 +20,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Downloadable_Access {
 
 	public function register(): void {
-		add_filter( 'woocommerce_customer_get_downloadable_products', array( $this, 'filter_customer_downloads' ) );
+		// The list My Account shows is built by this, and so is every other caller's.
+		add_filter( 'woocommerce_customer_available_downloads', array( $this, 'filter_customer_downloads' ), 10, 2 );
 		add_filter( 'woocommerce_order_get_downloadable_items', array( $this, 'filter_order_downloads' ), 10, 1 );
 	}
 
-	public function filter_customer_downloads( $downloads ) {
-		return $this->filter( is_array( $downloads ) ? $downloads : array(), get_current_user_id() );
+	/**
+	 * @param array|mixed $downloads
+	 * @param int|mixed   $customer_id
+	 */
+	public function filter_customer_downloads( $downloads, $customer_id = 0 ) {
+		return $this->filter( is_array( $downloads ) ? $downloads : array(), (int) $customer_id ?: get_current_user_id() );
 	}
 
 	public function filter_order_downloads( $items ) {
@@ -39,7 +45,7 @@ class Downloadable_Access {
 		foreach ( $downloads as $key => $download ) {
 			$product_id = (int) ( $download['product_id'] ?? 0 );
 
-			if ( ! $product_id || ! $this->is_subscription_product( $product_id ) ) {
+			if ( ! $product_id || ! $this->paid_by_subscription( $product_id, (int) ( $download['order_id'] ?? 0 ) ) ) {
 				continue;
 			}
 
@@ -51,10 +57,44 @@ class Downloadable_Access {
 		return $downloads;
 	}
 
-	private function is_subscription_product( int $product_id ): bool {
+	/**
+	 * A subscription product's files always are; a normal product's only when the line that granted them started a subscription.
+	 */
+	private function paid_by_subscription( int $product_id, int $order_id ): bool {
 		$product = wc_get_product( $product_id );
 
-		return $product instanceof \WC_Product && \Subly\Product\Subscription_Product::is_subscription( $product );
+		if ( ! $product instanceof \WC_Product ) {
+			return false;
+		}
+
+		if ( Subscription_Product::is_subscription( $product ) ) {
+			return true;
+		}
+
+		$order = $order_id ? wc_get_order( $order_id ) : null;
+
+		if ( ! $order instanceof \WC_Order || ! (int) $order->get_meta( '_subly_subscription_id' ) ) {
+			return false;
+		}
+
+		// A renewal order's lines are copies with nothing to ask; the subscription they renew is the answer.
+		$source = 'subly_renewal' === $order->get_created_via() ? wc_get_order( (int) $order->get_meta( '_subly_subscription_id' ) ) : $order;
+
+		if ( ! $source instanceof \WC_Order ) {
+			return false;
+		}
+
+		foreach ( $source->get_items() as $item ) {
+			if ( ! $item instanceof \WC_Order_Item_Product || ! in_array( $product_id, array( (int) $item->get_product_id(), (int) $item->get_variation_id() ), true ) ) {
+				continue;
+			}
+
+			if ( $source !== $order || Subscription_Product::order_item_is_subscription( $item, $order ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private function has_live_subscription( int $user_id, int $product_id ): bool {
