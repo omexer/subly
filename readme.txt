@@ -155,7 +155,8 @@ included in the plugin.
 == Changelog ==
 
 = 0.32.0 =
-* Subly's setup notices (PayPal not configured, guest checkout unreachable) appear only on Subly's screens and WooCommerce → Settings, and Dismiss keeps them away until the problem changes.
+* Subly's setup notices (PayPal not configured, guest checkout unreachable, tax added twice) appear only on Subly's screens and WooCommerce → Settings (the tax notice also on the orders screens), and Dismiss keeps them away until the problem changes.
+* Downloadable files bought on a subscription follow that subscription; the same product bought once keeps its files.
 * Checkout refuses a cart holding more than one subscription, with a message saying so.
 * PayPal: one product sold on different terms gets a PayPal plan for each.
 * For developers: a cart line can be a subscription on terms of its own (new `subly_line_terms` filter). See CHANGELOG.md.

@@ -2,7 +2,8 @@
 
 ## 0.32.0
 
-* **Notices (WordPress.org Guideline 11).** The PayPal setup notices ("not offering a payment method at checkout", "PayPal renewals will not be recorded") and the guest checkout warning show only on Subly's screens and WooCommerce → Settings. Dismiss is stored per user and lasts until the problem changes: another missing PayPal field, or a problem that was fixed and came back.
+* **Notices (WordPress.org Guideline 11).** The PayPal setup notices ("not offering a payment method at checkout", "PayPal renewals will not be recorded") and the guest checkout warning show only on Subly's screens and WooCommerce → Settings; the "tax added twice" repair notice shows there and on the WooCommerce orders screens. Dismiss is stored per user and lasts until the problem changes: a different PayPal field missing, a problem that was fixed and came back, or more subscriptions needing the tax repair.
+* **Downloads follow the line that paid for them.** A downloadable normal product sold on a subscription line (and its renewals) loses its files when that subscription ends; the same product bought once keeps them. Subscription products are gated as before. The list is now filtered at `woocommerce_customer_available_downloads`, so `wc_get_customer_available_downloads()` agrees with My Account.
 * **One subscription per order, at checkout too.** A cart holding more than one subscription line (a saved cart merged at login is never checked line by line) is refused at both checkouts until all but one are removed.
 * **PayPal plans per set of terms.** The billing plan is cached in the product meta `_subly_paypal_plans` (fingerprint => plan id) instead of `_subly_paypal_plan_id` / `_subly_paypal_plan_hash`. The fingerprint covers product, currency, recurring price, period, interval, trial length and unit, sign-up fee and total cycles, so two schedules of one product get two plans, and a change to the payment cap now makes a new plan. The plan bills the order line's price. The first PayPal checkout after updating creates a fresh plan per product; existing PayPal subscriptions stay on theirs.
 * The Settings menu no longer lists a Content Restriction section; it moves to its own add-on.
@@ -20,6 +21,11 @@ A normal simple or variable product's line can now be sold as a subscription, on
 * **`subly_disclosure_lines`, `subly_disclosure_price_line`, `subly_disclosure_sentence`** receive the `Line_Terms` they were written from as a third argument; its `cart_item()` / `order_item()` is the line, if any. `Disclosure::lines()`, `price_line()`, `sentence()` and `render()` take optional `Line_Terms`, so an extension can render the disclosure for terms the customer is choosing on the product page.
 * **`subly_paypal_total_cycles( int $cycles, WC_Product $product, Line_Terms $terms )`**: the terms are the new third argument.
 * `Initial_Payment::first_payment()` takes optional `Line_Terms`; `Subscription_Product::cart_subscription_items()` and `cart_item_is_subscription()` are new.
+* `Notice_Dismissals::shows_problem( $notice, $problem )`, `problem_key( array $parts )` and `problem_url()`: sticky dismissal keyed by which problem it is rather than how many. `Notices::in_context( bool $with_orders = false )` says whether the current screen is Subly's, WooCommerce → Settings, or (when asked) a WooCommerce orders screen.
+
+### Known limitations
+
+* A normal product sold on a subscription line gets the store-wide **Role while subscribed**, but not a per-product role: **Grant role while active** is set on a subscription product's panel.
 
 ## 0.31.0
 
