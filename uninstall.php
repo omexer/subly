@@ -23,17 +23,19 @@ foreach ( array( 'subly_schedule', 'subly_activity', 'subly_charge_slot' ) as $s
 	$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $wpdb->prefix . $subly_table ) );
 }
 
-// Pro and add-ons share the subly_ prefix, and their own uninstall removes what is theirs.
-$subly_kept = array( 'subly_pro_', 'subly_cr_', 'subly_subly_' );
-
 // phpcs:disable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- no API deletes options by prefix.
 foreach ( array( '', '_transient_', '_transient_timeout_' ) as $subly_prefix ) {
-	$subly_not = '';
-	foreach ( $subly_kept as $subly_keep ) {
-		$subly_not .= $wpdb->prepare( ' AND option_name NOT LIKE %s', $wpdb->esc_like( $subly_prefix . $subly_keep ) . '%' );
-	}
-	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- every part of $subly_not was prepared above.
-	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name <> %s", $wpdb->esc_like( $subly_prefix . 'subly_' ) . '%', 'subly_delete_data_on_uninstall' ) . $subly_not );
+	// Pro (subly_pro_, its gateways' subly_subly_) and add-ons (subly_cr_) share the prefix; their own uninstall removes what is theirs.
+	$wpdb->query(
+		$wpdb->prepare(
+			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s AND option_name NOT LIKE %s AND option_name NOT LIKE %s AND option_name NOT LIKE %s AND option_name <> %s",
+			$wpdb->esc_like( $subly_prefix . 'subly_' ) . '%',
+			$wpdb->esc_like( $subly_prefix . 'subly_pro_' ) . '%',
+			$wpdb->esc_like( $subly_prefix . 'subly_cr_' ) . '%',
+			$wpdb->esc_like( $subly_prefix . 'subly_subly_' ) . '%',
+			'subly_delete_data_on_uninstall'
+		)
+	);
 }
 // phpcs:enable WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 
