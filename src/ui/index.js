@@ -29,6 +29,7 @@ export {
 	TableCell,
 } from './components/ui/table';
 export { Input, Select, Checkbox } from './components/ui/input';
+export { Switch } from './components/ui/switch';
 export { cn } from './lib/utils';
 
 import { Card, CardContent } from './components/ui/card';

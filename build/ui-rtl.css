@@ -115,14 +115,35 @@
 	white-space: nowrap;
 	border-width: 0;
 }
+.sb-pointer-events-none {
+	pointer-events: none;
+}
 .sb-fixed {
 	position: fixed;
+}
+.sb-absolute {
+	position: absolute;
+}
+.sb-relative {
+	position: relative;
+}
+.sb-inset-0 {
+	inset: 0px;
 }
 .sb-bottom-24 {
 	bottom: 6rem;
 }
+.sb-left-\[3px\] {
+	right: 3px;
+}
 .sb-right-8 {
 	left: 2rem;
+}
+.sb-top-\[3px\] {
+	top: 3px;
+}
+.sb-z-10 {
+	z-index: 10;
 }
 .sb-z-50 {
 	z-index: 50;
@@ -155,6 +176,9 @@
 .sb-ml-1 {
 	margin-right: 0.25rem;
 }
+.sb-ml-2 {
+	margin-right: 0.5rem;
+}
 .sb-ml-auto {
 	margin-right: auto;
 }
@@ -181,6 +205,9 @@
 }
 .sb-block {
 	display: block;
+}
+.sb-inline-block {
+	display: inline-block;
 }
 .sb-flex {
 	display: flex;
@@ -226,6 +253,9 @@
 }
 .sb-h-9 {
 	height: 2.25rem;
+}
+.sb-h-\[22px\] {
+	height: 22px;
 }
 .sb-h-full {
 	height: 100%;
@@ -476,6 +506,9 @@
 .sb-bg-muted-foreground {
 	background-color: hsl(var(--sb-muted-foreground));
 }
+.sb-bg-muted-foreground\/70 {
+	background-color: hsl(var(--sb-muted-foreground) / 0.7);
+}
 .sb-bg-muted\/40 {
 	background-color: hsl(var(--sb-muted) / 0.4);
 }
@@ -673,6 +706,9 @@
 .sb-accent-primary {
 	accent-color: hsl(var(--sb-primary));
 }
+.sb-opacity-0 {
+	opacity: 0;
+}
 .sb-opacity-30 {
 	opacity: 0.3;
 }
@@ -691,6 +727,11 @@
 	--tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
 	--tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
 	box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
+}
+.sb-transition-\[left\] {
+	transition-property: right;
+	transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+	transition-duration: 150ms;
 }
 .sb-transition-all {
 	transition-property: all;
@@ -949,6 +990,38 @@
 
 .sb-group:hover .group-hover\:sb-text-primary {
 	color: hsl(var(--sb-primary));
+}
+
+.sb-peer:checked ~ .peer-checked\:sb-left-\[21px\] {
+	right: 21px;
+}
+
+.sb-peer:checked ~ .peer-checked\:sb-bg-primary {
+	background-color: hsl(var(--sb-primary));
+}
+
+.sb-peer:focus-visible ~ .peer-focus-visible\:sb-ring-2 {
+	--tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+	--tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+	box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+}
+
+.sb-peer:focus-visible ~ .peer-focus-visible\:sb-ring-ring {
+	--tw-ring-color: hsl(var(--sb-ring));
+}
+
+.sb-peer:focus-visible ~ .peer-focus-visible\:sb-ring-offset-2 {
+	--tw-ring-offset-width: 2px;
+}
+
+.sb-peer:disabled ~ .peer-disabled\:sb-opacity-50 {
+	opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.motion-reduce\:sb-transition-none {
+		transition-property: none;
+	}
 }
 
 @media (min-width: 1024px) {
