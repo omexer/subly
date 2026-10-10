@@ -246,7 +246,7 @@ class Settings_Page {
 			self::FALLBACK_GROUP => array(
 				'label'    => __( 'Integrations', 'subly' ),
 				'icon'     => '<path d="M9 2.5V7m6-4.5V7M6 7h12v4.5a6 6 0 0 1-12 0zM12 17.5v4"/>',
-				'sections' => array( 'whatsapp', 'affiliatewp', 'anniversary', 'winback', 'content' ),
+				'sections' => array( 'whatsapp', 'affiliatewp', 'anniversary', 'winback' ),
 				'list'     => true,
 			),
 		);

@@ -153,6 +153,8 @@ foreach ( $sections as $section => $label ) {
 	$check( '  and every one of its fields is on the page', array() === $missing, $missing );
 }
 $check( 'a section no group names lands in Integrations', 'integrations' === Settings_Page::group_of( 'subly_test_extra' ) );
+$named = array_merge( ...array_values( array_column( $groups, 'sections' ) ) );
+$check( 'no group names Content Restriction, which moved to its own add-on', ! in_array( 'content', $named, true ), $named );
 
 $paypal = $xpath( $render( 'paypal' ) );
 $subnav = array_map( static fn( $a ) => trim( $a->textContent ), iterator_to_array( $paypal->query( '//ul[contains(@class,"subly-settings__subnav")]//a' ) ) );
